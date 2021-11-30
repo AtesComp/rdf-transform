@@ -1,0 +1,14 @@
+/*
+ *  External Licenses
+ */
+
+See the 'licenses' directory for a list of the licenses for the libraries we depend on,
+ordered here by license:
+
+Anything To Triples (any23)
+	Apache License
+	http://www.apache.org/licenses/LICENSE-2.0.html
+		
+Lucene 8.9.0
+  Apache License
+  http://www.apache.org/licenses/LICENSE-2.0.html

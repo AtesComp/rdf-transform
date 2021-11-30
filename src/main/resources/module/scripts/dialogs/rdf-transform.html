@@ -1,0 +1,54 @@
+<div class="dialog-frame rdf-transform-dialog-frame">
+  <!-- Head... -->
+  <div class="dialog-header" bind="dialogHeader"></div>
+  <!-- Body... -->
+  <div class="dialog-body" bind="dialogBody">
+    <div class="dialog-body-head" bind="dialogBodyHead">
+      <p bind="rdftDescription"></p>
+      <p class="rdf-transform-base-iri">
+        <span class="emphasized" bind="rdftBaseIRIText"></span>
+        <span bind="rdftBaseIRIValue"></span>
+        <a href="#" bind="rdftEditBaseIRI"></a>
+      </p>
+    </div>
+    <!-- Tabs...  display: flex; flex-direction: column;-->
+    <div class="tab" bind="rdftTabs">
+      <ul class="rdf-transform-tab-titles">
+        <li><a href="#rdf-transform-tab-transform" bind="rdftTabTransformText"></a></li>
+        <li><a href="#rdf-transform-tab-preview" bind="rdftTabPreviewText"></a></li>
+      </ul>
+      <!-- Transform Tab... -->
+      <div id="rdf-transform-tab-transform" class="tabcontent">
+        <div class="rdf-transform-tab-header">
+          <table>
+            <tr>
+              <td><span bind="rdftPrefixesText"></span></td>
+              <td><div class="rdf-transform-prefixes" bind="rdftEditPrefixes"></div></td>
+            </tr>
+          </table>
+        </div>
+        <!-- Transform Data... -->
+        <div class="rdf-transform-data-transform"></div>
+        <div class="rdf-transform-tab-footer">
+          <table style="width:100%">
+            <tr>
+              <td><a href="#" bind="rdftAddRootNode"></a></td>
+              <td style="text-align:right"><a href="#" bind="rdftSaveTransform"></a></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!-- Preview Tab... -->
+      <div id="rdf-transform-tab-preview" class="tabcontent">
+        <div class="rdf-transform-tab-header" bind="rdftSampleTurtleText"></div>
+        <!-- Preview Data... -->
+        <div class="rdf-transform-data-preview"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Foot... -->
+  <div class="dialog-footer" bind="dialogFooter">
+    <button class="Button" bind="buttonOK"></button>
+    <button class="Button" bind="buttonCancel"></button>
+  </div>
+</div>

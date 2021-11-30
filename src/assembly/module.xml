@@ -1,0 +1,34 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>orefine-${openrefine.version}</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+		<fileSet> <!-- Zip everything from target/classes except the **/module/** related directories -->
+            <directory>target/classes</directory>
+            <outputDirectory>rdf-transform/module/MOD-INF/classes</outputDirectory>
+            <excludes>
+                <exclude>**/module/**</exclude>
+            </excludes>
+        </fileSet>
+        <!-- fileSet> <!- Zip other non-java files from the source (src/main/java) ->
+            <directory>src/main/java</directory>
+            <outputDirectory>rdf-transform/module/MOD-INF/classes</outputDirectory>
+            <excludes>
+                <exclude>**/*.java</exclude>
+            </excludes>
+        </fileSet -->
+		<fileSet> <!-- Zip the module for the resourcees (src/main/resources/module) -->
+            <directory>target/classes/module</directory>
+            <outputDirectory>rdf-transform/module</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <dependencySet>  <!-- Zip the dependencies -->
+            <outputDirectory>rdf-transform/module/MOD-INF/lib</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+</assembly>

@@ -1,0 +1,11 @@
+*~
+*.class
+*.lock
+*.DS_Store
+module/MOD-INF/classes/*
+target
+.idea
+output
+tree
+tmp
+tmp_VocabularySearchRelatedCommandsTest

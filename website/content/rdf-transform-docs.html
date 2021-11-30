@@ -1,0 +1,33 @@
+<p class="note">
+  For a detailed example and screenshots see <a href="rdf_transform_example">RDF Transform example</a> 
+</p>
+<p>
+  With the export functionality, you can determine the intended structure of the RDF data by drawing a
+  template graph. The exporter iterates through the project rows evaluating expressions in the template
+  graph and producing an equivalent RDF subgraph for each row. The final result is a single file containing
+  all the subgraphs.
+</p>
+<p>
+The image below shows the main parts of a sample graph template.
+</p>
+<p>
+  <img src="images/rdf_transform_annotated.png" />
+</p>
+<p class="note">
+  Any applied filters on the data affect the exported RDF (i.e., RDF data exported corresponds to the
+  current visible rows). This feature processes RDF data with any custom subset of the data or by using
+  different transforms for different subsets of the data.
+</p>
+<p class="note">
+  Notice that you can define multiple subject resources (i.e., multiple root nodes) as shown in the figure
+  above.
+</p>
+<p>
+  Terms from existing vocabularies can be imported. The importer attempts to retrieve and index the terms
+  so that they can be included as autocompletion entries available for class and property additions. Also,
+  by using a dump from a namespace lookup site, <a href="http://prefix.cc">prefix.cc</a>, IRIs for popular
+  prefixes are automatically suggested.
+</p>
+<p>
+Data can be exported in RDF/XML or Turtle using the "Export" menu. 
+</p>

@@ -1,0 +1,201 @@
+#*
+ * RDF Transform Webpage
+ *
+ * ==================================================
+ * TODO
+ * - Better screenshot for homepage
+ * - Improve screenshot display on homepage
+ *
+ *#
+
+#*
+ * ============= SITE STRUCTURE AND PAGES  ==========================================
+ *#
+
+#set( $main_links =
+    { 'Home' : '',
+      'Showcases' : 'showcases',
+      'Docs' : 'docs',
+      'Support & Devel' : 'support-dev'
+    } )
+#set( $section_links =
+    { 'docs' : 
+      { 'Overview' : 'docs',
+        'Installation guide' : 'installationDocs',
+        'RDF Transform' : 'rdfTransformDocs',
+        'Publications' : 'publications',
+        'FAQ' : 'faq' },
+      'support-dev' :
+      { 'Issue tracker' : 'issues',
+        'Source code' : 'source' },
+      'showcases' :
+      { 'Overview' : 'showcases',
+		    'RDF Transform Example' : 'rdfTransformExample' }
+    } )
+#set( $pages =
+    { '' :
+      { 'head_title' : 'OpenRefine RDF Transform',
+        'title_content' : 'home-intro',
+        'content' : 'home-text' },
+      'showcases' :
+      { 'title' : 'Showcases',
+        'text' : 'showcases' },
+      'docs' :
+      { 'title' : 'Documentation',
+        'text' : 'docs' },
+      'support-dev' :
+      { 'title' : 'Support and Development',
+        'text' : 'support-dev',
+        'sidebar' : 'team' },
+      'installationDocs' :
+      { 'title' : 'Installation Guide',
+        'section' : 'docs',
+        'text' : 'installation' },
+      'rdfTransformDocs' :
+      { 'title' : 'RDF Export',
+        'section' : 'docs',
+        'text' : 'rdf-transform-docs' },
+	    'rdfTransformExample' :
+      { 'title' : 'RDF Transform Example',
+        'section' : 'showcases',
+        'text' : 'rdf-transform-exmple' },
+      'faq' :
+      { 'title' : 'Frequently Asked Questions',
+        'section' : 'docs',
+        'text' : 'faq' },
+      'publications' :
+      { 'title' : 'Academic Publications',
+        'section' : 'docs',
+        'text' : 'publications' },
+      'gpl' :
+      { 'redirect' : 'http://www.gnu.org/licenses/gpl-3.0-standalone.html' },
+      'download' :
+      { 'redirect' : 'https://github.com/AtesComp/openrefine-rdf-transform/downloads/list' },
+      'download-latest' :
+      { 'redirect' : 'https://github.com/AtesComp/openrefine-rdf-transform/files/rdf-transform-3.6.3.zip' },
+      'issues' :
+      { 'redirect' : 'https://github.com/AtesComp/openrefine-rdf-transform/issues' },
+      'source' :
+      { 'redirect' : 'https://github.com/AtesComp/openrefine-rdf-transform' }
+    } )
+
+## ============= BEHAVIOUR CODE ==========================================
+
+#set( $path = ${RDFTransform_path} )
+#set( $absolute_base = "${RDFTransform_protocol}//${RDFTransform_host}/${RDFTransform_path}" )
+#set( $array = '' )
+
+#set ( $uri = $path.substring( $path.lastIndexOf('/') + 1 ) )
+#if ( $!{uri} )
+    #set( $uri = '' )
+#end
+#if ( $!{pages.get($uri)} )
+    #set( $section = 'none' )
+    #set( $title = '404 Not Found' )
+    #set( $content = '404' )
+##    <script type="text/javascript">
+##    var myHeaders = new Headers();
+##    myHeaders.set('Status', 'HTTP/1.0 404 Not Found');
+##    </script>
+#elseif ( $pages.get($uri).redirect )
+    #set( $section = 'none' )
+    #set( $title = 'Redirect' )
+    #set( $target = $pages.get($uri).redirect )
+##    <script type="text/javascript">
+##    var myHeaders = new Headers();
+##    myHeaders.set('Status', 'HTTP/1.0 302 Found');
+##    myHeaders.set('Location', '$target');
+##    </script>
+#else
+    #set( $section = $uri )
+    #set( $array = $pages.get($uri) )
+    #if ( $array.section )
+        #set( $section = $array.section )
+    #end
+    #if ( $array.title )
+        #set( $title = $array.title )
+    #end
+    #if ( $array.content )
+        #set( $content = $array.content )
+    #end
+    #set( $page_links = $section_links.get($section) )
+#end
+
+## ============= TEMPLATE FUNCTIONS ==========================================
+
+## function e($s) { echo htmlspecialchars($s); }
+
+## ============= BEGIN TEMPLATE ==============================================
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <title>#if ( $head_title ) $head_title #else ${title}' | OpenRefine RDF Extension' #end</title>
+    <base href=" e($absolute_base) " />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" type="text/css" href="rdf-transform.css" />
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
+  </head>
+  <body>
+    <div id="header">
+      #if ($uri == '')<h1#else<div#end id="logo">RDF Extension for OpenRefine<#if ($uri == '')/h1>#else/div>#end
+      <ul id="main-nav">
+      #foreach ( $label in $main_links)
+        #if ( $section == $main_links.get($label) )
+        <li class="active"><span>$label</span></li>
+        #else
+        <li><a href="$main_links.get($label)">$label</a></li>
+        #end
+      #end
+        <li class="download"><a href="download">Download</a></li>
+      </ul>
+    </div>
+    <div id="title-stripe">
+      <div id="title">
+        #if ( $title )
+        <h1>$title</h1>
+        #elseif ( $title_content )
+        #include ( "content/${title_content}.html" )
+        #else
+        <h1>No title</h1>
+        #end
+      </div>
+    </div>
+
+    <div id="content">
+      #if ( $page_links )
+      <ul id="section-nav">
+      #foreach ( $label in $page_links)
+        #if ($page_links.get($label) == $uri)
+        <li>$label</li>
+        #else
+        <li><a href="$page_links.get($label)">$label</a></li>
+        #end
+      #end
+      </ul>
+      #end
+      #if ( $array.sidebar )
+      <div id="sidebar">#include ( "content/${array.sidebar}.html" )</div>
+      #end
+      #if ( $content )
+      #include ( "content/${content}.html" )
+      #elseif ( $array.text )
+      <div id="main" class="centrecol">#include ( "content/${array.text}.html" )</div>
+      #elseif ( $target )
+      <p>The requested content is found at the following location: <a href="$target">$target</a></p>
+      #else
+      <p>No content or text configured for this page.</p>
+      #end
+    </div>
+
+    <div id="footer">
+      <div id="footer-text">
+        <ul id="footer-links">
+          <li><a href="https://github.com/AtesComp/openrefine-rdf-transform">RDF Transform</a></li>
+          <li class="last"><a href="gpl">GPL</a></li>
+        </ul>
+        <div id="tagline">Transforming raw data into RDF</div>
+      </div>
+    </div>
+  </body>
+</html>

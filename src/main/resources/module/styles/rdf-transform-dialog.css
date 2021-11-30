@@ -1,0 +1,272 @@
+/*
+ * General Settings
+ */
+
+.emphasized,
+.rdf-header-text {
+	font-weight: bold;
+}
+
+p.rdf-transform-base-iri {
+	margin: 0.5em 0 4px 0;
+}
+
+input[type="radio"] {
+    display: inline-block;
+    margin-top: -1px;
+    vertical-align: middle;
+}
+
+/*
+ * RDF Transform Dialog
+ */
+
+div.rdf-transform-dialog-frame {
+    width:  800px;
+    height: 600px;
+    min-width:  800px;
+    min-height: 600px;
+}
+
+/*
+div.dialog-body,
+div.dialog-header,
+div.dialog-footer,
+div.dialog-body-head,
+ul.rdf-transform-tab-titles,
+div.rdf-transform-tab-header,
+div.rdf-transform-tab-footer,
+div.tab,
+div.rdf-transform-menu-search
+div.rdf-transform-detail-container
+table.rdf-transform-table-layout
+.rdf-transform-iri-text
+#rdf-transform-base-iri-value {
+}
+*/
+
+div.tabcontent {
+    display: flex;
+    flex-direction: column;
+}
+
+div.rdf-transform-tab-header,
+div.rdf-transform-tab-footer {
+	background: none repeat scroll 0 0 #E0EDFE;
+	padding: 0.4em;
+    flex: none;
+}
+
+div.rdf-transform-tab-header {
+	background: none repeat scroll 0 0 #E0EDFE;
+	padding: 0.4em;
+}
+
+div.rdf-transform-data-transform {
+/* 600 - 280 = 320
+   25 less than preview due to extra bottom buttons
+*/
+    height: 320px;
+    min-height: 320px;
+    overflow: scroll;
+    flex: 1 1 auto;
+}
+
+table.rdf-transform-table-layout > tbody > tr > td.padded {
+	padding: 15px 6px;
+}
+
+div.rdf-transform-data-preview {
+/* 600 - 255 = 345
+*/
+    height: 345px;
+    min-height: 345px;
+    overflow: scroll;
+    flex: 1 1 auto;
+}
+
+div.rdf-transform-prefixes {
+	width: 100%;
+}
+
+span.rdf-transform-prefix-box {
+	padding: 0 4px;
+	font-family: monospace;
+	float: left;
+}
+
+a.add-prefix-box {
+	background-image: url(../images/add.png);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    padding-left: 14px;
+    margin-left: 4px;
+    color: #0000EE;
+}
+
+a.manage-vocabularies-box {
+	background-image: url(../images/configure.png);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    padding-left: 14px;
+    margin-left: 4px;
+    color: #0000EE;
+}
+
+/*
+ * RDF Transform UI Node Dialog
+ */
+
+.rdf-transform-node-dialog-step {
+	margin: 0 5px 5px 5px;
+	border: 1px solid #DDDDDD;
+}
+
+.rdf-transform-node-dialog-step-header {
+	margin: 1px 5px 1px 0;
+	padding: 0.25em;
+    background: #DDDDFF;
+    -moz-border-radius: 0.5em;
+	border-radius: 0.5em;
+}
+
+.rdf-transform-node-dialog-column-list {
+	height: 300px;
+    width: 230px;
+    overflow: auto;
+}
+
+.rdf-transform-node-top-separated {
+    border-top: 2px solid Black;
+    padding-top: 2px;
+}
+
+.rdf-transform-node-top-padded {
+    padding-top: 2px;
+}
+
+.rdf-transform-node-bottom-separated {
+    padding-bottom: 2px;
+    border-bottom: 2px solid Black;
+}
+
+.rdf-transform-node-bottom-padded {
+    padding-bottom: 2px;
+}
+
+span.rdf-node-info {
+	font-size: 90%;
+}
+
+span.rdf-value-expression {
+	font-family: monospace;
+    height: 5em;
+    vertical-align: top;
+}
+
+/*
+table.rdf-transform-links-table-layout,
+table.rdf-transform-types-table,
+td.rdf-transform-node-main,
+td.rdf-transform-node-toggle,
+td.rdf-transform-node-details {
+}
+*/
+
+/*
+ * RDF Transform UI Link Dialog
+ */
+
+/*
+table.rdf-transform-details-table-layout,
+a.rdf-transform-link,
+td.rdf-transform-link-main,
+td.rdf-transform-link-toggle,
+td.rdf-transform-link-details {
+}
+*/
+
+/*
+ * RDF Transform Dialog Flyouts
+ */
+
+div.rdf-flyout-content {
+	color: Black;
+}
+
+div.rdf-flyout-content div.rdf-header {
+	overflow-wrap: break-word;
+	font-weight: bold;
+	margin: 4px;
+}
+
+/*
+ * RDF Transform Dialog Vocabulary Management
+ */
+
+img.vocab-action-icon {
+	padding: 0.1em;
+}
+
+div.vocabulary-container {
+	height: 300px;
+	overflow: auto;
+}
+
+div.vocabulary-manager-list {
+	height: 64%;
+	overflow: auto;
+}
+
+div.vocabulary-manager-footer {
+	height: 31%;
+}
+
+div.vocabulary-manager-footer h2 {
+	margin: 0;
+}
+
+
+a#add-prefix-link,
+a#add-prefix-link:HOVER,
+a#add-prefix-link:VISITED {
+	font-size: 120%;
+	color: #0000FF;
+}
+
+table.rdf-types-table {
+	margin: 0.2em 0 0.6em 0;
+}
+
+table.rdf-indented-table {
+	margin: 0 1.5em;
+}
+
+table.rdf-prefixes-table {
+    width: 100%;
+}
+
+table.rdf-prefixes-table,
+table.rdf-prefixes-table td {
+	border: 1px dotted #DDDDDD;
+	border-collapse: collapse;
+	margin: .2em;
+}
+
+tr.rdf-table-even {
+	background-color: #F2F2F2;
+}
+
+/*
+ * RDF Transform Dialog Prefix Management
+ */
+div.rdf-transform-prefix-note {
+	font-size: 1em;
+	color: #333333;/*#FF6A00;*/
+}
+
+fieldset.rdf-reconcile-fieldset {
+	border: 1px solid #BBCCFF;
+	padding: 0.2em 0 0.5em 0.2em;
+	margin-top: 1.5em;
+}

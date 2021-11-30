@@ -1,0 +1,81 @@
+<span>
+  This is a simple example showing how RDF can be extracted from a sample
+  <a href="downloads/example/high-earners-pay.csv">CSV file</a>
+  (you can download the whole
+  <a href="downloads/example/high-earners-pay.google-refine.tar.gz">project</a>
+  and then directly import it in Google Refine).</span>
+
+<ul class="steps">
+<li class="step step1">
+  Create a OpenRefine project based on the
+  <a href="http://www.direct.gov.uk/prod_consum_dg/groups/dg_digitalassets/@dg/@en/documents/digitalasset/dg_188112.csv">
+    highest-earning senior civil servants in UK
+  </a>
+  as published by the Cabinet Office on 1 June 2010. 
+  The first few lines of the
+  <a href="downloads/example/high-earners-pay.csv">sample CSV file</a>
+  is shown in the figure below. 
+  <p>
+    <img src="images/example/example_data.png" border="1" />
+  </p>
+  <p>
+    The intended RDF we want to export should look like (for the first few lines):
+	<pre>
+<code>
+&lt;http://lab.linkeddata.deri.ie/person/0&gt;
+    a  foaf:Person  ;
+    foaf:name  "Stephan Wilcke"  ;
+    foaf:title  "Chief Executive Officer"@en  ;
+    &lt;http://lab.linkeddata.deri.ie/annualPayRate&gt;  "150,000 - 154,999"  .
+
+&lt;http://lab.linkeddata.deri.ie/organization/asset-protection-agency&gt;
+    a  foaf:Organization  ;
+    foaf:name  "Asset Protection Agency"@en  ;
+    foaf:member  &lt;http://lab.linkeddata.deri.ie/person/0&gt;  .
+</code>
+	</pre>
+  </p>
+</li>
+<li class="step step2">
+  Using <em>Edit RDF Transform...</em> command available under the <em>RDF</em>
+  extension menu, design the following transform:
+<p>
+  <img src="images/example/rdf_transform.png" alt="RDF Transform Dialog Example" border="1" />
+</p>
+<ul>
+  <li><div>Set the base IRI at the top of the dialog to http://lab.linkeddata.deri.ie/test/</div></li>
+  <li><div>Prefixes can be managed by the <em>Add...</em> and <em>Manage...</em> on the
+           "Available Prefixes:"" line</div></li>
+  <li><div>Created the transform by repeatedly using <em>Add type...</em> and <em>Add property...</em>
+           commands in the main window</div></li>
+  <li><div>For example, created a new property <em>annualPayRate</em> which will be defined by the
+           default namespace specified by the "Base IRI"</div></li>
+</ul>
+<p>
+The figure below shows an example of a RDF Element dialog (the <em>Organization IRI</em> resource):
+<div class="image">
+  <img src="images/example/rdf_element.png" alt="RDF Element Dialog Example" border="1" />
+</div>
+</p>
+<div class="note">
+Notice the custom expression used to define the IRI. The <em>Edit...</em> command shows sample values
+from the first 10 rows:
+<p>
+  <img src="images/example/edit_grel.png" alt="Edit GREL Dialog Example" border="1" />
+</p>
+</div>
+</li>
+<li class="step step3">
+Save the transform by clicking <em>OK</em>. Notice that a "Save RDF Transform" operation is added to
+the Undo / Redo history panel of OpenRefine. History items can be undone, redone, exported, re-applied.
+<p>
+  <img src="images/example/history.png" alt="History (Undo/Redo) Tab Example" border="1" />
+</p>
+</li>
+<li class="step step4">
+ Export RDF data as RDF/XML or Turtle from the <em>Export</em> menu:
+ <p>
+  <img src="images/example/rdf_export.png" alt="Export RDF Menu Item Example" border="1" />
+</p>
+</li>
+</ul>

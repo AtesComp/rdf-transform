@@ -1,0 +1,12 @@
+.rdf-resource-preview-flyout-content {
+  border:1px solid #CCCCCC;
+  background-color:#FFFFFF;
+  margin:4px 8px 4px 4px;
+  padding:4px;
+}
+
+img.rdf-resource-preview-logo {
+	float:right;
+	width:30%;
+	height:auto;
+}

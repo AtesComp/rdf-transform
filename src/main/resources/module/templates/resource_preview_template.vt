@@ -1,0 +1,23 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/extensions/rdf-transform/module/styles/flyout.css"></link>
+  <script type="text/javascript">
+        var request = new XMLHttpRequest()
+        request.open('GET', "$previewResourceUrl", true)
+        request.onload = function () {
+            document.getElementById("rdf-resource-preview-flyout-content").innerHTML = this.response;
+        }
+        // Send request
+        request.send()
+  </script>
+</head>
+<body>
+    <div><a href="$resourceIRI">$resourceIRI</a></div>
+    <div class="rdf-resource-preview-flyout-content" id="rdf-resource-preview-flyout-content">
+      <img src="/images/large-spinner.gif" />
+      <div>
+        Fetching information about $resourceIRI
+      </div>
+    </div>
+  </body>
+</html>
