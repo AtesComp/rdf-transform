@@ -1,0 +1,103 @@
+<table>
+  <tr>
+    <td>
+      <div class="rdf-transform-node-dialog-prefix" bind="rdf_prefix">
+        <span id="rdf-prefix-text" bind="prefixSelect"></span>
+        <select id="rdf-prefix-select" bind="rdf_prefix_select"></select>
+      </div>
+      <table class="grid-layout layout-tight rdf-node-table">
+        <tr>
+          <td>
+            <div class="rdf-transform-node-dialog-step-header" bind="useContent">
+            </div>
+          </td>
+          <td>
+            <div class="rdf-transform-node-dialog-step-header" bind="contentUsed">
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td name="tdColumnLeft">
+            <div class="rdf-transform-node-dialog-step" bind="columnLeft"><!--class="rdf-transform-node-dialog-column-list"-->
+            </div>
+          </td>
+          <td name="tdColumnRight">
+            <div class="rdf-transform-node-dialog-step" bind="columnRight">
+              <table width="100%" cols="2">
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="resource" id="rdf-content-iri-radio" bind="rdf_content_iri_radio" /></td>
+                  <td><label for="rdf-content-iri-radio" bind="asIRI"></label></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-txt-radio" bind="rdf_content_txt_radio" /></td>
+                  <td><label for="rdf-content-txt-radio" bind="asText"></label></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-lang-radio" bind="rdf_content_lang_radio" /></td>
+                  <td>
+                    <label for="rdf-content-lang-radio" bind="asLang"></label>
+                    <span>&nbsp</span>
+                    <input type="text" id="rdf-content-lang-input" bind="rdf_content_lang_input" size="3"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-int-radio" bind="rdf_content_int_radio" /></td>
+                  <td><label for="rdf-content-int-radio" bind="asInt"></label></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-double-radio" bind="rdf_content_double_radio" /></td>
+                  <td><label for="rdf-content-double-radio" bind="asDouble"></label></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-date-radio" bind="rdf_content_date_radio" /></td>
+                  <td>
+                    <label for="rdf-content-date-radio" bind="asDate"></label>
+                    <span class="rdf-node-info">&nbsp(yyyy-MM-dd)</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-date-time-radio" bind="rdf_content_date_time_radio" /></td>
+                  <td>
+                    <label for="rdf-content-date-time-radio" bind="asDateTime"></label>
+                    <span class="rdf-node-info">&nbsp(yyyy-MM-ddTHH:mm:ss.SSS)</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-boolean-radio" bind="rdf_content_boolean_radio" /></td>
+                  <td><label for="rdf-content-boolean-radio" bind="asBool"></label></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-dtype-radio" bind="rdf_content_dtype_radio" /></td>
+                  <td>
+                    <label for="rdf-content-dtype-radio" bind="asCustom"></label>
+                    <span class="rdf-node-info">&nbsp(specify type IRI)</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colspan="2"><input type="text" id="rdf-content-dtype-input" bind="rdf_content_dtype_input" size="25"/></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="blank" id="rdf-content-blank-radio" bind="rdf_content_blank_radio" /></td>
+                  <td><label for="rdf-content-blank-radio" bind="asBlank"></label></td>
+                </tr>
+              </table>
+            </div>
+            <div class="rdf-transform-node-dialog-step-header" bind="useExpression">
+            </div>
+            <div class="rdf-transform-node-dialog-step" style="margin-top:3px">
+              <table width="100%" class="grid-layout">
+                <tr>
+                  <td><span class="rdf-value-expression" bind="rdf_cell_expr" id="rdf-cell-expr"></span></td>
+                </tr>
+                <tr>
+                  <td><a href="#" bind="expEditPreview"></a></td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -1,7 +1,7 @@
 <project>
     <!--
 		To include OpenRefine:
-			mvn install:install-file -Dfile=../../OpenRefine//main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml
+			mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
 	-->
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,7 +21,7 @@
 		<!--
              OpenRefine Dependent: 3.4.1, 3.5-beta1, 3.6-SNAPSHOT
         -->
-        <openrefine.version>3.4.1</openrefine.version>
+        <openrefine.version>3.6-SNAPSHOT</openrefine.version>
 		<!--<butterfly.version>1.1.1</butterfly.version>-->
 		<butterfly.version>1.2.0</butterfly.version><!-- matches 3.6-SNAPSHOT -->
         <!--slf4j.version>1.7.30</slf4j.version-->
@@ -44,11 +44,8 @@
 		<!--
              RDF Transform Dependent
         -->
-        <!--rdf4j.version>2.4.3</rdf4j.version-->
-        <rdf4j.version>3.7.3</rdf4j.version>
-        <!--any23.version>2.3</any23.version-->
-        <any23.version>2.5</any23.version>
-        <!--lucene.version>6.4.1</lucene.version-->
+        <rdf4j.version>3.7.6</rdf4j.version>
+        <any23.version>2.7</any23.version>
         <lucene.version>8.10.0</lucene.version>
 
 		<!--
@@ -552,6 +549,20 @@
                         <descriptor>src/assembly/module.xml</descriptor>
                     </descriptors>
                 </configuration>
+                <executions>
+                    <execution>
+                    <id>zip-assembly</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                    <configuration>
+                        <descriptors>
+                        <descriptor>src/assembly/module.xml</descriptor>
+                        </descriptors>
+                    </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

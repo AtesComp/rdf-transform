@@ -1,52 +1,27 @@
-/*
-
-Copyright 2010, Google Inc.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
- * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
- * Neither the name of Google Inc. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,           
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY           
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- */
-
+//
+// ***** CONTROLLER *****
+//
+// NOTE: This is a Server-Side JavaScript
+//
+//   The Server-Side JavaScript processor may be a limited funtionality
+//   processor, so many functions taken for granted in modern JavaScript
+//   processors may not be present in this implementation.
+//
 importPackage(com.google.refine.rdf.commands);
+
+// Client side preferences mirror Server side...
+var RDFTransformPrefs = {
+	"Verbosity"   : 0,
+	"ExportLimit" : 10737418,
+	"DebugMode"   : false
+}
 
 var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 
 var RefineBase = Packages.com.google.refine;
 
-/*
- * Initialization Function for RDF Transform Extension.
- */
-function init() {
-	var RefineServlet = RefineBase.RefineServlet;
+function registerClientSide() {
 	var ClientSideResourceManager = RefineBase.ClientSideResourceManager;
-
-	var RDFTBase = RefineBase.rdf;
-	var RDFTBaseApp = RDFTBase.app;
-	var RDFTBaseCmd = RDFTBase.command;
 
 	//
     //  Client-side Resources...
@@ -60,16 +35,19 @@ function init() {
 		"project/scripts",
 		module,
 		// Script files to inject into /project page...
-		[	"scripts/rdf-transform-menubar-extensions.js", // must be first: language and menu load
+		[	"scripts/rdf-transform-menubar-extensions.js",	// 1. must be first: language and menu load
 			"scripts/rdf-transform.js",
-			"scripts/rdf-transform-resource.js",
-			"scripts/rdf-transform-ui-link.js",
-			"scripts/rdf-transform-ui-node.js",
-			"scripts/rdf-transform-vocab-manager.js",
-			"scripts/rdf-transform-prefixes-manager.js",
-			"scripts/rdf-transform-prefix-adder.js",
-			"scripts/rdf-transform-suggest-term.js",
 			"scripts/rdf-transform-common.js",
+			"scripts/rdf-transform-resource.js",
+			"scripts/rdf-transform-ui-node.js",
+			"scripts/rdf-transform-ui-node-config.js",
+			"scripts/rdf-transform-ui-property.js",
+			"scripts/rdf-transform-vocab-manager.js",
+			"scripts/rdf-transform-namespaces-manager.js",
+			"scripts/rdf-transform-namespace-adder.js",
+			"scripts/rdf-transform-suggest-term.js",
+			"scripts/rdf-transform-import-template.js",
+			"scripts/rdf-transform-export-template.js",
 			"scripts/rdf-data-table-view.js",
 			//"scripts/externals/jquery.form.min.js",
 		]
@@ -87,36 +65,45 @@ function init() {
 			"styles/flyout.css",
 		]
 	);
-	
+}
+
+function registerServerSide() {
+	var RefineServlet = RefineBase.RefineServlet;
+
+	var RDFTBase = RefineBase.rdf;
+	var RDFTCmd = RDFTBase.command;
+	var RDFTModel = RDFTBase.model;
+
     //
     //  Server-side Resources...
     // ------------------------------------------------------------
 
 	/*
 	 *  Server-side Context Initialization...
-	 *    Tests a simple attempt to mimic dependency injection.
+	 *    The One and Only RDF Transform Application Context.
 	 */
-	var appContext = new RDFTBaseApp.ApplicationContext();
+	var appContext = new RDFTBase.ApplicationContext();
 
 	/*
      *  Server-side Ajax Commands...
 	 *    Each registration calls the class' init() method.
      */
 	var strSaveRDFTransform = "save-rdf-transform";
-	RefineServlet.registerCommand( module, "initialize",             new RDFTBaseApp.InitializationCommand(appContext) );
-	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTBaseCmd.SaveRDFTransformCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTBaseCmd.SaveBaseIRICommand(appContext) );
-    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTBaseCmd.PreviewRDFCommand() );
-    RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTBaseCmd.PreviewRDFExpressionCommand() );
+	RefineServlet.registerCommand( module, "initialize",              new RDFTCmd.InitializationCommand(appContext) );
+	RefineServlet.registerCommand( module, strSaveRDFTransform,       new RDFTCmd.SaveRDFTransformCommand() );
+    RefineServlet.registerCommand( module, "save-baseIRI",            new RDFTCmd.SaveBaseIRICommand() );
+    RefineServlet.registerCommand( module, "preview-rdf",             new RDFTCmd.PreviewRDFCommand() );
+    RefineServlet.registerCommand( module, "preview-rdf-expression",  new RDFTCmd.PreviewRDFExpressionCommand() );
+    RefineServlet.registerCommand( module, "validate-iri",            new RDFTCmd.ValidateIRICommand() );
 	// Vocabs commands
-    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTBaseCmd.GetDefaultPrefixesCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix",             new RDFTBaseCmd.AddPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "upload-file-add-prefix", new RDFTBaseCmd.AddPrefixFromFileCommand(appContext) );
-    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTBaseCmd.RefreshPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTBaseCmd.RemovePrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTBaseCmd.SavePrefixesCommand(appContext) );
-    RefineServlet.registerCommand( module, "suggest-term",           new RDFTBaseCmd.SuggestTermCommand(appContext) );
-    RefineServlet.registerCommand( module, "get-prefix-cc-iri",      new RDFTBaseCmd.SuggestPrefixIRICommand(appContext) );
+    RefineServlet.registerCommand( module, "get-default-namespaces",  new RDFTCmd.NamespacesGetDefaultCommand() );
+    RefineServlet.registerCommand( module, "save-namespaces",         new RDFTCmd.NamespacesSaveCommand() );
+    RefineServlet.registerCommand( module, "add-namespace",           new RDFTCmd.NamespaceAddCommand() );
+    RefineServlet.registerCommand( module, "add-namespace-from-file", new RDFTCmd.NamespaceAddFromFileCommand() );
+    RefineServlet.registerCommand( module, "refresh-prefix",          new RDFTCmd.NamespaceRefreshCommand() );
+    RefineServlet.registerCommand( module, "remove-prefix",           new RDFTCmd.NamespaceRemoveCommand() );
+    RefineServlet.registerCommand( module, "suggest-namespace",       new RDFTCmd.SuggestNamespaceCommand() );
+    RefineServlet.registerCommand( module, "suggest-term",            new RDFTCmd.SuggestTermCommand() );
 	// Others:
 	//   CodeResponse - Standard Response Class for Commands
 	//   RDFTransformCommand - Abstract RDF Command Class
@@ -126,93 +113,184 @@ function init() {
      */
 	var strRefineBase = "com.google.refine";
 	RefineServlet.registerClassMapping(
-	  	// Non-existent name--we are adding, not renaming...
+		// Non-existent name--we are adding, not renaming...
 		strRefineBase + ".model.changes.DataExtensionChange",
 		// Added Change Class name...
-		strRefineBase + ".rdf.operation.RDFTransformChange"
+		strRefineBase + ".rdf.model.operation.RDFTransformChange"
 	);
-	RefineServlet.cacheClass(RDFTBase.operation.RDFTransformChange);
+	RefineServlet.cacheClass(RDFTModel.operation.RDFTransformChange);
 
     /*
      *  Server-side Operations...
      */
     RefineBase.operations.OperationRegistry
-	.registerOperation( module, strSaveRDFTransform, RDFTBase.operation.SaveRDFTransformOperation );
+	.registerOperation( module, strSaveRDFTransform, RDFTModel.operation.SaveRDFTransformOperation );
 
     /*
      *  Server-side GREL Functions and Binders...
      */
-	var RDFTGrelFuncReg = RefineBase.grel.ControlFunctionRegistry;
-    RDFTGrelFuncReg.registerFunction( "forIRI", new RDFTBase.expr.func.str.forIRI() );
-    RDFTGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTBase.expr.func.str.toStrippedLiteral() );
+	var RefineGrelFuncReg = RefineBase.grel.ControlFunctionRegistry;
+    RefineGrelFuncReg.registerFunction( "toIRIString", new RDFTModel.expr.functions.ToIRIString() );
+    RefineGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTModel.expr.functions.ToStrippedLiteral() );
 
 	RefineBase.expr.ExpressionUtils
-	.registerBinder( new RDFTBase.expr.RDFBinder(appContext) );
+	.registerBinder( new RDFTModel.expr.RDFTransformBinder() );
 
     /*
      *  Server-side Exporters...
      */
     var RefineExpReg = RefineBase.exporters.ExporterRegistry;
-    var RDFTExp = RDFTBase.exporter.RDFExporter;
+    var RDFTExp = RDFTModel.exporter.RDFExporter;
+	var RDFFormat = org.eclipse.rdf4j.rio.RDFFormat;
 
-    RefineExpReg.registerExporter( "RDF",         new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.RDFXML) );
-    RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.NTRIPLES) );
-    RefineExpReg.registerExporter( "Turtle",      new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TURTLE) );
-    RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TURTLESTAR) );
-	RefineExpReg.registerExporter( "N3",          new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.N3) );
-	RefineExpReg.registerExporter( "TriX",        new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TRIX) );
-	RefineExpReg.registerExporter( "TriG",        new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TRIG) );
-	RefineExpReg.registerExporter( "TriG-star",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TRIGSTAR) );
-	RefineExpReg.registerExporter( "BinaryRDF",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.BINARY) );
-	RefineExpReg.registerExporter( "N-Quads",     new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.NQUADS) );
-	RefineExpReg.registerExporter( "JSON-LD",     new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.JSONLD) );
-	RefineExpReg.registerExporter( "NDJSON-LD",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.NDJSONLD) );
-	RefineExpReg.registerExporter( "RDF/JSON",    new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.RDFJSON) );
-	RefineExpReg.registerExporter( "RDFa",        new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.RDFA) );
-	RefineExpReg.registerExporter( "HDT",         new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.HDT) );
+    RefineExpReg.registerExporter( "RDF/XML",     new RDFTExp(RDFFormat.RDFXML) );
+    RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(RDFFormat.NTRIPLES) );
+    RefineExpReg.registerExporter( "Turtle",      new RDFTExp(RDFFormat.TURTLE) );
+    RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(RDFFormat.TURTLESTAR) );
+	RefineExpReg.registerExporter( "N3",          new RDFTExp(RDFFormat.N3) );
+	RefineExpReg.registerExporter( "TriX",        new RDFTExp(RDFFormat.TRIX) );
+	RefineExpReg.registerExporter( "TriG",        new RDFTExp(RDFFormat.TRIG) );
+	RefineExpReg.registerExporter( "TriG-star",   new RDFTExp(RDFFormat.TRIGSTAR) );
+	RefineExpReg.registerExporter( "BinaryRDF",   new RDFTExp(RDFFormat.BINARY) );
+	RefineExpReg.registerExporter( "N-Quads",     new RDFTExp(RDFFormat.NQUADS) );
+	RefineExpReg.registerExporter( "JSON-LD",     new RDFTExp(RDFFormat.JSONLD) );
+	RefineExpReg.registerExporter( "NDJSON-LD",   new RDFTExp(RDFFormat.NDJSONLD) );
+	RefineExpReg.registerExporter( "RDF/JSON",    new RDFTExp(RDFFormat.RDFJSON) );
+	RefineExpReg.registerExporter( "RDFa",        new RDFTExp(RDFFormat.RDFA) );
+	RefineExpReg.registerExporter( "HDT",         new RDFTExp(RDFFormat.HDT) );
 
     /*
      *  Server-side Overlay Models - Attach an RDFTransform object to the project...
      */
     RefineBase.model.Project
-	.registerOverlayModel(RDFTBase.RDFTransform.EXTENSION, RDFTBase.RDFTransform);
+	.registerOverlayModel("RDFTransform", RDFTBase.RDFTransform);
+}
+
+function processPreferences() {
+	/*
+	 *  Process OpenRefine Preference Store...
+	 *
+	 *  NOTE: We have limited use for these preferences in this Server-Side
+	 *  controller.js code.  We use this opportunity to simple check and report
+	 *  on the preferences related to this extension.
+	 */
+	var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
+	if (prefStore != null) {
+		// Verbosity...
+		var prefVerbosity = prefStore.get('RDFTransform.verbose');
+		if (prefVerbosity == null) {
+			prefVerbosity = prefStore.get('verbose');
+		}
+		if (prefVerbosity != null) {
+			var iVerbosity = parseInt(prefVerbosity);
+			if ( ! isNaN(iVerbosity) ) {
+				RDFTransformPrefs["Verbosity"] = iVerbosity;
+			}
+		}
+		// Export Limit...
+		var prefExportLimit = prefStore.get('RDFTransform.exportLimit');
+		if (prefExportLimit != null) {
+			var iExportLimit = parseInt(prefExportLimit);
+			if ( ! isNaN(iExportLimit) ) {
+				RDFTransformPrefs["ExportLimit"] = iExportLimit;
+			}
+		}
+		// Debug...
+		var prefDebug = prefStore.get('RDFTransform.debug');
+		if (prefDebug == null) {
+			prefDebug = prefStore.get('debug');
+		}
+		if (prefDebug != null) {
+			var bDebug = (prefDebug.toLowerCase() == 'true');
+			logger.info("DebugMode Test: " + prefDebug + " " + bDebug);
+			RDFTransformPrefs.DebugMode = bDebug;
+		}
+
+		//
+		// Output RDFTranform Preferences...
+		//
+		// NOTE: This really sucks because this server-side JavaScript is extremely limited!!!
+		//		1. Looping structure don't exist!
+		//		2. JSON object does not exist, so no stringify()!
+		// In other words, we can't automate the processing of the RDFTransformPrefs list, but
+		// must call out each pref by key explicitly.
+		var strPrefs = "Preferences: { ";
+		var strPref;
+		strPref = "Verbosity";
+		strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
+		strPref = "ExportLimit";
+		strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
+		strPref = "DebugMode";
+		strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " }";
+		logger.info(strPrefs);
+	}
+	else {
+		logger.info("Preferences not yet loaded!");
+	}
+}
+
+/*
+ * Initialization Function for RDF Transform Extension.
+ */
+function init() {
+	logger.info("Initializing RDFTransform Extension...");
+	logger.info("  Ext Mount Point: " + module.getMountPoint() );
+
+	registerClientSide();
+	registerServerSide();
+	processPreferences();
 }
 
 /*
  * Process Function for external command requests.
  */
 function process(path, request, response) {
-	
+
     var method = request.getMethod();
 
-	var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
-	if (prefStore != null) {
-		if ( prefStore.get('debug') == 'true' ) {
-			logger.info('Receiving request by ' + method + ' for "' + path + '"');
-			logger.info('Request: ' + request);
-		}
+	if ( RDFTransformPrefs.DebugMode ) {
+		logger.info('DEBUG: Receiving request by ' + method + ' for "' + path + '"\n' +
+					'       Request: ' + request);
 	}
 
-	// RDF Transform does not have any external process requests,
-	// so this should never be executed.
-
+	//
 	// Analyze path and handle this request...
+	//
 
 	if (path == "" || path == "/") {
 		var context = {};
 		//
-		// Here's how to pass things into the .vt templates...
+		// Here's how to pass things into the .vt templates:
+		//   context.someList = ["Superior","Michigan","Huron","Erie","Ontario"];
+		//   context.someString = "foo";
+		//   context.someInt = RefineBase.sampleExtension.SampleUtil.stringArrayLength(context.someList);
 		//
-		// context.someList = ["Superior","Michigan","Huron","Erie","Ontario"];
-		// context.someString = "foo";
-		// context.someInt = Packages.com.google.refine.sampleExtension.SampleUtil.stringArrayLength(context.someList);
-		context.RDFTransform_protocol = request.url.protocol;
-		context.RDFTransform_host = request.url.host;
-		context.RDFTransform_path = request.url.pathname;
-		context.RDFTransform_search = request.url.search;
-		context.RDFTransform_href = request.url.href;
+		//context.RDFTransform_protocol = request.url.protocol;
+		//context.RDFTransform_host = request.url.host;
+		//context.RDFTransform_path = request.url.pathname;
+		//context.RDFTransform_search = request.url.search;
+		//context.RDFTransform_href = request.url.href;
 
-		send(request, response, "index.vt", context);
+		//var paramsReq = new Packages.java.util.Properties();
+		//paramsReq.put( "uri",    request.getRequestURI() );
+		//paramsReq.put( "path",   request.getPathInfo() );
+		//paramsReq.put( "host",   request.getServerName() );
+		//paramsReq.put( "port",   request.getServerPort() );
+		//paramsReq.put( "prot",   request.getProtocol() );
+		//paramsReq.put( "scheme", request.getScheme() );
+		//paramsReq.put( "method", request.getMethod() );
+
+		var paramsReq = {};
+		paramsReq.uri    = request.getRequestURI();
+		paramsReq.path   = request.getPathInfo();
+		paramsReq.host   = request.getServerName();
+		paramsReq.port   = request.getServerPort();
+		paramsReq.prot   = request.getProtocol();
+		paramsReq.scheme = request.getScheme();
+		paramsReq.method = request.getMethod();
+		context.RDFTRequest = paramsReq;
+
+		send(request, response, "website/index.html", context);
     }
 }
 

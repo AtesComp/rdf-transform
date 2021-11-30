@@ -7,23 +7,21 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.app.ApplicationContext;
+import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.RDFTransform;
-import com.google.refine.rdf.Util;
-
 import com.google.refine.model.Project;
 
 public class SaveBaseIRICommand extends RDFTransformCommand {
 
-    public SaveBaseIRICommand(ApplicationContext context) {
-		super(context);
+    public SaveBaseIRICommand() {
+		super();
 	}
 
 	@Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( !hasValidCSRFToken(request) ) {
-            respondCSRFError(response);
+        if ( ! this.hasValidCSRFToken(request) ) {
+            SaveBaseIRICommand.respondCSRFError(response);
             return;
         }
         try {
@@ -34,17 +32,18 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
             	baseIRI = Util.buildIRI(strIRI);
             }
             catch (RuntimeException ex) {
-            	respondException(response, ex);
+            	SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
             	return;
             }
-            RDFTransform.getRDFTransform( this.getContext(), theProject ).setBaseIRI(baseIRI);
+            RDFTransform.getRDFTransform(theProject).setBaseIRI(baseIRI);
 
             theProject.getMetadata().updateModified();
-
-            respond(response, "OK", "Base IRI saved");
         }
         catch (Exception ex) {
-            respondException(response, ex);
+            SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
+            return;
         }
+
+        SaveBaseIRICommand.respondJSON(response, CodeResponse.ok);
     }
 }

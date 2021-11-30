@@ -1,4 +1,4 @@
 RewriteEngine On
 RewriteBase /
 RewriteCond %{REQUEST_URI} !/(robots\.txt|favicon\.ico|style\.css|rdf-transform\.css|.*\.js|images/.*|files/.*)$
-RewriteRule .* index.php
+RewriteRule .*

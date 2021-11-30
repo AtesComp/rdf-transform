@@ -2,23 +2,25 @@
   <div class="dialog-header" bind="dialogHeader"></div>
   <div class="grid-layout layout-full dialog-body" bind="dialogBody">
     <div bind="message">
-      <div></div>
-    </div> <!-- ./message -->
+      <!-- message -->
+    </div>
     <table width="100%">
       <tr>
-        <td bind="rdf_transform_prefix_pre"></td>
-        <td style="padding-bottom:4px"> <input type="text" bind="prefix" size="4" /></td>
+        <td bind="rdf_transform_prefix_prefix"></td>
+        <td style="padding-bottom:4px">
+          <input type="text" bind="prefix" size="4" />
+        </td>
       </tr>
       <tr>
-        <td bind="rdf_transform_prefix_iri"></td>
+        <td bind="rdf_transform_prefix_namespace"></td>
         <td style="padding-bottom:4px">
-            <input type="text" bind="iri" size="32" />
-            <div class="rdf-transform-prefix-note" bind="iri_note"></div>
+            <input type="text" bind="namespace" size="32" />
+            <div class="rdf-transform-prefix-note" bind="namespace_note"></div>
         </td>
       </tr>
     </table>
     <div bind="fetching_options_table">
-      <fieldset class="rdf-reconcile-fieldset">
+      <fieldset class="rdf-transform-prefix-fieldset">
         <legend><span bind="rdf_transform_prefix_voc"></span></legend>
         <table>
           <tr>
@@ -38,10 +40,10 @@
               <input type="radio" bind="upload_file_radio" value="file" name="vocab_fetch_method" />
               <span bind="rdf_transform_prefix_imp"></span>
               <form id="file-upload-form" bind="file_upload_form" enctype="multipart/form-data">
-                <input type="hidden" id="vocab-hidden-prefix" name="vocab-prefix" />
-                <input type="hidden" id="vocab-hidden-iri" name="vocab-iri" />
-                <input type="hidden" id="vocab-hidden-project" name="project" />
-                <table class="rdf-indented-table" bind="upload_file_table" id="upload_file_table">
+                <input type="hidden" id="vocab-project" name="vocab_project" />
+                <input type="hidden" id="vocab-prefix" name="vocab_prefix" />
+                <input type="hidden" id="vocab-namespace" name="vocab_namespace" />
+                <table class="rdf-transform-indented-table" id="upload-file-table" bind="upload_file_table">
                   <tr>
                     <td bind="rdf_transform_prefix_file"></td>
                     <td style="padding-bottom:4px">
@@ -53,10 +55,16 @@
                     <td style="padding-bottom:4px">
                       <select disabled="disabled" name="file_format" class="upload_file_inputs">
                         <option value="auto-detect" bind="rdf_transform_prefix_auto"></option>
-                        <option value="TTL" bind="rdf_transform_prefix_turtle"></option>
                         <option value="RDF/XML" bind="rdf_transform_prefix_rdfxml"></option>
+                        <option value="TTL" bind="rdf_transform_prefix_turtle"></option>
                         <option value="N3" bind="rdf_transform_prefix_n3"></option>
                         <option value="NTRIPLE" bind="rdf_transform_prefix_ntriple"></option>
+                        <option value="JSON-LD" bind="rdf_transform_prefix_jsonld"></option>
+                        <option value="NQUADS" bind="rdf_transform_prefix_nquads"></option>
+                        <option value="RDF/JSON" bind="rdf_transform_prefix_rdfjson"></option>
+                        <option value="TRIG" bind="rdf_transform_prefix_trig"></option>
+                        <option value="TRIX" bind="rdf_transform_prefix_trix"></option>
+                        <option value="BINARY" bind="rdf_transform_prefix_binary"></option>
                       </select>
                     </td>
                   </tr>
@@ -71,6 +79,6 @@
   <div class="dialog-footer" bind="dialogFooter">
     <button class="button" bind="buttonOK"></button>
     <button class="button" bind="buttonCancel"></button>
-    <button class="button" bind="buttonAdvanced" id="button_advanced_options"></button>
+    <button class="button" id="button-advanced-options" bind="buttonAdvanced"></button>
   </div>
 </div>

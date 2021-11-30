@@ -147,12 +147,18 @@ p.big {
     margin: 0.6em 0 0.1em -0.05em;
 }
 #title p {
-    margin-left: 460px;
-    padding-left: 3.2em;
+    /*margin-left: 460px;*/
+    /*padding-left: 3.2em;*/
 }
 
 #screenshot {
     float: left;
+    width: 32em;
+    margin-top: 0em;
+}
+#screenshot img {
+    width: 100%;
+    height: auto;
 }
 
 #content {
@@ -164,13 +170,13 @@ p.big {
 
 #getting-started {
     float: left;
-    width: 33em;
+    width: 32em;
 }
 
 #news {
     float: left;
     margin-left: 3em;
-    width: 17em;
+    width: 31em;
 }
 
 #supporters {
@@ -305,7 +311,7 @@ small.date {
     padding: 0 0 0 1.4em;
 }
 
-#main.centrecol {
+#main.centercol {
     margin-left: 13.5em;
 }
 #main big {

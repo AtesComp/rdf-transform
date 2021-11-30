@@ -12,7 +12,7 @@
  *	RDF transform of a given element (subject, property, or object) selected in the RDF Transform
  *  editor.  However, it does harness the fundamental dialog display used by the
  *  ExpressionPreviewDialog.Widget.
- * 
+ *
  ****************************************************************************************************/
 
 /*
@@ -23,37 +23,50 @@
  *  editor.
  */
 class RDFDataTableView {
-	#strBaseIRI;
-	#isIRI;
 	#strTitle;
+	#strBaseIRI;
+	#bIsResource; // Resource OR Literal
+	#strPrefix;
 
-	constructor(baseIRI, isIRI) {
+	constructor(baseIRI, bIsResource, strPrefix) {
+		this.#strTitle =
+			( bIsResource ?
+				$.i18n('rdft-dialog/preview-iri-val') :
+				$.i18n('rdft-dialog/preview-lit-val') );
 		this.#strBaseIRI = baseIRI;
-		this.#isIRI = isIRI;
-		this.#strTitle = ( isIRI ? $.i18n('rdft-dialog/preview-iri-val') :
-								   $.i18n('rdft-dialog/preview-lit-val') );
-	}
-
-	getBaseIRI() {
-		return this.#strBaseIRI;
+		this.#bIsResource = bIsResource;
+		this.#strPrefix = strPrefix;
 	}
 
 	getTitle() {
 		return this.#strTitle;
 	}
 
-	isIRI() {
-		return this.#isIRI;
+	getBaseIRI() {
+		return this.#strBaseIRI;
 	}
 
-	preview(objColumn, strExpression, isRowNumberCell, onDone) {
+	isResource() {
+		return this.#bIsResource;
+	}
+
+	getPrefix() {
+		return this.#strPrefix;
+	}
+
+	preview(objColumn, strExpression, bIsIndex, onDone) {
 		// Use OpenRefine's DataTableView.sampleVisibleRows() to preview the working RDFTransform on a sample
 		// of the parent data...
 		//	 FROM: OpenRefine/main/webapp/modules/core/scripts/views/data-table/data-table-view.js
-		const rows = DataTableView.sampleVisibleRows(objColumn);
-	
+		//   NOTE: On objColumn === null, just return the rows (no column information)
+		const iRowLimit = DataTableView.sampleVisibleRows(objColumn);
+		var strColumnName = ""; // ...for row index processing (missing column information)
+		if (objColumn !== null) {
+			strColumnName = objColumn.columnName
+		}
+
 		const dlgRDFExpPreview = new RDFExpressionPreviewDialog(this, onDone);
-		dlgRDFExpPreview.preview(objColumn.columnName, rows, strExpression, isRowNumberCell);
+		dlgRDFExpPreview.preview(strColumnName, iRowLimit, strExpression, bIsIndex);
 	}
 }
 
@@ -84,37 +97,30 @@ class RDFDataTableView {
  *         $.extend(ComboObj.prototype, OldObj.prototype, NewObj.prototype);
  *		 This creates a new ComboObj with proper overwrites, in order, with the OldObj and NewObj.
  *       The native "class" inheritance does this without the need for the 3rd object.
- * 
+ *
  *       The optional merge recursive (or "deep copy") boolean should be used to fully merge
  *       objects:
  *         $.extend(true, ComboObj.prototype, OldObj.prototype, NewObj.prototype);
  *
  * NOTE: As ExpressionPreviewDialog DOES NOT have any meaningful prototypes (except constructor
  *       which we don't need), ExpressionPreviewDialog is not required and
- *       RDFExpressionPreviewDialog is written as an independent class.
- * 
- * NOTE: OpenRefine's ExpressionPreviewDialog.Widget is extended by our RDFWidget as
- *       there are meaningful prototype functions from the parent object that should be maintained.
- *		 i.e., RDFWidget extends ExpressionPreviewDialog.Widget
- *		 i.e., RDFWidget subclassOf ExpressionPreviewDialog.Widget
+ *       RDFExpressionPreviewDialog is written as an independent class.  However, OpenRefine's
+ *       ExpressionPreviewDialog.Widget is required and extended by our RDFExpPreviewDialogWidget.
+ *       Then, there are meaningful prototype functions from ExpressionPreviewDialog.Widget
+ *       that should be maintained.
+ *	     i.e., RDFExpPreviewDialogWidget extends ExpressionPreviewDialog.Widget
+ *	     i.e., RDFExpPreviewDialogWidget subclassOf ExpressionPreviewDialog.Widget
  *
- * OLD CODE:
- *       // ERRONIOUS Merge by $.extend()
- *       //$.extend(true, RDFWidget.prototype, ExpressionPreviewDialog.Widget.prototype);
- *       // CORRECTED Merge by $.extend()
- *       $.extend(true, RDFCopyWidget.prototype,
- *                      ExpressionPreviewDialog.Widget.prototype),
- *                      RDFWidget.prototype);
- * 
- * MOVED: Moved code to global ExpressionPreviewDialog_WidgetCopy...
- *          See the ExpressionPreviewDialog_WidgetCopy object and RDFWidget class below.
- *          Changed $.extend() to Object.create() for copy.
- *          Use class 'extends".
- * 
+ * 	     The global ExpressionPreviewDialog_WidgetCopy Object manages transition to
+ *       RDFExpPreviewDialogWidget.  See the ExpressionPreviewDialog_WidgetCopy object and
+ *       RDFExpPreviewDialogWidget class below.
+ *           Uses Object.create() for copy.
+ *           Uses 'extends' class keyword.
+ *
  ****************************************************************************************************/
 
 /*
- *  CLASS RDFDataTableView
+ *  CLASS RDFExpressionPreviewDialog
  *
  *	This class is essentially a copy of OpenRefine's ExpressionPreviewDialog modified to
  *	preview the RDF transform of a given element (subject, property, or object) selected
@@ -130,6 +136,10 @@ class RDFExpressionPreviewDialog {
 	#level;
 	#previewWidget;
 
+	#iBaseFrameHeight;
+	#iDiffFrameHeight;
+	#iLastDiffFrameHeight;
+
 	static #generateWidgetHTMLforGREL() {
 		//
 		// As per OpenRefine's ExpressionPreviewDialog.generateWidgetHTML() with our modifications....
@@ -138,16 +148,17 @@ class RDFExpressionPreviewDialog {
 		// Load OpenRefine's Expression Preview Dialog...
 		var html = DOM.loadHTML("core", "scripts/dialogs/expression-preview-dialog.html");
 
-		// ...and set it for GREL only...
+		// ...and set it for the current default expression language...
 		var languageOptions = [];
-		var info = theProject.scripting[RDFTransform.strDefaultExpressionLanguage];
+		var info = theProject.scripting[RDFTransform.gstrDefaultExpLang];
 		languageOptions.push(
-			'<option value="' + RDFTransform.strDefaultExpressionLanguage + '">' +
+			'<option value="' + RDFTransform.gstrDefaultExpLang + '">' +
 			info.name +
 			'</option>'
 		);
+		html = html.replace( "$LANGUAGE_OPTIONS$", languageOptions.join("") );
 
-		return html.replace("$LANGUAGE_OPTIONS$", languageOptions.join(""));
+		return html;
 	}
 
 	constructor(dtvManager, onDone)
@@ -159,16 +170,19 @@ class RDFExpressionPreviewDialog {
 		this.#onDone = onDone;
 
 		this.#frame = DialogSystem.createDialog();
+		this.#frame
+			.addClass("dialog-frame")
+			.addClass("rdf-transform-exp-preview-frame");
 
-		var header = $('<div></div>').addClass("dialog-header");
-		var body   = $('<div></div>').addClass("dialog-body");
-		var footer = $('<div></div>').addClass("dialog-footer");
+		var header = $('<div />').addClass("dialog-header");
+		var body   = $('<div />').addClass("dialog-body");
+		var footer = $('<div />').addClass("dialog-footer");
 		var html   = $( RDFExpressionPreviewDialog.#generateWidgetHTMLforGREL() );
 		this.#elements = DOM.bind(html);
 
 		// Substitute our button for OpenRefine's ExpressionPreviewDialog button...
-		var buttonOK = $('<button></button>').addClass('button').text( $.i18n('rdft-buttons/ok') );
-		buttonOK.click(
+		var buttonOK = $('<button />').addClass('button').text( $.i18n('rdft-buttons/ok') );
+		buttonOK.on("click",
 			() => {
 				DialogSystem.dismissUntil(this.#level - 1);
 				this.#onDone( this.#previewWidget.getExpression(true) );
@@ -176,40 +190,25 @@ class RDFExpressionPreviewDialog {
 		);
 
 		// Substitute our button for OpenRefine's ExpressionPreviewDialog button...
-		var buttonCancel = $('<button></button>').addClass('button').text( $.i18n('rdft-buttons/cancel') );
-		buttonCancel.click( () => {
-				DialogSystem.dismissUntil(this.#level - 1);
-			}
+		var buttonCancel = $('<button />').addClass('button').text( $.i18n('rdft-buttons/cancel') );
+		buttonCancel.on("click",
+			() => { DialogSystem.dismissUntil(this.#level - 1); }
 		);
 
 		header.text( this.#dtvManager.getTitle() );
 
-		html.appendTo(body);
+		body.append(html);
 
-		buttonOK.appendTo(footer);
-		buttonCancel.appendTo(footer);
+		footer.append(buttonOK, buttonCancel);
 
-		footer.css(
-			{	"position" : "absolute",
-			 	"bottom" : "0px" }
-		);
-
-		header.appendTo(this.#frame);
-		body.appendTo(this.#frame);
-		footer.appendTo(this.#frame);
+		this.#frame
+			.append(header, body, footer)
+			.css({ "minWidth" : "700px" })
+			.resizable();
 	}
 
-	preview(strColumnName, rows, strExpression, isRowNumberCell, ) {
-		this.#frame
-		.css( { "minWidth" : "700px" } )
-		.resizable()
-		.position(
-		//	{	my: "center center",
-		//		at: "center center",
-		//		of: "#parent"	}
-		);
-
-		// TODO: Language...
+	preview(strColumnName, iRowLimit, strExpression, bIsIndex) {
+		// TODO: Fix for Language on these strings...
         this.#elements.or_dialog_preview.text( "Preview" );
         this.#elements.or_dialog_history.text( "History" );
         this.#elements.or_dialog_help.text( "Help" );
@@ -220,11 +219,34 @@ class RDFExpressionPreviewDialog {
 
 		// Substitute our widget for OpenRefine's ExpressionPreviewDialog widget...
 		this.#previewWidget =
-			new RDFWidget(
-				this.#dtvManager.getBaseIRI(), strColumnName, rows, strExpression,
-				this.#dtvManager.isIRI(), isRowNumberCell, this.#elements
+			new RDFExpPreviewDialogWidget(
+				this.#dtvManager.getBaseIRI(), strColumnName, iRowLimit, strExpression,
+				this.#dtvManager.isResource(), this.#dtvManager.getPrefix(),
+				bIsIndex, this.#elements
 			);
 		this.#previewWidget.preview();
+
+		const iFrameHeight = this.#frame.height();
+
+		this.#frame.css({ "minHeight" : "" + iFrameHeight + "px" });
+		this.#iBaseFrameHeight = iFrameHeight;
+        this.#iLastDiffFrameHeight = iFrameHeight;
+        this.#iDiffFrameHeight = 0;
+
+        // Hook up resize...
+		this.#frame
+			.on("resize",
+				(evt, ui) => {
+					this.#iDiffFrameHeight = ui.size.height - this.#iBaseFrameHeight;
+					// If there is a detected change...
+					if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
+						// ...update the tabs...
+						this.#previewWidget.resize(this.#iDiffFrameHeight);
+						this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
+					}
+				} 
+			);
+
 	}
 }
 
@@ -232,10 +254,10 @@ class RDFExpressionPreviewDialog {
  * Object ExpressionPreviewDialog_WidgetCopy
  *
  * Copy ExpressionPreviewDialog.Widget for local modification.
- * 
+ *
  * ExpressionPreviewDialog.Widget DOES NOT have a constructor per se, so create an intermediate
  * object with a proper constructor to inherit and overwrite.
- * 
+ *
  * ExpressionPreviewDialog.Widget has the following prototype functions:
  *   getExpression = function(commit)
  *   _getLanguage = function()
@@ -250,18 +272,18 @@ class RDFExpressionPreviewDialog {
  *   _prepareUpdate = function(params)
  *   _renderPreview = function(expression, data)
  */
-function ExpressionPreviewDialog_WidgetCopy() {};
+function ExpressionPreviewDialog_WidgetCopy() {}
 ExpressionPreviewDialog_WidgetCopy.prototype = Object.create(ExpressionPreviewDialog.Widget.prototype);
 ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDialog_WidgetCopy;
 
 /*
- *  CLASS RDFWidget
+ *  CLASS RDFExpPreviewDialogWidget
  *
  *	This class inherits from OpenRefine's ExpressionPreviewDialog.Widget modified to
  *	preview the RDF transform of a given element (subject, property, or object) selected
  *	in the RDF Transform editor.
  */
- class RDFWidget extends ExpressionPreviewDialog_WidgetCopy {
+ class RDFExpPreviewDialogWidget extends ExpressionPreviewDialog_WidgetCopy {
 	//
 	// As per OpenRefine's ExpressionPreviewDialog.Widget with our modifications...
 	//
@@ -276,43 +298,71 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//   this._timerID    MAINTAIN - used by parent functions we call
 	// --------------------------------------------------------------------------------
 
+	//
+	// Variables
+	// --------------------
+	//
+	// NOTE: Underscore (_) variables are holdovers from the older OpenRefine class
+	//      and are required for proper processing using the parent functions.
+	//
+	// --------------------------------------------------------------------------------
+
+	//
+	// Maintained OLD Variables:
+	//
 	// Public...
 	expression;
-
 	// Private...
-	// Underscore (_) variables are holdovers from the OpenRefine object and are required
-	// for proper processing using the parent functions
 	_elmts;
-	#isIRI;
-	#isRowNumberCell;
-	#baseIRI;
-	#columnName;
-	#rowIndices;
-	#rowValues;
 	_timerID;
-	_tabContentWidth;
+	//_tabContentWidth;
+
+	//
+	// New or Mod-able Dialog Variables:
+	//
+	// Private...
+	#bIsResource; // Resource OR Literal
+	#strPrefix;
+	#bIsIndex;
+	#strBaseIRI;
+	#strColumnName;
+	#aiRowIndices;
+	#astrRowValues;
+
+	#iBaseTabHeight;
+
+	//
+	// Methods
+	// --------------------
+	//
+	// NOTE: Underscore (_) methods are holdovers from the older OpenRefine class
+	//      and are required for proper processing using the parent functions.
+	//
+	// --------------------------------------------------------------------------------
 
 	//
 	// Method constructor(): OVERRIDE Base
 	//
-	constructor(strBaseIRI, strColumnName, rows, strExpression,	isIRI, isRowNumberCell, elements)
+	constructor(strBaseIRI, strColumnName, rows, strExpression, bIsResource,
+		strPrefix, bIsIndex, elements)
 	{
-		super(); // ...empty constructor to get "this"
+		super(); // ...parent constructor to get "this"
 
-		this.#baseIRI = strBaseIRI;
-		this.#columnName = strColumnName;
-		this.#rowIndices = rows.rowIndices;
-		this.#rowValues = rows.values;
+		this.#strBaseIRI = strBaseIRI;
+		this.#strColumnName = strColumnName;
+		this.#aiRowIndices = rows.rowIndices;
+		this.#astrRowValues = rows.values;
 
 		this.expression = strExpression;
-		if (! strExpression ) {
-			this.expression = RDFTransform.strDefaultExpression; //'value';
+		if (strExpression === null || strExpression.length === 0 ) {
+			this.expression = RDFTransform.gstrDefaultExpCode; // ...use default expression
 		}
 
-		this.#isIRI = isIRI;
-		this.#isRowNumberCell = isRowNumberCell;
+		this.#bIsResource = bIsResource;
+		this.#strPrefix = strPrefix;
+		this.#bIsIndex = bIsIndex;
 		this._elmts = elements;
-		
+
 		this._timerID = null; // ...used by _scheduleUpdate()
 
 		// NOT REQUIRED: GREL is currently the only language available for RDFTransform
@@ -325,17 +375,18 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//);
 
 		this._elmts.expressionPreviewTextarea
-		.val(this.expression)
-		.keyup( () => {	this._scheduleUpdate();	} )
-		.select()
-		.focus();
+			.val(this.expression)
+			.keyup( () => {	this._scheduleUpdate();	} )
+			.select()
+			.focus();
 
-		this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
+		//this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
 
 		// Skip unneeded Widget or_dialog_* elements
 
 		// Reset history to default display value...
 		$("#expression-preview-tabs-history").attr("display", "");
+
 		// Reset help to default display value...
 		$("#expression-preview-tabs-help").attr("display", "");
 	}
@@ -344,6 +395,19 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		this.update();
 		this._renderExpressionHistoryTab();
 		this._renderHelpTab();
+
+		this.#iBaseTabHeight = this._elmts.expressionPreviewPreviewContainer.height();
+		const objMinHeight = { "minHeight" : "" + this.#iBaseTabHeight + "px" };
+		this._elmts.expressionPreviewPreviewContainer.css(objMinHeight);
+		this._elmts.expressionPreviewHistoryContainer.css(objMinHeight);
+		this._elmts.expressionPreviewHelpTabBody.css(objMinHeight);
+	}
+
+	resize(iDiffHeight) {
+		const iDiff = this.#iBaseTabHeight + iDiffHeight;
+		this._elmts.expressionPreviewPreviewContainer.height(iDiff);
+		this._elmts.expressionPreviewHistoryContainer.height(iDiff);
+		this._elmts.expressionPreviewHelpTabBody.height(iDiff);
 	}
 
 	//
@@ -353,15 +417,15 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		// As per OpenRefine's ExpressionPreviewDialog.Widget.update() with our modifications...
 		//
-		this.expression =
-			this._elmts.expressionPreviewTextarea[0].value.trim();
+		this.expression = this._elmts.expressionPreviewTextarea[0].value.trim();
 		var params = {
 			"project"    : theProject.id,
 			"expression" : this.expression,
-			"rowIndices" : JSON.stringify(this.#rowIndices),
-			"isIRI"      : this.#isIRI ? "1" : "0",
-			"columnName" : this.#isRowNumberCell ? "" : this.#columnName,
-			"baseIRI"    : this.#baseIRI
+			"rowIndices" : JSON.stringify(this.#aiRowIndices),
+			"isIRI"      : this.#bIsResource ? "1" : "0",
+			"prefix"     : this.#strPrefix === null ? "" : this.#strPrefix,
+			"columnName" : this.#bIsIndex ? "" : this.#strColumnName,
+			"baseIRI"    : this.#strBaseIRI
 		};
 		//this._prepareUpdate(params); // ...empty function, not overridden
 
@@ -384,10 +448,10 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	// Method _renderPreview(): OVERRIDES base function
 	//
 	_renderPreview(data) {
-		const bIndices = ( typeof data.indicies !== 'undefined' && data.indicies != null );
-		const bResults = ( typeof data.results !== 'undefined' && data.results != null );
-		const bAbsolutes = ( this.#isIRI && typeof data.absolutes !== 'undefined' && data.absolutes != null);
-		console.log(data);
+		const bIndices = ( data.indicies != null );
+		const bResults = ( data.results != null );
+		const bAbsolutes = ( this.#bIsResource && data.absolutes != null );
+
 		//
 		// Process status...
 		//
@@ -395,22 +459,22 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		var statusMessage;
 		statusElem.removeClass("error");
 		// If some error...
-		if (data.code == "error" || data.results == null) {
+		if (data.code === "error" || data.results == null) {
 			// General error...
 			statusElem.addClass("error");
 			statusMessage = $.i18n('rdft-data/internal-error');
-			// Defined error... 
+			// Defined error...
 			if (data.message) {
 				// Parsing error...
-				if (data.type == "parser") {
+				if (data.type === "parser") {
 					statusMessage = data.message;
 				}
 				// Absolute IRI error...
-				else if (data.type == "absolute") {
+				else if (data.type === "absolute") {
 					statusMessage = "ABS: " + data.message;
 				}
 				// Other error...
-				else if (data.type == "other") {
+				else if (data.type === "other") {
 					statusMessage = "Other: " + data.message;
 				}
 			}
@@ -424,21 +488,25 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		// Set up data table...
 		//
-		this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
+		//this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
 		// Let the "expressionPreviewPreviewContainer" control the width of the table...
 		//var container = this._elmts.expressionPreviewPreviewContainer.empty().width(this._tabContentWidth);
-		var container = this._elmts.expressionPreviewPreviewContainer.empty();
+		this._elmts.expressionPreviewPreviewContainer.empty();
 
 		// Create data table...
-		var table = $('<table width="100%" height="100%"></table>').appendTo(container)[0];
+		/** @type {HTMLTableElement} */
+		// @ts-ignore
+		var table = $('<table width="100%" height="100%"></table>');
+		this._elmts.expressionPreviewPreviewContainer.append(table);
+		var tableBody = table[0];
 
 		// Create table column headings...
-		var tr = table.insertRow(0);
-		var tdValue = (this.#isRowNumberCell ? "Index" : "Value");
-		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.strIndexTitle);
+		var tr = tableBody.insertRow(0);
+		var tdValue = (this.#bIsIndex ? "Index" : "Value");
+		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.gstrIndexTitle);
 		$( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
 		$( tr.insertCell(2) ).addClass("expression-preview-heading").text("Expression");
-		if (this.#isIRI) { // ...for resources, add the IRI resolution column...
+		if (this.#bIsResource) { // ...for resources, add the IRI resolution column...
 			tdValue = $.i18n('rdft-data/table-resolved');
 			$( tr.insertCell(3) ).addClass("expression-preview-heading").text(tdValue);
 		}
@@ -446,48 +514,62 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		// Process rows (data.results) for data table...
 		//
-		var tr = null;
-		var tdElem = null;
-		for (var iIndex = 0; iIndex < this.#rowValues.length; iIndex++) {
-			// Create a row...
-			tr = table.insertRow(table.rows.length);
+		if (bResults) {
+			/** @type {HTMLTableRowElement} */
+			tr = null;
+			var tdElem = null;
+			// Loop on "data.results" as that is the primary reason to process...
+			//   NOTE: Since "bResults", then "data.results" have a good index length.
+			for (var iIndex = 0; iIndex < data.results.length; iIndex++) {
+				// Create a row...
+				tr = tableBody.insertRow(tableBody.rows.length);
 
-			// Row is up to 4 cells...
-			// 0          | 1          | 2          | 3          |
-			// -----------+------------+------------+------------|
-			// Row/Rec    | Raw Row    | Expression | Abs IRI of |
-			// Index      | Index Value|  Result    | Expression |
-			// (1 based)  | (0 based)  |            | (Optional) |
-			// -----------+------------+------------+------------'
+				// Row is up to 4 cells...
+				// 0           | 1           | 2           | 3 (Optional)|
+				// ------------+-------------+-------------+-------------|
+				// Row/Rec     | Raw Row     | Expression  | Abs IRI of  |
+				// Index       | Index Value |  Result     | Expression  |
+				// (1 based)   | (0 based)   |             |             |
+				// ------------+-------------+-------------+-------------'
 
-			// Populate row index...
-			tdElem = $( tr.insertCell(0) ); //.attr("width", "1%");
-			if (bIndices) {
-				tdElem.html( String( parseInt( data.indicies[iIndex] ) + 1 ) + "." );
-			}
+				// Populate row index...
+				tdValue = (iIndex + 1) + "?";
+				if (bIndices) {
+					tdValue = String( parseInt( data.indicies[iIndex] ) + 1 ) + ".";
+				}
+				tdElem = $( tr.insertCell(0) ); //.width("1%");
+				tdElem.html( tdValue );
 
-			// Populate expression value...
-			tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
-			if (bIndices) {
-				tdElem.html( data.indicies[iIndex] );
-			}
+				// Populate row index or raw value for expression...
+				tdValue = "";
+				if (bIndices && this.#bIsIndex) {
+					// Row index "column"...
+					tdValue = data.indicies[iIndex];
+				}
+				else {
+					// Row values (raw) for real column...
+					tdValue = this.#astrRowValues[iIndex];
+				}
+				tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
+				tdElem.html( tdValue );
 
-			// Populate expression result...
-			if (bResults) {
+				// Populate results for expression evaluation...
 				tdElem = $( tr.insertCell(2) ).addClass("expression-preview-value");
 				tdValue = data.results[iIndex];
 				this.#renderValue(tdElem, tdValue);
 
-				// Populate Absolute IRI of expression result...
+				// Populate Absolute IRI of results, if applicable...
 				if (bAbsolutes) {
-					var tdElem = $( tr.insertCell(3) ).addClass("expression-preview-value");
-					var tdValue = data.absolutes[iIndex];
+					tdElem = $( tr.insertCell(3) ).addClass("expression-preview-value");
+					tdValue = data.absolutes[iIndex];
 					//if (!tdValue) {
 					//	tdElem.css( {"font-style": "italic"} );
 					//	tdValue = "Unresolved IRI";
 					//}
-					//console.log(tdValue);
-					//console.log( $.isPlainObject(tdValue) );
+					/* DEBUG
+					console.log(tdValue);
+					console.log( $.isPlainObject(tdValue) );
+					*/
 					this.#renderValue(tdElem, tdValue);
 				}
 			}
@@ -499,10 +581,12 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	#renderValue(tdElem, tdValue) {
 		// Does a value exist?
-		if (tdValue !== null && tdValue !== undefined) {
+		if (tdValue != null) {
 			// Is the value an error message? (value created as an object {"message":"..."})
 			if ( $.isPlainObject(tdValue) ) {
-				//console.log(tdValue);
+				/* DEBUG
+				console.log(tdValue);
+				*/
 				$('<span></span>')
 				.addClass("expression-preview-special-value")
 				.text($.i18n('rdft-data/error') + ": " + tdValue.message)

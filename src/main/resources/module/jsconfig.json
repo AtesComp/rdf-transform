@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module"  : "ESNext",
+    "target"  : "ESNext",
+    "checkJs" : true,
+    "useDefineForClassFields" : true,
+    "explainFiles": true
+  }
+}

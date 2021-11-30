@@ -1,0 +1,43 @@
+<p class="note">
+  For a detailed example and screenshots see <a href="#rdfTransformExample">RDF Transform example</a>
+</p>
+<p>
+  You can design the structure of the RDF data by creating an RDF Transform template. Then, using the
+  Export menu's RDF Transform exports, the exporter iterates through the project rows or records
+  evaluating expressions in the RDF Transform and producing an equivalent RDF subgraph for each row or
+  record. The final result is a single file containing all the subgraphs.<br />
+  All known RDF4J formats are listed in the "Export" menu.
+</p>
+<p>
+  The image below shows the main parts of a sample RDF Template.
+</p>
+<p>
+  <img src="images/rdf-transform_annotated.png" />
+</p>
+<p class="note">
+  Any applied filters on the data affect the exported RDF (i.e., exported RDF data corresponds to the
+  current visible rows or records). This feature processes RDF data with any custom subset of the data or
+  by using different transforms for different subsets of the data.
+</p>
+<p>
+  You can define multiple subject resources (i.e., multiple root nodes) as shown in the figure
+  above...and delete them if necessary.
+</p>
+<p>
+  Terms from existing vocabularies can be imported. The "Add" namespace feature provides a vocabulary importer
+  that can attempt to retrieve and index the vocabulary terms so that they can be included as autocompletion
+  entries available for class (type) and property additions. Also, by using a dump from a namespace lookup
+  site, for example <a href="http://prefix.cc">prefix.cc</a>, IRIs for popular namespaces are automatically
+  suggested.
+</p>
+<p>
+  With the "Import Template" functionality, you can recall a template previous exported via the "Export Template"
+  function.
+  BEWARE: Importing a template adds the template content to the existing Transform workspace.  Delete all your
+  Root Nodes if you want to replace the current template.
+</p>
+<p>
+  With the "Export Template" functionality, you can export a JSON file containing the RDF Transform.  The format
+  is fairly self explaining with readable key:value pairs. You can use exported templates to either process same
+  structure projects or jump start a similar project using the "Import Template" function.
+</p>

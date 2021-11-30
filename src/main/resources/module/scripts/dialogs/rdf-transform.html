@@ -4,7 +4,7 @@
   <!-- Body... -->
   <div class="dialog-body" bind="dialogBody">
     <div class="dialog-body-head" bind="dialogBodyHead">
-      <p bind="rdftDescription"></p>
+      <p><span bind="rdftDescription"></span><a href="extension/rdf-transform/website/"> See the docs.</a></p>
       <p class="rdf-transform-base-iri">
         <span class="emphasized" bind="rdftBaseIRIText"></span>
         <span bind="rdftBaseIRIValue"></span>
@@ -19,21 +19,36 @@
       </ul>
       <!-- Transform Tab... -->
       <div id="rdf-transform-tab-transform" class="tabcontent">
+        <!-- Transform Header Prefix Controls... -->
         <div class="rdf-transform-tab-header">
           <table>
             <tr>
               <td><span bind="rdftPrefixesText"></span></td>
-              <td><div class="rdf-transform-prefixes" bind="rdftEditPrefixes"></div></td>
+              <td>
+                <div class="rdf-transform-prefixes">
+                  <span bind="rdftPrefixesContainer"></span>
+                  <button class="Button" bind="buttonAddPrefix"></button>
+                  <button class="Button" bind="buttonManagePrefixes"></button>
+                </div>
+              </td>
             </tr>
           </table>
         </div>
         <!-- Transform Data... -->
-        <div class="rdf-transform-data-transform"></div>
+        <div class="rdf-transform-data-transform" bind="rdftTransformData"></div>
+        <!-- Transform Footer Buttons... -->
         <div class="rdf-transform-tab-footer">
-          <table style="width:100%">
+          <table>
             <tr>
-              <td><a href="#" bind="rdftAddRootNode"></a></td>
-              <td style="text-align:right"><a href="#" bind="rdftSaveTransform"></a></td>
+              <td>
+                <div class="rdf-transform-button-grp">
+                  <button class="Button rdf-transform-left" bind="buttonAddRootNode"></button>
+                  <!-- ...right-most item first for right aligned items... -->
+                  <button class="Button rdf-transform-right" bind="buttonSaveTransform"></button>
+                  <button class="Button rdf-transform-right" bind="buttonExpTemplate"></button>
+                  <button class="Button rdf-transform-right" bind="buttonImpTemplate"></button>
+              </div>
+              </td>
             </tr>
           </table>
         </div>
@@ -42,7 +57,7 @@
       <div id="rdf-transform-tab-preview" class="tabcontent">
         <div class="rdf-transform-tab-header" bind="rdftSampleTurtleText"></div>
         <!-- Preview Data... -->
-        <div class="rdf-transform-data-preview"></div>
+        <div class="rdf-transform-data-preview" bind="rdftPreviewData"></div>
       </div>
     </div>
   </div>

@@ -1,14 +1,14 @@
 package com.google.refine.rdf.command;
 
-import com.google.refine.ProjectManager;
-import com.google.refine.model.Project;
+//import com.google.refine.ProjectManager;
+//import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
+
 import com.google.refine.rdf.RDFTransform;
-import com.google.refine.rdf.Util;
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.vocab.SearchResultItem;
-import com.google.refine.rdf.vocab.Vocabulary;
-import com.google.refine.rdf.vocab.VocabularyIndexException;
+//import com.google.refine.rdf.model.Util;
+import com.google.refine.rdf.model.vocab.SearchResultItem;
+import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,79 +17,76 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.regex.Pattern;
 
-//import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
-//import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class SuggestTermCommand extends RDFTransformCommand {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
+	//private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
 
-	//private static Pattern patternQName = Pattern.compile("^[_a-zA-Z][-._a-zA-Z0-9]*:([_a-zA-Z][-._a-zA-Z0-9]*)?");
-	                                                      //"^((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}?"
-														  //"^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$"
-														  //"^(?!:\/\/)(?=.{1,255}$)([\p{L}\p{N}_$]{1,63}\.){1,127}[\p{L}_$][\p{L}\p{N}_$]*"
+	//private HttpServletRequest theRequest = null;
 
-	public SuggestTermCommand(ApplicationContext context) {
-		super(context);
+	public SuggestTermCommand() {
+		super();
 	}
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+		//theRequest = request;
 
-    	// Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
-    	// The "type" holds the project ID of the project to search...
-        String strProjectID = request.getParameter("type");
-    	// The "type_strict" holds the value type to search ("class" or "property")...
-        String strType = request.getParameter("type_strict");
-    	// The "prefix" holds the query search value...
-        String strQuery = request.getParameter("prefix");
+		// Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
+    	// The "project" holds the project ID of the project to search...
+		String strProjectID = request.getParameter("project");
+    	// The "type" holds the value type to search ("class" or "property")...
+        String strType = request.getParameter("type");
+    	// The "prefix" holds the prefix of the query search value...
+        String strQueryPrefix = request.getParameter("prefix");
 
         response.setHeader("Content-Type", "application/json");
 		Writer writerBase = response.getWriter();
         JsonGenerator theWriter = ParsingUtilities.mapper.getFactory().createGenerator(writerBase);
 
         theWriter.writeStartObject();
-        theWriter.writeStringField("prefix", strQuery);
 
-        List<SearchResultItem> listResults;
-        if (strType != null && strType.strip().equals("class")) {
-            listResults =
-				getContext().
-					getVocabularySearcher().
-						searchClasses(strQuery, strProjectID);
-        }
-		else { // "property"
-            listResults =
-				getContext().
-					getVocabularySearcher().
-						searchProperties(strQuery, strProjectID);
-        }
+		// NOTE: The Query Prefix is needed by the response processor on the client side.
+        theWriter.writeStringField("prefix", strQueryPrefix);
 
-        if (listResults.size() == 0) {
-            RDFTransform theTransform;
-            try {
-				theTransform =
-					RDFTransform.getRDFTransform( this.getContext(), this.getProject(request) );
+		// Get the imported vocabulary matches...
+        List<SearchResultItem> listSearchResults = null;
+		if (strType != null) {
+			if ( strType.strip().equals("class") ) {
+				listSearchResults =
+					RDFTransform.getGlobalContext().
+						getVocabularySearcher().
+							searchClasses(strQueryPrefix, strProjectID);
 			}
-			catch (VocabularyIndexException ex) {
-				logger.error("ERROR: Could not get project's RDFTransform", ex);
-				if ( Util.isVerbose(4) ) ex.printStackTrace();
-				throw new ServletException(ex);
+			else if ( strType.strip().equals("property") ) {
+				listSearchResults =
+					RDFTransform.getGlobalContext().
+						getVocabularySearcher().
+							searchProperties(strQueryPrefix, strProjectID);
 			}
-			listResults = search(theTransform, strQuery);
-        }
+		}
 
+		// Augment with the local curated namespaces vocabulary matches...
+		RDFTransform theTransform = RDFTransform.getRDFTransform( this.getProject(request) );
+		List<SearchResultItem> listVocabResults = this.search(theTransform, strQueryPrefix);
+		if (listSearchResults == null) {
+			listSearchResults = listVocabResults;
+		}
+		else {
+			listSearchResults.addAll(listVocabResults);
+		}
+
+		// Write the results...
         theWriter.writeFieldName("result");
         theWriter.writeStartArray();
-        for (SearchResultItem result : listResults) {
+        for (SearchResultItem result : listSearchResults) {
             result.writeAsSearchResult(theWriter);
         }
         theWriter.writeEndArray();
@@ -102,16 +99,9 @@ public class SuggestTermCommand extends RDFTransformCommand {
         writerBase.close();
     }
 
-	@Override
-	protected Project getProject(HttpServletRequest request)
-			throws ServletException {
-    	String strProjectID = request.getParameter("type");
-    	return ProjectManager.singleton.getProject(Long.parseLong(strProjectID));
-	}
-
-	private boolean isPrefixedQuery(String strQuery) {
+	private boolean isPrefixedIRI(String strIRI) {
 		boolean bIsPrefixed = false;
-		if (strQuery != null) {
+		if (strIRI != null) {
 			//
 			// A Prefixed Qualified Name is by definition an IRI of the form:
 			//    prefix:FQDN
@@ -143,14 +133,16 @@ public class SuggestTermCommand extends RDFTransformCommand {
 			// We really don't care!  All we need to know is whether the text up to the first ':'
 			// is a prefix for a CIRIE...
 
-			int iIndex = strQuery.indexOf(":");
-			if (iIndex > 0) { // ...we have a possible prefix (the ':' could also be in the path)...
+			int iIndex = strIRI.indexOf(":");
+			 // If we have a possible prefix but not a base IRI reference (where iIndex == 0)...
+			 // NOTE: The ':' could also be in the path
+			if (iIndex > 0) {
 				// Is there is a possible path...
 				//    iIndex + 1 = the length of strQuery to the ':' inclusive
 				//    Is there anything after...
-				if (strQuery.length() > iIndex + 1) { 
+				if (strIRI.length() > iIndex + 1) {
 					try {
-						ParsedIRI tempIRI = new ParsedIRI(strQuery);
+						ParsedIRI tempIRI = new ParsedIRI(strIRI);
 						// ...it parsed as an IRI...
 						// If a scheme is present, but a host is not present...
 						if (tempIRI.getScheme() != null && tempIRI.getHost() == null) {
@@ -166,30 +158,53 @@ public class SuggestTermCommand extends RDFTransformCommand {
 						// ...continue: strQuery is NOT an IRI...yet...
 					}
 				}
-				else { // ...we have a string "...:", so treat it as a possible prefix...
-					bIsPrefixed = true; // ...accept it
+				// Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
+				else if ( strIRI.matches("\\S+") ) { // ...contains no whitespace...
+						bIsPrefixed = true; // ...accept it
 				}
 			}
+			// Else, we might have a possible base IRI reference (starts with ':")...
+			// ...don't accept...
+			/*
+			else if (iIndex == 0 && strIRI.length() > 1) {
+				// Create Absolute IRI with Relative IRI using Base IRI...
+				try {
+					Project theProject = this.getProject(this.theRequest);
+					String strBaseIRI =
+						RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
+					ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strIRI.substring(1));
+					// It parses with the Base IRI...
+					bIsPrefixed = true; // ...accept it
+				}
+				catch (Exception ex) {
+					// ...continue...
+				}
+			}
+			*/
 		}
-		return bIsPrefixed; 
+		return bIsPrefixed;
     }
 
-    private List<SearchResultItem> search(RDFTransform theTransform, String strQuery) {
+    private List<SearchResultItem> search(RDFTransform theTransform, String strQueryPrefix) {
+		// NOTE: The Vocabulary List is a local store that only contains
+		//		a Prefix and a Namespace.  We will calculate other components.
     	List<SearchResultItem> result = new ArrayList<SearchResultItem>();
-		String strNotImported = "Not in the imported vocabulary definition";
+		String strNotImported = "From local curated namespaces--not imported.";
+		VocabularyList theVocabList = theTransform.getNamespaces();
 
-    	if ( isPrefixedQuery(strQuery) ) {
-    		int iIndex = strQuery.indexOf(":");
-    		String strPrefix = strQuery.substring(0, iIndex);
+    	if ( this.isPrefixedIRI(strQueryPrefix) ) {
+    		int iIndex = strQueryPrefix.indexOf(":");
+    		String strPrefix = strQueryPrefix.substring(0, iIndex);
     		String strLocalPart = "";
 			iIndex++; // ...advance to start of LocalPart
-			if (strQuery.length() > iIndex) { // ...if there is more...
-				strLocalPart = strQuery.substring(iIndex);
+			if (strQueryPrefix.length() > iIndex) { // ...if there is more...
+				strLocalPart = strQueryPrefix.substring(iIndex);
 			}
-    		for (Vocabulary vocab : theTransform.getPrefixesMap().values()) {
+    		for ( Vocabulary vocab : theVocabList ) {
+				// Do the prefixes match?
     			if ( vocab.getPrefix().equals(strPrefix) ) {
-					String strNamespace = vocab.getNamespace();
-					String strIRI = strNamespace + strLocalPart;
+					String strVocabNamespace = vocab.getNamespace();
+					String strIRI = strVocabNamespace + strLocalPart;
     				result.
 						add(
 							new SearchResultItem(
@@ -197,41 +212,59 @@ public class SuggestTermCommand extends RDFTransformCommand {
 								strIRI,
 								strNotImported,
 								strPrefix,
-								strNamespace,
+								strVocabNamespace,
 								strLocalPart
 							)
 						);
     			}
     		}
     	}
-		else { // strQuery does not have a Prefix, so try Namespace...
-    		for (Vocabulary vocab : theTransform.getPrefixesMap().values()) {
+		else { // The Query does not have a defined Prefix, so try both Prefix and Namespace...
+    		for ( Vocabulary vocab : theVocabList ) {
     			String strVocabNamespace = vocab.getNamespace();
-				// Does the Namespace contain the Query...
-    			if ( strVocabNamespace.startsWith(strQuery) ) {
+				String strVocabPrefix = vocab.getPrefix();
+
+				// Does the Prefix contain the Query?
+    			if ( strQueryPrefix.length() <= strVocabPrefix.length() &&
+					 strVocabPrefix.startsWith(strQueryPrefix) )
+				{
     				result.
 						add(
 							new SearchResultItem(
-								strQuery,
-								strQuery,
+								strVocabNamespace,
+								strVocabNamespace,
 								strNotImported,
-								vocab.getPrefix(),
+								strVocabPrefix,
 								strVocabNamespace,
 								""
 							)
 						);
     			}
-				// Does the Query contain the Namespace...
-				else if ( strQuery.startsWith(strVocabNamespace) ) {
+				// Does the Namespace contain the Query?
+    			if ( strVocabNamespace.startsWith(strQueryPrefix) ) {
+    				result.
+						add(
+							new SearchResultItem(
+								strQueryPrefix,
+								strQueryPrefix,
+								strNotImported,
+								strVocabPrefix,
+								strVocabNamespace,
+								""
+							)
+						);
+    			}
+				// Does the Query contain the Namespace?
+				else if ( strQueryPrefix.startsWith(strVocabNamespace) ) {
 					String strVocabLocalPart = "";
-					if (strQuery.length() > strVocabNamespace.length()) {
-						strVocabLocalPart = strQuery.substring(strVocabNamespace.length());
+					if ( strQueryPrefix.length() > strVocabNamespace.length() ) {
+						strVocabLocalPart = strQueryPrefix.substring( strVocabNamespace.length() );
 					}
     				result.
 						add(
 							new SearchResultItem(
-								strQuery,
-								strQuery,
+								strQueryPrefix,
+								strQueryPrefix,
 								strNotImported,
 								vocab.getPrefix(),
 								strVocabNamespace,
@@ -244,33 +277,3 @@ public class SuggestTermCommand extends RDFTransformCommand {
     	return result;
     }
 }
-
-/*
-class Result {
-
-	class IdName {
-		@JsonProperty("id")
-		String id;
-		@JsonProperty("name")
-		String name;
-
-		IdName(String i, String n) {
-			id = i;
-			name = n;
-		}
-	}
-
-	@JsonProperty("results")
-    private List<IdName> results = new ArrayList<IdName>();
-    @JsonProperty("prefix")
-    private String prefix;
-
-    Result(String p) {
-        this.prefix = p;
-    }
-
-	void addResult(String id, String name) {
-        results.add( new IdName(id, name) );
-    }
-}
-*/

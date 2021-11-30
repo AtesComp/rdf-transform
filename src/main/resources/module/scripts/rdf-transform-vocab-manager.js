@@ -1,26 +1,31 @@
-class VocabManager {
-	constructor(prefixesManager) {
-		this._prefixesManager = prefixesManager;
+class RDFTransformVocabManager {
+	#namespacesManager;
+
+	#level;
+	#elements;
+
+	constructor(namespacesManager) {
+		this.#namespacesManager = namespacesManager;
 	}
 
-	show() {
-		var dialog = $(DOM.loadHTML("rdf-transform", "scripts/dialogs/rdf-transform-vocab-manager.html"));
-		this._level = DialogSystem.showDialog(dialog);
-		this._elements = DOM.bind(dialog);
+	show(onDone) {
+		var dialog = $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"));
+		this.#level = DialogSystem.showDialog(dialog);
+		this.#elements = DOM.bind(dialog);
 
-		this._elements.dialogHeader.html($.i18n('rdft-vocab/header'));
-		this._elements.buttonAddPrefix.html($.i18n('rdft-buttons/add-prefix'));
-		this._elements.buttonOK.html($.i18n('rdft-buttons/ok'));
-		this._elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
+		this.#elements.dialogHeader.html($.i18n('rdft-vocab/header'));
+		this.#elements.buttonAddNamespace.html($.i18n('rdft-buttons/add-namespace'));
+		this.#elements.buttonOK.html($.i18n('rdft-buttons/ok'));
+		this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
 
-		this._elements.buttonCancel
-		.click( () => { this.#dismiss(); } );
+		this.#elements.buttonCancel
+		.on("click", () => { this.#dismiss(); } );
 
-		this._elements.buttonAddPrefix
-		.click(
+		this.#elements.buttonAddNamespace
+		.on("click",
 			(evt) => {
 				evt.preventDefault();
-				this._prefixesManager.addPrefix(
+				this.#namespacesManager.addNamespace(
 					false, false,
 					() => {
 						this.#renderBody();
@@ -31,81 +36,76 @@ class VocabManager {
 
 		this.#renderBody();
 
-		this._elements.buttonOK
-		.click(
+		this.#elements.buttonOK
+		.on("click",
 			() => {
-				this._prefixesManager.showPrefixes();
+				if (onDone) {
+					onDone();
+				}
 				this.#dismiss();
 			}
 		);
 	}
 
-	#getDeleteHandler(name) {
+	#getRemoveHandler(strPrefix) {
 		return (evtHandler) => {
 			evtHandler.preventDefault();
-			var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + name);
+			var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
 
-			Refine.wrapCSRF(
-				(token) => {
-					$.post(
-						'command/rdf-transform/remove-prefix',
-						{
-							'name': name,
-							'project': theProject.id,
-							'csrf_token': token,
-						},
-						(data) => {
-							dismissBusy();
-							if (data.code === 'error') {
-								// TODO: Update to proper error handling...
-								console.log($.i18n('rdft-vocab/error-deleting'));
-							}
-							else {
-								this._prefixesManager.removePrefix(name);
-								this.#renderBody();
-							}
-						}
-					);
-				}
-			);
+			Refine.postCSRF(
+                "command/rdf-transform/remove-prefix",
+                {   "project" : theProject.id,
+					"prefix": strPrefix
+                },
+                (data) => {
+                    if (data.code === "error") {
+                        alert($.i18n('rdft-vocab/error-deleting') + ': ' + strPrefix);
+					}
+					else {
+						this.#namespacesManager.removeNamespace(strPrefix);
+					}
+					this.#renderBody();
+					dismissBusy();
+                },
+                "json"
+            );
 		};
 	}
 
-	#getRefreshHandler(name, iri) {
+	#getRefreshHandler(strPrefix, strNamespace) {
 		return (evtHandler) => {
 			evtHandler.preventDefault();
 			if ( window.confirm(
-					$.i18n('rdft-vocab/desc-one') + ' "' + iri + '"\n' +
+					$.i18n('rdft-vocab/desc-one') + ' "' + strNamespace + '"\n' +
 					$.i18n('rdft-vocab/desc-two') ) )
 			{
 				var dismissBusy =
-					DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + name);
-				Refine.wrapCSRF(
-					(token) => {
-						$.post('command/rdf-transform/refresh-prefix',
-							{	'name': name,
-								'iri': iri,
-								'project': theProject.id,
-								'csrf_token': token
-							},
-							(data) => {
-								dismissBusy();
-								if (data.code === 'error') {
-									alert($.i18n('rdft-vocab/alert-wrong') + ': ' + data.message);
-								}
-							}
-						);
-					}
+					DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
+
+				Refine.postCSRF(
+					"command/rdf-transform/refresh-prefix",
+					{   "project" : theProject.id,
+						"prefix": strPrefix,
+						'namespace': strNamespace,
+					},
+					(data) => {
+						if (data.code === "error") {
+							alert($.i18n('rdft-vocab/alert-wrong') + ': ' + data.message);
+						}
+						this.#renderBody();
+						dismissBusy();
+					},
+					"json"
 				);
 			}
 		};
 	}
 
 	#renderBody() {
-		var table = this._elements.prefixesTable;
+		var table = this.#elements.namespacesTable;
 		table.empty();
 		table.append(
-			$('<tr>').addClass('rdf-table-even')
+			$('<tr>').addClass('rdf-transform-table-even')
 			.append($('<th/>').text($.i18n('rdft-vocab/prefix')))
 			.append($('<th/>').text($.i18n('rdft-vocab/iri')))
 			.append($('<th/>').text($.i18n('rdft-vocab/delete')))
@@ -113,24 +113,28 @@ class VocabManager {
 		);
 
 		var bEven = false;
-		for (const prefix of this._prefixesManager.prefixes) {
-			var name = prefix.name;
-			var iri = prefix.iri;
-			var delete_handle =
+		const theNamespaces = this.#namespacesManager.getNamespaces();
+		for (const strPrefix in theNamespaces) {
+			const strNamespace = theNamespaces[strPrefix];
+			/** @type {HTMLElement} */
+			// @ts-ignore
+			var htmlRemoveNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/delete') )
 				.attr('href', '#')
-				.click( this.#getDeleteHandler(name) );
-			var refresh_handle =
+				.on("click", this.#getRemoveHandler(strPrefix) );
+			/** @type {HTMLElement} */
+			// @ts-ignore
+			var htmlRefreshNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/refresh') )
 				.attr('href', '#')
-				.click( this.#getRefreshHandler(name, iri) );
-			var tr = $('<tr/>').addClass(bEven ? 'rdf-table-even' : 'rdf-table-odd')
-				.append($('<td>').text(prefix.name))
-				.append($('<td>').text(prefix.iri))
-				.append($('<td>').html(delete_handle))
-				.append($('<td>').html(refresh_handle));
+				.on("click", this.#getRefreshHandler(strPrefix, strNamespace) );
+			var tr = $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
+				.append( $('<td>').text(strPrefix) )
+				.append( $('<td>').text(strNamespace) )
+				.append( $('<td>').html(htmlRemoveNamespace) )
+				.append( $('<td>').html(htmlRefreshNamespace) );
 			table.append(tr);
 			bEven = !bEven;
 		}
@@ -138,6 +142,6 @@ class VocabManager {
 	}
 
 	#dismiss() {
-		DialogSystem.dismissUntil(this._level - 1);
+		DialogSystem.dismissUntil(this.#level - 1);
 	}
 }
