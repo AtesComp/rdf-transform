@@ -4,8 +4,9 @@
 *.DS_Store
 module/MOD-INF/classes/*
 target
-.idea
-output
-tree
 tmp
-tmp_VocabularySearchRelatedCommandsTest
+.classpath
+.project
+.settings
+.vscode
+RDFTransform.code-workspace
