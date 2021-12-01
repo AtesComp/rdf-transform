@@ -1,6 +1,25 @@
 ![Build Status](https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-This project adds a graphical user interface (GUI) for transforming data of OpenRefine projects to RDF format. The transform is based on mapping the data to a template graph using the GUI.
+This project adds a graphical user interface (GUI) for transforming OpenRefine project data to RDF format. The transform is based on mapping the data to a template graph using the GUI.
+
+This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension))
+However, it has been throughly rewritten to incorporate the latest Java and JavaScript technologies and processing enhancements:
+  * JavaScripts have been updated to use "classified" coding
+  * Loops use iterators
+  * Cleaned UI elements
+  * Resizable dialogs
+  * Export capabilities have been expanded to all known RDF4J formats
+  * Properly recognize the Row verses Record data setting and processing (row / record visitor)
+  * Properly parse IRIs for valid structure, absolute and relative, using a base IRI as needed
+  * Two GREL functions:
+    * "forIRI" - transforms and properly validates string as an IRI
+    * "toStrippedLiteral" - end trims string with all known Unicode whitespace and non-breaking space characters
+  * Properly process Condensed IRI Expressions (CIRIEs) for export
+  * Scaled buffer allocations (based on data size) to speed exports
+  * Template graphs are exportable / importable (like OntoRefine) between different (but similar data structure) projects
+  * General code cleanup and commenting throughout
+
+NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project.  Additionally, OpenRefine has native reconciliation services. 
 
 ## DOWNLOAD
 
