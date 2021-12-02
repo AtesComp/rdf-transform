@@ -57,13 +57,14 @@ You need to have Java and OpenRefine installed on your machine.
 
 ### From compiled release
 
-1. If it does not exist, create a folder named **extensions/rdf-transform** under your user workspace directory for OpenRefine. The workspace should be located in the following places depending on your operating system (see the [OpenRefine FAQ](https://github.com/OpenRefine/OpenRefine/wiki/FAQ-Where-Is-Data-Stored) for more details):
+1. If it does not exist, create a folder named **extensions** under your user workspace directory for OpenRefine. The workspace should be located in the following places depending on your operating system (see the [OpenRefine FAQ](https://github.com/OpenRefine/OpenRefine/wiki/FAQ-Where-Is-Data-Stored) for more details):
     * Linux ~/.local/share/OpenRefine
     * Windows C:/Documents and Settings/<user>/Application Data/OpenRefine OR C:/Documents and Settings/<user>/Local Settings/Application Data/OpenRefine
     * Mac OSX ~/Library/Application Support/OpenRefine
-2. Unzip the downloaded release (ensuring it is a rdf-transform-x.x.x-*.zip and **not** a source code .zip or tar.gz) into the **extensions/rdf-transform** folder (within the diretory of step 1).
-It is recommended that you have an active internet connection when using the extension as it can download ontologies from specified namespaces (such as rdf, rdfs, owl and foaf). You can (re)add namespaces and specify whether to download the ontology (or not) from the namespace declaration URL.
+2. Unzip the downloaded release (ensuring it is a rdf-transform-x.x.x-*.zip and **not** a source code .zip or tar.gz) in the **extensions** folder (within the directory of step 1). This will create a **rdf-transform** directory containg the extension.
 3. Start (or restart) OpenRefine (see the [OpenRefine user documentation](https://github.com/OpenRefine/OpenRefine/wiki/Installation-Instructions#release-version))
+
+NOTE: It is recommended that you have an active internet connection when using the extension as it can download ontologies from specified namespaces (such as rdf, rdfs, owl and foaf). You can (re)add namespaces and specify whether to download the ontology (or not) from the namespace declaration URL.
 
 ### To build from source
 - Clone this extension repository to your local machine
