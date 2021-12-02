@@ -15,7 +15,6 @@ import com.google.refine.expr.EvalError;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
 import com.google.refine.model.Project;
-import com.google.refine.model.Row;
 import com.google.refine.util.ParsingUtilities;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
@@ -110,7 +109,6 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
                 int iRowIndex = jnodeRowIndices.get(iRow).asInt();
                 if (iRowIndex >= 0 && iRowIndex < theProject.rows.size()) {
-                    Row theRow = theProject.rows.get(iRowIndex);
 
                     // Store Index for Row / Record...
                     aiIndices[iRow] = iRowIndex;
@@ -120,7 +118,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                     // NOTE: Expression evaluation will fail all the time because...typing!
                     //       It's constantly updating the preview as we type, so failure on
                     //       incomplete expressions!
-                    result = Util.evaluateExpression(theProject, strExpression, strColumnName, theRow, iRowIndex);
+                    result = Util.evaluateExpression(theProject, strExpression, strColumnName, iRowIndex);
                 }
                 else
                     break;
@@ -286,7 +284,6 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
                 int iRowIndex = jnodeRowIndices.get(iRow).asInt();
                 if (iRowIndex >= 0 && iRowIndex < theProject.rows.size()) {
-                    Row theRow = theProject.rows.get(iRowIndex);
 
                     // Store Index for Row / Record...
                     aiIndices[iRow] = iRowIndex;
@@ -296,7 +293,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                     // NOTE: Expression evaluation will fail all the time because...typing!
                     //       It's constantly updating the preview as we type, so failure on
                     //       incomplete expressions!
-                    result = Util.evaluateExpression(theProject, strExpression, strColumnName, theRow, iRowIndex);
+                    result = Util.evaluateExpression(theProject, strExpression, strColumnName, iRowIndex);
                 }
                 else
                     break;

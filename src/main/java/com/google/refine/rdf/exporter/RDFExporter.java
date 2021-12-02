@@ -10,7 +10,6 @@ import com.google.refine.rdf.app.ApplicationContext;
 import com.google.refine.rdf.operation.ExportRDFRecordVisitor;
 import com.google.refine.rdf.operation.ExportRDFRowVisitor;
 import com.google.refine.rdf.operation.RDFVisitor;
-import com.google.refine.rdf.vocab.Vocabulary;
 import com.google.refine.rdf.vocab.VocabularyIndexException;
 
 import com.google.refine.browsing.Engine;

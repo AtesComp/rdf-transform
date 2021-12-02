@@ -13,12 +13,12 @@ public class RDFNode {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFNode");
 
     public static final int
-        IRI       = 0,
-        Label     = 1,
-        Desc      = 2,
-        Prefix    = 3,
-        Namespace = 4,
-        LocalPart = 5;
+        iIRI       = 0,
+        iLabel     = 1,
+        iDesc      = 2,
+        iPrefix    = 3,
+        iNamespace = 4,
+        iLocalPart = 5;
 
     private String strIRI;
     private String strLabel;
@@ -44,12 +44,12 @@ public class RDFNode {
     }
 
     public void load(String[] astrLoader) {
-        this.strIRI         = astrLoader[IRI];
-        this.strLabel       = astrLoader[Label];
-        this.strDescription = astrLoader[Desc];
-        this.strPrefix      = astrLoader[Prefix];
-        this.strNamespace   = astrLoader[Namespace];
-        this.strLocalPart   = astrLoader[LocalPart];
+        this.strIRI         = astrLoader[iIRI];
+        this.strLabel       = astrLoader[iLabel];
+        this.strDescription = astrLoader[iDesc];
+        this.strPrefix      = astrLoader[iPrefix];
+        this.strNamespace   = astrLoader[iNamespace];
+        this.strLocalPart   = astrLoader[iLocalPart];
         if ( this.strLabel.isEmpty() ) {
             this.strLabel = this.strIRI;
         }

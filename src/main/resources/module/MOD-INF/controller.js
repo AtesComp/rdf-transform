@@ -33,6 +33,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 importPackage(com.google.refine.rdf.commands);
 
+// Client side preferences mirrors Server side...
+var RDFTransformPrefs = {
+	Verbosity : 0,
+	ExportStatementLimit : 10737418,
+	DebugMode : false,
+}
+
 var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 
 var RefineBase = Packages.com.google.refine;
@@ -154,28 +161,65 @@ function init() {
      */
     var RefineExpReg = RefineBase.exporters.ExporterRegistry;
     var RDFTExp = RDFTBase.exporter.RDFExporter;
+	var RDFFormat = org.eclipse.rdf4j.rio.RDFFormat;
 
-    RefineExpReg.registerExporter( "RDF",         new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.RDFXML) );
-    RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.NTRIPLES) );
-    RefineExpReg.registerExporter( "Turtle",      new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TURTLE) );
-    RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TURTLESTAR) );
-	RefineExpReg.registerExporter( "N3",          new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.N3) );
-	RefineExpReg.registerExporter( "TriX",        new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TRIX) );
-	RefineExpReg.registerExporter( "TriG",        new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TRIG) );
-	RefineExpReg.registerExporter( "TriG-star",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.TRIGSTAR) );
-	RefineExpReg.registerExporter( "BinaryRDF",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.BINARY) );
-	RefineExpReg.registerExporter( "N-Quads",     new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.NQUADS) );
-	RefineExpReg.registerExporter( "JSON-LD",     new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.JSONLD) );
-	RefineExpReg.registerExporter( "NDJSON-LD",   new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.NDJSONLD) );
-	RefineExpReg.registerExporter( "RDF/JSON",    new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.RDFJSON) );
-	RefineExpReg.registerExporter( "RDFa",        new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.RDFA) );
-	RefineExpReg.registerExporter( "HDT",         new RDFTExp(appContext, org.eclipse.rdf4j.rio.RDFFormat.HDT) );
+    RefineExpReg.registerExporter( "RDF",         new RDFTExp(appContext, RDFFormat.RDFXML) );
+    RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(appContext, RDFFormat.NTRIPLES) );
+    RefineExpReg.registerExporter( "Turtle",      new RDFTExp(appContext, RDFFormat.TURTLE) );
+    RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(appContext, RDFFormat.TURTLESTAR) );
+	RefineExpReg.registerExporter( "N3",          new RDFTExp(appContext, RDFFormat.N3) );
+	RefineExpReg.registerExporter( "TriX",        new RDFTExp(appContext, RDFFormat.TRIX) );
+	RefineExpReg.registerExporter( "TriG",        new RDFTExp(appContext, RDFFormat.TRIG) );
+	RefineExpReg.registerExporter( "TriG-star",   new RDFTExp(appContext, RDFFormat.TRIGSTAR) );
+	RefineExpReg.registerExporter( "BinaryRDF",   new RDFTExp(appContext, RDFFormat.BINARY) );
+	RefineExpReg.registerExporter( "N-Quads",     new RDFTExp(appContext, RDFFormat.NQUADS) );
+	RefineExpReg.registerExporter( "JSON-LD",     new RDFTExp(appContext, RDFFormat.JSONLD) );
+	RefineExpReg.registerExporter( "NDJSON-LD",   new RDFTExp(appContext, RDFFormat.NDJSONLD) );
+	RefineExpReg.registerExporter( "RDF/JSON",    new RDFTExp(appContext, RDFFormat.RDFJSON) );
+	RefineExpReg.registerExporter( "RDFa",        new RDFTExp(appContext, RDFFormat.RDFA) );
+	RefineExpReg.registerExporter( "HDT",         new RDFTExp(appContext, RDFFormat.HDT) );
 
     /*
      *  Server-side Overlay Models - Attach an RDFTransform object to the project...
      */
     RefineBase.model.Project
 	.registerOverlayModel(RDFTBase.RDFTransform.EXTENSION, RDFTBase.RDFTransform);
+
+	/*
+	 *  Process OpenRefine Preference Store...
+	 */
+	var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
+	if (prefStore != null) {
+		// Verbosity...
+		var prefVerbosity = prefStore.get('RDFTransform/verbose');
+		if (prefVerbosity == null) {
+			prefVerbosity = prefStore.get('verbose');
+		}
+		if (prefVerbosity != null) {
+			var iVerbosity = parseInt(prefVerbosity);
+			if (iVerbosity != NaN) {
+				RDFTransformPrefs.Verbosity = iVerbosity;
+			}
+		}
+		// Export Limit...
+		var prefExportLimit = prefStore.get('RDFTransform/exportLimit');
+		if (prefExportLimit != null) {
+			var iExportLimit = parseInt(prefExportLimit);
+			if (iExportLimit != NaN) {
+				RDFTransformPrefs.ExportStatementLimit = iExportLimit;
+			}
+		}
+		// Debug...
+		var prefDebug = prefStore.get('RDFTransform/debug');
+		if (prefDebug == null) {
+			prefDebug = prefStore.get('debug');
+		}
+		if (prefDebug != null) {
+			var bDebug = ( toLower(prefDebug) == 'true' );
+			RDFTransformPrefs.DebugMode = bDebug;
+		}
+	}
+	logger.info('Preferences: \n' + RDFTransformPrefs);
 }
 
 /*
@@ -185,12 +229,17 @@ function process(path, request, response) {
 	
     var method = request.getMethod();
 
-	var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
-	if (prefStore != null) {
-		if ( prefStore.get('debug') == 'true' ) {
-			logger.info('Receiving request by ' + method + ' for "' + path + '"');
-			logger.info('Request: ' + request);
-		}
+	//var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
+	//if (prefStore != null) {
+	//	if ( prefStore.get('RDFTransform/debug') == 'true' ||
+	//		 prefStore.get('debug') == 'true' ) {
+	//		logger.info('Receiving request by ' + method + ' for "' + path + '"');
+	//		logger.info('  Request: ' + request);
+	//	}
+	//}
+	if ( RDFTransformPrefs.DebugMode ) {
+		logger.info('Receiving request by ' + method + ' for "' + path + '"');
+		logger.info('  Request: ' + request);
 	}
 
 	// RDF Transform does not have any external process requests,

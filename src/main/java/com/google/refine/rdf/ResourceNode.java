@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
-import com.google.refine.model.Row;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -37,7 +36,6 @@ abstract public class ResourceNode extends Node {
     protected ValueFactory theFactory = null;
     protected RepositoryConnection theConnection = null;
     protected Project theProject = null;
-    private Row theRow = null;
     private int iRowIndex = -1;
     private Record theRecord = null;
 
@@ -61,10 +59,6 @@ abstract public class ResourceNode extends Node {
 		return this.listLinks;
 	}
 
-    public Row getRow() {
-        return this.theRow;
-    }
-
     public int getRowIndex() {
         return this.iRowIndex;
     }
@@ -74,7 +68,6 @@ abstract public class ResourceNode extends Node {
     }
 
     private void setRowRecord(ResourceNode nodeParent) {
-        this.theRow = nodeParent.getRow();
         this.iRowIndex = nodeParent.getRowIndex();
         this.theRecord = nodeParent.getRecord();
     }
@@ -85,7 +78,6 @@ abstract public class ResourceNode extends Node {
     }
 
     private void resetRow() {
-        this.theRow = null;
         this.iRowIndex = -1;
     }
 
@@ -233,14 +225,13 @@ abstract public class ResourceNode extends Node {
      */
     public void createStatements(
                         ParsedIRI baseIRI, ValueFactory theFactory, RepositoryConnection theConnection,
-                        Project theProject, Row theRow, int iRowIndex )
+                        Project theProject, int iRowIndex )
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
         this.theFactory = theFactory;
         this.theConnection = theConnection;
         this.theProject = theProject;
-        this.theRow = theRow;
         this.iRowIndex = iRowIndex;
         this.createStatementsWorker();
         this.resetRow();

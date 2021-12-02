@@ -122,9 +122,9 @@ public class VocabularyImporter {
 		throws VocabularyImportException
 	{
 		String[] astrLoader = new String[6];
-		astrLoader[RDFNode.Prefix] = this.strPrefix;
-		astrLoader[RDFNode.Namespace] = this.strNamespace;
-		astrLoader[RDFNode.LocalPart] = null;
+		astrLoader[RDFNode.iPrefix] = this.strPrefix;
+		astrLoader[RDFNode.iNamespace] = this.strNamespace;
+		astrLoader[RDFNode.iLocalPart] = null;
 
 		try {
 			RepositoryConnection connection = this.repository.getConnection();
@@ -141,17 +141,17 @@ public class VocabularyImporter {
 				Set<String> seen = new HashSet<String>();
 				while ( results.hasNext() ) {
 					BindingSet solution = results.next();
-					astrLoader[RDFNode.IRI] = solution.getValue("resource").stringValue();
-					if ( seen.contains(astrLoader[RDFNode.IRI]) ) {
+					astrLoader[RDFNode.iIRI] = solution.getValue("resource").stringValue();
+					if ( seen.contains(astrLoader[RDFNode.iIRI]) ) {
 						continue;
 					}
-					seen.add(astrLoader[RDFNode.IRI]);
-					astrLoader[RDFNode.Label] =
+					seen.add(astrLoader[RDFNode.iIRI]);
+					astrLoader[RDFNode.iLabel] =
 						getFirstNotNull( new Value[] {
 											solution.getValue("en_label"),
 											solution.getValue("label")
 										} );
-					astrLoader[RDFNode.Desc] =
+					astrLoader[RDFNode.iDesc] =
 						getFirstNotNull( new Value[] {
 											solution.getValue("en_definition"),
 											solution.getValue("definition"),
@@ -173,17 +173,17 @@ public class VocabularyImporter {
 				seen = new HashSet<String>();
 				while ( results.hasNext() ) {
 					BindingSet solution = results.next();
-					astrLoader[RDFNode.IRI] = solution.getValue("resource").stringValue();
-					if ( seen.contains(astrLoader[RDFNode.IRI]) ) {
+					astrLoader[RDFNode.iIRI] = solution.getValue("resource").stringValue();
+					if ( seen.contains(astrLoader[RDFNode.iIRI]) ) {
 						continue;
 					}
-					seen.add(astrLoader[RDFNode.IRI]);
-					astrLoader[RDFNode.Label] =
+					seen.add(astrLoader[RDFNode.iIRI]);
+					astrLoader[RDFNode.iLabel] =
 						getFirstNotNull( new Value[] {
 											solution.getValue("en_label"),
 											solution.getValue("label")
 										} );
-					astrLoader[RDFNode.Desc] =
+					astrLoader[RDFNode.iDesc] =
 						getFirstNotNull( new Value[] {
 											solution.getValue("en_definition"),
 											solution.getValue("definition"),

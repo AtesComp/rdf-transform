@@ -9,16 +9,17 @@ import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.MetaParser;
 import com.google.refine.expr.ParsingException;
 import com.google.refine.model.Project;
-import com.google.refine.model.Row;
 import com.google.refine.preference.PreferenceStore;
 import com.google.refine.ProjectManager;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 
 import java.io.IOException;
-import java.util.Properties;
-import java.util.List;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,9 +99,14 @@ public class Util {
 	//
 	// Preference Setting Defaults (see setPreferencesByPreferenceStore)...
 	//
-	private static int iVerbosity = 0;
-	private static int iExportStatementLimit = 10737418;
-	private static int iSampleLimit = 10;
+	private static Map<String, Object> Preferences =
+		new HashMap<String, Object>() {{
+			put("Verbosity", 0);
+			put("ExportLimit", 10737418);
+			put("DebugMode", false);
+	
+			put("SampleLimit", 10);
+		}};
 
 //
 // PCRE IRI Resolution -----
@@ -117,11 +123,12 @@ public class Util {
 		String strError = "ERROR: resolveIRI(): ";
 		String strErrMsg = null;
 		String strAbsoluteIRI = null;
+		String strDEBUG = "DEBUG resolveIRI: ";
 
 		// No IRI is not a problem (there is just nothing to resolve)...
 		if (strIRI == null || strIRI.length() == 0) {
-			if ( Util.isVerbose(4) )
-				logger.info("resolveIRI: No IRI");
+			if ( Util.isDebugMode() )
+				logger.info(strDEBUG + "No IRI");
 			return strAbsoluteIRI;
 		}
 
@@ -163,20 +170,18 @@ public class Util {
 		}
 
 		// DEBUG: Check IRI...
-		if ( Util.isVerbose(4) ) {
-			String strDEBUG = "DEBUG resolveIRI: ";
+		if ( Util.isDebugMode() ) {
+			String strDebugOut;
 			if (strAbsoluteIRI == null)
-				strDEBUG += "NULL";
+				strDebugOut = strDEBUG + "NULL " + strErrMsg;
 			else
-				strDEBUG += "[" + strAbsoluteIRI + "]";
-			logger.info(strDEBUG);
+				strDebugOut = strDEBUG + strAbsoluteIRI;
+			logger.info(strDebugOut);
 		}
 
 		if (strAbsoluteIRI == null && strErrMsg != null) {
-			if ( Util.isVerbose() ) {
-				logger.error(strError + "Malformed IRI [" + strIRI + "]");
-				logger.error(strError + strErrMsg);
-			}
+			logger.error(strError + "Malformed IRI [" + strIRI + "]");
+			logger.error(strError + strErrMsg);
 			throw new Util.IRIParsingException(strError + strErrMsg);
 		}
 
@@ -196,6 +201,7 @@ public class Util {
 			strRetVal = resolveIRI(baseIRI, strDataType);
 		}
 		catch (IRIParsingException ex) {
+			// strRetVal is still null...
 			// ...continue...
 		}
 		return strRetVal;
@@ -235,7 +241,7 @@ public class Util {
 		return baseIRI;
 	}
 
-	public static Object evaluateExpression(Project theProject, String strExp, String strColumnName, Row theRow, int iRowIndex)
+	public static Object evaluateExpression(Project theProject, String strExp, String strColumnName, int iRowIndex)
 			throws ParsingException {
 		// Create a bindings property just for this expression...
 		Properties bindings = ExpressionUtils.createBindings(theProject);
@@ -249,33 +255,37 @@ public class Util {
 				-1 : theProject.columnModel.getColumnByName(strColumnName).getCellIndex();
 
 		// Evaluate the expression on the cell and return results...
-		return RDFExpressionUtil.evaluate(eval, bindings, theRow, iRowIndex, strColumnName, iCellIndex);
+		return RDFExpressionUtil.evaluate(eval, bindings, theProject.rows.get(iRowIndex), iRowIndex, strColumnName, iCellIndex);
 	}
 
 	public static boolean isVerbose() {
-		return (Util.isVerbose(1));
+		return ( Util.isVerbose(1) );
 	}
 	public static boolean isVerbose(int iVerbose) {
-		return (Util.iVerbosity >= iVerbose);
+		return ( (int) Util.Preferences.get("Verbosity") >= iVerbose );
 	}
 
 	public static int getExportLimit() {
-		return Util.iExportStatementLimit;
+		return (int) Util.Preferences.get("ExportLimit");
 	}
 
-    //
+	public static boolean isDebugMode() {
+		return (boolean) Util.Preferences.get("DebugMode");
+	}
+
+	//
 	// Sample Limit:
 	//
 	// The limit on the number of sample rows or records processed.
     // NOTE: When set to 0, there is no limit.
 	//
 	public static int getSampleLimit() {
-		return Util.iSampleLimit;
+		return (int) Util.Preferences.get("SampleLimit");
 	}
 
 	public static void setSampleLimit(int iSampleLimit) {
 		if (iSampleLimit >= 0) {
-			Util.iSampleLimit = iSampleLimit;
+			Util.Preferences.put("SampleLimit", iSampleLimit);
 		}
 	}
 	// ...end Sample Limit
@@ -292,12 +302,17 @@ public class Util {
 			// * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
 			// * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
 			//
-			var prefVerbosity = prefStore.get("RDFTransform/verbose"); // RDFTransform Verbosity
+			Object prefVerbosity = prefStore.get("RDFTransform/verbose");
 			if (prefVerbosity == null) {
-				prefVerbosity = prefStore.get("verbose"); // General Verbosity
+				prefVerbosity = prefStore.get("verbose"); // General OpenRefine Verbosity
 			}
 			if (prefVerbosity != null) {
-				Util.iVerbosity = Integer.parseInt( prefVerbosity.toString() );
+				try {
+					Util.Preferences.put("Verbosity", Integer.parseInt( prefVerbosity.toString() ) );
+				}
+				catch (Exception ex) {
+					// No problem: take default and continue...
+				}
 			}
 			//
 			// Set Export Statement Limit...
@@ -316,9 +331,32 @@ public class Util {
 			//      1073741824 bytes / 100 bytes per statements ~= 10737418 statements
 			// This is the default limit and is overridden by the user preference.
 			//
-			var prefExportStatementLimit = prefStore.get("RDFTransform/exportLimit"); // RDFTransform Verbosity
+			Object prefExportStatementLimit = prefStore.get("RDFTransform/exportLimit");
 			if (prefExportStatementLimit != null) {
-				Util.iExportStatementLimit = Integer.parseInt( prefExportStatementLimit.toString() );
+				try {
+					Util.Preferences.put("ExportLimit", Integer.parseInt( prefExportStatementLimit.toString() ) );
+				}
+				catch (Exception ex) {
+					// No problem: take default and continue...
+				}
+			}
+
+			//
+			// Set Debug Mode...
+			//
+			// The Debug Mode (iDebug) is used to manage the output of specifically marked "debug" messages.
+			//
+			Object prefDebugMode = prefStore.get("RDFTransform/debug"); // RDFTransform Debug Mode
+			if (prefDebugMode == null) {
+				prefDebugMode = prefStore.get("debug"); // General OpenRefine Debug
+			}
+			if (prefDebugMode != null) {
+				try {
+					Util.Preferences.put("DebugMode", Boolean.parseBoolean( prefDebugMode.toString() ) );
+				}
+				catch (Exception ex) {
+					// No problem: take default and continue...
+				}
 			}
 		}
 	}

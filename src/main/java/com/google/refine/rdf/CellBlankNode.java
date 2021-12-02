@@ -8,7 +8,6 @@ import java.util.List;
 import com.google.refine.expr.EvalError;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
-import com.google.refine.model.Row;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
@@ -83,7 +82,7 @@ public class CellBlankNode extends ResourceNode {
         }
         else {
             bnodes =
-				createRowResources( this.getRow(), this.getRowIndex() );
+				createRowResources( this.getRowIndex() );
         }
 
 		return bnodes;
@@ -95,7 +94,7 @@ public class CellBlankNode extends ResourceNode {
         Record theRecord = this.getRecord();
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
 			bnodesNew =
-				this.createRowResources(this.theProject.rows.get(iRowIndex), iRowIndex);
+				this.createRowResources(iRowIndex);
 			if (bnodesNew != null) {
 				bnodes.addAll(bnodesNew);
 			}
@@ -105,11 +104,11 @@ public class CellBlankNode extends ResourceNode {
 		return bnodes;
     }
 
-	private List<Value> createRowResources(Row theRow, int iRowIndex) {
+	private List<Value> createRowResources(int iRowIndex) {
         List<Value> bnodes = null;
     	try {
     		Object results =
-				Util.evaluateExpression(this.theProject, strExpression, strColumnName, theRow, iRowIndex);
+				Util.evaluateExpression(this.theProject, strExpression, strColumnName, iRowIndex);
 
             // Results cannot be classed...
 			if (results.getClass() == EvalError.class) {

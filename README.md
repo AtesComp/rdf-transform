@@ -34,6 +34,8 @@ However, it has been throughly rewritten to incorporate the latest Java and Java
       * The 100 byte statement size is likely large as the average statement size is likely smaller.
       * Regardless, this keeps memory usage to about 1GiB or less and a user can set the preference to optimize for a given memory footprint and data size.
     * Then, the buffered statements optimize the creation and flush processes to speed the disk write.
+  * Added "RFTransform/debug" preference (see OpenRefine preferences) to aid debugging
+    * Controls the output of specifically marked "DEBUG" messages
 
 NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project.  Additionally, OpenRefine has native reconciliation services. 
 

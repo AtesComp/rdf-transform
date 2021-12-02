@@ -43,8 +43,8 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
             ValueFactory theFactory = theConnection.getValueFactory();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                root.createStatements(baseIRI, theFactory, theConnection, theProject,
-                                        theRow, iRowIndex );
+                root.createStatements(baseIRI, theFactory, theConnection, theProject, iRowIndex );
+
                 if ( Util.isVerbose(4) )
                     logger.info("    " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +

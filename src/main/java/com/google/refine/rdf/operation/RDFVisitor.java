@@ -41,11 +41,16 @@ public abstract class RDFVisitor {
         this.model.init();
         this.connection = this.model.getConnection();
 
+        //
         // Populate the namespaces in the repository...
+        //
+
+        // Set Base Namespace...
         String strBaseIRI = this.transform.getBaseIRIAsString();
         if ( ! strBaseIRI.isEmpty() ) {
             this.connection.setNamespace("", strBaseIRI);
         }
+        // Set Prefix Namespaces...
         Collection<Vocabulary> collVocab = this.transform.getPrefixes();
         for (Vocabulary vocab : collVocab) {
             this.connection.setNamespace( vocab.getPrefix(), vocab.getNamespace() );

@@ -8,7 +8,6 @@ import java.io.IOException;
 import com.google.refine.expr.EvalError;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
-import com.google.refine.model.Row;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -120,7 +119,7 @@ public class CellLiteralNode extends CellNode {
         }
         else {
             literals =
-				createRowObjects( nodeParent.getRow(), nodeParent.getRowIndex() );
+				createRowObjects( nodeParent.getRowIndex() );
         }
 
 		return literals;
@@ -135,7 +134,7 @@ public class CellLiteralNode extends CellNode {
 		List<Value> literalsNew = null;
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
 			literalsNew =
-				this.createRowObjects(this.theProject.rows.get(iRowIndex), iRowIndex);
+				this.createRowObjects(iRowIndex);
 			if (literalsNew != null) {
 				literals.addAll(literalsNew);
 			}
@@ -149,11 +148,11 @@ public class CellLiteralNode extends CellNode {
      *  Method createObjects() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowObjects(Row theRow, int iRowIndex ) {
+	private List<Value> createRowObjects(int iRowIndex) {
 		List<String> astrValues = null;
         try {
             Object results =
-				Util.evaluateExpression(this.theProject, strExpression, strColumnName, theRow, iRowIndex);
+				Util.evaluateExpression(this.theProject, strExpression, strColumnName, iRowIndex);
 
             if (results.getClass() == EvalError.class) {
             	astrValues = null;

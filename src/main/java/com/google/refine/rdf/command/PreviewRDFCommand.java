@@ -5,7 +5,6 @@ import com.google.refine.rdf.operation.PreviewRDFRowVisitor;
 import com.google.refine.rdf.operation.RDFVisitor;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.Util;
-import com.google.refine.rdf.vocab.Vocabulary;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;

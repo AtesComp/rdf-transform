@@ -3,6 +3,8 @@ package com.google.refine.rdf.utils;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import com.google.refine.rdf.Util;
+
 //import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -29,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpUtils {
+	private static Logger logger = LoggerFactory.getLogger("RDFT:HttpUtils"); // HttpUtils.class.getSimpleName()
 
-	private static Logger log = LoggerFactory.getLogger("RDFT:HttpUtils"); // HttpUtils.class.getSimpleName()
 	public static final String USER_AGENT = "OpenRefine RDF Transform Extension";
 	public static final int CONNECTION_TIMEOUT = 10;
 	public static final int SOCKET_TIMEOUT = 60;
@@ -73,13 +75,17 @@ public class HttpUtils {
     }
 
 	public static HttpEntity get(String strURL) throws IOException {
-		log.debug("GET request over " + strURL);
+		if ( Util.isDebugMode() ) {
+			logger.info("DEBUG: GET request over " + strURL);
+		}
         HttpGet getter = new HttpGet(strURL);
         return get(getter);
 	}
 
 	public static HttpEntity get(String strURL, String accept) throws IOException {
-		log.debug("GET request over " + strURL);
+		if ( Util.isDebugMode() ) {
+			logger.info("DEBUG: GET request over " + strURL);
+		}
         HttpGet getter = new HttpGet(strURL);
         getter.setHeader("Accept", accept);
         return get(getter);
@@ -90,10 +96,15 @@ public class HttpUtils {
 		CloseableHttpResponse response = client.execute(getter);
 		if ( 200 == response.getCode() ) {
 			return response.getEntity();
-		} else {
-			String msg = "Error performing GET request: " + response.getCode() + " " + response.getReasonPhrase();
-			log.error(msg);
-			throw new ClientProtocolException(msg);
+		}
+		else {
+			String strErrorMessage =
+				"Error performing GET request: " +
+				response.getCode() + " " + response.getReasonPhrase();
+			if ( Util.isVerbose() ) {
+				logger.error(strErrorMessage);
+			}
+			throw new ClientProtocolException(strErrorMessage);
 		}
 	}
 }

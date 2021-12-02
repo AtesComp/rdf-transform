@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import com.google.refine.expr.EvalError;
 import com.google.refine.model.Project;
-import com.google.refine.model.Row;
 import com.google.refine.model.Record;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
@@ -22,7 +21,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CellResourceNode extends ResourceNode {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:CellResNode");
+
 	final static private String NODETYPE = "cell-as-resource";
 
     final private String strColumnName;
@@ -80,8 +84,7 @@ public class CellResourceNode extends ResourceNode {
             listResources = createRecordResources();
         }
         else {
-            listResources =
-                createRowResources( this.getRow(), this.getRowIndex() );
+            listResources = createRowResources( this.getRowIndex() );
         }
 
 		return listResources;
@@ -92,8 +95,7 @@ public class CellResourceNode extends ResourceNode {
 		List<Value> listResourcesNew = null;
         Record theRecord = this.getRecord();
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			listResourcesNew =
-                this.createRowResources(this.theProject.rows.get(iRowIndex), iRowIndex);
+			listResourcesNew = this.createRowResources(iRowIndex);
 			if (listResourcesNew != null) {
 				listResources.addAll(listResourcesNew);
 			}
@@ -103,12 +105,12 @@ public class CellResourceNode extends ResourceNode {
 		return listResources;
     }
 
-    private List<Value> createRowResources(Row theRow, int iRowIndex) {
+    private List<Value> createRowResources(int iRowIndex) {
         List<Value> listResources = null;
         try {
         	Object resultEval =
                 Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName,
-                                        this.theProject.rows.get(iRowIndex), iRowIndex);
+                                        iRowIndex);
             String strIRI = null;
 
             // Results cannot be the EvalError class...
@@ -132,11 +134,20 @@ public class CellResourceNode extends ResourceNode {
             }
             // Results are singular...
             else {
+                if (Util.isDebugMode()) {
+                    logger.info("DEBUG: Result: " + resultEval.toString());
+                }
                 String strResult = Util.toSpaceStrippedString(resultEval);
+                if (Util.isDebugMode()) {
+                    logger.info("DEBUG: strResult: " + strResult);
+                }
                 if (strResult != null && strResult.length() > 0 ) {
                     strIRI = Util.resolveIRI(this.baseIRI, strResult);
                     if (strIRI != null) {
                         strIRI = this.expandPrefixedIRI(strIRI);
+                        if (Util.isDebugMode()) {
+                            logger.info("DEBUG: strIRI: " + strIRI);
+                        }
                         listResources = new ArrayList<Value>();
                         listResources.add( this.theFactory.createIRI(strIRI) ); // TODO
                     }
