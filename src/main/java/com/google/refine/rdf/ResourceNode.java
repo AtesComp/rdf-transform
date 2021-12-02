@@ -33,9 +33,15 @@ abstract public class ResourceNode extends Node {
     @JsonProperty("links")
     private List<Link> listLinks = new ArrayList<Link>();
 
+    protected ParsedIRI baseIRI = null;
+    protected ValueFactory theFactory = null;
+    protected RepositoryConnection theConnection = null;
+    protected Project theProject = null;
     private Row theRow = null;
     private int iRowIndex = -1;
     private Record theRecord = null;
+
+    private List<Value> listResources = null;
 
     public void addType(RDFType type) {
         this.listRDFTypes.add(type);
@@ -93,40 +99,38 @@ abstract public class ResourceNode extends Node {
      *    Given a set of source resources, create the (source, rdf:type, object) triple statements
      *    for each of the sources.
      */
-    private void createTypeStatements(
-                        List<Value> listSources, ValueFactory factory, RepositoryConnection connection,
-                        ParsedIRI baseIRI )
+    private void createTypeStatements()
             throws RepositoryException {
         String strObjectIRI = null;
         String strTypeObject = null;
         String strIRI = null;
-        String strCIRIE = null;
+        //String strCIRIE = null;
         //String strPrefix = null;
-        String strNamespace = null;
-        String strLocalName = null;
-        boolean bNamespace = false;
+        //String strNamespace = null;
+        //String strLocalName = null;
+        //boolean bNamespace = false;
         IRI iriObject = null;
         for ( RDFType typeObject : this.getTypes() ) {
-            bNamespace = false;
+            //bNamespace = false;
             strIRI = typeObject.getResource();
-            strCIRIE = typeObject.getPrefixedResource();
-            strTypeObject = strCIRIE;
-            if (strTypeObject == null) {
-                strTypeObject = strIRI;
+            //strCIRIE = typeObject.getPrefixedResource();
+            //strTypeObject = strCIRIE;
+            //if (strTypeObject == null) {
+            strTypeObject = strIRI;
                 //strPrefix = "";
-                strLocalName = "";
-                strNamespace = "";
-            }
-            else { // ...prefixed...
-                int iIndex = strCIRIE.indexOf(":") + 1;
-                //strPrefix = strCIRIE.substring(0, iIndex);
-                strLocalName = strCIRIE.substring(iIndex);
-                strNamespace = strCIRIE.replace(strLocalName, "");
-                bNamespace = true;
-            }
+                //strLocalName = "";
+                //strNamespace = "";
+            //}
+            //else { // ...prefixed...
+            //    int iIndex = strCIRIE.indexOf(":") + 1;
+            //    //strPrefix = strCIRIE.substring(0, iIndex);
+            //    strLocalName = strCIRIE.substring(iIndex);
+            //    strNamespace = strCIRIE.replace(strLocalName, "");
+            //    bNamespace = true;
+            //}
             strObjectIRI = null;
             try {
-                strObjectIRI = Util.resolveIRI(baseIRI, strTypeObject);
+                strObjectIRI = Util.resolveIRI(this.baseIRI, strTypeObject);
             }
             catch (Util.IRIParsingException ex) {
                 // ...continue...
@@ -134,17 +138,18 @@ abstract public class ResourceNode extends Node {
             if (strObjectIRI == null) {
                 continue; // ...to next type
             }
+            strObjectIRI = expandPrefixedIRI(strObjectIRI);
             if ( Util.isVerbose(4) )
                 logger.info("Type IRI: " + strObjectIRI);
 
-            if (bNamespace) {
-                iriObject = factory.createIRI(strNamespace, strLocalName);
-            }
-            else {
-                iriObject = factory.createIRI(strObjectIRI);
-            }
-            for (Value valSource : listSources) {
-                connection.add( factory.createStatement( (Resource) valSource, RDF.TYPE, iriObject ) );
+            //if (bNamespace) {
+            //    iriObject = factory.createIRI(strNamespace, strLocalName);
+            //}
+            //else {
+            iriObject = this.theFactory.createIRI(strObjectIRI);
+            //}
+            for (Value valSource : this.listResources) {
+                this.theConnection.add( this.theFactory.createStatement( (Resource) valSource, RDF.TYPE, iriObject ) );
     		}
     	}
     }
@@ -155,9 +160,7 @@ abstract public class ResourceNode extends Node {
      *    Given a set of source resources, create the (source, property, object) triple statements
      *    for each of the sources.
      */
-    private void createLinkStatements(
-                        List<Value> listSources, ParsedIRI baseIRI, ValueFactory factory,
-                        RepositoryConnection connection, Project project)
+    private void createLinkStatements()
             throws RepositoryException {
         if ( Util.isVerbose(4) ) {
             if (this.listLinks == null)
@@ -168,31 +171,31 @@ abstract public class ResourceNode extends Node {
         String strPropertyIRI = null;
         String strTypeProperty = null;
         String strIRI = null;
-        String strCIRIE = null;
+        //String strCIRIE = null;
         //String strPrefix = null;
-        String strNamespace = null;
-        String strLocalName = null;
-        boolean bNamespace = false;
+        //String strNamespace = null;
+        //String strLocalName = null;
+        //boolean bNamespace = false;
         Node nodeObject = null;
         IRI iriProperty = null;
         for (Link link : this.listLinks) {
-            bNamespace = false;
+            //bNamespace = false;
             strIRI = link.getProperty();
-            strCIRIE = link.getPrefixedProperty();
-            strTypeProperty = strCIRIE;
-            if (strTypeProperty == null) {
-                strTypeProperty = strIRI;
-            }
-            else {
-                int iIndex = strCIRIE.indexOf(":") + 1;
-                //strPrefix = strCIRIE.substring(0, iIndex);
-                strLocalName = strCIRIE.substring(iIndex);
-                strNamespace = strCIRIE.replace(strLocalName, "");
-                bNamespace = true;
-            }
+            //strCIRIE = link.getPrefixedProperty();
+            //strTypeProperty = strCIRIE;
+            //if (strTypeProperty == null) {
+            strTypeProperty = strIRI;
+            //}
+            //else {
+            //    int iIndex = strCIRIE.indexOf(":") + 1;
+            //    //strPrefix = strCIRIE.substring(0, iIndex);
+            //    strLocalName = strCIRIE.substring(iIndex);
+            //    strNamespace = strCIRIE.replace(strLocalName, "");
+            //    bNamespace = true;
+            //}
             strPropertyIRI = null;
             try {
-                strPropertyIRI = Util.resolveIRI(baseIRI, strTypeProperty);
+                strPropertyIRI = Util.resolveIRI(this.baseIRI, strTypeProperty);
             }
             catch (Util.IRIParsingException ex) {
                 // ...continue...
@@ -200,23 +203,24 @@ abstract public class ResourceNode extends Node {
             if (strPropertyIRI == null) {
                 continue; // ...to next property
             }
+            strPropertyIRI = expandPrefixedIRI(strPropertyIRI);
             if ( Util.isVerbose(4) )
                 logger.info("Link IRI: " + strPropertyIRI);
 
-            if (bNamespace) {
-                iriProperty = factory.createIRI(strNamespace, strLocalName);
-            }
-            else {
-                iriProperty = factory.createIRI(strPropertyIRI);
-            }
+            //if (bNamespace) {
+            //    iriProperty = factory.createIRI(strNamespace, strLocalName);
+            //}
+            //else {
+            iriProperty = this.theFactory.createIRI(strPropertyIRI);
+            //}
             nodeObject = link.getObject();
             if (nodeObject != null)
             {
-                List<Value> listObjects = nodeObject.createObjects(baseIRI, factory, connection, project, this);
+                List<Value> listObjects = nodeObject.createObjects(this.baseIRI, this.theFactory, this.theConnection, this.theProject, this);
                 if (listObjects != null) {
-                    for (Value valSource : listSources) {
+                    for (Value valSource : this.listResources) {
                         for (Value valObject : listObjects) {
-           		    		connection.add( factory.createStatement( (Resource) valSource, iriProperty, valObject ) );
+           		    		this.theConnection.add( this.theFactory.createStatement( (Resource) valSource, iriProperty, valObject ) );
            			    }
            		    }
            	    }
@@ -228,13 +232,17 @@ abstract public class ResourceNode extends Node {
      *  Method createStatements() for Root Resource Node types on OpenRefine Rows
      */
     public void createStatements(
-                        ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
-                        Project project, Row theRow, int iRowIndex )
+                        ParsedIRI baseIRI, ValueFactory theFactory, RepositoryConnection theConnection,
+                        Project theProject, Row theRow, int iRowIndex )
             throws RuntimeException
     {
+        this.baseIRI = baseIRI;
+        this.theFactory = theFactory;
+        this.theConnection = theConnection;
+        this.theProject = theProject;
         this.theRow = theRow;
         this.iRowIndex = iRowIndex;
-        this.createStatementsWorker(baseIRI, factory, connection, project);
+        this.createStatementsWorker();
         this.resetRow();
     }
 
@@ -242,12 +250,16 @@ abstract public class ResourceNode extends Node {
      *  Method createStatements() for Root Resource Node types on OpenRefine Records
      */
     public void createStatements(
-                        ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
-                        Project project, Record theRecord )
+                        ParsedIRI baseIRI, ValueFactory theFactory, RepositoryConnection theConnection,
+                        Project theProject, Record theRecord )
             throws RuntimeException
     {
+        this.baseIRI = baseIRI;
+        this.theFactory = theFactory;
+        this.theConnection = theConnection;
+        this.theProject = theProject;
         this.theRecord = theRecord;
-        this.createStatementsWorker(baseIRI, factory, connection, project);
+        this.createStatementsWorker();
         this.resetRecord();
     }
 
@@ -258,10 +270,8 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    private List<Value> createStatementsWorker(
-                        ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
-                        Project project) {
-        List<Value> listResources = createResources(baseIRI, factory, project);
+    private List<Value> createStatementsWorker() {
+        this.listResources = createResources(baseIRI, theFactory, theConnection, theProject);
         if ( Util.isVerbose(4) ) {
             if (listResources == null)
                 logger.info("Resources Count: NULL (No Statements)");
@@ -270,8 +280,8 @@ abstract public class ResourceNode extends Node {
         }
         if (listResources != null) {
             try {
-        	    this.createTypeStatements(listResources, factory, connection, baseIRI);
-        	    this.createLinkStatements(listResources, baseIRI, factory, connection, project);
+        	    this.createTypeStatements();
+        	    this.createLinkStatements();
             }
             catch (RepositoryException ex) {
             	throw new RuntimeException(ex);
@@ -287,8 +297,9 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    protected abstract List<Value> createResources(
-                                        ParsedIRI baseIRI, ValueFactory factory, Project project);
+    protected abstract List<Value> createResources(ParsedIRI baseIRI, ValueFactory theFactory,
+                                                    RepositoryConnection theConnection,
+                                                    Project theProject);
 
     /*
      *  Method createObjects() for Resource Node types on OpenRefine Rows
@@ -297,13 +308,18 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    protected List<Value> createObjects(
-                        ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
-                        Project project, ResourceNode nodeParent )
+    protected List<Value> createObjects(ParsedIRI baseIRI, ValueFactory theFactory,
+                                        RepositoryConnection theConnection, Project theProject,
+                                        ResourceNode nodeParent)
             throws RuntimeException
     {
+        this.baseIRI = baseIRI;
+        this.theFactory = theFactory;
+        this.theConnection = theConnection;
+        this.theProject = theProject;
+
         this.setRowRecord(nodeParent);
-        List<Value> listResources = this.createStatementsWorker(baseIRI, factory, connection, project);
+        List<Value> listResources = this.createStatementsWorker();
         this.resetRowRecord();
 
         return listResources;

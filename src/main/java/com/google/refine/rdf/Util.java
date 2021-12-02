@@ -2,13 +2,8 @@ package com.google.refine.rdf;
 
 import com.google.refine.rdf.app.ApplicationContext;
 import com.google.refine.rdf.expr.util.RDFExpressionUtil;
-import com.google.refine.rdf.operation.RDFRecordVisitor;
-import com.google.refine.rdf.operation.RDFRowVisitor;
 import com.google.refine.rdf.vocab.VocabularyIndexException;
 
-import com.google.refine.browsing.FilteredRecords;
-import com.google.refine.browsing.FilteredRows;
-import com.google.refine.browsing.Engine;
 import com.google.refine.expr.Evaluable;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.MetaParser;
@@ -19,12 +14,8 @@ import com.google.refine.preference.PreferenceStore;
 import com.google.refine.ProjectManager;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
-import org.eclipse.rdf4j.repository.Repository;
-//import java.net.URISyntaxException;
-//import java.net.URLEncoder;
 
 import java.io.IOException;
-//import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.List;
 import java.util.Arrays;
@@ -104,7 +95,12 @@ public class Util {
 
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:Util" );
 
+	//
+	// Preference Setting Defaults (see setPreferencesByPreferenceStore)...
+	//
 	private static int iVerbosity = 0;
+	private static int iExportStatementLimit = 10737418;
+	private static int iSampleLimit = 10;
 
 //
 // PCRE IRI Resolution -----
@@ -112,8 +108,8 @@ public class Util {
 //   See https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url
 
 	public static class IRIParsingException extends Exception { 
-		public IRIParsingException(String errorMessage) {
-			super(errorMessage);
+		public IRIParsingException(String strErrorMessage) {
+			super(strErrorMessage);
 		}
 	}
 
@@ -205,15 +201,15 @@ public class Util {
 		return strRetVal;
 	}
 
-	public static RDFTransform getRDFTransform(ApplicationContext context, Project project)
+	public static RDFTransform getRDFTransform(ApplicationContext theContext, Project theProject)
 			throws VocabularyIndexException, IOException {
-		synchronized (project) {
-			RDFTransform theTransform = (RDFTransform) project.overlayModels.get(RDFTransform.EXTENSION);
+		synchronized (theProject) {
+			RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
 			if (theTransform == null) {
-				theTransform = new RDFTransform(context, project);
+				theTransform = new RDFTransform(theContext, theProject);
 
-				project.overlayModels.put(RDFTransform.EXTENSION, theTransform);
-				project.getMetadata().updateModified();
+				theProject.overlayModels.put(RDFTransform.EXTENSION, theTransform);
+				theProject.getMetadata().updateModified();
 			}
             return theTransform;
 		}
@@ -239,10 +235,10 @@ public class Util {
 		return baseIRI;
 	}
 
-	public static Object evaluateExpression(Project project, String strExp, String strColumnName, Row theRow, int iRowIndex)
+	public static Object evaluateExpression(Project theProject, String strExp, String strColumnName, Row theRow, int iRowIndex)
 			throws ParsingException {
 		// Create a bindings property just for this expression...
-		Properties bindings = ExpressionUtils.createBindings(project);
+		Properties bindings = ExpressionUtils.createBindings(theProject);
 
 		// Create an evaluator just for this expression...
 		Evaluable eval = MetaParser.parse(strExp);
@@ -250,27 +246,11 @@ public class Util {
 		// Find the cell index for the column under evaluation...
 		int iCellIndex =
 			( strColumnName == null || strColumnName.length() == 0 ) ?
-				-1 : project.columnModel.getColumnByName(strColumnName).getCellIndex();
+				-1 : theProject.columnModel.getColumnByName(strColumnName).getCellIndex();
 
 		// Evaluate the expression on the cell and return results...
 		return RDFExpressionUtil.evaluate(eval, bindings, theRow, iRowIndex, strColumnName, iCellIndex);
 	}
-
-    public static Repository buildModel(Project project, Engine engine, RDFRowVisitor visitor) {
-        FilteredRows filteredRows = engine.getAllFilteredRows();
-		if ( Util.isVerbose(4) )
-			logger.info("buildModel: visit matching filtered rows");
-        filteredRows.accept(project, visitor);
-        return visitor.getModel();
-    }
-
-    public static Repository buildModel(Project project, Engine engine, RDFRecordVisitor visitor) {
-        FilteredRecords filteredRecords = engine.getFilteredRecords();
-		if ( Util.isVerbose(4) )
-			logger.info("buildModel: visit matching filtered records");
-        filteredRecords.accept(project, visitor);
-        return visitor.getModel();
-    }
 
 	public static boolean isVerbose() {
 		return (Util.isVerbose(1));
@@ -279,16 +259,66 @@ public class Util {
 		return (Util.iVerbosity >= iVerbose);
 	}
 
-	public static void setVerbosityByPreferenceStore() {
-		// Setup for debug logging...
+	public static int getExportLimit() {
+		return Util.iExportStatementLimit;
+	}
+
+    //
+	// Sample Limit:
+	//
+	// The limit on the number of sample rows or records processed.
+    // NOTE: When set to 0, there is no limit.
+	//
+	public static int getSampleLimit() {
+		return Util.iSampleLimit;
+	}
+
+	public static void setSampleLimit(int iSampleLimit) {
+		if (iSampleLimit >= 0) {
+			Util.iSampleLimit = iSampleLimit;
+		}
+	}
+	// ...end Sample Limit
+
+	public static void setPreferencesByPreferenceStore() {
 		PreferenceStore prefStore = ProjectManager.singleton.getPreferenceStore();
 		if (prefStore != null) {
+			//
+			// Set Verbosity for logging...
+			//
+			// * 0 (or missing preference) == no verbosity and unknown, uncaught errors (stack traces, of course)
+			// * 1 == basic functional information and all unknown, caught errors
+			// * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
+			// * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
+			// * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
+			//
 			var prefVerbosity = prefStore.get("RDFTransform/verbose"); // RDFTransform Verbosity
 			if (prefVerbosity == null) {
 				prefVerbosity = prefStore.get("verbose"); // General Verbosity
 			}
 			if (prefVerbosity != null) {
 				Util.iVerbosity = Integer.parseInt( prefVerbosity.toString() );
+			}
+			//
+			// Set Export Statement Limit...
+			//
+			// The Export Statement Limit (iExportStatementLimit) is used to manage the
+			// statement writing process for an RDF export to a disk file.
+			//
+			// Ideally, the limit on the number of statements held in memory for buffered
+			// writing would be based on the input data size and available memory.  Generally,
+			// the processing buffer would be approximately 1/10 to 1/1000 of the data size
+			// depending on available memory.  A reasonable limit might be 1 GiB:
+			//      1 GiB = 1024 * 1024 * 1024 bytes = 1073741824 bytes
+			// Since we only have the number of statements currently in the connection,
+			// we estimate the size of a statement to 100 bytes.  The average is probably
+			// smaller.  Then, the estimated number of statements for a flush is set to:
+			//      1073741824 bytes / 100 bytes per statements ~= 10737418 statements
+			// This is the default limit and is overridden by the user preference.
+			//
+			var prefExportStatementLimit = prefStore.get("RDFTransform/exportLimit"); // RDFTransform Verbosity
+			if (prefExportStatementLimit != null) {
+				Util.iExportStatementLimit = Integer.parseInt( prefExportStatementLimit.toString() );
 			}
 		}
 	}

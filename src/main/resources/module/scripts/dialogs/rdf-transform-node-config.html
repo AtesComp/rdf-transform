@@ -1,0 +1,86 @@
+<table>
+  <tr>
+    <td>
+      <table class="grid-layout layout-tight rdf-node-table">
+        <tr>
+          <td>
+            <div class="rdf-transform-node-dialog-step-header" bind="useContent">
+            </div>
+          </td>
+          <td>
+            <div class="rdf-transform-node-dialog-step-header" bind="contentUsed">
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="rdf-transform-node-dialog-step rdf-transform-node-dialog-column-list" bind="divColumns"></div>
+          </td>
+          <td>
+            <div class="rdf-transform-node-dialog-step">
+              <table width="100%" cols="2">
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="resource" bind="rdf_content_iri_radio" /></td>
+                  <td bind="asIRI"></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_txt_radio" /></td>
+                  <td bind="asText"></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-lang-radio" bind="rdf_content_lang_radio" /></td>
+                  <td bind="asLang"><input type="text" id="rdf-content-lang-input" bind="rdf_content_lang_input" size="4"/></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_int_radio" id="rdf-content-int-radio"/></td>
+                  <td bind="asInt"></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_non_int_radio" id="rdf-content-non-int-radio" /></td>
+                  <td bind="asNonInt"></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_date_radio" id="rdf-content-date-radio" /></td>
+                  <td bind="asDate"><span class="rdf-node-info">(YYYY-MM-DD)</span></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_date_time_radio" id="rdf-content-date-time-radio" /></td>
+                  <td bind="asDateTime"><span class="rdf-node-info">(YYYY-MM-DD HH:MM:SS)</span></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_boolean_radio" id="rdf-content-boolean-radio"/></td>
+                  <td bind="asBool"></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_type_radio" id="rdf-content-type-radio" /></td>
+                  <td bind="asCustom"><span class="rdf-node-info" bind="asType">(specify type IRI)</span></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colspan="2"><input type="text" size="25" id="rdf-content-type-input" bind="rdf_content_type_input"/></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="rdf-content-radio" value="blank" bind="rdf_content_blank_radio" /></td>
+                  <td bind="asBlank"></td>
+                </tr>
+              </table>
+            </div>
+            <div class="rdf-transform-node-dialog-step-header" bind="useExpression">
+            </div>
+            <div class="rdf-transform-node-dialog-step" style="margin-top:3px">
+              <table width="100%" class="grid-layout">
+                <tr>
+                  <td><span class="rdf-value-expression" bind="rdf_cell_expr" id="rdf-cell-expr"></span></td>
+                </tr>
+                <tr>
+                  <td><a href="#" bind="rdf_cell_expr_preview"> $.i18n(rdft-dialog/preview-edit) + </a></td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+  

@@ -13,6 +13,7 @@ import com.google.refine.model.Row;
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -69,27 +70,32 @@ public class CellBlankNode extends ResourceNode {
 	}
 
     @Override
-    protected List<Value> createResources(
-                            ParsedIRI baseIRI, ValueFactory factory, Project project ) {
+    protected List<Value> createResources(ParsedIRI baseIRI, ValueFactory factory,
+											RepositoryConnection connection, Project project ) {
+		this.baseIRI = baseIRI;
+		this.theFactory = factory;
+		this.theConnection = connection;
+		this.theProject = project;
+
 		List<Value> bnodes = null;
         if (this.getRecord() != null) {
-            bnodes = createRecordResources(factory, project);
+            bnodes = createRecordResources();
         }
         else {
             bnodes =
-				createRowResources( factory, project, this.getRow(), this.getRowIndex() );
+				createRowResources( this.getRow(), this.getRowIndex() );
         }
 
 		return bnodes;
     }
 
-    private List<Value> createRecordResources(ValueFactory factory, Project project) {
+    private List<Value> createRecordResources() {
         List<Value> bnodes = new ArrayList<Value>();
 		List<Value> bnodesNew = null;
         Record theRecord = this.getRecord();
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
 			bnodesNew =
-				this.createRowResources(factory, project, project.rows.get(iRowIndex), iRowIndex);
+				this.createRowResources(this.theProject.rows.get(iRowIndex), iRowIndex);
 			if (bnodesNew != null) {
 				bnodes.addAll(bnodesNew);
 			}
@@ -99,13 +105,11 @@ public class CellBlankNode extends ResourceNode {
 		return bnodes;
     }
 
-	private List<Value> createRowResources(
-							ValueFactory factory, Project project,
-                            Row theRow, int iRowIndex ) {
+	private List<Value> createRowResources(Row theRow, int iRowIndex) {
         List<Value> bnodes = null;
     	try {
     		Object results =
-				Util.evaluateExpression(project, strExpression, strColumnName, theRow, iRowIndex);
+				Util.evaluateExpression(this.theProject, strExpression, strColumnName, theRow, iRowIndex);
 
             // Results cannot be classed...
 			if (results.getClass() == EvalError.class) {
@@ -117,7 +121,7 @@ public class CellBlankNode extends ResourceNode {
 
 				int iSize = Arrays.asList(results).size();
 				for (int iIndex = 0; iIndex < iSize; iIndex++) {
-    				bnodes.add( factory.createBNode() );
+    				bnodes.add( this.theFactory.createBNode() );
     			}
     		}
             // Results are singular...
@@ -125,7 +129,7 @@ public class CellBlankNode extends ResourceNode {
 				String strResult = results.toString();
 				if (strResult != null && strResult.length() > 0 ) {
                 	bnodes = new ArrayList<Value>();
-                	bnodes.add( factory.createBNode() );
+                	bnodes.add( this.theFactory.createBNode() );
 				}
             }
     	}

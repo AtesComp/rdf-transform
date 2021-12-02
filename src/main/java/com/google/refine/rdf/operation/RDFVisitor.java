@@ -5,7 +5,10 @@ import java.util.Collection;
 import com.google.refine.model.Project;
 
 import com.google.refine.rdf.RDFTransform;
+import com.google.refine.rdf.Util;
 import com.google.refine.rdf.vocab.Vocabulary;
+
+import com.google.refine.browsing.Engine;
 
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Statement;
@@ -18,20 +21,20 @@ import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class RDFVisitor {
-    // The limit on the number of sample rows or records processed...
-    // NOTE: The value here is the default.
-    //       When set to 0, there is no limit.
-    protected int iLimit = 10;
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFVisitor");
 
     private final RDFTransform transform;
     private final RDFWriter writer;
     private final SailRepository model;
     private final SailRepositoryConnection connection;
 
-    public RDFVisitor(RDFTransform transform, RDFWriter writer) {
-        this.transform = transform;
-        this.writer = writer;
+    public RDFVisitor(RDFTransform theTransform, RDFWriter theWriter) {
+        this.transform = theTransform;
+        this.writer = theWriter;
 
         // Initializing repository...
         this.model = new SailRepository( new MemoryStore() );
@@ -57,17 +60,21 @@ public abstract class RDFVisitor {
         return this.model;
     }
 
-    public void start(Project project) {
-        try{
-            // Open RDF output...
-            //writer.startRDF();
+    abstract public void buildModel(Project theProject, Engine theEngine);
 
-            // Export namespace information...
+    public void start(Project theProject) {
+        if ( Util.isVerbose(2) )
+            logger.info("Starting Visitation...");
+
+        try {
+            // Export namespace information previously populated in the repository...
             RepositoryResult<Namespace> nsIter = this.connection.getNamespaces();
             try {
                 while ( nsIter.hasNext() ) {
                     Namespace ns = nsIter.next();
                     this.writer.handleNamespace( ns.getPrefix(), ns.getName() );
+                    if ( Util.isVerbose(2) )
+                        logger.info("  Prefix: " + ns.getPrefix() + " : " + ns.getName());
                 }
             }
             finally {
@@ -82,9 +89,11 @@ public abstract class RDFVisitor {
         }
     }
 
-    public void end(Project project) {
+    public void end(Project theProject) {
+        if ( Util.isVerbose(2) )
+            logger.info("...Ending Visitation");
+
         try {
-            //writer.endRDF();
             if (this.connection.isOpen()) {
                 this.connection.close();
             }
@@ -98,12 +107,13 @@ public abstract class RDFVisitor {
     }
 
     protected void flushStatements() throws RepositoryException, RDFHandlerException {
-        //List<Resource> resourceList = Iterations.asList( con.getContextIDs() );
+        // TODO: Reserve this commented code for future context upgrade
+        //List<Resource> resourceList = Iterations.asList( this.connection.getContextIDs() );
         //Resource[] resources = resourceList.toArray( new Resource[ resourceList.size() ] );
 
         // Export statements...
         RepositoryResult<Statement> stmtIter =
-            //con.getStatements(null, null, null, false, resources);
+            //this.connection.getStatements(null, null, null, false, resources);
             this.connection.getStatements(null, null, null, false);
 
         try {

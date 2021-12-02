@@ -9,6 +9,7 @@ import com.google.refine.model.Project;
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,14 +43,19 @@ public class ConstantResourceNode extends ResourceNode {
     }
 
     @Override
-    public List<Value> createResources(
-                            ParsedIRI baseIRI, ValueFactory factory, Project project )
+    public List<Value> createResources(ParsedIRI baseIRI, ValueFactory factory,
+                                        RepositoryConnection connection,Project project)
     {
+        this.baseIRI = baseIRI;
+        this.theFactory = factory;
+        this.theConnection = connection;
+        this.theProject = project;
+
         List<Value> listResources = null;
         String strResource = null;
         if (this.strIRI != null & this.strIRI.length() > 0 ) {
             try {
-                strResource = Util.resolveIRI(baseIRI, this.strIRI);
+                strResource = Util.resolveIRI(this.baseIRI, this.strIRI);
             }
             catch (Util.IRIParsingException ex) {
                 // ...continue...
@@ -57,9 +63,10 @@ public class ConstantResourceNode extends ResourceNode {
             if (strResource == null) {
                 return listResources;
             }
+            strResource = this.expandPrefixedIRI(strResource);
 
             listResources = new ArrayList<Value>();
-            listResources.add( factory.createIRI(strResource) );
+            listResources.add( this.theFactory.createIRI(strResource) );
         }
         return listResources;
     }

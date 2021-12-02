@@ -12,6 +12,7 @@ import org.eclipse.rdf4j.model.BNode;
 //import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.refine.model.Project;
@@ -36,9 +37,14 @@ public class ConstantBlankNode extends ResourceNode {
 	}
 
 	@Override
-	public List<Value> createResources(
-								ParsedIRI baseIRI, ValueFactory factory, Project project )
+	public List<Value> createResources(ParsedIRI baseIRI, ValueFactory factory,
+										RepositoryConnection connection, Project project )
 	{
+        this.baseIRI = baseIRI;
+        this.theFactory = factory;
+        this.theConnection = connection;
+        this.theProject = project;
+
 		if (bnode == null) {
     		bnode = factory.createBNode();
     	}

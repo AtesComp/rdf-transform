@@ -104,7 +104,7 @@ public class VocabularySearcher implements IVocabularySearcher {
         this.reader = DirectoryReader.open(this.dirLucene);
         this.searcher = new IndexSearcher(this.reader);
 		if ( Util.isVerbose(3) )
-			logger.info("Created vocabulary searcher");
+			logger.info("...created vocabulary searcher");
 	}
 
 	@Override
@@ -127,8 +127,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		// Import classes & properties from Namespace at URL...
 		if ( Util.isVerbose(3) )
 			logger.info(
-				"Import And Index vocabulary " +
-				strPrefix + ": <" + strNamespace + "> " +
+				"Import And Index vocabulary " + strPrefix + ": <" + strNamespace + "> " +
 				"from " + strFetchURL);
 		importer.importVocabulary(strFetchURL, classes, properties);
 		this.indexTerms(strProjectID, classes, properties);

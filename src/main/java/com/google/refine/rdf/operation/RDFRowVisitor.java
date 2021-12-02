@@ -1,17 +1,32 @@
 package com.google.refine.rdf.operation;
 
+import com.google.refine.rdf.RDFTransform;
+import com.google.refine.rdf.Util;
+
+import com.google.refine.browsing.Engine;
+import com.google.refine.browsing.FilteredRows;
 import com.google.refine.browsing.RowVisitor;
 import com.google.refine.model.Project;
 import com.google.refine.model.Row;
-import com.google.refine.rdf.RDFTransform;
 
 import org.eclipse.rdf4j.rio.RDFWriter;
 
-public abstract class RDFRowVisitor extends RDFVisitor implements RowVisitor {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    public RDFRowVisitor(RDFTransform transform, RDFWriter writer) {
-        super(transform, writer);
+public abstract class RDFRowVisitor extends RDFVisitor implements RowVisitor {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFRowVisitor" );
+
+    public RDFRowVisitor(RDFTransform theTransform, RDFWriter theWriter) {
+        super(theTransform, theWriter);
     }
 
-    abstract public boolean visit(Project project, int iRowIndex, Row row);
+    abstract public boolean visit(Project theProject, int iRowIndex, Row theRow);
+
+    public void buildModel(Project theProject, Engine theEngine) {
+        FilteredRows filteredRows = theEngine.getAllFilteredRows();
+		if ( Util.isVerbose(4) )
+			logger.info("buildModel: visit matching filtered rows");
+        filteredRows.accept(theProject, this);
+    }
 }

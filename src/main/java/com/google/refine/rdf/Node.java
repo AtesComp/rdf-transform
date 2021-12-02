@@ -22,18 +22,38 @@ import com.fasterxml.jackson.core.JsonGenerationException;
     property = "nodeType")
 @JsonTypeIdResolver(NodeResolver.class)
 abstract public class Node {
+    protected ParsedIRI baseIRI;
+    protected ValueFactory theFactory;
+    protected RepositoryConnection theConnection;
+    protected Project theProject;
+
     public abstract String getNodeName();
 
     @JsonProperty("nodeType")
     public abstract String getNodeType();
+
+    protected String expandPrefixedIRI(String strObjectIRI) {
+        String strExpanded = strObjectIRI;
+        if ( !strObjectIRI.contains("://") ) {
+            int iIndex = strObjectIRI.indexOf(":");
+            if (iIndex >= 0) {
+                String strPrefix = strObjectIRI.substring(0, iIndex);
+                String strNamespace = this.theConnection.getNamespace(strPrefix);
+                if (strNamespace != null) {
+                    strExpanded = strNamespace + strObjectIRI.substring(iIndex);
+                }
+            }
+        }
+        return strExpanded;
+    }
 
     /*
      *  Method createObjects()
      *
      *    Creates the object list for triple statements from this node.
      */
-    protected abstract List<Value> createObjects(ParsedIRI baseIRI, ValueFactory factory,
-                        RepositoryConnection connection, Project theProject,
+    protected abstract List<Value> createObjects(ParsedIRI baseIRI, ValueFactory theFactory,
+                        RepositoryConnection theConnection, Project theProject,
                         ResourceNode nodeParent);
 
     public abstract void write(JsonGenerator writer)

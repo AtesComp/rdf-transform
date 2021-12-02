@@ -39,7 +39,7 @@ class RDFTransform {
                 RDFTransform.strRecBasedIndex );
 
         RDFTransform.strIndexTitle =
-            ( RDFTransform.bRowBased ? "Row" : "Record" );
+            ( RDFTransform.bRowBased ? $.i18n("rdft-dialog/title-row") : $.i18n("rdft-dialog/title-rec") );
     }
 
     static findColumn(columnName) {
@@ -58,7 +58,7 @@ class RDFTransform {
  *  The RDF Transform dialog class for transforming data to RDF
  */
 class RDFTransformDialog {
-    iSampleRowsOrRecords = 20; // TODO: Modify for user input
+    iSampleLimit = 20; // TODO: Modify for user input
 
     thePrefixes;
     prefixesManager;
@@ -196,11 +196,20 @@ class RDFTransformDialog {
         this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok')                    );
         this.#elements.buttonCancel.text(         $.i18n('rdft-buttons/cancel')                );
 
-        const strSample = $.i18n('rdft-dialog/sample-turtle', this.iSampleRowsOrRecords);
+        const strSample =
+            $.i18n('rdft-dialog/sample-turtle', this.iSampleLimit) +
+            ( RDFTransform.bRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );;
         this.#elements.rdftSampleTurtleText.html( strSample );
 
-        this.#elements.buttonOK.click( () => this.#doSave() );
-        this.#elements.buttonCancel.click( () => DialogSystem.dismissUntil(this.#level - 1) );
+        this.#elements.buttonOK
+        .click(
+            () => {
+                this.#doSave();
+                DialogSystem.dismissUntil(this.#level - 1);
+            }
+        );
+        this.#elements.buttonCancel
+        .click( () => DialogSystem.dismissUntil(this.#level - 1) );
 
         this.#functionalizeBody();
 
@@ -295,11 +304,10 @@ class RDFTransformDialog {
             /* module */    'rdf-transform',
             /* command */   'save-rdf-transform',
             /* params */    {},
-            /* body */      { [RDFTransform.KEY] : JSON.stringify(theTransform) },
+            /* body */      { [RDFTransform.KEY] : JSON.stringify( theTransform ) },
             /* updateOps */ {},
             /* callbacks */
             {   onDone: () => {
-                    DialogSystem.dismissUntil(this.#level - 1);
                     theProject.overlayModels.RDFTransform = theTransform;
                 }
             }
@@ -350,8 +358,8 @@ class RDFTransformDialog {
             /* command */   'preview-rdf',
             /* params */    {},
             /* body */      {   [RDFTransform.KEY] : JSON.stringify( theTransform ),
-                                "engine"   : JSON.stringify( ui.browsingEngine.getJSON() ),
-                                "rowLimit" : this.iSampleRowsOrRecords
+                                "engine"           : JSON.stringify( ui.browsingEngine.getJSON() ),
+                                "sampleLimit"      : this.iSampleLimit
                             },
             /* updateOps */ {},
             /* callbacks */ {   onDone: (data) => {

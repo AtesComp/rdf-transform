@@ -108,17 +108,19 @@ public class CellLiteralNode extends CellNode {
     protected List<Value> createObjects(
 							ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
 							Project project, ResourceNode nodeParent ) {
-        // 
-        // The only parameters used is "factory", "project", "nodeParent" for this override
-        //
+        this.baseIRI = baseIRI;
+        this.theFactory = factory;
+        this.theConnection = connection;
+        this.theProject = project;
+
 		List<Value> literals = null;
         Record theRecord = nodeParent.getRecord();
         if (theRecord != null) {
-            literals = createRecordObjects(factory, project, theRecord);
+            literals = createRecordObjects(theRecord);
         }
         else {
             literals =
-				createRowObjects( factory, project, nodeParent.getRow(), nodeParent.getRowIndex() );
+				createRowObjects( nodeParent.getRow(), nodeParent.getRowIndex() );
         }
 
 		return literals;
@@ -128,13 +130,12 @@ public class CellLiteralNode extends CellNode {
      *  Method createRecordObjects() creates the object list for triple statements
      *  from this node on Records
      */
-	private List<Value> createRecordObjects(
-							ValueFactory factory, Project project, Record theRecord ) {
+	private List<Value> createRecordObjects(Record theRecord ) {
 		List<Value> literals = new ArrayList<Value>();
 		List<Value> literalsNew = null;
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
 			literalsNew =
-				this.createRowObjects(factory, project, project.rows.get(iRowIndex), iRowIndex);
+				this.createRowObjects(this.theProject.rows.get(iRowIndex), iRowIndex);
 			if (literalsNew != null) {
 				literals.addAll(literalsNew);
 			}
@@ -148,12 +149,11 @@ public class CellLiteralNode extends CellNode {
      *  Method createObjects() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowObjects(
-							ValueFactory factory, Project project, Row theRow, int iRowIndex ) {
+	private List<Value> createRowObjects(Row theRow, int iRowIndex ) {
 		List<String> astrValues = null;
         try {
             Object results =
-				Util.evaluateExpression(project, strExpression, strColumnName, theRow, iRowIndex);
+				Util.evaluateExpression(this.theProject, strExpression, strColumnName, theRow, iRowIndex);
 
             if (results.getClass() == EvalError.class) {
             	astrValues = null;
@@ -182,13 +182,13 @@ public class CellLiteralNode extends CellNode {
         	for (String strValue : astrValues) {
         		Literal literal;
             	if (this.strValueType != null) {
-                	literal = factory.createLiteral( strValue, factory.createIRI(strValueType) );
+                	literal = this.theFactory.createLiteral( strValue, this.theFactory.createIRI(strValueType) );
             	}
 				else if (this.strLanguage != null) {
-            		literal = factory.createLiteral( strValue, strLanguage );
+            		literal = this.theFactory.createLiteral( strValue, strLanguage );
             	}
 				else {
-            		literal = factory.createLiteral( strValue );
+            		literal = this.theFactory.createLiteral( strValue );
             	}
             	literals.add(literal);
         	}

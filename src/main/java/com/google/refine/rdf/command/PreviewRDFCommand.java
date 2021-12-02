@@ -2,6 +2,7 @@ package com.google.refine.rdf.command;
 
 import com.google.refine.rdf.operation.PreviewRDFRecordVisitor;
 import com.google.refine.rdf.operation.PreviewRDFRowVisitor;
+import com.google.refine.rdf.operation.RDFVisitor;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.Util;
 import com.google.refine.rdf.vocab.Vocabulary;
@@ -30,8 +31,6 @@ import org.slf4j.LoggerFactory;
 public class PreviewRDFCommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
 
-    private int iRowLimit = 10; // Default
-
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -46,45 +45,39 @@ public class PreviewRDFCommand extends Command {
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             RDFTransform theTransform = RDFTransform.reconstruct(jnodeRoot);
 
-            String strRowLimit = request.getParameter("rowLimit");
-            int iPassRowLimit = this.iRowLimit; // ...set to default limit
-            if (strRowLimit != null) {
+            //
+            // Process Sample Limit...
+            //
+            String strLimit = request.getParameter("sampleLimit");
+            int iLimit = Util.getSampleLimit(); // ...set to current limit
+            if (strLimit != null) { // ...a limit was passed
                 try {
-                    iPassRowLimit = Integer.parseInt(strRowLimit); // set to user limit
+                    iLimit = Integer.parseInt(strLimit); // ...set to user limit
                 }
                 catch (NumberFormatException ex) {
                     // ignore, use default...
                 }
             }
+            if ( iLimit != Util.getSampleLimit() ) {
+                Util.setSampleLimit(iLimit);
+            }
 
             // Setup writer for output...
             StringWriter strwriterBase = new StringWriter();
 	        RDFWriter theWriter = Rio.createWriter(RDFFormat.TURTLE, strwriterBase);
-	        PreviewRDFRecordVisitor theRecordVisitor = null;
-	        PreviewRDFRowVisitor theRowVisitor = null;
-            boolean bRecordMode = theProject.recordModel.hasRecords();
-            if (bRecordMode) {
-                theRecordVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter, iPassRowLimit);
-            }
-            else {
-                theRowVisitor = new PreviewRDFRowVisitor(theTransform, theWriter, iPassRowLimit);
-            }
 
             // Start writing...
 			theWriter.startRDF();
 
-            // Process vocabularies...
-	        for ( Vocabulary vocab : theTransform.getPrefixesMap().values() ) {
-		        theWriter.handleNamespace( vocab.getPrefix(), vocab.getNamespace() );
-	        }
-
-            // Process sample records/rows of data...
-            if (bRecordMode) {
-                Util.buildModel(theProject, theEngine, theRecordVisitor);
+            // Process sample records/rows of data for statements...
+	        RDFVisitor theVisitor = null;
+            if ( theProject.recordModel.hasRecords() ) {
+                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
             }
             else {
-                Util.buildModel(theProject, theEngine, theRowVisitor);
+                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
             }
+            theVisitor.buildModel(theProject, theEngine);
 
             theWriter.endRDF();
             // ...end writing

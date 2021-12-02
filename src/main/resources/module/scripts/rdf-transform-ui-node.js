@@ -6,6 +6,16 @@
 class RDFTransformUINode {
     static iMaxNodeLength = 35;
 
+    #dialog;
+    #node;
+    #options;
+    #linkUIs;
+    #detailsRendered;
+    #tdMain;
+    #tdToggle;
+    #tdDetails;
+    #expanded;
+
     #theNodeLabel;
     #level;
 
@@ -14,42 +24,42 @@ class RDFTransformUINode {
     #tableLinks;
 
     constructor(dialog, node, table, options) {
-        this.dialog = dialog;
-        this.node = node;
-        this.options = options;
+        this.#dialog = dialog;
+        this.#node = node;
+        this.#options = options;
 
-        this.linkUIs = [];
-        this.detailsRendered = false;
+        this.#linkUIs = [];
+        this.#detailsRendered = false;
 
-        this.tr = table.insertRow(table.rows.length);
-        this.tdMain    = this.tr.insertCell(0);
-        this.tdToggle  = this.tr.insertCell(1);
-        this.tdDetails = this.tr.insertCell(2);
+        var tr = table.insertRow(table.rows.length);
+        this.#tdMain    = tr.insertCell(0);
+        this.#tdToggle  = tr.insertCell(1);
+        this.#tdDetails = tr.insertCell(2);
 
-        $(this.tdMain)
+        $(this.#tdMain)
         .addClass("rdf-transform-node-main")
         .attr("width", "250")
         .addClass("padded");
-        $(this.tdToggle)
+        $(this.#tdToggle)
         .addClass("rdf-transform-node-toggle")
         .attr("width", "1%")
         .addClass("padded")
         .hide();
-        $(this.tdDetails)
+        $(this.#tdDetails)
         .addClass("rdf-transform-node-details")
         .attr("width", "62%")
         .hide();
 
         this.#renderMain();
         //this.renderTypes();
-        this.expanded = options.expanded;
+        this.#expanded = this.#options.expanded;
         if (this.#isExpandable()) {
             this.#showExpandable();
         }
     }
 
     #renderMain() {
-        $(this.tdMain).empty();
+        $(this.#tdMain).empty();
 
         var bExpandable = this.#isExpandable();
         var htmlType = '';
@@ -82,15 +92,15 @@ class RDFTransformUINode {
   htmlType +
 '</table>'
         )
-        .appendTo(this.tdMain);
+        .appendTo(this.#tdMain);
 
         var elements = DOM.bind(html);
         this.#theNodeLabel = elements.rdftNodeLabel;
         if (bExpandable) {
             var typesTable = $('<table width="100%"></table>')[0];
-            if (this.node.rdfTypes && this.node.rdfTypes.length > 0) {
+            if (this.#node.rdfTypes && this.#node.rdfTypes.length > 0) {
                 // Create each type display with removal icon...
-                for (var iIndex = 0; iIndex < this.node.rdfTypes.length; iIndex++) {
+                for (var iIndex = 0; iIndex < this.#node.rdfTypes.length; iIndex++) {
                     var tr = typesTable.insertRow(typesTable.rows.length);
 
                     // Set index for "onClick" callback handler...
@@ -114,7 +124,7 @@ class RDFTransformUINode {
                             $('<a href="#" class="action"></a>')
                             .text(
                                 RDFTransformCommon.shortenResource(
-                                    this.#getTypeName( this.node.rdfTypes[iIndex] )
+                                    this.#getTypeName( this.#node.rdfTypes[iIndex] )
                                 )
                             )
                             .click( (evt) => {
@@ -148,25 +158,25 @@ class RDFTransformUINode {
                 }
             );
 
-        if (this.node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE ||
-            this.node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL) {
+        if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE ||
+            this.#node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL) {
             // Index IRI
             // ColName IRI
             // Index Literal
             // ColName Cell
 
             var strNodeLabel = ' IRI';
-            if (this.node.nodeType === RDFTransformCommon.g_strRDFT_CLITERAL) {
-                strNodeLabel = this.node.isRowNumberCell ? ' Literal' : ' ' + $.i18n('rdft-dialog/cell');
+            if (this.#node.nodeType === RDFTransformCommon.g_strRDFT_CLITERAL) {
+                strNodeLabel = this.#node.isRowNumberCell ? ' Literal' : ' ' + $.i18n('rdft-dialog/cell');
             }
 
             var span = $('<span></span>').addClass("rdf-transform-node-label");
             var strSPAN = "";
-            if (this.node.isRowNumberCell) {
+            if (this.#node.isRowNumberCell) {
                 strSPAN = '[' + $.i18n('rdft-dialog/row-index') + ']';
             }
-            else if ("columnName" in this.node) {
-                strSPAN = this.node.columnName;
+            else if ("columnName" in this.#node) {
+                strSPAN = this.#node.columnName;
             }
             else {
                 strNodeLabel = "Configure?"; // TODO: $.i18n('rdft-dialog/configure')
@@ -174,26 +184,26 @@ class RDFTransformUINode {
             span.text(strSPAN + strNodeLabel);
             ahref.append(span);
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE) {
-            if ("value" in this.node) {
-                ahref.html( RDFTransformCommon.shortenResource(this.node.value) );
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE) {
+            if ("value" in this.#node) {
+                ahref.html( RDFTransformCommon.shortenResource(this.#node.value) );
             }
             else {
                 ahref.html( $.i18n('rdft-dialog/which-res') );
             }
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL) {
-            if ("value" in this.node) {
-                ahref.html( RDFTransformCommon.shortenLiteral(this.node.value) );
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL) {
+            if ("value" in this.#node) {
+                ahref.html( RDFTransformCommon.shortenLiteral(this.#node.value) );
             }
             else {
                 ahref.html( $.i18n('rdft-dialog/what-val') );
             }
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
             ahref.html("[blank]");
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
             ahref.html("[blank] " + $.i18n('rdft-dialog/cell'));
         }
 
@@ -205,14 +215,14 @@ class RDFTransformUINode {
     }
 
     #isExpandable() {
-        return (this.node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE ||
-                this.node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE ||
-                this.node.nodeType == RDFTransformCommon.g_strRDFT_BLANK ||
-                this.node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK);
+        return (this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE ||
+                this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE ||
+                this.#node.nodeType == RDFTransformCommon.g_strRDFT_BLANK ||
+                this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK);
     }
 
     show() {
-        if (this.expanded) {
+        if (this.#expanded) {
             this.#collapsedDetailDiv.hide();
             this.#expandedDetailDiv.show();
         }
@@ -223,22 +233,22 @@ class RDFTransformUINode {
     }
 
     #showExpandable() {
-        $(this.tdToggle).show();
-        $(this.tdDetails).show();
+        $(this.#tdToggle).show();
+        $(this.#tdDetails).show();
 
-        if (this.detailsRendered) {
+        if (this.#detailsRendered) {
             return;
         }
-        this.detailsRendered = true;
+        this.#detailsRendered = true;
 
         this.#collapsedDetailDiv =
             $('<div></div>')
-            .appendTo(this.tdDetails)
+            .appendTo(this.#tdDetails)
             .addClass("padded")
             .html("...");
         this.#expandedDetailDiv =
             $('<div></div>')
-            .appendTo(this.tdDetails)
+            .appendTo(this.#tdDetails)
             .addClass("rdf-transform-detail-container");
 
         this.#renderDetails();
@@ -247,13 +257,13 @@ class RDFTransformUINode {
 
         //$(this.tdToggle).html("&nbsp;");
         $('<img />')
-        .attr("src", this.expanded ? "images/expanded.png" : "images/collapsed.png")
-        .appendTo(this.tdToggle)
+        .attr("src", this.#expanded ? "images/expanded.png" : "images/collapsed.png")
+        .appendTo(this.#tdToggle)
         .click(
             (evt) => {
-                this.expanded = !this.expanded;
+                this.#expanded = !this.#expanded;
                 $(evt.currentTarget)
-                .attr("src", this.expanded ? "images/expanded.png" : "images/collapsed.png");
+                .attr("src", this.#expanded ? "images/expanded.png" : "images/collapsed.png");
                 this.show();
             }
         );
@@ -264,11 +274,11 @@ class RDFTransformUINode {
             $('<table></table>').addClass("rdf-transform-links-table-layout")
             .appendTo(this.#expandedDetailDiv)[0];
 
-        if ("links" in this.node && this.node.links !== null) {
-            for (const link of this.node.links) {
-                this.linkUIs.push(
+        if ("links" in this.#node && this.#node.links !== null) {
+            for (const link of this.#node.links) {
+                this.#linkUIs.push(
                     new RDFTransformUILink(
-                        this.dialog,
+                        this.#dialog,
                         link,
                         this.#tableLinks,
                         { expanded: true },
@@ -291,9 +301,9 @@ class RDFTransformUINode {
                         nodeType: RDFTransformCommon.g_strRDFT_CLITERAL
                     }
                 };
-                this.linkUIs.push(
+                this.#linkUIs.push(
                     new RDFTransformUILink(
-                        this.dialog,
+                        this.#dialog,
                         newLink,
                         this.#tableLinks,
                         {
@@ -355,7 +365,7 @@ class RDFTransformUINode {
                     .prop("disabled", true);
                 }
             );
-        if (column.name == this.node.columnName) {
+        if (column.name == this.#node.columnName) {
             tdRadio.prop("checked", true);
         }
         tdRadio.appendTo(td);
@@ -411,36 +421,36 @@ class RDFTransformUINode {
         elements.rdf_content_lang_input.prop("disabled", "disabled");
         elements.rdf_content_type_input.prop("disabled", "disabled");
         //setContentOptions();
-        if ( this.node.nodeType === RDFTransformCommon.g_strRDFT_RESOURCE ||
-             this.node.nodeType === RDFTransformCommon.g_strRDFT_CRESOURCE ) {
+        if ( this.#node.nodeType === RDFTransformCommon.g_strRDFT_RESOURCE ||
+             this.#node.nodeType === RDFTransformCommon.g_strRDFT_CRESOURCE ) {
             elements.rdf_content_iri_radio.prop("checked", true);
         }
-        else if (this.node.nodeType === RDFTransformCommon.g_strRDFT_LITERAL ||
-                 this.node.nodeType === RDFTransformCommon.g_strRDFT_CLITERAL) {
-            if (this.node.lang) {
+        else if (this.#node.nodeType === RDFTransformCommon.g_strRDFT_LITERAL ||
+                 this.#node.nodeType === RDFTransformCommon.g_strRDFT_CLITERAL) {
+            if (this.#node.lang) {
                 elements.rdf_content_lang_radio.prop("checked", true);
-                elements.rdf_content_lang_input.prop("disabled", false).val(this.node.lang);
+                elements.rdf_content_lang_input.prop("disabled", false).val(this.#node.lang);
             }
             else {
-                if (this.node.valueType) {
-                    if (this.node.valueType === 'http://www.w3.org/2001/XMLSchema#int') {
+                if (this.#node.valueType) {
+                    if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#int') {
                         elements.rdf_content_int_radio.prop("checked", true);
                     }
-                    else if (this.node.valueType === 'http://www.w3.org/2001/XMLSchema#double') {
+                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#double') {
                         elements.rdf_content_non_int_radio.prop("checked", true);
                     }
-                    else if (this.node.valueType === 'http://www.w3.org/2001/XMLSchema#date') {
+                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#date') {
                         elements.rdf_content_date_radio.prop("checked", true);
                     }
-                    else if (this.node.valueType === 'http://www.w3.org/2001/XMLSchema#dateTime') {
+                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#dateTime') {
                         elements.rdf_content_date_time_radio.prop("checked", true);
                     }
-                    else if (this.node.valueType === 'http://www.w3.org/2001/XMLSchema#boolean') {
+                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#boolean') {
                         elements.rdf_content_boolean_radio.prop("checked", true);
                     }
                     else {
                         elements.rdf_content_type_radio.prop("checked", true);
-                        elements.rdf_content_type_input.prop("disabled", false).val(this.node.valueType);
+                        elements.rdf_content_type_input.prop("disabled", false).val(this.#node.valueType);
                     }
                 }
                 else {
@@ -455,8 +465,8 @@ class RDFTransformUINode {
 
         // Set cell expression...
         var expression = RDFTransform.strDefaultExpression; // ...default expression
-        if (this.node.expression) {
-            expression = this.node.expression;
+        if (this.#node.expression) {
+            expression = this.#node.expression;
         }
         elements.rdf_cell_expr.empty().text(expression);
 
@@ -645,108 +655,34 @@ class RDFTransformUINode {
          * Body
          *--------------------------------------------------
          */
-        var html = $(
-'<table>' +
-  '<tr>' +
-    '<td>' +
-      '<table class="grid-layout layout-tight rdf-node-table">' +
-        '<tr>' +
-          '<td>' +
-            '<div class="rdf-transform-node-dialog-step-header">' +
-              $.i18n('rdft-dialog/use-content') + '...' +
-            '</div>' +
-          '</td>' +
-          '<td>' +
-            '<div class="rdf-transform-node-dialog-step-header">' +
-              $.i18n('rdft-dialog/content-used') + '...' +
-            '</div>' +
-          '</td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td>' +
-            '<div class="rdf-transform-node-dialog-step rdf-transform-node-dialog-column-list" bind="divColumns"></div>' +
-          '</td>' +
-          '<td>' +
-            '<div class="rdf-transform-node-dialog-step">' +
-              '<table width="100%" cols="2">' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="resource" bind="rdf_content_iri_radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/iri') + '</td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_txt_radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/text') + '</td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-lang-radio" bind="rdf_content_lang_radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/lang') + ' <input type="text" id="rdf-content-lang-input" bind="rdf_content_lang_input" size="4"/></td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_int_radio" id="rdf-content-int-radio"/></td>' +
-                  '<td>' + $.i18n('rdft-as/int') + '</td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_non_int_radio" id="rdf-content-non-int-radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/nonint') + '</td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_date_radio" id="rdf-content-date-radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/date') + ' <span class="rdf-node-info">(YYYY-MM-DD)</span></td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_date_time_radio" id="rdf-content-date-time-radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/datetime') + ' <span class="rdf-node-info">(YYYY-MM-DD HH:MM:SS)</span></td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_boolean_radio" id="rdf-content-boolean-radio"/></td>' +
-                  '<td>' + $.i18n('rdft-as/bool') + '</td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="literal" bind="rdf_content_type_radio" id="rdf-content-type-radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/custom') + ' <span class="rdf-node-info">(specify type IRI)</span></td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td></td>' +
-                  '<td colspan="2"><input type="text" size="25" id="rdf-content-type-input" bind="rdf_content_type_input"/></td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><input type="radio" name="rdf-content-radio" value="blank" bind="rdf_content_blank_radio" /></td>' +
-                  '<td>' + $.i18n('rdft-as/blank') + '</td>' +
-                '</tr>' +
-              '</table>' +
-            '</div>' +
-            '<div class="rdf-transform-node-dialog-step-header">' +
-              $.i18n('rdft-dialog/use-exp') + '...' +
-            '</div>' +
-            '<div class="rdf-transform-node-dialog-step" style="margin-top:3px">' +
-              '<table width="100%" class="grid-layout">' +
-                '<tr>' +
-                  '<td><span class="rdf-value-expression" bind="rdf_cell_expr" id="rdf-cell-expr"></span></td>' +
-                '</tr>' +
-                '<tr>' +
-                  '<td><a href="#" bind="rdf_cell_expr_preview">' + $.i18n('rdft-dialog/preview-edit') + '</a></td>' +
-                '</tr>' +
-              '</table>' +
-            '</div>' +
-          '</td>' +
-        '</tr>' +
-      '</table>' +
-    '</td>' +
-  '</tr>' +
-'</table>'
-        )
-        .appendTo(body);
+        var html = $(DOM.loadHTML('rdf-transform', 'scripts/dialogs/rdf-transform-node-config.html'));
 
         var elements = DOM.bind(html);
+        elements.useContent.text(    $.i18n('rdft-dialog/use-content') + '...'  );
+        elements.contentUsed.text(   $.i18n('rdft-dialog/content-used') + '...' );
+        elements.asIRI.text(         $.i18n('rdft-as/iri')                      );
+        elements.asText.text(        $.i18n('rdft-as/text')                     );
+        elements.asLang.text(        $.i18n('rdft-as/lang')                     );
+        elements.asInt.text(         $.i18n('rdft-as/int')                      );
+        elements.asNonInt.text(      $.i18n('rdft-as/nonint')                   );
+        elements.asDate.text(        $.i18n('rdft-as/date')                     );
+        elements.asDateTime.text(    $.i18n('rdft-as/datetime')                 );
+        elements.asBool.text(        $.i18n('rdft-as/bool')                     );
+        elements.asCustom.text(      $.i18n('rdft-as/custom')                   );
+        elements.asBlank.text(       $.i18n('rdft-as/blank')                    );
+        elements.useExpression.text( $.i18n('rdft-dialog/use-exp') + '...'      );
+        elements.rdf_cell_expr_preview.text( $.i18n('rdft-dialog/preview-edit') );
 
         var tableColumns = $('<table></table>')
             //.attr("cellspacing", "5")
             //.attr("cellpadding", "0")
             .appendTo(elements.divColumns)[0];
 
+        html.appendTo(body);
+
         // Interrogation...
-        var isCellNode = this.node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS);
-        var isRowIndex = this.node.isRowNumberCell !== undefined ? this.node.isRowNumberCell : false;
+        var isCellNode = this.#node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS);
+        var isRowIndex = this.#node.isRowNumberCell !== undefined ? this.#node.isRowNumberCell : false;
         //var isNewNode = !isRowIndex && isCellNode;
         // Since the above isNewNode is used in the #makeRowIndexChoice() below,
         // the compound truth statement (isRowIndex || isNewNode) can be simplified...
@@ -773,8 +709,8 @@ class RDFTransformUINode {
         }
 
         // Add constant value...
-        var strConstVal = (typeof this.node.value == 'undefined' ? '' : this.node.value);
-        this.#makeConstantValueChoice(tableColumns, !isResource, strConstVal); //(isResource ? '' : this.node.value));
+        var strConstVal = (typeof this.#node.value == 'undefined' ? '' : this.#node.value);
+        this.#makeConstantValueChoice(tableColumns, !isResource, strConstVal);
 
         // Initilize inputs...
         this.#initInputs(elements);
@@ -791,13 +727,13 @@ class RDFTransformUINode {
             () => {
                 var node = this.#getResultJSON();
                 if (node !== null) {
-                    if (this.node.rdfTypes) {
-                        node.rdfTypes = cloneDeep(this.node.rdfTypes);
+                    if (this.#node.rdfTypes) {
+                        node.rdfTypes = cloneDeep(this.#node.rdfTypes);
                     }
 
                     DialogSystem.dismissUntil(this.#level - 1);
 
-                    this.node = node;
+                    this.#node = node;
                     /*if ('columnIndex' in node) {
                         if (node.columnIndex !== -1) {
                             this.node.columnName = theProject.columnModel.columns[node.columnIndex].name;
@@ -807,7 +743,7 @@ class RDFTransformUINode {
                         }
                     }*/
                     this.#render();
-                    this.dialog.updatePreview();
+                    this.#dialog.updatePreview();
                 }
             }
         )
@@ -841,7 +777,7 @@ class RDFTransformUINode {
         };
 
         // Data Preview: Resource (IRI) or Literal...
-        const dialogDataTable = new RDFDataTableView( this.dialog.getBaseIRI(), isIRI );
+        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), isIRI );
         dialogDataTable.preview(objColumn, strExpression, isRowNumberCell, onDone);
     }
 
@@ -856,20 +792,21 @@ class RDFTransformUINode {
     }
 
     removeLink(linkUI) {
-        var iLinkIndex = this.linkUIs.lastIndexOf(linkUI);
+        var iLinkIndex = this.#linkUIs.lastIndexOf(linkUI);
         if (iLinkIndex >= 0) {
-            this.linkUIs.splice(iLinkIndex, 1);
+            this.#linkUIs.splice(iLinkIndex, 1);
+            this.#dialog.updatePreview();
         }
     }
 
     #hideExpandable() {
-        $(this.tdToggle).hide();
-        $(this.tdDetails).hide();
+        $(this.#tdToggle).hide();
+        $(this.#tdDetails).hide();
     }
 
     #addRDFType(element) {
         new RDFTransformResourceDialog(
-            element, 'class', theProject.id, this.dialog,
+            element, 'class', theProject.id, this.#dialog,
             (obj) => {
                 this.#addNodeRDFType(obj.id, obj.name);
             }
@@ -877,17 +814,19 @@ class RDFTransformUINode {
     }
 
     #addNodeRDFType(id, name) {
-        if (!this.node.rdfTypes) {
-            this.node.rdfTypes = [];
+        if (!this.#node.rdfTypes) {
+            this.#node.rdfTypes = [];
         }
-        this.node.rdfTypes.push( { 'iri'   : id,
+        this.#node.rdfTypes.push( { 'iri'   : id,
                                    'cirie' : name } );
         this.#renderMain();
+        this.#dialog.updatePreview();
     }
 
     #removeNodeRDFType(iIndex) {
-        this.node.rdfTypes.splice(iIndex, 1);
+        this.#node.rdfTypes.splice(iIndex, 1);
         this.#renderMain();
+        this.#dialog.updatePreview();
     }
 
     #showNodeRDFType(target, iIndex) {
@@ -904,8 +843,8 @@ class RDFTransformUINode {
         MenuSystem.showMenu(menu, () => {});
         MenuSystem.positionMenuLeftRight(menu, target);
 
-        var strIRI = this.node.rdfTypes[iIndex].iri;
-        var strCIRIE= this.node.rdfTypes[iIndex].cirie;
+        var strIRI = this.#node.rdfTypes[iIndex].iri;
+        var strCIRIE= this.#node.rdfTypes[iIndex].cirie;
         var strText = strIRI;
         if (strIRI.localeCompare(strCIRIE) != 0 ) {
             strText =
@@ -955,78 +894,78 @@ class RDFTransformUINode {
         var result = null;
         var getLinks = false;
 
-        if ( this.node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS) ) {
+        if ( this.#node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS) ) {
             // For "cell-as-*", the node must have either a column name or
             // is a row/record index...
-            if (!("columnName" in this.node || "isRowNumberCell" in this.node)) {
+            if (!("columnName" in this.#node || "isRowNumberCell" in this.#node)) {
                 return null;
             }
 
-            if (this.node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE) {
+            if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE) {
                 result = {
-                    "nodeType"   : this.node.nodeType,
-                    "expression" : this.node.expression,
+                    "nodeType"   : this.#node.nodeType,
+                    "expression" : this.#node.expression,
                     "rdfTypes"   : [],
                     "links"      : []
                 };
                 getLinks = true;
             }
-            else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL) {
+            else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL) {
                 result = {
-                    "nodeType"   : this.node.nodeType,
-                    "expression" : this.node.expression
+                    "nodeType"   : this.#node.nodeType,
+                    "expression" : this.#node.expression
                 };
-                if (this.node.valueType) {
-                    result.valueType = this.node.valueType;
+                if (this.#node.valueType) {
+                    result.valueType = this.#node.valueType;
                 }
-                if (this.node.lang) {
-                    result.lang = this.node.lang;
+                if (this.#node.lang) {
+                    result.lang = this.#node.lang;
                 }
             }
-            else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
+            else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
                 result = {
-                    "nodeType" : this.node.nodeType,
+                    "nodeType" : this.#node.nodeType,
                     "rdfTypes" : [],
                     "links"    : []
                 };
                 getLinks = true;
             }
 
-            if (this.node.columnName) {
-                result.columnName = this.node.columnName;
+            if (this.#node.columnName) {
+                result.columnName = this.#node.columnName;
             }
-            result.isRowNumberCell = this.node.isRowNumberCell;
+            result.isRowNumberCell = this.#node.isRowNumberCell;
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE) {
-            if (!("value" in this.node) || !this.node.value) {
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE) {
+            if (!("value" in this.#node) || !this.#node.value) {
                 return null;
             }
             result = {
-                "nodeType" : this.node.nodeType,
-                "value"    : this.node.value,
+                "nodeType" : this.#node.nodeType,
+                "value"    : this.#node.value,
                 "rdfTypes" : [],
                 "links"    : []
             };
             getLinks = true;
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL) {
-            if (!("value" in this.node) || !this.node.value) {
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL) {
+            if (!("value" in this.#node) || !this.#node.value) {
                 return null;
             }
             result = {
-                "nodeType" : this.node.nodeType,
-                "value"    : this.node.value,
+                "nodeType" : this.#node.nodeType,
+                "value"    : this.#node.value,
             };
-            if (this.node.valueType) {
-                result.valueType = this.node.valueType;
+            if (this.#node.valueType) {
+                result.valueType = this.#node.valueType;
             }
-            if (this.node.lang) {
-                result.lang = this.node.lang;
+            if (this.#node.lang) {
+                result.lang = this.#node.lang;
             }
         }
-        else if (this.node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
             result = {
-                "nodeType" : this.node.nodeType,
+                "nodeType" : this.#node.nodeType,
                 "rdfTypes" : [],
                 "links"    : []
             };
@@ -1038,8 +977,8 @@ class RDFTransformUINode {
         }
 
         if (getLinks) {
-            if (this.node.rdfTypes) {
-                for (const rdfType of this.node.rdfTypes) {
+            if (this.#node.rdfTypes) {
+                for (const rdfType of this.#node.rdfTypes) {
                     result.rdfTypes
                     .push(
                         {   "iri"   : rdfType.iri,
@@ -1049,7 +988,7 @@ class RDFTransformUINode {
                 }
             }
 
-            for (const linkUI of this.linkUIs) {
+            for (const linkUI of this.#linkUIs) {
                 var link = linkUI.getJSON();
                 if (link !== null) {
                     result.links.push(link);

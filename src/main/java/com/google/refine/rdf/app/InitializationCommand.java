@@ -29,7 +29,8 @@ public class InitializationCommand extends Command {
 	public void init(RefineServlet servlet) {
 		super.init(servlet);
 
-		Util.setVerbosityByPreferenceStore(); // ...initial set for debug mode
+		// Set the RDF Transform preferences via the OpenRefine Preference Store...
+		Util.setPreferencesByPreferenceStore();
 
 		// From refine.ini (or defaults)...
 		String strHost =  System.getProperty("refine.host");

@@ -92,16 +92,18 @@ public class ConstantLiteralNode extends LiteralNode {
 	protected List<Value> createObjects(
                             ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
                             Project project, ResourceNode nodeParent ) {
-        // 
-        // The only parameters used is "factory", "nodeParent" for this override
-        //
+        this.baseIRI = baseIRI;
+        this.theFactory = factory;
+        this.theConnection = connection;
+        this.theProject = project;
+
         List<Value> literals = null;
         Record theRecord = nodeParent.getRecord();
         if (theRecord != null) {
-            literals = createRecordObjects(factory, theRecord);
+            literals = createRecordObjects(theRecord);
         }
         else {
-            literals = createRowObjects(factory);
+            literals = createRowObjects();
         }
 
         return literals;
@@ -111,11 +113,11 @@ public class ConstantLiteralNode extends LiteralNode {
      *  Method createRecordObjects() creates the object list for triple statements
      *  from this node on Records
      */
-    private List<Value> createRecordObjects(ValueFactory factory, Record theRecord) {
+    private List<Value> createRecordObjects(Record theRecord) {
 		List<Value> literals = new ArrayList<Value>();
 		List<Value> literalsNew = null;
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			literalsNew = this.createRowObjects(factory);
+			literalsNew = this.createRowObjects();
 			if (literalsNew != null) {
 				literals.addAll(literalsNew);
 			}
@@ -129,7 +131,7 @@ public class ConstantLiteralNode extends LiteralNode {
      *  Method createRowbjects() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowObjects(ValueFactory factory)
+	private List<Value> createRowObjects()
     {
         List<Value> literals = null;
 
@@ -141,25 +143,28 @@ public class ConstantLiteralNode extends LiteralNode {
             if (this.strValueType != null) {
                 IRI iriValueType = null;
                 try {
-                    iriValueType = factory.createIRI(strValueType);
+                    iriValueType =
+                        this.theFactory.createIRI(
+                            this.expandPrefixedIRI(this.strValueType)
+                        );
                 }
                 catch (IllegalArgumentException ex) {
                     // ...continue to get literal another way...
                 }
                 if (iriValueType != null) {
-                    literal = factory.createLiteral( this.strValue, iriValueType );
+                    literal = this.theFactory.createLiteral( this.strValue, iriValueType );
                 }
             }
 
             // If there is not a value type OR there was an exception AND there is a language...
             if (literal == null && this.strLanguage != null) {
-                    literal = factory.createLiteral(this.strValue, strLanguage);
+                    literal = this.theFactory.createLiteral(this.strValue, strLanguage);
             }
 
             // If there is NOT a value type OR language...
             if (literal == null) {
                 // Don't decorate the value...
-                literal = factory.createLiteral(this.strValue);
+                literal = this.theFactory.createLiteral(this.strValue);
             }
 
             literals = new ArrayList<Value>();

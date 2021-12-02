@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -67,28 +68,32 @@ public class CellResourceNode extends ResourceNode {
 	}
 
     @Override
-    protected List<Value> createResources(
-                            ParsedIRI baseIRI, ValueFactory factory, Project project ) {
+    protected List<Value> createResources(ParsedIRI baseIRI, ValueFactory factory,
+                                            RepositoryConnection connection, Project project) {
+        this.baseIRI = baseIRI;
+        this.theFactory = factory;
+        this.theConnection = connection;
+        this.theProject = project;
+
 		List<Value> listResources = null;
         if (this.getRecord() != null) {
-            listResources = createRecordResources(baseIRI, factory, project);
+            listResources = createRecordResources();
         }
         else {
             listResources =
-                createRowResources(baseIRI, factory, project, this.getRow(), this.getRowIndex());
+                createRowResources( this.getRow(), this.getRowIndex() );
         }
 
 		return listResources;
     }
 
-    private List<Value> createRecordResources(
-                            ParsedIRI baseIRI, ValueFactory factory, Project project ) {
+    private List<Value> createRecordResources() {
         List<Value> listResources = new ArrayList<Value>();
 		List<Value> listResourcesNew = null;
         Record theRecord = this.getRecord();
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
 			listResourcesNew =
-                this.createRowResources(baseIRI, factory, project, project.rows.get(iRowIndex), iRowIndex);
+                this.createRowResources(this.theProject.rows.get(iRowIndex), iRowIndex);
 			if (listResourcesNew != null) {
 				listResources.addAll(listResourcesNew);
 			}
@@ -98,14 +103,12 @@ public class CellResourceNode extends ResourceNode {
 		return listResources;
     }
 
-    private List<Value> createRowResources(
-                            ParsedIRI baseIRI, ValueFactory factory, Project project,
-                            Row theRow, int iRowIndex ) {
+    private List<Value> createRowResources(Row theRow, int iRowIndex) {
         List<Value> listResources = null;
         try {
         	Object resultEval =
-                Util.evaluateExpression(project, this.strExpression, this.strColumnName,
-                                        project.rows.get(iRowIndex), iRowIndex);
+                Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName,
+                                        this.theProject.rows.get(iRowIndex), iRowIndex);
             String strIRI = null;
 
             // Results cannot be the EvalError class...
@@ -119,9 +122,10 @@ public class CellResourceNode extends ResourceNode {
                 List<Object> listResult = Arrays.asList(resultEval);
                 for (Object objResult : listResult) {
                     if ( Util.toSpaceStrippedString(objResult).length() > 0 ) {
-                        strIRI = Util.resolveIRI( baseIRI, objResult.toString() );
+                        strIRI = Util.resolveIRI( this.baseIRI, objResult.toString() );
                         if (strIRI != null) {
-                            listResources.add( factory.createIRI(strIRI) );
+                            strIRI = this.expandPrefixedIRI(strIRI);
+                            listResources.add( this.theFactory.createIRI(strIRI) );
                         }
                     }
             	}
@@ -130,10 +134,11 @@ public class CellResourceNode extends ResourceNode {
             else {
                 String strResult = Util.toSpaceStrippedString(resultEval);
                 if (strResult != null && strResult.length() > 0 ) {
-                    strIRI = Util.resolveIRI(baseIRI, strResult);
+                    strIRI = Util.resolveIRI(this.baseIRI, strResult);
                     if (strIRI != null) {
+                        strIRI = this.expandPrefixedIRI(strIRI);
                         listResources = new ArrayList<Value>();
-                        listResources.add( factory.createIRI(strIRI) ); // TODO
+                        listResources.add( this.theFactory.createIRI(strIRI) ); // TODO
                     }
                 }
             }

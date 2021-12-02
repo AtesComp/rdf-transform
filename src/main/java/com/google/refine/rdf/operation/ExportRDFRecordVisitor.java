@@ -7,7 +7,7 @@ import com.google.refine.rdf.ResourceNode;
 import com.google.refine.rdf.Util;
 
 import com.google.refine.model.Project;
-import com.google.refine.model.Row;
+import com.google.refine.model.Record;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -16,21 +16,21 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFWriter;
 
-public class ExportRDFRowVisitor extends RDFRowVisitor {
+public class ExportRDFRecordVisitor extends RDFRecordVisitor {
 
-    public ExportRDFRowVisitor(RDFTransform theTransform, RDFWriter theWriter) {
+    public ExportRDFRecordVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
     }
 
-    public boolean visit(Project theProject, int iRowIndex, Row theRow) {
+    public boolean visit(Project theProject, Record theRecord) {
         try {
             ParsedIRI baseIRI = this.getRDFTransform().getBaseIRI();
             RepositoryConnection theConnection = this.getModel().getConnection();
             ValueFactory theFactory = theConnection.getValueFactory();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                root.createStatements(baseIRI, theFactory, theConnection, theProject,
-                                        theRow, iRowIndex);
+                root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord );
+
                 //
                 // Flush Statements
                 //
@@ -54,5 +54,5 @@ public class ExportRDFRowVisitor extends RDFRowVisitor {
         }
 
         return false;
-    }
+    }    
 }

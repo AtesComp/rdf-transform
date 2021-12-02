@@ -421,15 +421,11 @@ public class RDFTransform implements OverlayModel {
     */
     @JsonIgnore // ...see getBaseIRIAsString()
     public ParsedIRI getBaseIRI() {
-        if ( Util.isVerbose(3) )
-            logger.info("Getting Base IRI...");
         return this.baseIRI;
     }
 
     @JsonProperty("baseIRI")
     public String getBaseIRIAsString() {
-        if ( Util.isVerbose(3) )
-            logger.info("Getting Base IRI as string...");
         return this.baseIRI.toString();
     }
 

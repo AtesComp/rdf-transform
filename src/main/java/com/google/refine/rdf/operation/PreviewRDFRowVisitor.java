@@ -20,35 +20,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PreviewRDFRowVisitor extends RDFRowVisitor {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmdRV");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFRowV");
 
-    private int iRowLimit = 10; // Default = 10, No Limit = 0
+    private int iLimit = Util.getSampleLimit();
     private int iCount = 0;
 
-    public PreviewRDFRowVisitor(RDFTransform theTransform, RDFWriter theWriter, int iRowLimit) {
+    public PreviewRDFRowVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
-        if (iRowLimit >= 0) // limit must be 0 or positive
-            this.iRowLimit = iRowLimit;
+        this.iLimit = Util.getSampleLimit();
     }
 
     public boolean visit(Project theProject, int iRowIndex, Row theRow) {
-        if ( this.iRowLimit > 0 && this.iCount >= this.iRowLimit ) {
-            return true;
+        // Test for end of sample...
+        if ( this.iLimit > 0 && this.iCount >= this.iLimit ) {
+            return true; // ...stop visitation process
         }
         try {
             if ( Util.isVerbose(4) )
                 logger.info("Visiting Row: " + iRowIndex + " on count: " +  this.iCount);
             ParsedIRI baseIRI = this.getRDFTransform().getBaseIRI();
-            RepositoryConnection connection = this.getModel().getConnection();
-            ValueFactory factory = connection.getValueFactory();
+            RepositoryConnection theConnection = this.getModel().getConnection();
+            ValueFactory theFactory = theConnection.getValueFactory();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                root.createStatements(baseIRI, factory, connection, theProject,
+                root.createStatements(baseIRI, theFactory, theConnection, theProject,
                                         theRow, iRowIndex );
                 if ( Util.isVerbose(4) )
                     logger.info("    " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
-                        "Size: " + connection.size());
+                        "Size: " + theConnection.size()
+                    );
             }
             this.iCount += 1;
 
@@ -56,13 +57,13 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
         }
         catch (RepositoryException ex) {
             logger.warn("Connection Issue: ", ex);
-            if ( com.google.refine.rdf.Util.isVerbose(4) ) ex.printStackTrace();
-            return true;
+            if ( Util.isVerbose(4) ) ex.printStackTrace();
+            return true; // ...stop visitation process
         }
         catch (RDFHandlerException ex) {
             logger.warn("Flush Issue: ", ex);
-            if ( com.google.refine.rdf.Util.isVerbose(4) ) ex.printStackTrace();
-            return true;
+            if ( Util.isVerbose(4) ) ex.printStackTrace();
+            return true; // ...stop visitation process
         }
 
         return false;

@@ -97,7 +97,7 @@ class RDFTransformUILink {
                     () => {
                         this.#parentUINode.removeLink(this);
                         this.#tr.parentNode.removeChild(this.#tr);
-                        this.dialog.updatePreview();
+                        this.#dialog.updatePreview();
                     },
                     100
                 );
@@ -136,9 +136,13 @@ class RDFTransformUILink {
     #startEditProperty(evt) {
         new RDFTransformResourceDialog(
             evt.target, 'property', theProject.id, this.#dialog,
-            (obj) => { this.#link.iri   = obj.id;
-                       this.#link.cirie = obj.name;
-                       this.#renderMain(); } );
+            (obj) => {
+                this.#link.iri   = obj.id;
+                this.#link.cirie = obj.name;
+                this.#dialog.updatePreview();
+                this.#renderMain();
+            }
+        );
     }
 
     getTypeName(prefix) {
