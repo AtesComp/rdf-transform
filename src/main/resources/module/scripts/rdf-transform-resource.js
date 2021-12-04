@@ -53,12 +53,12 @@ class RDFTransformResourceDialog {
                 }
                 // Does the data look like a prefixed IRI?
                 if ( RDFTransformPrefixesManager.isPrefixedQName(data) ) {
-                    var strIRI = RDFTransformPrefixesManager.getFullIRIFromQName(data);
                     // Check that the prefix is defined...
                     var strPrefix = RDFTransformPrefixesManager.getPrefixFromQName(data);
                     // Is there an existing prefix matching the given prefix?
                     if ( this.#dialog.prefixesManager.hasPrefix(strPrefix) ) {
                         // ...yes, add resource...
+                        var strIRI = RDFTransformPrefixesManager.getFullIRIFromQName(data);
                         var obj = {
                             "id"   : strIRI,
                             "name" : data
@@ -78,6 +78,7 @@ class RDFTransformResourceDialog {
                                 // Do the old and new prefixes match?
                                 if (strPrefix == strResPrefix) {
                                     // ...yes, set as before...
+                                    var strIRI = RDFTransformPrefixesManager.getFullIRIFromQName(data);
                                     obj = {
                                         "id"   : strIRI,
                                         "name" : data
