@@ -111,7 +111,7 @@ public class CellResourceNode extends ResourceNode {
         	Object resultEval =
                 Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName,
                                         iRowIndex);
-            String strIRI = null;
+            String strResource = null;
 
             // Results cannot be the EvalError class...
             if (resultEval.getClass() == EvalError.class) {
@@ -119,37 +119,36 @@ public class CellResourceNode extends ResourceNode {
             }
             // Results are an array...
             else if ( resultEval.getClass().isArray() ) {
+                if (Util.isDebugMode()) logger.info("DEBUG: Result is Array...");
                 listResources = new ArrayList<Value>();
 
                 List<Object> listResult = Arrays.asList(resultEval);
                 for (Object objResult : listResult) {
-                    if ( Util.toSpaceStrippedString(objResult).length() > 0 ) {
-                        strIRI = Util.resolveIRI( this.baseIRI, objResult.toString() );
-                        if (strIRI != null) {
-                            strIRI = this.expandPrefixedIRI(strIRI);
-                            listResources.add( this.theFactory.createIRI(strIRI) );
+                    if (Util.isDebugMode()) logger.info("DEBUG: Expression Result: " + objResult.toString());
+                    String strResult = Util.toSpaceStrippedString(objResult);
+                    if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
+                    if ( strResult != null && strResult.length() > 0 ) {
+                        strResource = Util.resolveIRI( this.baseIRI, objResult.toString() );
+                        if (strResource != null) {
+                            strResource = this.expandPrefixedIRI(strResource);
+                            if (Util.isDebugMode()) logger.info("DEBUG: strResource: " + strResource);
+                            listResources.add( this.theFactory.createIRI(strResource) );
                         }
                     }
             	}
             }
             // Results are singular...
             else {
-                if (Util.isDebugMode()) {
-                    logger.info("DEBUG: Result: " + resultEval.toString());
-                }
+                if (Util.isDebugMode()) logger.info("DEBUG: Expression Result: " + resultEval.toString());
                 String strResult = Util.toSpaceStrippedString(resultEval);
-                if (Util.isDebugMode()) {
-                    logger.info("DEBUG: strResult: " + strResult);
-                }
+                if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
                 if (strResult != null && strResult.length() > 0 ) {
-                    strIRI = Util.resolveIRI(this.baseIRI, strResult);
-                    if (strIRI != null) {
-                        strIRI = this.expandPrefixedIRI(strIRI);
-                        if (Util.isDebugMode()) {
-                            logger.info("DEBUG: strIRI: " + strIRI);
-                        }
+                    strResource = Util.resolveIRI(this.baseIRI, strResult);
+                    if (strResource != null) {
+                        strResource = this.expandPrefixedIRI(strResource);
+                        if (Util.isDebugMode()) logger.info("DEBUG: strResource: " + strResource);
                         listResources = new ArrayList<Value>();
-                        listResources.add( this.theFactory.createIRI(strIRI) ); // TODO
+                        listResources.add( this.theFactory.createIRI(strResource) );
                     }
                 }
             }

@@ -49,7 +49,7 @@ public class InitializationCommand extends Command {
 		}
 		catch (IOException ex) {
 			logger.error("ERROR: Initialize Context: ", ex);
-			if ( Util.isVerbose(4) ) ex.printStackTrace();
+			if ( Util.isVerbose() ) ex.printStackTrace();
 		}
 	}
 

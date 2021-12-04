@@ -80,8 +80,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 	private IndexReader reader;
 
 	public VocabularySearcher(File dir) throws IOException {
-		if ( Util.isVerbose(3) )
-			logger.info("Creating vocabulary searcher...");
+		if ( Util.isVerbose(3) ) logger.info("Creating vocabulary searcher...");
 
 		this.dirLucene = FSDirectory.open( new File(dir, LUCENE_DIR).toPath() );
 		Analyzer analyzer = new StandardAnalyzer();
@@ -103,8 +102,7 @@ public class VocabularySearcher implements IVocabularySearcher {
         //this.reader = DirectoryReader.open( FSDirectory.open( new File(dir, LUCENE_DIR).toPath() ) );
         this.reader = DirectoryReader.open(this.dirLucene);
         this.searcher = new IndexSearcher(this.reader);
-		if ( Util.isVerbose(3) )
-			logger.info("...created vocabulary searcher");
+		if ( Util.isVerbose(3) ) logger.info("...created vocabulary searcher");
 	}
 
 	@Override
@@ -125,10 +123,8 @@ public class VocabularySearcher implements IVocabularySearcher {
 		List<RDFSProperty> properties = new ArrayList<RDFSProperty>();
 
 		// Import classes & properties from Namespace at URL...
-		if ( Util.isVerbose(3) )
-			logger.info(
-				"Import And Index vocabulary " + strPrefix + ": <" + strNamespace + "> " +
-				"from " + strFetchURL);
+		if ( Util.isDebugMode() ) logger.info("DEBUG: Import And Index vocabulary " + strPrefix + ": <" + strNamespace + "> " +
+												"from " + strFetchURL);
 		importer.importVocabulary(strFetchURL, classes, properties);
 		this.indexTerms(strProjectID, classes, properties);
 	}
@@ -143,8 +139,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		List<RDFSProperty> properties = new ArrayList<RDFSProperty>();
 
 		// Import classes & properties from Namespace in Repository...
-		if ( Util.isVerbose(3) )
-			logger.info("Import And Index vocabulary " + strPrefix + ": <" + strNamespace + ">");
+		if ( Util.isDebugMode() ) logger.info("DEBUG: Import And Index vocabulary " + strPrefix + ": <" + strNamespace + ">");
 		importer.importVocabulary(repository, classes, properties);
 		this.indexTerms(strProjectID, classes, properties);
 	}

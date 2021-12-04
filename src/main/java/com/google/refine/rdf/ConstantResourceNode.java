@@ -16,7 +16,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ConstantResourceNode extends ResourceNode {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:ConstResNode");
 
     static private final String NODETYPE = "resource";
 
@@ -53,20 +57,22 @@ public class ConstantResourceNode extends ResourceNode {
 
         List<Value> listResources = null;
         String strResource = null;
-        if (this.strIRI != null & this.strIRI.length() > 0 ) {
+        if (Util.isDebugMode()) logger.info("DEBUG: Given IRI: " + this.strIRI);
+        String strResult = Util.toSpaceStrippedString(this.strIRI);
+        if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
+        if (strResult != null & strResult.length() > 0 ) {
             try {
                 strResource = Util.resolveIRI(this.baseIRI, this.strIRI);
             }
             catch (Util.IRIParsingException ex) {
                 // ...continue...
             }
-            if (strResource == null) {
-                return listResources;
+            if (strResource != null) {
+                strResource = this.expandPrefixedIRI(strResource);
+                if (Util.isDebugMode()) logger.info("DEBUG: strResource: " + strResource);
+                listResources = new ArrayList<Value>();
+                listResources.add( this.theFactory.createIRI(strResource) );
             }
-            strResource = this.expandPrefixedIRI(strResource);
-
-            listResources = new ArrayList<Value>();
-            listResources.add( this.theFactory.createIRI(strResource) );
         }
         return listResources;
     }

@@ -121,10 +121,14 @@ public class VocabularyImporter {
 	protected void getTerms(List<RDFSClass> classes, List<RDFSProperty> properties)
 		throws VocabularyImportException
 	{
+		// Set RDFS Class and Property load conditions...
 		String[] astrLoader = new String[6];
 		astrLoader[RDFNode.iPrefix] = this.strPrefix;
 		astrLoader[RDFNode.iNamespace] = this.strNamespace;
-		astrLoader[RDFNode.iLocalPart] = null;
+		astrLoader[RDFNode.iLocalPart] = "";	// ...empty string, not null, since we purposely
+												// need to extract the LocalPart from the IRI later
+												// during the Class / Property Node creation.
+												// A null is an error condition.
 
 		try {
 			RepositoryConnection connection = this.repository.getConnection();
@@ -153,9 +157,9 @@ public class VocabularyImporter {
 										} );
 					astrLoader[RDFNode.iDesc] =
 						getFirstNotNull( new Value[] {
-											solution.getValue("en_definition"),
+											solution.getValue("en_definition"),	 // 1: Definitions
 											solution.getValue("definition"),
-											solution.getValue("en_description"),
+											solution.getValue("en_description"), // 2: Descriptions
 											solution.getValue("description")
 										} );
 					RDFSClass nodeClass = new RDFSClass(astrLoader);
@@ -185,9 +189,9 @@ public class VocabularyImporter {
 										} );
 					astrLoader[RDFNode.iDesc] =
 						getFirstNotNull( new Value[] {
-											solution.getValue("en_definition"),
+											solution.getValue("en_definition"),	 // 1: Definitions
 											solution.getValue("definition"),
-											solution.getValue("en_description"),
+											solution.getValue("en_description"), // 2: Descriptions
 											solution.getValue("description")
 										} );
 					RDFSProperty nodeProp = new RDFSProperty(astrLoader);

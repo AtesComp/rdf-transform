@@ -14,16 +14,15 @@ public class NodeResolver extends TypeIdResolverBase  {
     protected TypeFactory factory = TypeFactory.defaultInstance();
 
     @SuppressWarnings("rawtypes")
-	private static Map<String, Class> registry = new HashMap<String, Class>();
-
-    static {
-    	registry.put( "literal",          ConstantLiteralNode.class );
-    	registry.put( "blank",            ConstantBlankNode.class );
-    	registry.put( "resource",         ConstantResourceNode.class );
-    	registry.put( "cell-as-literal",  CellLiteralNode.class );
-    	registry.put( "cell-as-blank",    CellBlankNode.class );
-    	registry.put( "cell-as-resource", CellResourceNode.class );
-    }
+	private static Map<String, Class> registry =
+        new HashMap<String, Class>() {{
+            put( "literal",          ConstantLiteralNode.class );
+            put( "blank",            ConstantBlankNode.class );
+            put( "resource",         ConstantResourceNode.class );
+            put( "cell-as-literal",  CellLiteralNode.class );
+            put( "cell-as-blank",    CellBlankNode.class );
+            put( "cell-as-resource", CellResourceNode.class );
+        }};
 
     @SuppressWarnings("rawtypes")
 	public void registerNodeType(String nodeType, Class klass) {

@@ -16,16 +16,21 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.CUSTOM,
     include = JsonTypeInfo.As.PROPERTY,
     property = "nodeType")
 @JsonTypeIdResolver(NodeResolver.class)
 abstract public class Node {
-    protected ParsedIRI baseIRI;
-    protected ValueFactory theFactory;
-    protected RepositoryConnection theConnection;
-    protected Project theProject;
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:Node");
+
+    protected ParsedIRI baseIRI = null;
+    protected ValueFactory theFactory = null;
+    protected RepositoryConnection theConnection = null;
+    protected Project theProject = null;
 
     public abstract String getNodeName();
 
@@ -34,11 +39,18 @@ abstract public class Node {
 
     protected String expandPrefixedIRI(String strObjectIRI) {
         String strExpanded = strObjectIRI;
+        if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: string = " + strObjectIRI);
         if ( !strObjectIRI.contains("://") ) {
-            int iIndex = strObjectIRI.indexOf(":");
+            if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: checking prefix...");
+            int iIndex = strObjectIRI.indexOf(':');
+            if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: index = " + iIndex);
             if (iIndex >= 0) {
                 String strPrefix = strObjectIRI.substring(0, iIndex);
+                if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: strPrefix = " + strPrefix);
+                if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: connection = " +
+                                                    ( this.theConnection == null ? "null" : "connected" ) );
                 String strNamespace = this.theConnection.getNamespace(strPrefix);
+                if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: strNamespace = " + strNamespace);
                 if (strNamespace != null) {
                     strExpanded = strNamespace + strObjectIRI.substring(iIndex);
                 }

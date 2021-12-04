@@ -25,8 +25,7 @@ public abstract class RDFRowVisitor extends RDFVisitor implements RowVisitor {
 
     public void buildModel(Project theProject, Engine theEngine) {
         FilteredRows filteredRows = theEngine.getAllFilteredRows();
-		if ( Util.isVerbose(4) )
-			logger.info("buildModel: visit matching filtered rows");
+		if ( Util.isVerbose(3) ) logger.info("buildModel: visit matching filtered rows");
         filteredRows.accept(theProject, this);
     }
 }

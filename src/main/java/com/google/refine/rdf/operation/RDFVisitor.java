@@ -68,8 +68,7 @@ public abstract class RDFVisitor {
     abstract public void buildModel(Project theProject, Engine theEngine);
 
     public void start(Project theProject) {
-        if ( Util.isVerbose(2) )
-            logger.info("Starting Visitation...");
+        if ( Util.isVerbose(3) ) logger.info("Starting Visitation...");
 
         try {
             // Export namespace information previously populated in the repository...
@@ -78,8 +77,7 @@ public abstract class RDFVisitor {
                 while ( nsIter.hasNext() ) {
                     Namespace ns = nsIter.next();
                     this.writer.handleNamespace( ns.getPrefix(), ns.getName() );
-                    if ( Util.isVerbose(2) )
-                        logger.info("  Prefix: " + ns.getPrefix() + " : " + ns.getName());
+                    if ( Util.isDebugMode() ) logger.info("DEBUG: Prefix: " + ns.getPrefix() + " : " + ns.getName());
                 }
             }
             finally {
@@ -95,8 +93,7 @@ public abstract class RDFVisitor {
     }
 
     public void end(Project theProject) {
-        if ( Util.isVerbose(2) )
-            logger.info("...Ending Visitation");
+        if ( Util.isVerbose(3) ) logger.info("...Ending Visitation");
 
         try {
             if (this.connection.isOpen()) {

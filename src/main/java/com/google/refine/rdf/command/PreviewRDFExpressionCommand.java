@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFValExpCmd");
-    private final static String strParsingError = "Parsing Error: No problem. Correct it.";
+    private final static String strParsingError = "WARNING: Parsing: No problem. Correct it.";
+    private final static String strOtherError = "WARNING: Other: Some other problem occurred while parsing.";
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -131,7 +132,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                     continue; // ...keep processing the array...
                 }
                 // Process empties...
-                if (result == null || (result instanceof String && ((String) result).length() == 0)) {
+                if (result == null || (result instanceof String && ((String) result).isEmpty())) {
                     theWriter.writeNull();
                     continue; // ...keep processing the array...
                 }
@@ -148,9 +149,8 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                         // NOTE: The expectation for this stripping is that the expression result will
                         //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
                         strResult = Util.toSpaceStrippedString( Array.get(result, iResult) );
-                        if ( Util.isVerbose(4) )
-                            logger.info("result (" + iResult + "): [" + strResult + "]");
-                        if (strResult == null || strResult.length() == 0) { // ...skip empties
+                        if ( Util.isDebugMode() ) logger.info("DEBUG: Result (" + iResult + "): [" + strResult + "]");
+                        if (strResult == null || strResult.isEmpty()) { // ...skip empties
                             continue;
                         }
                         strbuffTemp.append(strResult);
@@ -175,8 +175,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                     // NOTE: The expectation for this stripping is that the expression result will
                     //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
                     strResult = Util.toSpaceStrippedString(strbuffTemp);
-                    if ( Util.isVerbose(4) )
-                        logger.info("result: [" + strResult + "]");
+                    if ( Util.isDebugMode() ) logger.info("DEBUG: Result: [" + strResult + "]");
                     if ( strResult.isEmpty() ) {
                         theWriter.writeNull();
                         continue;
@@ -190,8 +189,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             //
             // Write Index for Row / Record...
             //
-            if ( Util.isVerbose(4) )
-                logger.info("Writing indicies on IRIs: " + iRows);
+            if ( Util.isDebugMode() ) logger.info("DEBUG: Writing indicies on IRIs: " + iRows);
             theWriter.writeArrayFieldStart("indicies");
             for (iRow = 0; iRow < iRows; iRow++) {
                 theWriter.writeString( aiIndices[iRow].toString() );
@@ -203,26 +201,20 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             // Parsing errors will always occur, so move on...
 
             String strTypeEx = "other";
-            String strMessageEx = ex.getMessage();
-            int iVerbose = 1;
+            String strMessageEx = strOtherError;
             // If exception on ParsingExpection types...
             if (ex.getClass() == Util.IRIParsingException.class ||
                 ex.getClass() == ParsingException.class) {
                 strTypeEx = "parser";
-                iVerbose = 2;
                 if (ex.getClass() == ParsingException.class) {
                     strMessageEx = strParsingError;
                 }
             }
             theWriter.writeStringField("type", strTypeEx);
             theWriter.writeStringField("message", strMessageEx);
-            if ( Util.isVerbose(iVerbose) ) {
-                if (iVerbose == 1) {
-                    logger.error("ERROR: Other Error", ex);
-                }
-                else {
-                    logger.warn(strMessageEx);
-                }
+            if ( Util.isVerbose() ) {
+                logger.warn(strMessageEx, ex);
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
             }
             bGood = false; // ...no good anymore
             iRows = iRow; // ...row error occurred--make it max
@@ -250,8 +242,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                 theWriter.writeStringField("message", ex.getMessage());
                 bGood = false; // ...no good anymore
             }
-            if ( Util.isVerbose() )
-                logger.error("ERROR: Absolute IRI Error", ex);
+            if ( Util.isVerbose() ) {
+                logger.warn("WARNING: Writing absolute IRIs", ex);
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
+            }
         }
 
         String strCode = "error";
@@ -304,7 +298,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                     theWriter.writeEndObject();
                     continue; // ...keep processing the array...
                 }
-                if (result == null || (result instanceof String && ((String) result).length() == 0)) {
+                if (result == null || (result instanceof String && ((String) result).isEmpty())) {
                     theWriter.writeNull();
                     continue; // ...keep processing the array...
                 }
@@ -319,8 +313,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             //
             // Write Index for Row / Record...
             //
-            if ( Util.isVerbose(4) )
-                logger.info("Writing indicies on literals: " + iRows);
+            if ( Util.isDebugMode() ) logger.info("DEBUG: Writing indicies on literals: " + iRows);
             theWriter.writeArrayFieldStart("indicies");
             for (iRow = 0; iRow < iRows; iRow++) {
                 theWriter.writeString( aiIndices[iRow].toString() );
@@ -330,24 +323,19 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
         catch (Exception ex) {
         	theWriter.writeEndArray();
             // Parsing errors will always occur, so move on...
+
             String strTypeEx = "other";
-            String strMessageEx = ex.getMessage();
-            int iVerbose = 1;
+            String strMessageEx = strOtherError;
             // If exception on ParsingExpection types...
             if (ex.getClass() == ParsingException.class) {
                 strTypeEx = "parser";
-                iVerbose = 2;
                 strMessageEx = strParsingError;
             }
             theWriter.writeStringField("type", strTypeEx);
             theWriter.writeStringField("message", strMessageEx);
-            if ( Util.isVerbose(iVerbose) ) {
-                if (iVerbose == 1) {
-                    logger.error("ERROR: Other Error", ex);
-                }
-                else {
-                    logger.warn(strMessageEx);
-                }
+            if ( Util.isVerbose() ) {
+                logger.warn(strMessageEx, ex);
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
             }
             bGood = false; // ...no good anymore
         }

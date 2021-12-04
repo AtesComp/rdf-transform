@@ -28,16 +28,18 @@ public class RDFBinder implements Binder {
 
     @Override
     public void initializeBindings(Properties bindings, Project theProject) {
-		if ( Util.isVerbose(3) )
-			logger.info("Bind baseIRI...");
-		String strBindError =
-			"Unable to bind baseIRI.";
+		if ( Util.isVerbose(3) ) logger.info("Bind baseIRI...");
+		String strBindError = "Unable to bind baseIRI.";
         try {
 			bindings.put( "baseIRI", RDFTransform.getRDFTransform(context, theProject).getBaseIRIAsString() );
-		} catch (VocabularyIndexException ex) {
-			logger.warn(strBindError, ex);
-		} catch (IOException ex) {
-			logger.warn(strBindError, ex);
+		}
+		catch (VocabularyIndexException ex) {
+			logger.error(strBindError, ex);
+			if ( Util.isVerbose() ) ex.printStackTrace();
+		}
+		catch (IOException ex) {
+			logger.error(strBindError, ex);
+			if ( Util.isVerbose() ) ex.printStackTrace();
 		}
     }
 

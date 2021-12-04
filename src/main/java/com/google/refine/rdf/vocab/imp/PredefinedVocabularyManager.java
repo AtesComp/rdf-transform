@@ -61,8 +61,11 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 		}
 		catch (Exception ex) {
 			// Predefined vocabularies are not defined properly...
-			logger.warn("Predefined Vocabulary failed: ", ex);
-			if ( Util.isVerbose(4) ) ex.printStackTrace();
+			//   Ignore the exception, but log it...
+			if ( Util.isVerbose() ) {
+				logger.warn("Predefined Vocabulary failed: ", ex);
+				if ( Util.isVerbose(2) ) ex.printStackTrace();
+			}
 			throw ex;
 		}
 	}
@@ -115,8 +118,10 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 			catch (Exception ex) {
 				// Predefined vocabularies are not defined properly...
 				//   Ignore the exception, but log it...
-				logger.warn("Predefined vocabulary import failed: ", ex);
-				if ( Util.isVerbose(4) ) ex.printStackTrace();
+				if ( Util.isVerbose() ) {
+					logger.warn("Predefined vocabulary import failed: ", ex);
+					if ( Util.isVerbose(2) ) ex.printStackTrace();
+				}
 			}
 
 		}
@@ -145,7 +150,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         }
 		catch (Exception ex) {
             logger.error("ERROR: Project metadata save failed: ", ex);
-			if ( Util.isVerbose(4) ) ex.printStackTrace();
+			if ( Util.isVerbose() ) ex.printStackTrace();
 			return;
         }
 

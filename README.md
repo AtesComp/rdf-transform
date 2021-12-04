@@ -12,7 +12,7 @@ However, it has been throughly rewritten to incorporate the latest Java and Java
   * Properly recognize the Row verses Record data setting and processing (row / record visitor)
   * Properly parse IRIs for valid structure, absolute and relative, using a base IRI as needed
   * Two GREL functions:
-    * "forIRI" - transforms and properly validates string as an IRI
+    * "toIRIString" - transforms and properly validates string as an IRI component
     * "toStrippedLiteral" - end trims string with all known Unicode whitespace and non-breaking space characters
   * Properly process Condensed IRI Expressions (CIRIEs) for export
   * Scaled buffer allocations (based on data size) to speed exports

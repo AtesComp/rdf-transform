@@ -13,18 +13,18 @@ import org.eclipse.rdf4j.common.net.ParsedIRI;
  * forIRI: Convert string to qualify as an IRI component
  */
 
-public class forIRI implements Function {
+public class toIRIString implements Function {
 
     public Object call(Properties bindings, Object[] args) {
         if (args.length != 1) {
-            return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " expects a single string!");
+            return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " expects one string!");
         }
         if (args[0] == null) {
-            return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " Cannot convert Null string!");
+            return new EvalError("null");
         }
         String strConvert = args[0].toString();
-        if ( strConvert.length() == 0 ) {
-            return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " Cannot convert empty string!");
+        if ( strConvert.isEmpty() ) {
+            return new EvalError("empty string");
         }
 
         int iTry = 0;
@@ -85,7 +85,7 @@ public class forIRI implements Function {
 
     @Override
     public String getDescription() {
-            return "forIRI() is intended to prepare a string for use as or within an IRI.\n" +
+            return "toIRIString() is intended to prepare a string for use as or within an IRI.\n" +
                    "    1. Replace whitespace characters with underscores.\n" +
                    "    2. Replace unsupported characters with underscores.\n" +
                    "    3. Progressively replace with underscores:\n" +

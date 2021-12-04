@@ -81,7 +81,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
 			}
 			catch (VocabularyIndexException ex) {
 				logger.error("ERROR: Could not get project's RDFTransform", ex);
-				if ( Util.isVerbose(4) ) ex.printStackTrace();
+				if ( Util.isVerbose() ) ex.printStackTrace();
 				throw new ServletException(ex);
 			}
 			listResults = search(theTransform, strQuery);

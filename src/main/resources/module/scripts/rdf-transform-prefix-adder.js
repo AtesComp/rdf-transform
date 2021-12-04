@@ -1,15 +1,15 @@
 /*
- *  CLASS PrefixAdder
+ *  CLASS RDFTransformPrefixAdder
  *
  *  A class for adding a new Prefix to the Prefix Manager list
  */
-class PrefixAdder {
+class RDFTransformPrefixAdder {
 	#prefixesManager;
 	#dialog;
 	#elements;
 	#level;
 
-	#onDoneShow;
+	#onDoneAdding;
 
 	constructor(prefixesManager) {
 		this.#prefixesManager = prefixesManager;
@@ -39,7 +39,7 @@ class PrefixAdder {
 
 	}
 
-	show(message, prefix, onDoneShow) {
+	show(message, prefix, onDoneAdding) {
 		if (message) {
 			this.#elements.message.addClass('message').html(message);
 		}
@@ -49,7 +49,7 @@ class PrefixAdder {
 			this.#suggestIRI(prefix);
 		}
 
-		this.#onDoneShow = onDoneShow;
+		this.#onDoneAdding = onDoneAdding;
 
 		Refine.wrapCSRF( (token) => {
 			this.#elements.file_upload_form
@@ -79,6 +79,15 @@ class PrefixAdder {
 				}
 
 				var dismissBusy;
+				var postCmd = "command/rdf-transform/add-prefix";
+				var postData = {
+					"csrf_token" : token,
+					"name"       : name,
+					"iri"        : iri,
+					"fetch-url"  : iri,
+					"project"    : theProject.id,
+					"fetch"      : fetchOption
+				};
 
 				if (fetchOption === 'file') {
 					// Prepare values...
@@ -86,29 +95,12 @@ class PrefixAdder {
 					$('#vocab-hidden-iri').val(iri);
 					$('#vocab-hidden-project').val(theProject.id);
 
+					postCmd = "command/rdf-transform/upload-file-add-prefix";
+					postData = {
+						"dataType" : "json",
+						"headers"  : { 'X-CSRF-TOKEN': token }
+					};
 					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/voc-upload') + ' ' + iri);
-
-					$(evt.currentTarget)
-					.post(
-						{
-							"url"      : "command/rdf-transform/upload-file-add-prefix",
-							"dataType" : "json",
-							"headers"  : { 'X-CSRF-TOKEN': token },
-							"success"  : (data) => {
-								dismissBusy();
-								if (data.code === 'error') {
-									alert("Error: " + data.message);
-								}
-								else {
-									if (this.#onDoneShow) {
-										this.#onDoneShow(name, iri);
-										this.#dismiss();
-									}
-								}
-							}
-						}
-					);
-					return false;
 				}
 				else if (fetchOption === 'web') {
 					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/web-import') + ' ' + iri);
@@ -117,25 +109,19 @@ class PrefixAdder {
 					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-only') + ' ' + iri);
 				}
 
-				$.post("command/rdf-transform/add-prefix",
-					{
-						"csrf_token"   : token,
-						"name"         : name,
-						"iri"          : iri,
-						"fetch-url"    : iri,
-						"project"      : theProject.id,
-						"fetch"        : fetchOption
-					},
+				$.post(
+					postCmd,
+					postData,
 					(data) => {
 						dismissBusy();
-						if (data.code === "error") {
-							alert('Error:' + data.message);
+						if (data.code === 'error') {
+							alert("Error: " + data.message);
 						}
 						else {
-							if (this.#onDoneShow) {
-								this.#onDoneShow(name, iri);
-								this.#dismiss();
+							if (this.#onDoneAdding) {
+								this.#onDoneAdding(name, iri);
 							}
+							this.#dismiss();
 						}
 					}
 				);

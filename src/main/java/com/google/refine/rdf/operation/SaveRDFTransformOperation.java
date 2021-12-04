@@ -33,14 +33,12 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @JsonCreator
     public SaveRDFTransformOperation( @JsonProperty(RDFTransform.KEY) RDFTransform theTransform ) {
         this.theTransform = theTransform;
-        if ( Util.isVerbose(3) )
-            logger.info("Created op");
+        if ( Util.isVerbose(3) ) logger.info("Created");
     }
 
     static public AbstractOperation reconstruct(JsonNode jnodeElement)
             throws Exception {
-        if ( Util.isVerbose(3) )
-            logger.info("Reconstructing transform...");
+        if ( Util.isVerbose(3) ) logger.info("Reconstructing transform...");
         JsonNode jnodeTransform = jnodeElement.get(RDFTransform.KEY);
         if (jnodeTransform == null) {
             return null;
@@ -62,8 +60,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @JsonProperty(RDFTransform.KEY)
     public void setTransform(JsonNode jnodeTransform)
             throws Exception {
-        if ( Util.isVerbose(3) )
-            logger.info("Setting transform from JSON...");
+        if ( Util.isVerbose(3) ) logger.info("Setting transform from JSON...");
         if (jnodeTransform == null) {
             return;
         }

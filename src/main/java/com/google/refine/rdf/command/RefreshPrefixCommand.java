@@ -67,10 +67,10 @@ public class RefreshPrefixCommand extends RDFTransformCommand{
 		if (except != null) {
 			if (bError) {// ...error...
 				logger.error("ERROR: " + strError + " vocabulary: ", except);
-				if ( Util.isVerbose(4) ) except.printStackTrace();
+				if ( Util.isVerbose() ) except.printStackTrace();
 			}
 			else { // ...warning...
-				logger.warn("Prefix exists: ", except);
+				if ( Util.isVerbose() ) logger.warn("Prefix exists: ", except);
 			}
 
 			RefreshPrefixCommand.respondException(response, except);

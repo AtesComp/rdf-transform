@@ -817,8 +817,12 @@ class RDFTransformUINode {
         if (!this.#node.rdfTypes) {
             this.#node.rdfTypes = [];
         }
-        this.#node.rdfTypes.push( { 'iri'   : id,
-                                   'cirie' : name } );
+        this.#node.rdfTypes
+        .push(
+            {   'iri'   : id,
+                'cirie' : name
+            }
+        );
         this.#renderMain();
         this.#dialog.updatePreview();
     }

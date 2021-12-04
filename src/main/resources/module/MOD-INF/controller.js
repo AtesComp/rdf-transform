@@ -35,9 +35,9 @@ importPackage(com.google.refine.rdf.commands);
 
 // Client side preferences mirrors Server side...
 var RDFTransformPrefs = {
-	Verbosity : 0,
-	ExportStatementLimit : 10737418,
-	DebugMode : false,
+	"Verbosity"   : 0,
+	"ExportLimit" : 10737418,
+	"DebugMode"   : false
 }
 
 var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
@@ -150,7 +150,7 @@ function init() {
      *  Server-side GREL Functions and Binders...
      */
 	var RDFTGrelFuncReg = RefineBase.grel.ControlFunctionRegistry;
-    RDFTGrelFuncReg.registerFunction( "forIRI", new RDFTBase.expr.func.str.forIRI() );
+    RDFTGrelFuncReg.registerFunction( "toIRIString", new RDFTBase.expr.func.str.toIRIString() );
     RDFTGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTBase.expr.func.str.toStrippedLiteral() );
 
 	RefineBase.expr.ExpressionUtils
@@ -206,7 +206,7 @@ function init() {
 		if (prefExportLimit != null) {
 			var iExportLimit = parseInt(prefExportLimit);
 			if (iExportLimit != NaN) {
-				RDFTransformPrefs.ExportStatementLimit = iExportLimit;
+				RDFTransformPrefs.ExportLimit = iExportLimit;
 			}
 		}
 		// Debug...
@@ -215,11 +215,26 @@ function init() {
 			prefDebug = prefStore.get('debug');
 		}
 		if (prefDebug != null) {
-			var bDebug = ( toLower(prefDebug) == 'true' );
+			var bDebug = (prefDebug.toLowerCase() == 'true');
 			RDFTransformPrefs.DebugMode = bDebug;
 		}
 	}
-	logger.info('Preferences: \n' + RDFTransformPrefs);
+
+	//
+	// Output RDFTranform Preferences...
+	//
+	// NOTE: This really sucks because server-side the JavaScript is extremely limited!!!
+	//		1. Looping structure don't exist!
+	//		2. JSON object does not exist, so no stringify()!
+	var strPrefs = "Preferences: { ";
+	var strPref;
+	strPref = "Verbosity";
+	strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
+	strPref = "ExportLimit";
+	strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
+	strPref = "DebugMode";
+	strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " }";
+	logger.info(strPrefs);
 }
 
 /*
@@ -238,8 +253,8 @@ function process(path, request, response) {
 	//	}
 	//}
 	if ( RDFTransformPrefs.DebugMode ) {
-		logger.info('Receiving request by ' + method + ' for "' + path + '"');
-		logger.info('  Request: ' + request);
+		logger.info('DEBUG: Receiving request by ' + method + ' for "' + path + '"\n' +
+					'         Request: ' + request);
 	}
 
 	// RDF Transform does not have any external process requests,

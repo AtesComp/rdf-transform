@@ -111,12 +111,10 @@ public class RDFTransform implements OverlayModel {
      */
     static public RDFTransform reconstruct(JsonNode jnodeElement)
             throws JsonGenerationException {
-        if ( Util.isVerbose() )
-            logger.info("Reconstructing overlay...");
+        if ( Util.isVerbose(2) ) logger.info("Reconstructing overlay...");
 
         if (jnodeElement == null) {
-            if ( Util.isVerbose(2) )
-                logger.warn("  Nothing to reconstruct!");
+            if ( Util.isVerbose(3) ) logger.info("  Nothing to reconstruct!");
             return null;
         }
 
@@ -138,8 +136,7 @@ public class RDFTransform implements OverlayModel {
         // }
         JsonNode jnodeBaseIRI = jnodeElement.get("baseIRI");
         if (jnodeBaseIRI == null) {
-            if ( Util.isVerbose(3) )
-                logger.warn("  No Base IRI!");
+            if ( Util.isVerbose(2) ) logger.warn("  No Base IRI!");
         }
         else {
             theTransform.setBaseIRI(jnodeBaseIRI);
@@ -150,8 +147,7 @@ public class RDFTransform implements OverlayModel {
         //
         JsonNode jnodePrefixes = jnodeElement.get("prefixes");
         if (jnodePrefixes == null) {
-            if ( Util.isVerbose(3) )
-                logger.warn("  No Prefixes!");
+            if ( Util.isVerbose(2) ) logger.warn("  No Prefixes!");
         }
         else {
             theTransform.setPrefixesMap( new HashMap<String, Vocabulary>() );
@@ -170,8 +166,7 @@ public class RDFTransform implements OverlayModel {
         //
         JsonNode jnodeRoots = jnodeElement.get("rootNodes");
         if (jnodeRoots == null) {
-            if ( Util.isVerbose(3) )
-                logger.warn("  No Root Nodes!");
+            if ( Util.isVerbose(2) ) logger.warn("  No Root Nodes!");
         }
         else {
             theTransform.setRoots( new ArrayList<ResourceNode>() );
@@ -187,8 +182,7 @@ public class RDFTransform implements OverlayModel {
             }
         }
 
-        if ( Util.isVerbose(2) )
-            logger.info("Reconstructed overlay");
+        if ( Util.isVerbose(2) ) logger.info("Reconstructed overlay");
         return theTransform;
     }
 
@@ -293,7 +287,7 @@ public class RDFTransform implements OverlayModel {
      *
      *      Helper function for reconstruct()
      *
-     *      Reconstruct the .  Nodes are generic descriptors for a related
+     *      Reconstruct the Node Types.  Nodes are generic descriptors for a related
      *      transformation.  They are transformed into RDF Resource and Literal nodes to construct
      *      (Subject, Property, Object) tuples for an RDF graph.
      */
@@ -397,13 +391,11 @@ public class RDFTransform implements OverlayModel {
     */
     @JsonCreator
     public RDFTransform() {
-        if ( Util.isVerbose(3) )
-            logger.info("Created empty overlay");
+        if ( Util.isVerbose(2) ) logger.info("Created empty overlay");
     }
 
     public RDFTransform(ApplicationContext context, Project theProject) throws VocabularyIndexException, IOException {
-        if ( Util.isVerbose(3) )
-            logger.info("Creating base overlay for project from context...");
+        if ( Util.isVerbose(2) ) logger.info("Creating base overlay for project from context...");
 
         this.baseIRI = Util.buildIRI( context.getDefaultBaseIRI() );
        	this.prefixesMap = cloneVocabulary( context.getPredefinedVocabularyManager().getPredefinedVocabulariesMap() );
@@ -412,8 +404,7 @@ public class RDFTransform implements OverlayModel {
        	context.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
         this.listRootNodes = new ArrayList<ResourceNode>();
 
-        if ( Util.isVerbose(3) )
-            logger.info("Created overlay");
+        if ( Util.isVerbose(2) ) logger.info("Created overlay");
     }
 
     /*
@@ -431,15 +422,13 @@ public class RDFTransform implements OverlayModel {
 
     @JsonIgnore // ...see setBaseIRI(JsonNode)
     public void setBaseIRI(ParsedIRI baseIRI)  {
-        if ( Util.isVerbose(3) )
-            logger.info("Setting Base IRI...");
+        if ( Util.isVerbose(2) ) logger.info("Setting Base IRI...");
         this.baseIRI = baseIRI;
     }
 
     @JsonProperty("baseIRI")
     public void setBaseIRI(JsonNode jnodeBaseIRI)  {
-        if ( Util.isVerbose(3) )
-            logger.info("Setting Base IRI from JSON Node...");
+        if ( Util.isVerbose(2) ) logger.info("Setting Base IRI from JSON Node...");
 
         ParsedIRI baseIRI = null;
         if ( jnodeBaseIRI != null && ! jnodeBaseIRI.isNull() ) {
@@ -485,10 +474,12 @@ public class RDFTransform implements OverlayModel {
 
                 // Sanity check the Base IRI against remaining components...
                 if (baseIRI != null) {
-                    if (baseIRI.isAbsolute() != bAbsolute)
-                        logger.warn("Mismatch reconstructing Base IRI: Absolute Value");
-                    if (baseIRI.isOpaque() != bOpaque)
-                        logger.warn("Mismatch reconstructing Base IRI: Opaque Value");
+                    if (baseIRI.isAbsolute() != bAbsolute) {
+                        if ( Util.isVerbose() ) logger.warn("Mismatch reconstructing Base IRI: Absolute Value");
+                    }
+                    if (baseIRI.isOpaque() != bOpaque) {
+                        if ( Util.isVerbose() ) logger.warn("Mismatch reconstructing Base IRI: Opaque Value");
+                    }
                 }
             }
         }
@@ -523,8 +514,7 @@ public class RDFTransform implements OverlayModel {
 
     @JsonProperty("prefixes")
     public Collection<Vocabulary> getPrefixes() {
-        if ( Util.isVerbose(3) )
-            logger.info("Getting prefixes...");
+        if ( Util.isVerbose(2) ) logger.info("Getting prefixes...");
         if (prefixesMap != null) {
     	    return this.prefixesMap.values();
         }
@@ -533,8 +523,7 @@ public class RDFTransform implements OverlayModel {
 
     @JsonProperty("prefixes")
     public void setPrefixes(Vocabulary[] aVocabularies) {
-        if ( Util.isVerbose(3) )
-            logger.info("Setting prefixes...");
+        if ( Util.isVerbose(2) ) logger.info("Setting prefixes...");
         if (this.prefixesMap == null) {
             this.prefixesMap = new HashMap<String, Vocabulary>();
         }
@@ -548,15 +537,13 @@ public class RDFTransform implements OverlayModel {
 
     @JsonProperty("rootNodes")
 	public List<ResourceNode> getRoots() {
-        if ( Util.isVerbose(3) )
-            logger.info("Getting root nodes: size = " + this.listRootNodes.size());
+        if ( Util.isVerbose(2) ) logger.info("Getting root nodes: size = " + this.listRootNodes.size());
         return this.listRootNodes;
     }
 
     @JsonProperty("rootNodes")
 	public void setRoots(List<ResourceNode> listRootNodes) {
-        if ( Util.isVerbose(3) )
-            logger.info("Setting root nodes...");
+        if ( Util.isVerbose(2) ) logger.info("Setting root nodes...");
         this.listRootNodes = listRootNodes;
     }
 
@@ -579,7 +566,7 @@ public class RDFTransform implements OverlayModel {
         catch (IOException ex) {
 			logger.error("ERROR: Unable to delete index for project " + theProject.id, ex);
 		}*/
-        logger.info("Disposed overlay");
+        if ( Util.isVerbose(2) ) logger.info("Disposed overlay");
     }
 
     public void write(JsonGenerator theWriter)

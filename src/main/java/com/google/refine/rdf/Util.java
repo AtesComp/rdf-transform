@@ -120,15 +120,14 @@ public class Util {
 	}
 
 	public static String resolveIRI(ParsedIRI baseIRI, String strIRI) throws IRIParsingException {
-		String strError = "ERROR: resolveIRI(): ";
+		String strError = "ERROR: resolveIRI: ";
 		String strErrMsg = null;
 		String strAbsoluteIRI = null;
-		String strDEBUG = "DEBUG resolveIRI: ";
+		String strDEBUG = "DEBUG: resolveIRI: ";
 
 		// No IRI is not a problem (there is just nothing to resolve)...
 		if (strIRI == null || strIRI.length() == 0) {
-			if ( Util.isDebugMode() )
-				logger.info(strDEBUG + "No IRI");
+			if ( Util.isDebugMode() ) logger.info(strDEBUG + "No IRI");
 			return strAbsoluteIRI;
 		}
 
@@ -233,8 +232,7 @@ public class Util {
 			baseIRI = new ParsedIRI(strIRI);
 		}
 		catch (Exception ex) {
-			if ( Util.isVerbose() )
-				logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
+			logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
 			baseIRI = null;
 		}
 

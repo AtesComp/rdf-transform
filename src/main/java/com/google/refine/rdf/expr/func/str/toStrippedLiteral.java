@@ -16,7 +16,7 @@ public class toStrippedLiteral implements Function {
             return null;
         }
         String strConvert = args[0].toString();
-        if ( strConvert.length() == 0 ) {
+        if ( strConvert.isEmpty() ) {
             return strConvert;
         }
         return strConvert.replaceAll("\uC2A0", " ").replaceAll("\\h", " ").strip();

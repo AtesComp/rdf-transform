@@ -32,10 +32,6 @@ abstract public class ResourceNode extends Node {
     @JsonProperty("links")
     private List<Link> listLinks = new ArrayList<Link>();
 
-    protected ParsedIRI baseIRI = null;
-    protected ValueFactory theFactory = null;
-    protected RepositoryConnection theConnection = null;
-    protected Project theProject = null;
     private int iRowIndex = -1;
     private Record theRecord = null;
 
@@ -93,25 +89,28 @@ abstract public class ResourceNode extends Node {
      */
     private void createTypeStatements()
             throws RepositoryException {
-        String strObjectIRI = null;
+        if (this.listResources == null) {
+            return;
+        }
+        String strResource = null;
         String strTypeObject = null;
-        String strIRI = null;
+        //String strIRI = null;
         //String strCIRIE = null;
         //String strPrefix = null;
         //String strNamespace = null;
         //String strLocalName = null;
         //boolean bNamespace = false;
-        IRI iriObject = null;
+        IRI iriResource = null;
         for ( RDFType typeObject : this.getTypes() ) {
             //bNamespace = false;
-            strIRI = typeObject.getResource();
+            //strIRI = typeObject.getResource();
             //strCIRIE = typeObject.getPrefixedResource();
             //strTypeObject = strCIRIE;
             //if (strTypeObject == null) {
-            strTypeObject = strIRI;
-                //strPrefix = "";
-                //strLocalName = "";
-                //strNamespace = "";
+            //    strTypeObject = strIRI;
+            //    //strPrefix = "";
+            //    strLocalName = "";
+            //    strNamespace = "";
             //}
             //else { // ...prefixed...
             //    int iIndex = strCIRIE.indexOf(":") + 1;
@@ -120,28 +119,38 @@ abstract public class ResourceNode extends Node {
             //    strNamespace = strCIRIE.replace(strLocalName, "");
             //    bNamespace = true;
             //}
-            strObjectIRI = null;
-            try {
-                strObjectIRI = Util.resolveIRI(this.baseIRI, strTypeObject);
-            }
-            catch (Util.IRIParsingException ex) {
-                // ...continue...
-            }
-            if (strObjectIRI == null) {
-                continue; // ...to next type
-            }
-            strObjectIRI = expandPrefixedIRI(strObjectIRI);
-            if ( Util.isVerbose(4) )
-                logger.info("Type IRI: " + strObjectIRI);
+            iriResource = null;
+            strResource = null;
+            strTypeObject = typeObject.getResource();
+            if (Util.isDebugMode()) logger.info("DEBUG: Given Type: " + strTypeObject);
+            String strResult = Util.toSpaceStrippedString(strTypeObject);
+            if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
+            if (strResult != null & strResult.length() > 0 ) {
+                try {
+                    strResource = Util.resolveIRI(this.baseIRI, strResult);
+                }
+                catch (Util.IRIParsingException ex) {
+                    // ...continue...
+                }
+                if (strResource != null) {
+                    strResource = this.expandPrefixedIRI(strResource);
+                    if (Util.isDebugMode()) logger.info("DEBUG: strResource: " + strResource);
+                    //if (bNamespace) {
+                    //    iriResource = factory.createIRI(strNamespace, strLocalName);
+                    //}
+                    //else {
+                    //    iriResource = this.theFactory.createIRI(strResource);
+                    //}
+                    iriResource = this.theFactory.createIRI(strResource);
 
-            //if (bNamespace) {
-            //    iriObject = factory.createIRI(strNamespace, strLocalName);
-            //}
-            //else {
-            iriObject = this.theFactory.createIRI(strObjectIRI);
-            //}
-            for (Value valSource : this.listResources) {
-                this.theConnection.add( this.theFactory.createStatement( (Resource) valSource, RDF.TYPE, iriObject ) );
+                    for (Value valSource : this.listResources) {
+                        this.theConnection.add(
+                            this.theFactory.createStatement(
+                                (Resource) valSource, RDF.TYPE, iriResource
+                            )
+                        );
+                    }
+                }
     		}
     	}
     }
@@ -154,15 +163,22 @@ abstract public class ResourceNode extends Node {
      */
     private void createLinkStatements()
             throws RepositoryException {
-        if ( Util.isVerbose(4) ) {
-            if (this.listLinks == null)
-                logger.info("Link Count: NULL (No Links)");
-            else
-                logger.info("Link Count: " + listLinks.size());
+        if (this.listResources == null) {
+            return;
         }
-        String strPropertyIRI = null;
+        if ( Util.isDebugMode() ) {
+            String strLinkCount = "DEBUG: Link Count: {}";
+            int iLinkCount = 0;
+            if (this.listLinks != null)
+                iLinkCount = listLinks.size();
+            logger.info(strLinkCount, iLinkCount);
+        }
+        if (this.listLinks == null) {
+            return;
+        }
+        String strProperty = null;
         String strTypeProperty = null;
-        String strIRI = null;
+        //String strIRI = null;
         //String strCIRIE = null;
         //String strPrefix = null;
         //String strNamespace = null;
@@ -171,12 +187,22 @@ abstract public class ResourceNode extends Node {
         Node nodeObject = null;
         IRI iriProperty = null;
         for (Link link : this.listLinks) {
+            nodeObject = link.getObject();
+            if (nodeObject == null) {
+                continue;
+            }
+            List<Value> listObjects =
+                nodeObject.createObjects(this.baseIRI, this.theFactory, this.theConnection,
+                                            this.theProject, this);
+            if (listObjects == null) {
+                continue;
+            }
             //bNamespace = false;
-            strIRI = link.getProperty();
+            //strIRI = link.getProperty();
             //strCIRIE = link.getPrefixedProperty();
             //strTypeProperty = strCIRIE;
             //if (strTypeProperty == null) {
-            strTypeProperty = strIRI;
+            //    strTypeProperty = strIRI;
             //}
             //else {
             //    int iIndex = strCIRIE.indexOf(":") + 1;
@@ -185,37 +211,40 @@ abstract public class ResourceNode extends Node {
             //    strNamespace = strCIRIE.replace(strLocalName, "");
             //    bNamespace = true;
             //}
-            strPropertyIRI = null;
-            try {
-                strPropertyIRI = Util.resolveIRI(this.baseIRI, strTypeProperty);
-            }
-            catch (Util.IRIParsingException ex) {
-                // ...continue...
-            }
-            if (strPropertyIRI == null) {
-                continue; // ...to next property
-            }
-            strPropertyIRI = expandPrefixedIRI(strPropertyIRI);
-            if ( Util.isVerbose(4) )
-                logger.info("Link IRI: " + strPropertyIRI);
+            iriProperty = null;
+            strProperty = null;
+            strTypeProperty = link.getProperty();
+            if (Util.isDebugMode()) logger.info("DEBUG: Given Property: " + strTypeProperty);
+            String strResult = Util.toSpaceStrippedString(strTypeProperty);
+            if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
+            if (strResult != null & strResult.length() > 0 ) {
+                try {
+                    strProperty = Util.resolveIRI(this.baseIRI, strResult);
+                }
+                catch (Util.IRIParsingException ex) {
+                    // ...continue...
+                }
+                if (strProperty != null) {
+                    strProperty = this.expandPrefixedIRI(strProperty);
+                    if (Util.isDebugMode()) logger.info("DEBUG: strProperty: " + strProperty);
+                    //if (bNamespace) {
+                    //    iriProperty = factory.createIRI(strNamespace, strLocalName);
+                    //}
+                    //else {
+                    //    iriProperty = this.theFactory.createIRI(strProperty);
+                    //}
+                    iriProperty = this.theFactory.createIRI(strProperty);
 
-            //if (bNamespace) {
-            //    iriProperty = factory.createIRI(strNamespace, strLocalName);
-            //}
-            //else {
-            iriProperty = this.theFactory.createIRI(strPropertyIRI);
-            //}
-            nodeObject = link.getObject();
-            if (nodeObject != null)
-            {
-                List<Value> listObjects = nodeObject.createObjects(this.baseIRI, this.theFactory, this.theConnection, this.theProject, this);
-                if (listObjects != null) {
                     for (Value valSource : this.listResources) {
                         for (Value valObject : listObjects) {
-           		    		this.theConnection.add( this.theFactory.createStatement( (Resource) valSource, iriProperty, valObject ) );
-           			    }
-           		    }
-           	    }
+                            this.theConnection.add(
+                                this.theFactory.createStatement(
+                                    (Resource) valSource, iriProperty, valObject
+                                )
+                            );
+                        }
+                    }
+                }
             }
        	}
     }
@@ -233,6 +262,7 @@ abstract public class ResourceNode extends Node {
         this.theConnection = theConnection;
         this.theProject = theProject;
         this.iRowIndex = iRowIndex;
+
         this.createStatementsWorker();
         this.resetRow();
     }
@@ -250,6 +280,7 @@ abstract public class ResourceNode extends Node {
         this.theConnection = theConnection;
         this.theProject = theProject;
         this.theRecord = theRecord;
+
         this.createStatementsWorker();
         this.resetRecord();
     }
@@ -263,20 +294,19 @@ abstract public class ResourceNode extends Node {
      */
     private List<Value> createStatementsWorker() {
         this.listResources = createResources(baseIRI, theFactory, theConnection, theProject);
-        if ( Util.isVerbose(4) ) {
-            if (listResources == null)
-                logger.info("Resources Count: NULL (No Statements)");
-            else
-                logger.info("Resources Count: " + listResources.size());
+        if ( Util.isDebugMode() ) {
+            String strResCount = "DEBUG: Resources Count: {}";
+            int iResCount = 0;
+            if (listResources != null)
+                iResCount = listResources.size();
+            logger.info(strResCount, iResCount);
         }
-        if (listResources != null) {
-            try {
-        	    this.createTypeStatements();
-        	    this.createLinkStatements();
-            }
-            catch (RepositoryException ex) {
-            	throw new RuntimeException(ex);
-            }
+        try {
+            this.createTypeStatements();
+            this.createLinkStatements();
+        }
+        catch (RepositoryException ex) {
+            throw new RuntimeException(ex);
         }
         return listResources;
     }

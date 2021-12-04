@@ -1,4 +1,4 @@
-class VocabManager {
+class RDFTransformVocabManager {
 	constructor(prefixesManager) {
 		this._prefixesManager = prefixesManager;
 	}

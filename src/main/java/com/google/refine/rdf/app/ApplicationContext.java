@@ -37,20 +37,21 @@ public class ApplicationContext {
 	}
 
     protected void init(String strHost, String strIFace, String strPort, File fileWorkingDir) throws IOException {
-		this.strHost =  (strHost  == null || strHost  == "") ? null : strHost;
-		this.strIFace = (strIFace == null || strIFace == "") ? null : strIFace;
-		this.strPort =  (strPort  == null || strPort  == "") ? null : strPort;
+		this.strHost =  ( strHost  == null || strHost.isEmpty()  ) ? null : strHost;
+		this.strIFace = ( strIFace == null || strIFace.isEmpty() ) ? null : strIFace;
+		this.strPort =  ( strPort  == null || strPort.isEmpty()  ) ? null : strPort;
 		this.fileWorkingDir = fileWorkingDir;
-		logger.info( "Init: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
-                          "IFace=" + ( this.strIFace == null ? "<undef>" : this.strIFace ) + ", " +
-                           "Port=" + ( this.strPort  == null ? "<undef>" : this.strPort ) );
+		if ( Util.isDebugMode() ) {
+			logger.info( "Init: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
+            	              "IFace=" + ( this.strIFace == null ? "<undef>" : this.strIFace ) + ", " +
+                	           "Port=" + ( this.strPort  == null ? "<undef>" : this.strPort ) );
+		}
 
 		this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
 		this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
 		InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
 		this.prefixManager = new PrefixManager(inStream);
-		if (Util.isVerbose(3))
-			logger.info("Init: Completed");
+		if (Util.isVerbose(3)) logger.info("Init: Completed");
 	}
 
 	public void setPredefinedVocabularyManager(IPredefinedVocabularyManager predefinedVocabularyManager) {

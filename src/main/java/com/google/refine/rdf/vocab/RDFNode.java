@@ -73,7 +73,7 @@ public class RDFNode {
         if ( ! this.strIRI.isEmpty() ) {
             if ( ! this.strNamespace.isEmpty() ) {
                 int iIndex = this.strNamespace.length();
-                if (this.strIRI.substring(0, iIndex) == this.strNamespace) {
+                if ( this.strIRI.substring(0, iIndex).equals(this.strNamespace) ) {
                     this.strLocalPart = strIRI.substring(iIndex);
                 }
                 else {
@@ -90,7 +90,7 @@ public class RDFNode {
                 }
             }
             else { // ...this.strNamespace is empty, so set it too...
-                splitNamespaceAndLocalPart(true);
+                this.splitNamespaceAndLocalPart(true);
             }
         }
     }

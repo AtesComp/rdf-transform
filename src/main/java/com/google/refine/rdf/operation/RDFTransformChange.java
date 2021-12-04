@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.util.Properties;
 
 import com.google.refine.rdf.RDFTransform;
+import com.google.refine.rdf.Util;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -102,7 +103,7 @@ public class RDFTransformChange implements Change {
             }
             catch (UnsupportedOperationException ex) {
                 logger.error("ERROR: Writing RDFTransform: ", ex);
-                if ( com.google.refine.rdf.Util.isVerbose(4) ) ex.printStackTrace();
+                if ( Util.isVerbose() ) ex.printStackTrace();
             }
         }
     }

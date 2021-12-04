@@ -75,7 +75,7 @@ class RDFTransformPrefixesManager {
 	}
 
 	#showManagePrefixesWidget() {
-		var vocabManager = new VocabManager(this);
+		var vocabManager = new RDFTransformVocabManager(this);
 		vocabManager.show();
 	}
 
@@ -129,23 +129,23 @@ class RDFTransformPrefixesManager {
 	}
 	
 	addPrefix(message, prefix, onDoneAdd) {
-		var widget = new PrefixAdder(this);
+		var widget = new RDFTransformPrefixAdder(this);
 		widget.show(
 			message,
 			prefix,
 			(name, iri) => {
-				this.prefixes.push(
-					{	"name" : name,
-						"iri"  : iri
-					}
-				);
+				var obj = {
+					"name" : name,
+					"iri"  : iri
+				}
+				this.prefixes.push(obj);
 				this.#savePrefixes(
 					() => {
 						this.showPrefixes();
 					}
 				);
 				if (onDoneAdd) {
-					onDoneAdd();
+					onDoneAdd(name);
 				}
 			}
 		);
@@ -160,13 +160,27 @@ class RDFTransformPrefixesManager {
 		return false;
 	}
 
+	getIRIOfPrefix(name) {
+		for (const prefix of this.prefixes) {
+			if (prefix.name === name) {
+				return prefix.iri;
+			}
+		}
+		return null;
+	}
+
 	/*
 	 * Some utility functions...
 	 */
 
 	static isPrefixedQName(strQName) {
-		// TODO: This is NOT an IRI match!
-		return strQName.match(/[_a-zA-Z][-_a-zA-Z0-9]*:($|([_a-zA-Z][-_a-zA-Z0-9]*))$/);
+		if ( RDFTransformCommon.validateIRI(strQName) ) {
+			var iIndex = strQName.indexOf(':');
+			if ( strQName.substring(iIndex, iIndex + 2) != "://" ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static deAssembleQName(strQName) {
@@ -189,6 +203,14 @@ class RDFTransformPrefixesManager {
 			return null;
 		}
 		return strQName.substring(0, iIndex);
+	}
+
+	static getSuffixFromQName(strQName) {
+		var iIndex = strQName.indexOf(':');
+		if (iIndex === -1) {
+			return null;
+		}
+		return strQName.substring(iIndex);
 	}
 
 	static getFullIRIFromQName(strPrefixedQName) {
