@@ -130,6 +130,7 @@ a.manage-vocabularies-box {
 	border-radius: 0.5em;
 }
 
+/* NOT USED */
 .rdf-transform-node-dialog-column-list {
 	height: 300px;
     width: 230px;
@@ -155,7 +156,7 @@ a.manage-vocabularies-box {
 }
 
 span.rdf-node-info {
-	font-size: 90%;
+	font-size: 80%;
 }
 
 span.rdf-value-expression {

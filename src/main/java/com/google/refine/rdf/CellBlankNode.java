@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.refine.expr.EvalError;
+import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
@@ -42,7 +42,7 @@ public class CellBlankNode extends ResourceNode {
 	@Override
 	public String getNodeName() {
 		return "<BNode>:" +
-				( bIsRowNumberCell ? "<ROW#>" : this.strColumnName ) + 
+				( this.bIsRowNumberCell ? "<ROW#>" : this.strColumnName ) + 
 				( "<" + this.strExpression + ">" );
 	}
 
@@ -54,18 +54,18 @@ public class CellBlankNode extends ResourceNode {
 	@JsonProperty("columnName")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getColumnName() {
-		return strColumnName;
+		return this.strColumnName;
 	}
 
 	@JsonProperty("expression")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getExpression() {
-		return "value".equals(strExpression) ? null : strExpression;
+		return "value".equals(this.strExpression) ? null : this.strExpression;
 	}
 
 	@JsonProperty("isRowNumberCell")
 	public boolean isRowNumberCellNode() {
-		return bIsRowNumberCell;
+		return this.bIsRowNumberCell;
 	}
 
     @Override
@@ -93,13 +93,12 @@ public class CellBlankNode extends ResourceNode {
 		List<Value> bnodesNew = null;
         Record theRecord = this.getRecord();
 		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			bnodesNew =
-				this.createRowResources(iRowIndex);
+			bnodesNew = this.createRowResources(iRowIndex);
 			if (bnodesNew != null) {
 				bnodes.addAll(bnodesNew);
 			}
 		}
-        if (bnodes.size() == 0)
+        if ( bnodes.isEmpty() )
 			return null;
 		return bnodes;
     }
@@ -108,10 +107,10 @@ public class CellBlankNode extends ResourceNode {
         List<Value> bnodes = null;
     	try {
     		Object results =
-				Util.evaluateExpression(this.theProject, strExpression, strColumnName, iRowIndex);
+				Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
 
             // Results cannot be classed...
-			if (results.getClass() == EvalError.class) {
+			if ( ExpressionUtils.isError(results) ) {
     			bnodes = null;
     		}
             // Results are an array...
@@ -126,7 +125,7 @@ public class CellBlankNode extends ResourceNode {
             // Results are singular...
 			else {
 				String strResult = results.toString();
-				if (strResult != null && strResult.length() > 0 ) {
+				if (strResult != null && ! strResult.isEmpty() ) {
                 	bnodes = new ArrayList<Value>();
                 	bnodes.add( this.theFactory.createBNode() );
 				}
@@ -138,7 +137,7 @@ public class CellBlankNode extends ResourceNode {
 			bnodes = null;
     	}
 
-		if (bnodes != null && bnodes.size() == 0)
+		if ( bnodes == null || bnodes.isEmpty() )
 			bnodes = null;
 		return bnodes;
     }
@@ -146,7 +145,7 @@ public class CellBlankNode extends ResourceNode {
     @Override
     protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
         writer.writeStringField("nodeType", CellBlankNode.NODETYPE);
-        if (strColumnName != null) {
+        if (this.strColumnName != null) {
         	writer.writeStringField("columnName", this.strColumnName);
         }
         writer.writeStringField("expression", this.strExpression);

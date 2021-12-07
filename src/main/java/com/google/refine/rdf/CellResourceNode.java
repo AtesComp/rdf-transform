@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.IOException;
 
-import com.google.refine.expr.EvalError;
+import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
@@ -100,7 +100,7 @@ public class CellResourceNode extends ResourceNode {
 				listResources.addAll(listResourcesNew);
 			}
 		}
-        if (listResources.size() == 0)
+        if ( listResources.isEmpty() )
 			return null;
 		return listResources;
     }
@@ -108,27 +108,26 @@ public class CellResourceNode extends ResourceNode {
     private List<Value> createRowResources(int iRowIndex) {
         List<Value> listResources = null;
         try {
-        	Object resultEval =
-                Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName,
-                                        iRowIndex);
+        	Object results =
+                Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
+
             String strResource = null;
 
-            // Results cannot be the EvalError class...
-            if (resultEval.getClass() == EvalError.class) {
+            // Results cannot be classed...
+            if ( ExpressionUtils.isError(results) ) {
             	listResources = null;
             }
             // Results are an array...
-            else if ( resultEval.getClass().isArray() ) {
+            else if ( results.getClass().isArray() ) {
                 if (Util.isDebugMode()) logger.info("DEBUG: Result is Array...");
-                listResources = new ArrayList<Value>();
 
-                List<Object> listResult = Arrays.asList(resultEval);
+                listResources = new ArrayList<Value>();
+                List<Object> listResult = Arrays.asList(results);
                 for (Object objResult : listResult) {
-                    if (Util.isDebugMode()) logger.info("DEBUG: Expression Result: " + objResult.toString());
                     String strResult = Util.toSpaceStrippedString(objResult);
                     if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
-                    if ( strResult != null && strResult.length() > 0 ) {
-                        strResource = Util.resolveIRI( this.baseIRI, objResult.toString() );
+                    if ( strResult != null && ! strResult.isEmpty() ) {
+                        strResource = Util.resolveIRI( this.baseIRI, strResult );
                         if (strResource != null) {
                             strResource = this.expandPrefixedIRI(strResource);
                             if (Util.isDebugMode()) logger.info("DEBUG: strResource: " + strResource);
@@ -139,10 +138,9 @@ public class CellResourceNode extends ResourceNode {
             }
             // Results are singular...
             else {
-                if (Util.isDebugMode()) logger.info("DEBUG: Expression Result: " + resultEval.toString());
-                String strResult = Util.toSpaceStrippedString(resultEval);
+                String strResult = Util.toSpaceStrippedString(results);
                 if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
-                if (strResult != null && strResult.length() > 0 ) {
+                if (strResult != null && ! strResult.isEmpty() ) {
                     strResource = Util.resolveIRI(this.baseIRI, strResult);
                     if (strResource != null) {
                         strResource = this.expandPrefixedIRI(strResource);
@@ -159,7 +157,7 @@ public class CellResourceNode extends ResourceNode {
             listResources = null;
         }
 
-        if (listResources != null && listResources.size() == 0)
+        if ( listResources == null || listResources.isEmpty() )
             listResources = null;
         return listResources;
     }

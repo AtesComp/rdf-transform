@@ -1,14 +1,15 @@
 package com.google.refine.rdf;
 
 import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.expr.util.RDFExpressionUtil;
 import com.google.refine.rdf.vocab.VocabularyIndexException;
 
 import com.google.refine.expr.Evaluable;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.MetaParser;
 import com.google.refine.expr.ParsingException;
+import com.google.refine.model.Cell;
 import com.google.refine.model.Project;
+import com.google.refine.model.Row;
 import com.google.refine.preference.PreferenceStore;
 import com.google.refine.ProjectManager;
 
@@ -239,21 +240,42 @@ public class Util {
 		return baseIRI;
 	}
 
-	public static Object evaluateExpression(Project theProject, String strExp, String strColumnName, int iRowIndex)
+	public static Object evaluateExpression(Project theProject, String strExpression, String strColumnName, int iRowIndex)
 			throws ParsingException {
+		// Find the cell index for the column under evaluation...
+		int iCellIndex =
+			( strColumnName == null || strColumnName.isEmpty() ) ?
+				-1 : theProject.columnModel.getColumnByName(strColumnName).getCellIndex();
+
+		//
+		// Evaluate the expression on the cell and return results...
+		//
+
+		// Set up the row...
+		Row theRow = theProject.rows.get(iRowIndex);
+
+		// Set up the cell...
+		Cell theCell = null;
+		// If there is a valid cell index for a column...
+		if (iCellIndex >= 0) {
+			theCell = theRow.getCell(iCellIndex);
+		}
+		// Otherwise, create a pseudo-cell for the "row index column"...
+		else {
+         	theCell = new Cell(iRowIndex, null);
+        }
+
 		// Create a bindings property just for this expression...
 		Properties bindings = ExpressionUtils.createBindings(theProject);
 
+		// Bind the cell for expression evaluation...
+        ExpressionUtils.bind(bindings, theRow, iRowIndex, strColumnName, theCell);
+
 		// Create an evaluator just for this expression...
-		Evaluable eval = MetaParser.parse(strExp);
+		Evaluable eval = MetaParser.parse(strExpression);
 
-		// Find the cell index for the column under evaluation...
-		int iCellIndex =
-			( strColumnName == null || strColumnName.length() == 0 ) ?
-				-1 : theProject.columnModel.getColumnByName(strColumnName).getCellIndex();
-
-		// Evaluate the expression on the cell and return results...
-		return RDFExpressionUtil.evaluate(eval, bindings, theProject.rows.get(iRowIndex), iRowIndex, strColumnName, iCellIndex);
+		// Evaluate the expression on the cell for results...
+		return eval.evaluate(bindings);
 	}
 
 	public static boolean isVerbose() {

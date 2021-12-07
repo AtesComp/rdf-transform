@@ -1,26 +1,31 @@
 class RDFTransformVocabManager {
+	#prefixesManager;
+
+	#level;
+	#elements;
+
 	constructor(prefixesManager) {
-		this._prefixesManager = prefixesManager;
+		this.#prefixesManager = prefixesManager;
 	}
 
 	show() {
 		var dialog = $(DOM.loadHTML("rdf-transform", "scripts/dialogs/rdf-transform-vocab-manager.html"));
-		this._level = DialogSystem.showDialog(dialog);
-		this._elements = DOM.bind(dialog);
+		this.#level = DialogSystem.showDialog(dialog);
+		this.#elements = DOM.bind(dialog);
 
-		this._elements.dialogHeader.html($.i18n('rdft-vocab/header'));
-		this._elements.buttonAddPrefix.html($.i18n('rdft-buttons/add-prefix'));
-		this._elements.buttonOK.html($.i18n('rdft-buttons/ok'));
-		this._elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
+		this.#elements.dialogHeader.html($.i18n('rdft-vocab/header'));
+		this.#elements.buttonAddPrefix.html($.i18n('rdft-buttons/add-prefix'));
+		this.#elements.buttonOK.html($.i18n('rdft-buttons/ok'));
+		this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
 
-		this._elements.buttonCancel
+		this.#elements.buttonCancel
 		.click( () => { this.#dismiss(); } );
 
-		this._elements.buttonAddPrefix
+		this.#elements.buttonAddPrefix
 		.click(
 			(evt) => {
 				evt.preventDefault();
-				this._prefixesManager.addPrefix(
+				this.#prefixesManager.addPrefix(
 					false, false,
 					() => {
 						this.#renderBody();
@@ -31,10 +36,10 @@ class RDFTransformVocabManager {
 
 		this.#renderBody();
 
-		this._elements.buttonOK
+		this.#elements.buttonOK
 		.click(
 			() => {
-				this._prefixesManager.showPrefixes();
+				this.#prefixesManager.showPrefixes();
 				this.#dismiss();
 			}
 		);
@@ -57,13 +62,12 @@ class RDFTransformVocabManager {
 						(data) => {
 							dismissBusy();
 							if (data.code === 'error') {
-								// TODO: Update to proper error handling...
-								console.log($.i18n('rdft-vocab/error-deleting'));
+								alert($.i18n('rdft-vocab/error-deleting') + ': ' + name);
 							}
 							else {
-								this._prefixesManager.removePrefix(name);
-								this.#renderBody();
+								this.#prefixesManager.removePrefix(name);
 							}
+							this.#renderBody();
 						}
 					);
 				}
@@ -102,7 +106,7 @@ class RDFTransformVocabManager {
 	}
 
 	#renderBody() {
-		var table = this._elements.prefixesTable;
+		var table = this.#elements.prefixesTable;
 		table.empty();
 		table.append(
 			$('<tr>').addClass('rdf-table-even')
@@ -113,7 +117,7 @@ class RDFTransformVocabManager {
 		);
 
 		var bEven = false;
-		for (const prefix of this._prefixesManager.prefixes) {
+		for (const prefix of this.#prefixesManager.prefixes) {
 			var name = prefix.name;
 			var iri = prefix.iri;
 			var delete_handle =
@@ -138,6 +142,6 @@ class RDFTransformVocabManager {
 	}
 
 	#dismiss() {
-		DialogSystem.dismissUntil(this._level - 1);
+		DialogSystem.dismissUntil(this.#level - 1);
 	}
 }

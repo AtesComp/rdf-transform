@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.IOException;
 
-import com.google.refine.expr.EvalError;
+import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
@@ -22,7 +22,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CellLiteralNode extends CellNode {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:CellResNode");
 
 	static private final String NODETYPE = "cell-as-literal";
 
@@ -31,6 +35,8 @@ public class CellLiteralNode extends CellNode {
 	private final String strValueType;
     private final String strLanguage;
     private final boolean bIsRowNumberCell;
+
+    private Record theRecord = null;
 
     @JsonCreator
     public CellLiteralNode(
@@ -101,7 +107,7 @@ public class CellLiteralNode extends CellNode {
 
     /*
      *  Method createObjects() creates the object list for triple statements
-     *  from this node on Rows
+     *  from this node on Rows / Records.
      */
 	@Override
     protected List<Value> createObjects(
@@ -112,90 +118,108 @@ public class CellLiteralNode extends CellNode {
         this.theConnection = connection;
         this.theProject = project;
 
-		List<Value> literals = null;
-        Record theRecord = nodeParent.getRecord();
-        if (theRecord != null) {
-            literals = createRecordObjects(theRecord);
+        this.theRecord = nodeParent.getRecord();
+
+		List<Value> listLiterals = null;
+		if (this.theRecord != null) {
+            listLiterals = createRecordLiterals();
         }
         else {
-            literals =
-				createRowObjects( nodeParent.getRowIndex() );
+            listLiterals = createRowLiterals( nodeParent.getRowIndex() );
         }
 
-		return literals;
+		return listLiterals;
 	}
 
     /*
-     *  Method createRecordObjects() creates the object list for triple statements
+     *  Method createRecordLiterals() creates the object list for triple statements
      *  from this node on Records
      */
-	private List<Value> createRecordObjects(Record theRecord ) {
-		List<Value> literals = new ArrayList<Value>();
-		List<Value> literalsNew = null;
-		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			literalsNew =
-				this.createRowObjects(iRowIndex);
-			if (literalsNew != null) {
-				literals.addAll(literalsNew);
+	private List<Value> createRecordLiterals() {
+		List<Value> listLiterals = new ArrayList<Value>();
+		List<Value> listLiteralsNew = null;
+		for (int iRowIndex = this.theRecord.fromRowIndex; iRowIndex < this.theRecord.toRowIndex; iRowIndex++) {
+			listLiteralsNew = this.createRowLiterals(iRowIndex);
+			if (listLiteralsNew != null) {
+				listLiterals.addAll(listLiteralsNew);
 			}
 		}
-        if (literals.size() == 0)
+        if ( listLiterals.isEmpty() )
 			return null;
-		return literals;
+		return listLiterals;
 	}
 
     /*
-     *  Method createObjects() creates the object list for triple statements
+     *  Method createRowLiterals() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowObjects(int iRowIndex) {
-		List<String> astrValues = null;
+	private List<Value> createRowLiterals(int iRowIndex) {
+		List<String> listStrings = null;
         try {
             Object results =
-				Util.evaluateExpression(this.theProject, strExpression, strColumnName, iRowIndex);
+				Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
 
-            if (results.getClass() == EvalError.class) {
-            	astrValues = null;
+			// Results cannot be classed...
+            if ( ExpressionUtils.isError(results) ) {
+            	listStrings = null;
             }
+			// Results are an array...
 			else if ( results.getClass().isArray() ) {
-				astrValues = new ArrayList<String>();
+				if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: Result is Array...");
+
+				listStrings = new ArrayList<String>();
 				List<Object> listResult = Arrays.asList(results);
            		for (Object objResult : listResult) {
-           			astrValues.add(objResult.toString());
+					String strResult = Util.toSpaceStrippedString(objResult);
+					if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: strResult: " + strResult);
+					if ( strResult != null && ! strResult.isEmpty() ) {
+           				listStrings.add( strResult );
+					}
            		}
            	}
-			else if (results.toString().length() > 0) {
-				astrValues = new ArrayList<String>();
-            	astrValues.add(results.toString());
+			// Results are singular...
+			else {
+				String strResult = Util.toSpaceStrippedString(results);
+                if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
+				if (strResult != null && ! strResult.isEmpty() ) {
+					listStrings = new ArrayList<String>();
+            		listStrings.add(strResult);
+				}
             }
     	}
 		catch (Exception e) {
     		// An empty cell might result in an exception out of evaluating IRI expression,
 			//   so it is intended to eat the exception...
-    		astrValues = null;
+    		listStrings = null;
     	}
 
-		List<Value> literals = null;
-		if ( astrValues != null && ! astrValues.isEmpty() ) {
-        	literals = new ArrayList<Value>();
-        	for (String strValue : astrValues) {
+		//
+		// Process each string as a Literal with the following preference:
+		//    1. a given Datatype
+		//    2. a given Language code
+		//    3. nothing, just a simple string Literal
+		//
+		List<Value> listLiterals = null;
+		if ( listStrings != null && ! listStrings.isEmpty() ) {
+        	listLiterals = new ArrayList<Value>();
+        	for (String strValue : listStrings) {
         		Literal literal;
             	if (this.strValueType != null) {
-                	literal = this.theFactory.createLiteral( strValue, this.theFactory.createIRI(strValueType) );
+                	literal = this.theFactory.createLiteral( strValue, this.theFactory.createIRI(this.strValueType) );
             	}
 				else if (this.strLanguage != null) {
-            		literal = this.theFactory.createLiteral( strValue, strLanguage );
+            		literal = this.theFactory.createLiteral( strValue, this.strLanguage );
             	}
 				else {
             		literal = this.theFactory.createLiteral( strValue );
             	}
-            	literals.add(literal);
+            	listLiterals.add(literal);
         	}
         }
 
-        if (literals == null || literals.size() == 0)
-			return null;
-		return literals;
+        if ( listLiterals == null || listLiterals.isEmpty() )
+			listLiterals = null;
+		return listLiterals;
     }
 
 	@Override

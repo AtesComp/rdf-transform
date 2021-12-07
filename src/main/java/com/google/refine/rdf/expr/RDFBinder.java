@@ -16,6 +16,21 @@ import com.google.refine.model.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * Class RDFBinder
+ * 
+ *   This class is registered by the "controller.js" in this extension.
+ *   The purpose of registering this "binder" is to push an instance of this class onto the
+ *   HashSet managed by the ExpressionUtils class.
+ * 
+ *   This "binder" is used by the ExpressionUtils createBindings() method to create and add
+ *   generic "bindings" properties.  It calls this "binder"'s initializeBindings() method to
+ *   add a "baseIRI" binding to the "bindings" properties.
+ * 
+ *   The ExpressionUtils bind() method is used to bind a specific Row, row index, row Cells,
+ *   column name, Cell, and cell value to the "bindings".  It calls this "binder"'s bind()
+ *   method to perform any additional work concerning the added "baseIRI" binding.
+ */
 public class RDFBinder implements Binder {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFBinder");
 
@@ -45,6 +60,7 @@ public class RDFBinder implements Binder {
 
 	@Override
 	public void bind(Properties bindings, Row row, int rowIndex, String columnName, Cell cell) {
-		// nothing to do
+		// The baseIRI is already added by the initializeBindings() above.
+		// ...nothing more to do...
 	}
 }
