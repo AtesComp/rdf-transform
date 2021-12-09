@@ -25,34 +25,35 @@ import org.slf4j.LoggerFactory;
     property = "nodeType")
 @JsonTypeIdResolver(NodeResolver.class)
 abstract public class Node {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:Node");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:Node");
 
     protected ParsedIRI baseIRI = null;
     protected ValueFactory theFactory = null;
     protected RepositoryConnection theConnection = null;
     protected Project theProject = null;
 
-    public abstract String getNodeName();
+    abstract public String getNodeName();
 
     @JsonProperty("nodeType")
-    public abstract String getNodeType();
+    abstract public String getNodeType();
 
     protected String expandPrefixedIRI(String strObjectIRI) {
         String strExpanded = strObjectIRI;
         if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: string = " + strObjectIRI);
         if ( !strObjectIRI.contains("://") ) {
             if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: checking prefix...");
-            int iIndex = strObjectIRI.indexOf(':');
+            int iIndex = strObjectIRI.indexOf(':'); // ...get index of first ':'...
             if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: index = " + iIndex);
-            if (iIndex >= 0) {
-                String strPrefix = strObjectIRI.substring(0, iIndex);
+            if (iIndex >= 0) { // ...a ':' exists...
+                String strPrefix = strObjectIRI.substring(0, iIndex); // ...including blank ("") prefix...
                 if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: strPrefix = " + strPrefix);
                 if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: connection = " +
                                                     ( this.theConnection == null ? "null" : "connected" ) );
                 String strNamespace = this.theConnection.getNamespace(strPrefix);
                 if (Util.isDebugMode()) logger.info("DEBUG: expandPrefixedIRI: strNamespace = " + strNamespace);
                 if (strNamespace != null) {
-                    strExpanded = strNamespace + strObjectIRI.substring(iIndex);
+                     // Get the string just beyond the first ':'...
+                    strExpanded = strNamespace + strObjectIRI.substring(iIndex+1);
                 }
             }
         }

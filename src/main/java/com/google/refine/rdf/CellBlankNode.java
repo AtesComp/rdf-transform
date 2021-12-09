@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.refine.expr.ExpressionUtils;
+import com.google.refine.expr.ParsingException;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
@@ -20,13 +21,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-public class CellBlankNode extends ResourceNode {
+public class CellBlankNode extends ResourceNode implements CellNode {
 
-	final static private String NODETYPE = "cell-as-blank";
+	static private final String strNODETYPE = "cell-as-blank";
 
-    final private String strColumnName;
+    private final String strColumnName;
     final boolean bIsRowNumberCell;
-    final private String strExpression;
+    private final String strExpression;
 
     @JsonCreator
     public CellBlankNode(
@@ -39,6 +40,10 @@ public class CellBlankNode extends ResourceNode {
         this.bIsRowNumberCell = bIsRowNumberCell;
     }
 
+    static String getNODETYPE() {
+        return CellBlankNode.strNODETYPE;
+    }
+
 	@Override
 	public String getNodeName() {
 		return "<BNode>:" +
@@ -48,7 +53,7 @@ public class CellBlankNode extends ResourceNode {
 
 	@Override
 	public String getNodeType() {
-		return CellBlankNode.NODETYPE;
+		return CellBlankNode.strNODETYPE;
 	}
 
 	@JsonProperty("columnName")
@@ -57,15 +62,15 @@ public class CellBlankNode extends ResourceNode {
 		return this.strColumnName;
 	}
 
-	@JsonProperty("expression")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public String getExpression() {
-		return "value".equals(this.strExpression) ? null : this.strExpression;
-	}
-
 	@JsonProperty("isRowNumberCell")
 	public boolean isRowNumberCellNode() {
 		return this.bIsRowNumberCell;
+	}
+
+	@JsonProperty("expression")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public String getExpression() {
+		return this.strExpression.equals("value") ? null : this.strExpression;
 	}
 
     @Override
@@ -104,47 +109,47 @@ public class CellBlankNode extends ResourceNode {
     }
 
 	private List<Value> createRowResources(int iRowIndex) {
-        List<Value> bnodes = null;
+		Object results = null;
     	try {
-    		Object results =
+    		results =
 				Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
-
-            // Results cannot be classed...
-			if ( ExpressionUtils.isError(results) ) {
-    			bnodes = null;
-    		}
-            // Results are an array...
-    		else if ( results.getClass().isArray() ) {
-				bnodes = new ArrayList<Value>();
-
-				int iSize = Arrays.asList(results).size();
-				for (int iIndex = 0; iIndex < iSize; iIndex++) {
-    				bnodes.add( this.theFactory.createBNode() );
-    			}
-    		}
-            // Results are singular...
-			else {
-				String strResult = results.toString();
-				if (strResult != null && ! strResult.isEmpty() ) {
-                	bnodes = new ArrayList<Value>();
-                	bnodes.add( this.theFactory.createBNode() );
-				}
-            }
-    	}
-		catch (Exception e) {
+		}
+		catch (ParsingException e) {
             // An empty cell might result in an exception out of evaluating IRI expression,
             //   so it is intended to eat the exception...
-			bnodes = null;
+			return null;
     	}
 
-		if ( bnodes == null || bnodes.isEmpty() )
+		// Results cannot be classed...
+		if ( results == null || ExpressionUtils.isError(results) ) {
+			return null;
+		}
+
+        List<Value> bnodes = new ArrayList<Value>();
+
+		// Results are an array...
+		if ( results.getClass().isArray() ) {
+			int iSize = Arrays.asList(results).size();
+			for (int iIndex = 0; iIndex < iSize; iIndex++) {
+				bnodes.add( this.theFactory.createBNode() );
+			}
+		}
+		// Results are singular...
+		else {
+			String strResult = results.toString();
+			if (strResult != null && ! strResult.isEmpty() ) {
+				bnodes.add( this.theFactory.createBNode() );
+			}
+		}
+
+		if ( bnodes.isEmpty() )
 			bnodes = null;
 		return bnodes;
     }
 
     @Override
     protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-        writer.writeStringField("nodeType", CellBlankNode.NODETYPE);
+        writer.writeStringField("nodeType", CellBlankNode.strNODETYPE);
         if (this.strColumnName != null) {
         	writer.writeStringField("columnName", this.strColumnName);
         }

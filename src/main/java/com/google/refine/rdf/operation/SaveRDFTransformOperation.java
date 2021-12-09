@@ -36,17 +36,6 @@ public class SaveRDFTransformOperation extends AbstractOperation {
         if ( Util.isVerbose(3) ) logger.info("Created");
     }
 
-    static public AbstractOperation reconstruct(JsonNode jnodeElement)
-            throws Exception {
-        if ( Util.isVerbose(3) ) logger.info("Reconstructing transform...");
-        JsonNode jnodeTransform = jnodeElement.get(RDFTransform.KEY);
-        if (jnodeTransform == null) {
-            return null;
-        }
-        RDFTransform theTransform = RDFTransform.reconstruct( jnodeTransform );
-        return new SaveRDFTransformOperation( theTransform );
-    }
-
     @JsonProperty("description")
     public String getDescription() {
     	return SaveRDFTransformOperation.strSaveRDFTransform;
@@ -62,9 +51,10 @@ public class SaveRDFTransformOperation extends AbstractOperation {
             throws Exception {
         if ( Util.isVerbose(3) ) logger.info("Setting transform from JSON...");
         if (jnodeTransform == null) {
+            logger.error("ERROR: No RDFTransform in JSON!");
             return;
         }
-        this.theTransform = RDFTransform.reconstruct( jnodeTransform );
+        this.theTransform = RDFTransform.reconstruct(jnodeTransform);
     }
 
     @Override
@@ -75,10 +65,26 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @Override
     protected HistoryEntry createHistoryEntry(Project theProject, long liHistoryEntryID)
             throws Exception {
-        Change changeHistory = new RDFTransformChange(this.theTransform);
+        // Create a new Change object with the transform sent by the command...
+        //   NOTE: The previous transform will be set later when the HistoryEntry
+        //         causes the Change to apply()'s this transform as the current transform.
+        Change changeHistory = new RDFTransformChange(this.theTransform, null);
 
+        // Create a new HistoryEntry to cause the Change to apply()...
+        // NOTE: This will also cause the Change to save() after the apply()
         return new HistoryEntry(liHistoryEntryID, theProject,
                                 SaveRDFTransformOperation.strSaveRDFTransform,
                                 this, changeHistory);
+    }
+
+    static public AbstractOperation reconstruct(Project theProject, JsonNode jnodeElement)
+            throws Exception {
+        if ( Util.isVerbose(3) ) logger.info("Reconstructing transform...");
+        JsonNode jnodeTransform = jnodeElement.get(RDFTransform.KEY);
+        if (jnodeTransform == null) {
+            return null;
+        }
+        RDFTransform theTransform = RDFTransform.reconstruct(jnodeTransform);
+        return new SaveRDFTransformOperation(theTransform);
     }
 }

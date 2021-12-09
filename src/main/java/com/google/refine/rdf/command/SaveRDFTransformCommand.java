@@ -33,16 +33,16 @@ public class SaveRDFTransformCommand extends RDFTransformCommand{
         }
 
         try {
-            Project theProject = getProject(request);
+            Project theProject = this.getProject(request);
 
             String strTransform = request.getParameter(RDFTransform.KEY);
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             RDFTransform theTransform = RDFTransform.reconstruct(jnodeRoot);
 
-            AbstractOperation opTransform = new SaveRDFTransformOperation(theTransform);
-            Process processTransform = opTransform.createProcess(theProject, new Properties());
+            AbstractOperation opSave = new SaveRDFTransformOperation(theTransform);
+            Process procSave = opSave.createProcess(theProject, new Properties());
 
-            performProcessAndRespond(request, response, theProject, processTransform);
+            performProcessAndRespond(request, response, theProject, procSave);
         }
         catch (Exception ex) {
             respondException(response, ex);

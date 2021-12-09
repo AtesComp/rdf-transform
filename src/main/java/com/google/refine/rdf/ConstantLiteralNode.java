@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
@@ -21,13 +20,11 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-public class ConstantLiteralNode extends LiteralNode {
+public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
 
-    static private final String NODETYPE = "literal";
+    static private final String strNODETYPE = "literal";
 
     private final String strValue;
-    private final String strValueType;
-    private final String strLanguage;
 
     @JsonCreator
     public ConstantLiteralNode(
@@ -35,9 +32,12 @@ public class ConstantLiteralNode extends LiteralNode {
     		@JsonProperty("valueType") String strValueType,
     		@JsonProperty("lang")      String strLanguage )
     {
+        super(strValueType, strLanguage);
         this.strValue = strValue; // ..no stripping here!
-        this.strValueType = strValueType;
-        this.strLanguage = strLanguage;
+    }
+
+    static String getNODETYPE() {
+        return ConstantLiteralNode.strNODETYPE;
     }
 
 	@Override
@@ -64,24 +64,12 @@ public class ConstantLiteralNode extends LiteralNode {
 
 	@Override
 	public String getNodeType() {
-		return ConstantLiteralNode.NODETYPE;
+		return ConstantLiteralNode.strNODETYPE;
 	}
 
     @JsonProperty("value")
     public String getValue() {
         return this.strValue;
-    }
-
-    @JsonProperty("valueType")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String getValueType() {
-        return this.strValueType;
-    }
-
-    @JsonProperty("lang")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String getLanguage() {
-        return this.strLanguage;
     }
 
     /*
@@ -177,7 +165,7 @@ public class ConstantLiteralNode extends LiteralNode {
     public void write(JsonGenerator writer) throws JsonGenerationException, IOException {
         writer.writeStartObject();
 
-        writer.writeStringField("nodeType", ConstantLiteralNode.NODETYPE);
+        writer.writeStringField("nodeType", ConstantLiteralNode.strNODETYPE);
         writer.writeStringField("value", strValue);
         if (strValueType != null) {
             writer.writeStringField("valueType", strValueType);

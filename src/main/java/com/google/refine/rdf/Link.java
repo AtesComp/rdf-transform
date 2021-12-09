@@ -64,9 +64,9 @@ public class Link {
 
 		writer.writeStringField("iri", strProperty);
 		writer.writeStringField("cirie", strPrefixedProperty);
-		if (nodeObject != null) {
+		if (this.nodeObject != null) {
 			writer.writeFieldName("target");
-			nodeObject.write(writer);
+			this.nodeObject.write(writer);
 		}
 		writer.writeEndObject();
 	}

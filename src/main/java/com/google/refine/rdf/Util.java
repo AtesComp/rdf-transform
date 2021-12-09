@@ -242,25 +242,38 @@ public class Util {
 
 	public static Object evaluateExpression(Project theProject, String strExpression, String strColumnName, int iRowIndex)
 			throws ParsingException {
-		// Find the cell index for the column under evaluation...
-		int iCellIndex =
-			( strColumnName == null || strColumnName.isEmpty() ) ?
-				-1 : theProject.columnModel.getColumnByName(strColumnName).getCellIndex();
-
 		//
 		// Evaluate the expression on the cell and return results...
+		//   NOTE: Here is where we tie the RDF Transform model to the data.
 		//
 
-		// Set up the row...
-		Row theRow = theProject.rows.get(iRowIndex);
-
-		// Set up the cell...
-		Cell theCell = null;
-		// If there is a valid cell index for a column...
-		if (iCellIndex >= 0) {
-			theCell = theRow.getCell(iCellIndex);
+		// Select the column reference (er, cell index) by given name...
+		int theColumn = -1;
+		// If a regular column (not a row/record index column)...
+		if ( ! ( strColumnName == null || strColumnName.isEmpty() ) ) {
+			try {
+				theColumn = theProject.columnModel.getColumnByName(strColumnName).getCellIndex();
+			}
+			catch (ClassCastException | NullPointerException ex) {
+				// Let it be -1...continue...
+			}
 		}
-		// Otherwise, create a pseudo-cell for the "row index column"...
+
+		// Select the row by given row index...
+		Row theRow = null;
+		try {
+			theRow = theProject.rows.get(iRowIndex);
+		}
+		catch (IndexOutOfBoundsException ex) {
+			// Let it be null...continue...
+		}
+
+		// Select the data cell by row and column...
+		Cell theCell = null;
+		if (theColumn >= 0 && theRow != null) { // ...for a valid column and row...
+			theCell = theRow.getCell(theColumn); // ...get the cell
+		}
+		// Otherwise, create a pseudo-cell...
 		else {
          	theCell = new Cell(iRowIndex, null);
         }

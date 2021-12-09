@@ -17,14 +17,18 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.refine.model.Project;
 
-public class ConstantBlankNode extends ResourceNode {
+public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
-	final static private String NODETYPE = "blank";
+	static private final String strNODETYPE = "blank";
 
 	private BNode bnode = null;
 
 	@JsonCreator
 	ConstantBlankNode() {}
+
+    static String getNODETYPE() {
+        return ConstantBlankNode.strNODETYPE;
+    }
 
 	@Override
 	public String getNodeName() {
@@ -33,7 +37,7 @@ public class ConstantBlankNode extends ResourceNode {
 
 	@Override
 	public String getNodeType() {
-		return ConstantBlankNode.NODETYPE;
+		return ConstantBlankNode.strNODETYPE;
 	}
 
 	@Override
@@ -55,6 +59,6 @@ public class ConstantBlankNode extends ResourceNode {
 
 	@Override
 	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-		writer.writeStringField("nodeType", ConstantBlankNode.NODETYPE);
+		writer.writeStringField("nodeType", ConstantBlankNode.strNODETYPE);
 	}
 }

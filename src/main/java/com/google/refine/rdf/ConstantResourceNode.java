@@ -16,19 +16,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
-public class ConstantResourceNode extends ResourceNode {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:ConstResNode");
+public class ConstantResourceNode extends ResourceNode implements ConstantNode {
+    // private final static Logger logger = LoggerFactory.getLogger("RDFT:ConstResNode");
 
-    static private final String NODETYPE = "resource";
+    static private final String strNODETYPE = "resource";
 
     private final String strIRI;
 
     @JsonCreator
     public ConstantResourceNode( @JsonProperty("value") String strIRI ) {
         this.strIRI = Util.toSpaceStrippedString(strIRI);
+    }
+
+    static String getNODETYPE() {
+        return ConstantResourceNode.strNODETYPE;
     }
 
 	@Override
@@ -38,7 +42,7 @@ public class ConstantResourceNode extends ResourceNode {
 
 	@Override
 	public String getNodeType() {
-		return ConstantResourceNode.NODETYPE;
+		return ConstantResourceNode.strNODETYPE;
 	}
 
     @JsonProperty("value")
@@ -55,31 +59,16 @@ public class ConstantResourceNode extends ResourceNode {
         this.theConnection = connection;
         this.theProject = project;
 
-        List<Value> listResources = null;
-        String strResource = null;
-        if (Util.isDebugMode()) logger.info("DEBUG: Given IRI: " + this.strIRI);
-        String strResult = Util.toSpaceStrippedString(this.strIRI);
-        if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
-        if (strResult != null & strResult.length() > 0 ) {
-            try {
-                strResource = Util.resolveIRI(this.baseIRI, this.strIRI);
-            }
-            catch (Util.IRIParsingException ex) {
-                // ...continue...
-            }
-            if (strResource != null) {
-                strResource = this.expandPrefixedIRI(strResource);
-                if (Util.isDebugMode()) logger.info("DEBUG: strResource: " + strResource);
-                listResources = new ArrayList<Value>();
-                listResources.add( this.theFactory.createIRI(strResource) );
-            }
-        }
+        List<Value> listResources = new ArrayList<Value>();
+        this.normalizeResource(this.strIRI, listResources);
+        if ( listResources.isEmpty() )
+            listResources = null;
         return listResources;
     }
 
 	@Override
 	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-		writer.writeStringField("nodeType", ConstantResourceNode.NODETYPE);
+		writer.writeStringField("nodeType", ConstantResourceNode.strNODETYPE);
         writer.writeStringField("value", strIRI);
 	}
 }
