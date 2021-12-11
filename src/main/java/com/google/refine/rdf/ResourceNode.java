@@ -7,6 +7,8 @@ import java.io.IOException;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 import com.google.refine.rdf.Util.IRIParsingException;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -32,15 +34,15 @@ abstract public class ResourceNode extends Node {
     @JsonProperty("links")
     private List<Link> listLinks = new ArrayList<Link>();
 
-    private int iRowIndex = -1;
-    private Record theRecord = null;
-
+    @JsonIgnore
     private List<Value> listResources = null;
 
+    @JsonIgnore
     public void addType(RDFType type) {
         this.listRDFTypes.add(type);
     }
 
+    @JsonIgnore
     public void addLink(Link link) {
         this.listLinks.add(link);
     }
@@ -54,40 +56,6 @@ abstract public class ResourceNode extends Node {
     public List<Link> getLinks() {
 		return this.listLinks;
 	}
-
-    public int getRowIndex() {
-        return this.iRowIndex;
-    }
-
-    public Record getRecord() {
-        return this.theRecord;
-    }
-
-    private void setRow(ResourceNode nodeParent) {
-        this.iRowIndex = nodeParent.getRowIndex();
-    }
-
-    private void setRecord(ResourceNode nodeParent) {
-        this.theRecord = nodeParent.getRecord();
-    }
-
-    private void setRowRecord(ResourceNode nodeParent) {
-        this.iRowIndex = nodeParent.getRowIndex();
-        this.theRecord = nodeParent.getRecord();
-    }
-
-    private void resetRowRecord() {
-        resetRow();
-        resetRecord();
-    }
-
-    private void resetRow() {
-        this.iRowIndex = -1;
-    }
-
-    private void resetRecord() {
-        this.theRecord = null;
-    }
 
     /*
      *  Method normalizeResource() for Resource Node to IRI
@@ -126,8 +94,8 @@ abstract public class ResourceNode extends Node {
         this.theFactory = theFactory;
         this.theConnection = theConnection;
         this.theProject = theProject;
-        this.iRowIndex = iRowIndex;
 
+        this.iRowIndex = iRowIndex;
         this.createStatementsWorker();
         this.resetRow();
     }
@@ -144,8 +112,8 @@ abstract public class ResourceNode extends Node {
         this.theFactory = theFactory;
         this.theConnection = theConnection;
         this.theProject = theProject;
-        this.theRecord = theRecord;
 
+        this.theRecord = theRecord;
         this.createStatementsWorker();
         this.resetRecord();
     }
@@ -158,7 +126,7 @@ abstract public class ResourceNode extends Node {
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
     private List<Value> createStatementsWorker() {
-        this.listResources = this.createResources(baseIRI, theFactory, theConnection, theProject);
+        this.listResources = this.createResources();
         if ( Util.isDebugMode() ) {
             String strResCount = "DEBUG: Resources Count: {}";
             int iResCount = 0;
@@ -167,6 +135,10 @@ abstract public class ResourceNode extends Node {
             }
             ResourceNode.logger.info(strResCount, iResCount);
         }
+        if ( this.listResources == null || this.listResources.isEmpty() ) {
+            return null;
+        }
+
         try {
             this.createTypeStatements();
             this.createLinkStatements();
@@ -174,6 +146,7 @@ abstract public class ResourceNode extends Node {
         catch (RepositoryException ex) {
             throw new RuntimeException(ex);
         }
+
         return this.listResources;
     }
 
@@ -184,9 +157,7 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    protected abstract List<Value> createResources(ParsedIRI baseIRI, ValueFactory theFactory,
-                                                    RepositoryConnection theConnection,
-                                                    Project theProject);
+    abstract protected List<Value> createResources();
 
     /*
      *  Method createTypeStatements() for Resource Node types
@@ -196,9 +167,6 @@ abstract public class ResourceNode extends Node {
      */
     private void createTypeStatements()
             throws RepositoryException {
-        if (this.listResources == null) {
-            return;
-        }
         String strResource = null;
         String strTypeObject = null;
         //String strIRI = null;
@@ -270,9 +238,6 @@ abstract public class ResourceNode extends Node {
      */
     private void createLinkStatements()
             throws RepositoryException {
-        if (this.listResources == null) {
-            return;
-        }
         if ( Util.isDebugMode() ) {
             String strLinkCount = "DEBUG: Link Count: {}";
             int iLinkCount = 0;
@@ -299,9 +264,7 @@ abstract public class ResourceNode extends Node {
             if (nodeObject == null) {
                 continue;
             }
-            List<Value> listObjects =
-                nodeObject.createObjects(this.baseIRI, this.theFactory, this.theConnection,
-                                            this.theProject, this);
+            List<Value> listObjects = nodeObject.createObjects(this);
             if (listObjects == null) {
                 continue;
             }
@@ -364,15 +327,15 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    protected List<Value> createObjects(ParsedIRI baseIRI, ValueFactory theFactory,
-                                        RepositoryConnection theConnection, Project theProject,
-                                        ResourceNode nodeParent)
-            throws RuntimeException
-    {
-        this.baseIRI = baseIRI;
-        this.theFactory = theFactory;
-        this.theConnection = theConnection;
-        this.theProject = theProject;
+    protected List<Value> createObjects(ResourceNode nodeParent)
+            throws RuntimeException {
+        this.baseIRI = nodeParent.baseIRI;
+        this.theFactory = nodeParent.theFactory;
+        this.theConnection = nodeParent.theConnection;
+        this.theProject = nodeParent.theProject;
+
+        // TODO: Convert from Record to Row unless specifed as a Sub-Record
+        // TODO: Create findSubRecord()
 
         this.setRowRecord(nodeParent);
         List<Value> listObjects = this.createStatementsWorker();
@@ -381,7 +344,7 @@ abstract public class ResourceNode extends Node {
         return listObjects;
     }
 
-    protected abstract void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException;
+    abstract protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException;
 
     public void write(JsonGenerator writer) throws JsonGenerationException, IOException {
         writer.writeStartObject();

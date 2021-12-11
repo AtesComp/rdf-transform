@@ -7,13 +7,9 @@ import java.util.List;
 
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
-import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -74,12 +70,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	}
 
     @Override
-    protected List<Value> createResources(ParsedIRI baseIRI, ValueFactory factory,
-											RepositoryConnection connection, Project project ) {
-		this.baseIRI = baseIRI;
-		this.theFactory = factory;
-		this.theConnection = connection;
-		this.theProject = project;
+    protected List<Value> createResources() {
 
 		List<Value> bnodes = null;
         if (this.getRecord() != null) {

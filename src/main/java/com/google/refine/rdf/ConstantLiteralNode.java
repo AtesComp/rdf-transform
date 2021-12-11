@@ -4,21 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.refine.model.Project;
-import com.google.refine.model.Record;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
 
@@ -73,91 +67,55 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     }
 
     /*
-     *  Method createObjects() creates the object list for triple statements
-     *  from this node on Rows
-     */
-    @Override
-	protected List<Value> createObjects(
-                            ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
-                            Project project, ResourceNode nodeParent ) {
-        this.baseIRI = baseIRI;
-        this.theFactory = factory;
-        this.theConnection = connection;
-        this.theProject = project;
-
-        List<Value> literals = null;
-        Record theRecord = nodeParent.getRecord();
-        if (theRecord != null) {
-            literals = createRecordObjects(theRecord);
-        }
-        else {
-            literals = createRowObjects();
-        }
-
-        return literals;
-    }
-
-    /*
-     *  Method createRecordObjects() creates the object list for triple statements
-     *  from this node on Records
-     */
-    private List<Value> createRecordObjects(Record theRecord) {
-		List<Value> literals = new ArrayList<Value>();
-		List<Value> literalsNew = null;
-		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			literalsNew = this.createRowObjects();
-			if (literalsNew != null) {
-				literals.addAll(literalsNew);
-			}
-		}
-        if (literals.size() == 0)
-			return null;
-		return literals;
-	}
-
-    /*
      *  Method createRowbjects() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowObjects()
-    {
-        List<Value> literals = null;
+    @Override
+	protected List<Value> createRowObjects(int iRowIndex) {
+        // NOTE: For this case, iRowIndex is not used.
 
-        // If there is a value to work with...
-        if (this.strValue != null && this.strValue.length() > 0) {
-            Literal literal = null;
-
-            // If there is a value type...
-            if (this.strValueType != null) {
-                IRI iriValueType = null;
-                try {
-                    iriValueType =
-                        this.theFactory.createIRI(
-                            this.expandPrefixedIRI(this.strValueType)
-                        );
-                }
-                catch (IllegalArgumentException ex) {
-                    // ...continue to get literal another way...
-                }
-                if (iriValueType != null) {
-                    literal = this.theFactory.createLiteral( this.strValue, iriValueType );
-                }
-            }
-
-            // If there is not a value type OR there was an exception AND there is a language...
-            if (literal == null && this.strLanguage != null) {
-                    literal = this.theFactory.createLiteral(this.strValue, strLanguage);
-            }
-
-            // If there is NOT a value type OR language...
-            if (literal == null) {
-                // Don't decorate the value...
-                literal = this.theFactory.createLiteral(this.strValue);
-            }
-
-            literals = new ArrayList<Value>();
-            literals.add(literal);
+        // If there is no value to work with...
+        if ( this.strValue == null || this.strValue.isEmpty() ) {
+            return null;
         }
+
+        Literal literal = null;
+
+        // If there is a value type...
+        if (this.strValueType != null) {
+            IRI iriValueType = null;
+            try {
+                iriValueType =
+                    this.theFactory.createIRI(
+                        this.expandPrefixedIRI(this.strValueType)
+                    );
+            }
+            catch (IllegalArgumentException ex) {
+                // ...continue to get literal another way...
+            }
+            if (iriValueType != null) {
+                literal = this.theFactory.createLiteral( this.strValue, iriValueType );
+            }
+        }
+
+        // If there is NOT a value type BUT there is a language...
+        if (literal == null && this.strLanguage != null) {
+                literal = this.theFactory.createLiteral(this.strValue, strLanguage);
+        }
+
+        // If there is NOT a value type OR language...
+        if (literal == null) {
+            // Don't decorate the value...
+            literal = this.theFactory.createLiteral(this.strValue);
+        }
+
+        // If there is still no literal...
+        if (literal == null) {
+            return null;
+        }
+
+        List<Value> literals = new ArrayList<Value>();
+        literals.add(literal);
         return literals;
     }
 

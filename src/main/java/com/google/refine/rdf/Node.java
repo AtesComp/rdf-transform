@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.refine.model.Project;
+import com.google.refine.model.Record;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
@@ -32,10 +34,55 @@ abstract public class Node {
     protected RepositoryConnection theConnection = null;
     protected Project theProject = null;
 
+    @JsonIgnore
+    protected int iRowIndex = -1;
+
+    @JsonIgnore
+    protected Record theRecord = null;
+
     abstract public String getNodeName();
 
     @JsonProperty("nodeType")
     abstract public String getNodeType();
+
+    @JsonIgnore
+    protected void setRowRecord(ResourceNode nodeParent) {
+        setRow(nodeParent);
+        setRecord(nodeParent);
+    }
+
+    @JsonIgnore
+    protected void setRow(ResourceNode nodeParent) {
+        this.iRowIndex = nodeParent.getRowIndex();
+    }
+
+    @JsonIgnore
+    protected void setRecord(ResourceNode nodeParent) {
+        this.theRecord = nodeParent.getRecord();
+    }
+
+    @JsonIgnore
+    public int getRowIndex() {
+        return this.iRowIndex;
+    }
+
+    @JsonIgnore
+    public Record getRecord() {
+        return this.theRecord;
+    }
+
+    protected void resetRowRecord() {
+        resetRow();
+        resetRecord();
+    }
+
+    protected void resetRow() {
+        this.iRowIndex = -1;
+    }
+
+    protected void resetRecord() {
+        this.theRecord = null;
+    }
 
     protected String expandPrefixedIRI(String strObjectIRI) {
         String strExpanded = strObjectIRI;
@@ -65,10 +112,8 @@ abstract public class Node {
      *
      *    Creates the object list for triple statements from this node.
      */
-    protected abstract List<Value> createObjects(ParsedIRI baseIRI, ValueFactory theFactory,
-                        RepositoryConnection theConnection, Project theProject,
-                        ResourceNode nodeParent);
+    abstract protected List<Value> createObjects(ResourceNode nodeParent);
 
-    public abstract void write(JsonGenerator writer)
+    abstract public void write(JsonGenerator writer)
             throws JsonGenerationException, IOException;
 }

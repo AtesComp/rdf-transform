@@ -109,7 +109,7 @@ public abstract class RDFVisitor {
     }
 
     protected void flushStatements() throws RepositoryException, RDFHandlerException {
-        // TODO: Reserve this commented code for future context upgrade
+        // TODO: Reserve this commented code for future context upgrade (quads)
         //List<Resource> resourceList = Iterations.asList( this.connection.getContextIDs() );
         //Resource[] resources = resourceList.toArray( new Resource[ resourceList.size() ] );
 

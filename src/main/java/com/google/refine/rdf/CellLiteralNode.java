@@ -6,17 +6,12 @@ import java.util.List;
 import java.io.IOException;
 
 import com.google.refine.expr.ExpressionUtils;
-import com.google.refine.model.Project;
-import com.google.refine.model.Record;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,8 +28,6 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     private final String strColumnName;
     private final String strExpression;
     private final boolean bIsRowNumberCell;
-
-    private Record theRecord = null;
 
     @JsonCreator
     public CellLiteralNode(
@@ -95,54 +88,11 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     }
 
     /*
-     *  Method createObjects() creates the object list for triple statements
-     *  from this node on Rows / Records.
-     */
-	@Override
-    protected List<Value> createObjects(
-							ParsedIRI baseIRI, ValueFactory factory, RepositoryConnection connection,
-							Project project, ResourceNode nodeParent ) {
-        this.baseIRI = baseIRI;
-        this.theFactory = factory;
-        this.theConnection = connection;
-        this.theProject = project;
-
-        this.theRecord = nodeParent.getRecord();
-
-		List<Value> listLiterals = null;
-		if (this.theRecord != null) {
-            listLiterals = createRecordLiterals();
-        }
-        else {
-            listLiterals = createRowLiterals( nodeParent.getRowIndex() );
-        }
-
-		return listLiterals;
-	}
-
-    /*
-     *  Method createRecordLiterals() creates the object list for triple statements
-     *  from this node on Records
-     */
-	private List<Value> createRecordLiterals() {
-		List<Value> listLiterals = new ArrayList<Value>();
-		List<Value> listLiteralsNew = null;
-		for (int iRowIndex = this.theRecord.fromRowIndex; iRowIndex < this.theRecord.toRowIndex; iRowIndex++) {
-			listLiteralsNew = this.createRowLiterals(iRowIndex);
-			if (listLiteralsNew != null) {
-				listLiterals.addAll(listLiteralsNew);
-			}
-		}
-        if ( listLiterals.isEmpty() )
-			return null;
-		return listLiterals;
-	}
-
-    /*
      *  Method createRowLiterals() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowLiterals(int iRowIndex) {
+	@Override
+	protected List<Value> createRowObjects(int iRowIndex) {
 		Object results = null;
         try {
             results =
@@ -193,7 +143,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 		//    2. a given Language code
 		//    3. nothing, just a simple string Literal
 		//
-		List<Value> listLiterals = new ArrayList<Value>();
+		List<Value> literals = new ArrayList<Value>();
 		for (String strValue : listStrings) {
 			Literal literal;
 			if (this.strValueType != null) {
@@ -205,12 +155,12 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 			else {
 				literal = this.theFactory.createLiteral( strValue );
 			}
-			listLiterals.add(literal);
+			literals.add(literal);
 		}
 
-        if ( listLiterals.isEmpty() )
-			listLiterals = null;
-		return listLiterals;
+        if ( literals.isEmpty() )
+			literals = null;
+		return literals;
     }
 
 	@Override

@@ -44,16 +44,8 @@ var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 
 var RefineBase = Packages.com.google.refine;
 
-/*
- * Initialization Function for RDF Transform Extension.
- */
-function init() {
-	var RefineServlet = RefineBase.RefineServlet;
+function registerClientSide() {
 	var ClientSideResourceManager = RefineBase.ClientSideResourceManager;
-
-	var RDFTBase = RefineBase.rdf;
-	var RDFTBaseApp = RDFTBase.app;
-	var RDFTBaseCmd = RDFTBase.command;
 
 	//
     //  Client-side Resources...
@@ -94,7 +86,15 @@ function init() {
 			"styles/flyout.css",
 		]
 	);
-	
+}
+
+function registerServerSide() {
+	var RefineServlet = RefineBase.RefineServlet;
+
+	var RDFTBase = RefineBase.rdf;
+	var RDFTBaseApp = RDFTBase.app;
+	var RDFTBaseCmd = RDFTBase.command;
+
     //
     //  Server-side Resources...
     // ------------------------------------------------------------
@@ -184,14 +184,20 @@ function init() {
      */
     RefineBase.model.Project
 	.registerOverlayModel(RDFTBase.RDFTransform.EXTENSION, RDFTBase.RDFTransform);
+}
 
+function processPreferences() {
 	/*
 	 *  Process OpenRefine Preference Store...
+	 *
+	 *  NOTE: We have limited use for these preferences in this server-side
+	 *  controller.js code.  We use this opportunity to simple check and report
+	 *  on the preferences related to this extension.
 	 */
 	var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
 	if (prefStore != null) {
 		// Verbosity...
-		var prefVerbosity = prefStore.get('RDFTransform/verbose');
+		var prefVerbosity = prefStore.get('RDFTransform.verbose');
 		if (prefVerbosity == null) {
 			prefVerbosity = prefStore.get('verbose');
 		}
@@ -202,7 +208,7 @@ function init() {
 			}
 		}
 		// Export Limit...
-		var prefExportLimit = prefStore.get('RDFTransform/exportLimit');
+		var prefExportLimit = prefStore.get('RDFTransform.exportLimit');
 		if (prefExportLimit != null) {
 			var iExportLimit = parseInt(prefExportLimit);
 			if (iExportLimit != NaN) {
@@ -210,7 +216,7 @@ function init() {
 			}
 		}
 		// Debug...
-		var prefDebug = prefStore.get('RDFTransform/debug');
+		var prefDebug = prefStore.get('RDFTransform.debug');
 		if (prefDebug == null) {
 			prefDebug = prefStore.get('debug');
 		}
@@ -223,9 +229,11 @@ function init() {
 	//
 	// Output RDFTranform Preferences...
 	//
-	// NOTE: This really sucks because server-side the JavaScript is extremely limited!!!
+	// NOTE: This really sucks because this server-side JavaScript is extremely limited!!!
 	//		1. Looping structure don't exist!
 	//		2. JSON object does not exist, so no stringify()!
+	// In other words, we can't automate the processing of the RDFTransformPrefs list, but
+	// must call out each pref by key explicitly.
 	var strPrefs = "Preferences: { ";
 	var strPref;
 	strPref = "Verbosity";
@@ -238,38 +246,41 @@ function init() {
 }
 
 /*
+ * Initialization Function for RDF Transform Extension.
+ */
+function init() {
+	logger.info("Initializing RDFTransform Extension");
+	logger.info( module.getMountPoint() );
+
+	registerClientSide();
+	registerServerSide();
+	processPreferences();
+}
+
+/*
  * Process Function for external command requests.
  */
 function process(path, request, response) {
 	
     var method = request.getMethod();
 
-	//var prefStore = RefineBase.ProjectManager.singleton.getPreferenceStore();
-	//if (prefStore != null) {
-	//	if ( prefStore.get('RDFTransform/debug') == 'true' ||
-	//		 prefStore.get('debug') == 'true' ) {
-	//		logger.info('Receiving request by ' + method + ' for "' + path + '"');
-	//		logger.info('  Request: ' + request);
-	//	}
-	//}
 	if ( RDFTransformPrefs.DebugMode ) {
 		logger.info('DEBUG: Receiving request by ' + method + ' for "' + path + '"\n' +
-					'         Request: ' + request);
+					'       Request: ' + request);
 	}
 
-	// RDF Transform does not have any external process requests,
-	// so this should never be executed.
-
+	//
 	// Analyze path and handle this request...
+	//
 
 	if (path == "" || path == "/") {
 		var context = {};
 		//
-		// Here's how to pass things into the .vt templates...
+		// Here's how to pass things into the .vt templates:
+		//   context.someList = ["Superior","Michigan","Huron","Erie","Ontario"];
+		//   context.someString = "foo";
+		//   context.someInt = RefineBase.sampleExtension.SampleUtil.stringArrayLength(context.someList);
 		//
-		// context.someList = ["Superior","Michigan","Huron","Erie","Ontario"];
-		// context.someString = "foo";
-		// context.someInt = Packages.com.google.refine.sampleExtension.SampleUtil.stringArrayLength(context.someList);
 		context.RDFTransform_protocol = request.url.protocol;
 		context.RDFTransform_host = request.url.host;
 		context.RDFTransform_path = request.url.pathname;

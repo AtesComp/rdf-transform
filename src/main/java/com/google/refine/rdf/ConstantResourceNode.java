@@ -4,12 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.refine.model.Project;
-
-import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,14 +46,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     }
 
     @Override
-    public List<Value> createResources(ParsedIRI baseIRI, ValueFactory factory,
-                                        RepositoryConnection connection,Project project)
-    {
-        this.baseIRI = baseIRI;
-        this.theFactory = factory;
-        this.theConnection = connection;
-        this.theProject = project;
-
+    public List<Value> createResources() {
         List<Value> listResources = new ArrayList<Value>();
         this.normalizeResource(this.strIRI, listResources);
         if ( listResources.isEmpty() )
