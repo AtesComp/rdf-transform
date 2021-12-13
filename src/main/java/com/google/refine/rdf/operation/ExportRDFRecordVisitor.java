@@ -16,7 +16,11 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ExportRDFRecordVisitor extends RDFRecordVisitor {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:ExportRDFRecV");
 
     public ExportRDFRecordVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
@@ -24,6 +28,7 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
 
     public boolean visit(Project theProject, Record theRecord) {
         try {
+            if ( Util.isDebugMode() ) logger.info("DEBUG: Visiting Record: " + theRecord.recordIndex);
             ParsedIRI baseIRI = this.getRDFTransform().getBaseIRI();
             RepositoryConnection theConnection = this.getModel().getConnection();
             ValueFactory theFactory = theConnection.getValueFactory();
@@ -31,6 +36,12 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
             for ( ResourceNode root : listRoots ) {
                 root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord );
 
+                if ( Util.isDebugMode() ) {
+                    logger.info("DEBUG:   " +
+                        "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
+                        "Size: " + theConnection.size()
+                    );
+                }
                 //
                 // Flush Statements
                 //
@@ -47,10 +58,14 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
             this.flushStatements();
         }
         catch (RepositoryException ex) {
-            throw new RuntimeException(ex);
+            logger.error("Connection Issue: ", ex);
+            if ( Util.isVerbose() ) ex.printStackTrace();
+            return true; // ...stop visitation process
         }
         catch (RDFHandlerException ex) {
-            throw new RuntimeException(ex);
+            logger.error("Flush Issue: ", ex);
+            if ( Util.isVerbose() ) ex.printStackTrace();
+            return true; // ...stop visitation process
         }
 
         return false;

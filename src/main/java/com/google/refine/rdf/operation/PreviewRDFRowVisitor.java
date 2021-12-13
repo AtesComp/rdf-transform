@@ -2,9 +2,9 @@ package com.google.refine.rdf.operation;
 
 import java.util.List;
 
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.ResourceNode;
 import com.google.refine.rdf.Util;
-import com.google.refine.rdf.RDFTransform;
 
 import com.google.refine.model.Project;
 import com.google.refine.model.Row;

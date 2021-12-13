@@ -71,9 +71,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
      *  from this node on Rows
      */
     @Override
-	protected List<Value> createRowObjects(int iRowIndex) {
-        // NOTE: For this case, iRowIndex is not used.
-
+	protected List<Value> createRowObjects() {
         // If there is no value to work with...
         if ( this.strValue == null || this.strValue.isEmpty() ) {
             return null;

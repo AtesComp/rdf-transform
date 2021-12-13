@@ -95,9 +95,9 @@ abstract public class ResourceNode extends Node {
         this.theConnection = theConnection;
         this.theProject = theProject;
 
-        this.iRowIndex = iRowIndex;
+        this.theRec.setRootRow(iRowIndex);
         this.createStatementsWorker();
-        this.resetRow();
+        this.theRec.clear();
     }
 
     /*
@@ -113,9 +113,9 @@ abstract public class ResourceNode extends Node {
         this.theConnection = theConnection;
         this.theProject = theProject;
 
-        this.theRecord = theRecord;
+        this.theRec.setRootRecord(theRecord);
         this.createStatementsWorker();
-        this.resetRecord();
+        this.theRec.clear();
     }
 
     /*
@@ -337,9 +337,9 @@ abstract public class ResourceNode extends Node {
         // TODO: Convert from Record to Row unless specifed as a Sub-Record
         // TODO: Create findSubRecord()
 
-        this.setRowRecord(nodeParent);
+        this.theRec.setRowRecord(nodeParent);
         List<Value> listObjects = this.createStatementsWorker();
-        this.resetRowRecord();
+        this.theRec.clear();
 
         return listObjects;
     }

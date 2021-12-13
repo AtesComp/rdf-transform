@@ -53,6 +53,7 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
             }
             this.iCount += 1;
 
+            // Flush all statements...
             this.flushStatements();
         }
         catch (RepositoryException ex) {

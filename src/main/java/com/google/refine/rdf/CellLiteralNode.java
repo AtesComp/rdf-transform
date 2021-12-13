@@ -92,11 +92,11 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
      *  from this node on Rows
      */
 	@Override
-	protected List<Value> createRowObjects(int iRowIndex) {
+	protected List<Value> createRowObjects() {
 		Object results = null;
         try {
             results =
-				Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
+				Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
 		}
 		catch (Exception e) {
 			// An empty cell might result in an exception out of evaluating IRI expression,

@@ -44,15 +44,15 @@ abstract public class LiteralNode extends Node {
         // TODO: Convert from Record to Row unless specifed as a Sub-Record
         // TODO: Create findSubRecord()
 
-        this.setRowRecord(nodeParent);
+        this.theRec.setRowRecord(nodeParent);
         List<Value> literals = null;
-        if (this.theRecord != null) {
+        if ( this.theRec.isRecordMode() ) {
             literals = createRecordObjects();
-        }
+        } // Row Mode...
         else {
-            literals = createRowObjects( nodeParent.getRowIndex() );
+            literals = createRowObjects();
         }
-        this.resetRowRecord();
+        this.theRec.clear();
 
         return literals;
     }
@@ -64,8 +64,8 @@ abstract public class LiteralNode extends Node {
     private List<Value> createRecordObjects() {
 		List<Value> literals = new ArrayList<Value>();
 		List<Value> literalsNew = null;
-		for (int iRowIndex = this.theRecord.fromRowIndex; iRowIndex < this.theRecord.toRowIndex; iRowIndex++) {
-			literalsNew = this.createRowObjects(iRowIndex);
+		for (int iRowIndex = this.theRec.rowStart(); iRowIndex < this.theRec.rowEnd(); iRowIndex++) {
+			literalsNew = this.createRowObjects();
 			if (literalsNew != null) {
 				literals.addAll(literalsNew);
 			}
@@ -79,5 +79,5 @@ abstract public class LiteralNode extends Node {
      *  Method createRowLiterals() creates the object list for triple statements
      *  from this node on a Row
      */
-    abstract protected List<Value> createRowObjects(int iRowIndex);
+    abstract protected List<Value> createRowObjects();
 }

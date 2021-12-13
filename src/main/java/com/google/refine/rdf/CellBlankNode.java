@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
-import com.google.refine.model.Record;
 
 import org.eclipse.rdf4j.model.Value;
 
@@ -73,12 +72,12 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     protected List<Value> createResources() {
 
 		List<Value> bnodes = null;
-        if (this.getRecord() != null) {
+        if (this.theRec.isRecordMode()) {
             bnodes = createRecordResources();
         }
         else {
             bnodes =
-				createRowResources( this.getRowIndex() );
+				createRowResources();
         }
 
 		return bnodes;
@@ -87,9 +86,8 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     private List<Value> createRecordResources() {
         List<Value> bnodes = new ArrayList<Value>();
 		List<Value> bnodesNew = null;
-        Record theRecord = this.getRecord();
-		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			bnodesNew = this.createRowResources(iRowIndex);
+		for (int iRowIndex = this.theRec.rowStart(); iRowIndex < this.theRec.rowEnd(); iRowIndex++) {
+			bnodesNew = this.createRowResources();
 			if (bnodesNew != null) {
 				bnodes.addAll(bnodesNew);
 			}
@@ -99,11 +97,11 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 		return bnodes;
     }
 
-	private List<Value> createRowResources(int iRowIndex) {
+	private List<Value> createRowResources() {
 		Object results = null;
     	try {
     		results =
-				Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
+				Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
 		}
 		catch (ParsingException e) {
             // An empty cell might result in an exception out of evaluating IRI expression,

@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
-import com.google.refine.model.Record;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -75,11 +74,11 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     @Override
     protected List<Value> createResources() {
 		List<Value> listResources = null;
-        if (this.getRecord() != null) {
+        if ( this.theRec.isRecordMode() ) {
             listResources = createRecordResources();
         }
         else {
-            listResources = createRowResources( this.getRowIndex() );
+            listResources = createRowResources();
         }
 
 		return listResources;
@@ -88,9 +87,8 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     private List<Value> createRecordResources() {
         List<Value> listResources = new ArrayList<Value>();
 		List<Value> listResourcesNew = null;
-        Record theRecord = this.getRecord();
-		for (int iRowIndex = theRecord.fromRowIndex; iRowIndex < theRecord.toRowIndex; iRowIndex++) {
-			listResourcesNew = this.createRowResources(iRowIndex);
+		for (int iRowIndex = this.theRec.rowStart(); iRowIndex < this.theRec.rowEnd(); iRowIndex++) {
+			listResourcesNew = this.createRowResources();
 			if (listResourcesNew != null) {
 				listResources.addAll(listResourcesNew);
 			}
@@ -100,11 +98,11 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 		return listResources;
     }
 
-    private List<Value> createRowResources(int iRowIndex) {
+    private List<Value> createRowResources() {
         Object results = null;
         try {
         	results =
-                Util.evaluateExpression(this.theProject, this.strExpression, this.strColumnName, iRowIndex);
+                Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
         }
         catch (ParsingException ex) {
             // An cell might result in a ParsingException when evaluating an IRI expression.

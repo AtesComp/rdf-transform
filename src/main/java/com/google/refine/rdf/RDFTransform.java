@@ -55,6 +55,7 @@ public class RDFTransform implements OverlayModel {
     static public RDFTransform getRDFTransform(ApplicationContext theContext, Project theProject)
 			throws VocabularyIndexException, IOException {
 		synchronized (theProject) {
+            RecordModel.setProject(theProject);
 			RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
 			if (theTransform == null) {
 				theTransform = new RDFTransform(theContext, theProject);
@@ -68,6 +69,7 @@ public class RDFTransform implements OverlayModel {
 
     static public RDFTransform load(Project theProject, JsonNode jnodeElement)
             throws Exception {
+        RecordModel.setProject(theProject);
         RDFTransform theTransform = RDFTransform.reconstruct(jnodeElement);
         return theTransform;
     }
