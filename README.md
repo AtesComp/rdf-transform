@@ -66,9 +66,9 @@ The compiled release file is the "Easy Button" to get RDF Transform installed as
 <ol>
 <li>If it does not exist, create a folder named <b>extensions</b> under your user workspace directory for OpenRefine. The workspace should be located in the following places depending on your operating system (see the <a href=https://github.com/OpenRefine/OpenRefine/wiki/FAQ-Where-Is-Data-Stored>OpenRefine FAQ</a> for more details):
   <ul>
-  <li>Linux ~/.local/share/OpenRefine</li>
-  <li>Windows C:/Documents and Settings/&lt;user&gt;/Application Data/OpenRefine OR C:/Documents and Settings/&lt;user&gt;/Local Settings/Application Data/OpenRefine</li>
-  <li>Mac OSX ~/Library/Application Support/OpenRefine</li>
+  <li>Linux <code>~/.local/share/OpenRefine</code></li>
+  <li>Windows <code>C:/Documents and Settings/&lt;user&gt;/Application Data/OpenRefine</code> OR <code>C:/Documents and Settings/&lt;user&gt;/Local Settings/Application Data/OpenRefine</code></li>
+  <li>Mac OSX <code>~/Library/Application Support/OpenRefine</code></li>
   </ul>
 As an alternative (but not recommended), use the OpenRefine application's extensions directory instead.</li>
 <li>Unzip the downloaded release (ensuring it is a <code>rdf-transform-x.x.x.zip</code> and <b>not</b> a source code <code>.zip</code> or <code>.tar.gz</code>) in the <b>extensions</b> folder (within the directory of step 1). This will create an <b>rdf-transform</b> directory containg the extension.</li>
