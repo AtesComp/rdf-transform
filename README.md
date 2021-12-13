@@ -83,18 +83,44 @@ Source code...for those of you who want more depth...to ply the inner workings o
 
 NOTE: If you have previously installed the extension, you will need to replace it in the **extensions** directory with the newly built version, e.g., delete rdf-transform directory in the **extensions** directory and unzip the new file.
 
+#### TLDR; ####
+
+Short:
+`git clone https://github.com/AtesComp/rdf-transform`
+`cd rdf-transform`
+`mvn clean compile`
+`mvn assembly:single`
+`rm -rf ~/path/to/openrefine/extensions/rdf-transform*`
+`unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/path/to/openrefine/extensions`
+`~/path/to/openrefine/refine`
+
+Long:
+`git clone https://github.com/AtesComp/rdf-transform`
+`git clone https://github.com/OpenRefine/OpenRefine`
+`cd OpenRefine`
+`./refine clean`
+`./refine build`
+`./refine dist 3.6-SNAPSHOT`
+`cd ../rdf-transform`
+`mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository`
+`mvn clean compile`
+`mvn assembly:single`
+`rm -rf ../OpenRefine/extensions/rdf-transform*`
+`unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ../OpenRefine/extensions`
+`cd ../OpenRefine`
+`./refine`
+
 #### Short Steps ####
 
 A local project repository (see the "project-repository" directory) contains an OpenRefine jar file ready for use by the maven compile process.  If you want or need to compile OpenRefine, see the [Long Steps](#long-steps) below to create the OpenRefine jar file.
 
 1. From some top level development directory, create a local repository for this RDF Transform extension:
-    * From the top level development directory where you want the /rdf-transform sub-directory:
-      * Clone the extension:
-        - `git clone https://github.com/AtesComp/rdf-transform`
+    * Clone the extension at the top level development directory where you want the /rdf-transform sub-directory:
+      - `git clone https://github.com/AtesComp/rdf-transform`
 2. Compile the RDF Transform extension:
     * Change directories to the RDF Transform extension:
       - `cd rdf-transform`
-    * Clean and compile the extension dev environment:
+    * Clean and compile the extension's dev environment:
       - `mvn clean compile`
     * Assemble the extension:
       - `mvn assembly:single`
@@ -105,43 +131,39 @@ A local project repository (see the "project-repository" directory) contains an 
 Sometime you just have to do everything yourself.  If you want or need to compile OpenRefine, then you'll probably want to create the jar file for RDF Transform to match.  From the **Short Steps**, you'll notice these instructions have two inserted steps betwwen 1 and 2.
 
 1. From some top level development directory, create a local repository for this RDF Transform extension:
-    * From the top level development directory where you want the /rdf-transform sub-directory:
-      * Clone the extension:
-        - `git clone https://github.com/AtesComp/rdf-transform`
+    * Clone the extension at the top level development directory where you want the /rdf-transform sub-directory:
+      - `git clone https://github.com/AtesComp/rdf-transform`
     * Alternatively, to update an existing clone, in the /rdf-transform directory:
-      * Change directories to the RDF Transform extension:
+      * Change directories to the RDF Transform development directory:
         - `cd rdf-transform`
       * Update the code:
         - `git pull` (or `git fetch --all; git reset --hard; git pull` for a forced refresh)
       * Change directories up one level:
         - `cd ..`
 2. Prepare the OpenRefine jar file:
-    * From the same top level development directory, create a local repository for OpenRefine:
-      * Clone OpenRefine:
-        - `git clone https://github.com/OpenRefine/OpenRefine`
+    * Clone OpenRefine from the same top level development directory to create a local repository:
+      - `git clone https://github.com/OpenRefine/OpenRefine`
     * Create the OpenRefine jar:
       * Change directories to OpenRefine:
         - `cd OpenRefine`
-      * Clean the dev environment:
+      * Clean OpenRefine's dev environment:
         - `./refine clean`
       * Build OpenRefine:
         - `./refine build`
       * Build the OpenRefine jar:
-        - `./refine dist 3.6-SNAPSHOT` or latest version
+        - `./refine dist 3.6-SNAPSHOT` (or use the latest version id)
       * Among many other things, this builds the needed jar file: `OpenRefine/main/target/openrefine-main.jar`
       * Change directories up one level:
         - `cd ..`
 3. Process the OpenRefine jar file for the RDF Transform extension:
     * Change directories to the RDF Transform extension:
       - `cd rdf-transform`
-    * Adjust the `openrefine-shim-pom.xml` file to use the proper OpenRefine version - in this example: `3.6-SNAPSHOT`
-    * Adjust the `pom.xml` file to use the proper OpenRefine version - in this example: `3.6-SNAPSHOT`
-    * Put the OpenRefine in the Maven library for RDF Transform:
+    * Adjust the `openrefine-shim-pom.xml` file to use the proper OpenRefine version id - in this example: `3.6-SNAPSHOT`
+    * Adjust the `pom.xml` file to use the proper OpenRefine version id - in this example: `3.6-SNAPSHOT`
+    * Install the OpenRefine jar in the Maven library for RDF Transform:
       - `mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository`
 4. Compile the RDF Transform extension:
-    * If not already there, change directories to the RDF Transform extension:
-      - `cd rdf-transform`
-    * Clean and compile the extension dev environment:
+    * Clean and compile the extension's dev environment:
       - `mvn clean compile`
     * Assemble the extension:
       - `mvn assembly:single`
