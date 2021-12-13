@@ -86,29 +86,32 @@ NOTE: If you have previously installed the extension, you will need to replace i
 #### TLDR; ####
 
 Short:
-`git clone https://github.com/AtesComp/rdf-transform`
-`cd rdf-transform`
-`mvn clean compile`
-`mvn assembly:single`
-`rm -rf ~/path/to/openrefine/extensions/rdf-transform*`
-`unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/path/to/openrefine/extensions`
-`~/path/to/openrefine/refine`
-
+```
+git clone https://github.com/AtesComp/rdf-transform
+cd rdf-transform
+mvn clean compile
+mvn assembly:single
+rm -rf ~/path/to/openrefine/extensions/rdf-transform*
+unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/path/to/openrefine/extensions
+~/path/to/openrefine/refine
+```
 Long:
-`git clone https://github.com/AtesComp/rdf-transform`
-`git clone https://github.com/OpenRefine/OpenRefine`
-`cd OpenRefine`
-`./refine clean`
-`./refine build`
-`./refine dist 3.6-SNAPSHOT`
-`cd ../rdf-transform`
-`mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository`
-`mvn clean compile`
-`mvn assembly:single`
-`rm -rf ../OpenRefine/extensions/rdf-transform*`
-`unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ../OpenRefine/extensions`
-`cd ../OpenRefine`
-`./refine`
+```
+git clone https://github.com/AtesComp/rdf-transform
+git clone https://github.com/OpenRefine/OpenRefine
+cd OpenRefine
+./refine clean
+./refine build
+./refine dist 3.6-SNAPSHOT
+cd ../rdf-transform
+mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
+mvn clean compile
+mvn assembly:single
+rm -rf ../OpenRefine/extensions/rdf-transform*
+unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ../OpenRefine/extensions
+cd ../OpenRefine
+./refine
+```
 
 #### Short Steps ####
 
