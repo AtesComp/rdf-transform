@@ -98,7 +98,7 @@ A local project repository (see the "project-repository" directory) contains an 
       - `mvn clean compile`
     * Assemble the extension:
       - `mvn assembly:single`
-    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in [From Compiled Release](#From Compiled Release) above
+    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in [From Compiled Release](#from-compiled-release) above
 
 #### Long Steps ####
 
@@ -145,7 +145,7 @@ Sometime you just have to do everything yourself.  If you want or need to compil
       - `mvn clean compile`
     * Assemble the extension:
       - `mvn assembly:single`
-    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in [From Compiled Release](#From Compiled Release) above
+    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in [From Compiled Release](#from-compiled-release) above
 
 ### Issues ###
 None, currently.
