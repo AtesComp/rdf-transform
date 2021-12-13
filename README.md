@@ -85,7 +85,7 @@ NOTE: If you have previously installed the extension, you will need to replace i
 
 #### Short Steps ####
 
-A local project repository (see the "project-repository" directory) contains an OpenRefine jar file ready for use by the maven compile process.  If you want or need to compile OpenRefine, see the <a name="Long Steps">Long Steps</a> below to create the OpenRefine jar file.
+A local project repository (see the "project-repository" directory) contains an OpenRefine jar file ready for use by the maven compile process.  If you want or need to compile OpenRefine, see the [Long Steps](#long-steps) below to create the OpenRefine jar file.
 
 1. From some top level development directory, create a local repository for this RDF Transform extension:
     * From the top level development directory where you want the /rdf-transform sub-directory:
@@ -98,7 +98,7 @@ A local project repository (see the "project-repository" directory) contains an 
       - `mvn clean compile`
     * Assemble the extension:
       - `mvn assembly:single`
-    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in <a name="From Compiled Release">From Compiled Release</a> above
+    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in [From Compiled Release](#From Compiled Release) above
 
 #### Long Steps ####
 
@@ -145,7 +145,7 @@ Sometime you just have to do everything yourself.  If you want or need to compil
       - `mvn clean compile`
     * Assemble the extension:
       - `mvn assembly:single`
-    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in <a name="From Compiled Release">From Compiled Release</a> above
+    * Copy and unzip the `target/rdf-transform-x.x.x.zip` file in the **extensions** directory as documented in [From Compiled Release](#From Compiled Release) above
 
 ### Issues ###
 None, currently.
