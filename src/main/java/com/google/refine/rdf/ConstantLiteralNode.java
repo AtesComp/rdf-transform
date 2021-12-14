@@ -67,11 +67,13 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     }
 
     /*
-     *  Method createRowbjects() creates the object list for triple statements
-     *  from this node on Rows
+     *  Method createObjects() creates the object list for triple statements
+     *  from this node on Rows / Records.
      */
     @Override
-	protected List<Value> createRowObjects() {
+	protected List<Value> createObjects(ResourceNode nodeParent) {
+        super.createObjects(nodeParent);
+
         // If there is no value to work with...
         if ( this.strValue == null || this.strValue.isEmpty() ) {
             return null;

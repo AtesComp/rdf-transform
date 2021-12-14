@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
+
 import com.google.refine.rdf.Util.IRIParsingException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -126,28 +127,68 @@ abstract public class ResourceNode extends Node {
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
     private List<Value> createStatementsWorker() {
-        this.listResources = this.createResources();
-        if ( Util.isDebugMode() ) {
-            String strResCount = "DEBUG: Resources Count: {}";
-            int iResCount = 0;
-            if (this.listResources != null) {
-                iResCount = this.listResources.size();
+        //
+        // Change from Record to Row processing...
+        //
+        if ( this.theRec.isRecordPerRow() ) {
+            List<Value> listResourcesAll = new ArrayList<Value>();
+            while ( this.theRec.rowNext() ) {
+                this.listResources = this.createRowResources(); // ...row only
+                if ( Util.isDebugMode() ) {
+                    String strResCount = "DEBUG: Resources Count: {} on Row {}";
+                    int iResCount = 0;
+                    if (this.listResources != null) {
+                        iResCount = this.listResources.size();
+                    }
+                    ResourceNode.logger.info( strResCount, iResCount, this.theRec.row() );
+                }
+                if ( this.listResources == null || this.listResources.isEmpty() ) {
+                    continue;
+                }
+
+                try {
+                    this.createTypeStatements();
+                    this.createLinkStatements();
+                }
+                catch (RepositoryException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+                listResourcesAll.addAll(this.listResources);
             }
-            ResourceNode.logger.info(strResCount, iResCount);
+            if ( listResourcesAll.isEmpty() ) {
+                return null;
+            }
+            this.listResources = listResourcesAll;
+            return this.listResources;
         }
-        if ( this.listResources == null || this.listResources.isEmpty() ) {
-            return null;
-        }
+        //
+        // Standard Record or Row processing...
+        //
+        else {
+            this.listResources = this.createResources(); // ...record or row
+            if ( Util.isDebugMode() ) {
+                String strResCount = "DEBUG: Resources Count: {}";
+                int iResCount = 0;
+                if (this.listResources != null) {
+                    iResCount = this.listResources.size();
+                }
+                ResourceNode.logger.info(strResCount, iResCount);
+            }
+            if ( this.listResources == null || this.listResources.isEmpty() ) {
+                return null;
+            }
 
-        try {
-            this.createTypeStatements();
-            this.createLinkStatements();
-        }
-        catch (RepositoryException ex) {
-            throw new RuntimeException(ex);
-        }
+            try {
+                this.createTypeStatements();
+                this.createLinkStatements();
+            }
+            catch (RepositoryException ex) {
+                throw new RuntimeException(ex);
+            }
 
-        return this.listResources;
+            return this.listResources;
+        }
     }
 
     /*
@@ -157,7 +198,33 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    abstract protected List<Value> createResources();
+    protected List<Value> createResources() {
+		List<Value> listResources = null;
+        if ( this.theRec.isRecordMode() ) {
+            listResources = this.createRecordResources();
+        }
+        else {
+            listResources = this.createRowResources();
+        }
+
+		return listResources;
+    }
+
+    protected List<Value> createRecordResources() {
+        List<Value> listResources = new ArrayList<Value>();
+		List<Value> listResourcesNew = null;
+		while ( this.theRec.rowNext() ) {
+			listResourcesNew = this.createRowResources();
+			if (listResourcesNew != null) {
+				listResources.addAll(listResourcesNew);
+			}
+		}
+        if ( listResources.isEmpty() )
+			return null;
+		return listResources;
+    }
+
+    abstract protected List<Value> createRowResources();
 
     /*
      *  Method createTypeStatements() for Resource Node types
@@ -231,7 +298,7 @@ abstract public class ResourceNode extends Node {
     }
 
     /*
-     *  Method createLinkStatements() for Root Resource Node types on OpenRefine Rows
+     *  Method createLinkStatements() for Resource Node types on OpenRefine Rows
      * 
      *    Given a set of source resources, create the (source, property, object) triple statements
      *    for each of the sources.
@@ -335,9 +402,8 @@ abstract public class ResourceNode extends Node {
         this.theProject = nodeParent.theProject;
 
         // TODO: Convert from Record to Row unless specifed as a Sub-Record
-        // TODO: Create findSubRecord()
 
-        this.theRec.setRowRecord(nodeParent);
+        this.theRec.setLink(nodeParent, true);
         List<Value> listObjects = this.createStatementsWorker();
         this.theRec.clear();
 

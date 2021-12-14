@@ -1,6 +1,5 @@
 package com.google.refine.rdf;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.rdf4j.model.Value;
@@ -41,43 +40,6 @@ abstract public class LiteralNode extends Node {
         this.theConnection = nodeParent.theConnection;
         this.theProject = nodeParent.theProject;
 
-        // TODO: Convert from Record to Row unless specifed as a Sub-Record
-        // TODO: Create findSubRecord()
-
-        this.theRec.setRowRecord(nodeParent);
-        List<Value> literals = null;
-        if ( this.theRec.isRecordMode() ) {
-            literals = createRecordObjects();
-        } // Row Mode...
-        else {
-            literals = createRowObjects();
-        }
-        this.theRec.clear();
-
-        return literals;
+        return null;
     }
-
-    /*
-     *  Method createRecordObjects() creates the object list for triple statements
-     *  from this node on Records
-     */
-    private List<Value> createRecordObjects() {
-		List<Value> literals = new ArrayList<Value>();
-		List<Value> literalsNew = null;
-		for (int iRowIndex = this.theRec.rowStart(); iRowIndex < this.theRec.rowEnd(); iRowIndex++) {
-			literalsNew = this.createRowObjects();
-			if (literalsNew != null) {
-				literals.addAll(literalsNew);
-			}
-		}
-        if ( literals.isEmpty() )
-			return null;
-		return literals;
-	}
-
-    /*
-     *  Method createRowLiterals() creates the object list for triple statements
-     *  from this node on a Row
-     */
-    abstract protected List<Value> createRowObjects();
 }

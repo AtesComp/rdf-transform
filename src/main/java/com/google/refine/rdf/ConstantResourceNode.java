@@ -23,6 +23,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
 
     @JsonCreator
     public ConstantResourceNode( @JsonProperty("value") String strIRI ) {
+        // A Constant Resource Node is a singular IRI...
         this.strIRI = Util.toSpaceStrippedString(strIRI);
     }
 
@@ -47,6 +48,13 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
 
     @Override
     public List<Value> createResources() {
+        // For a Constant Resource Node, we only need one per record,
+        // so process as a row...
+        return createRowResources();
+    }
+
+	@Override
+	protected List<Value> createRowResources() {
         List<Value> listResources = new ArrayList<Value>();
         this.normalizeResource(this.strIRI, listResources);
         if ( listResources.isEmpty() )

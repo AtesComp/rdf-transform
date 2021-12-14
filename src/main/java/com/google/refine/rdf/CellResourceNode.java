@@ -72,33 +72,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     }
 
     @Override
-    protected List<Value> createResources() {
-		List<Value> listResources = null;
-        if ( this.theRec.isRecordMode() ) {
-            listResources = createRecordResources();
-        }
-        else {
-            listResources = createRowResources();
-        }
-
-		return listResources;
-    }
-
-    private List<Value> createRecordResources() {
-        List<Value> listResources = new ArrayList<Value>();
-		List<Value> listResourcesNew = null;
-		for (int iRowIndex = this.theRec.rowStart(); iRowIndex < this.theRec.rowEnd(); iRowIndex++) {
-			listResourcesNew = this.createRowResources();
-			if (listResourcesNew != null) {
-				listResources.addAll(listResourcesNew);
-			}
-		}
-        if ( listResources.isEmpty() )
-			return null;
-		return listResources;
-    }
-
-    private List<Value> createRowResources() {
+    protected List<Value> createRowResources() {
         Object results = null;
         try {
         	results =
@@ -106,7 +80,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         }
         catch (ParsingException ex) {
             // An cell might result in a ParsingException when evaluating an IRI expression.
-            // Report the error and return...
+            // Eat the exception...
             return null;
         }
 

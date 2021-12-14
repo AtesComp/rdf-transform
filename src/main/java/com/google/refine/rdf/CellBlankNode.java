@@ -68,44 +68,16 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 		return this.strExpression.equals("value") ? null : this.strExpression;
 	}
 
-    @Override
-    protected List<Value> createResources() {
-
-		List<Value> bnodes = null;
-        if (this.theRec.isRecordMode()) {
-            bnodes = createRecordResources();
-        }
-        else {
-            bnodes =
-				createRowResources();
-        }
-
-		return bnodes;
-    }
-
-    private List<Value> createRecordResources() {
-        List<Value> bnodes = new ArrayList<Value>();
-		List<Value> bnodesNew = null;
-		for (int iRowIndex = this.theRec.rowStart(); iRowIndex < this.theRec.rowEnd(); iRowIndex++) {
-			bnodesNew = this.createRowResources();
-			if (bnodesNew != null) {
-				bnodes.addAll(bnodesNew);
-			}
-		}
-        if ( bnodes.isEmpty() )
-			return null;
-		return bnodes;
-    }
-
-	private List<Value> createRowResources() {
+	@Override
+	protected List<Value> createRowResources() {
 		Object results = null;
     	try {
     		results =
 				Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
 		}
-		catch (ParsingException e) {
-            // An empty cell might result in an exception out of evaluating IRI expression,
-            //   so it is intended to eat the exception...
+		catch (ParsingException ex) {
+            // An cell might result in a ParsingException when evaluating an IRI expression.
+            // Eat the exception...
 			return null;
     	}
 

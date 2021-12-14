@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.refine.model.Project;
+import com.google.refine.rdf.utils.RecordModel;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
@@ -27,21 +29,33 @@ import org.slf4j.LoggerFactory;
 abstract public class Node {
     static private final Logger logger = LoggerFactory.getLogger("RDFT:Node");
 
+    @JsonIgnore
     protected ParsedIRI baseIRI = null;
+    @JsonIgnore
     protected ValueFactory theFactory = null;
+    @JsonIgnore
     protected RepositoryConnection theConnection = null;
+    @JsonIgnore
     protected Project theProject = null;
 
+    @JsonIgnore
     public RecordModel theRec = null;
 
+    @JsonIgnore
     public Node() {
-        theRec = new RecordModel();
+        theRec = new RecordModel(this);
     }
 
+    @JsonIgnore
     abstract public String getNodeName();
 
     @JsonProperty("nodeType")
     abstract public String getNodeType();
+
+    @JsonIgnore
+    public Project getProject() {
+        return theProject;
+    }
 
     protected String expandPrefixedIRI(String strObjectIRI) {
         String strExpanded = strObjectIRI;

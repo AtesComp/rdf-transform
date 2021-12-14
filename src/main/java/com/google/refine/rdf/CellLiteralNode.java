@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellLiteralNode extends LiteralNode implements CellNode {
-    static private final Logger logger = LoggerFactory.getLogger("RDFT:CellResNode");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:CellLitNode");
 
 	static private final String strNODETYPE = "cell-as-literal";
 
@@ -88,11 +88,51 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     }
 
     /*
+     *  Method createObjects() creates the object list for triple statements
+     *  from this node on Rows / Records.
+     */
+    @Override
+	protected List<Value> createObjects(ResourceNode nodeParent) {
+        super.createObjects(nodeParent);
+
+        // TODO: Convert from Record to Row unless specifed as a Sub-Record
+
+        this.theRec.setLink(nodeParent, true);
+        List<Value> literals = null;
+        if ( this.theRec.isRecordMode() ) {
+            literals = this.createRecordObjects();
+        } // Row Mode...
+        else {
+            literals = this.createRowObjects();
+        }
+        this.theRec.clear();
+
+        return literals;
+    }
+
+    /*
+     *  Method createRecordObjects() creates the object list for triple statements
+     *  from this node on Records
+     */
+    private List<Value> createRecordObjects() {
+		List<Value> literals = new ArrayList<Value>();
+		List<Value> literalsNew = null;
+		while ( this.theRec.rowNext() ) {
+			literalsNew = this.createRowObjects();
+			if (literalsNew != null) {
+				literals.addAll(literalsNew);
+			}
+		}
+        if ( literals.isEmpty() )
+			return null;
+		return literals;
+	}
+
+    /*
      *  Method createRowLiterals() creates the object list for triple statements
      *  from this node on Rows
      */
-	@Override
-	protected List<Value> createRowObjects() {
+	private List<Value> createRowObjects() {
 		Object results = null;
         try {
             results =

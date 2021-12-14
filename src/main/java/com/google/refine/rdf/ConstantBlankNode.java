@@ -16,10 +16,13 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	static private final String strNODETYPE = "blank";
 
-	private BNode bnode = null;
+	private final BNode bnode;
 
 	@JsonCreator
-	ConstantBlankNode() {}
+	ConstantBlankNode() {
+		// A Constant Blank Node is a singular blank node...
+		this.bnode = this.theFactory.createBNode();
+	}
 
     static String getNODETYPE() {
         return ConstantBlankNode.strNODETYPE;
@@ -37,9 +40,13 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	public List<Value> createResources() {
-		if (bnode == null) {
-    		bnode = this.theFactory.createBNode();
-    	}
+        // For a Constant Blank Node, we only need one per record,
+        // so process as a row...
+        return createRowResources();
+    }
+
+	@Override
+	public List<Value> createRowResources() {
 		List<Value> bnodes = new ArrayList<Value>();
 		bnodes.add(bnode);
         return bnodes;
