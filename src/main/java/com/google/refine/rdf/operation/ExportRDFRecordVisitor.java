@@ -24,6 +24,7 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
 
     public ExportRDFRecordVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
+        if ( Util.isDebugMode() ) logger.info("DEBUG: Created...");
     }
 
     public boolean visit(Project theProject, Record theRecord) {
@@ -34,7 +35,7 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
             ValueFactory theFactory = theConnection.getValueFactory();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord );
+                root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
                     logger.info("DEBUG:   " +

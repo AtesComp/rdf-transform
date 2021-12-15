@@ -1,9 +1,6 @@
 package com.google.refine.rdf;
 
-import java.util.List;
-
-import org.eclipse.rdf4j.model.Value;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -33,13 +30,11 @@ abstract public class LiteralNode extends Node {
      *  Method createObjects() creates the object list for triple statements
      *  from this node on Rows / Records.
      */
-    @Override
-	protected List<Value> createObjects(ResourceNode nodeParent) {
-        this.baseIRI = nodeParent.baseIRI;
-        this.theFactory = nodeParent.theFactory;
-        this.theConnection = nodeParent.theConnection;
-        this.theProject = nodeParent.theProject;
-
-        return null;
+    @JsonIgnore
+	protected void setObjectParameters(ResourceNode nodeProperty) {
+        this.baseIRI = nodeProperty.baseIRI;
+        this.theFactory = nodeProperty.theFactory;
+        this.theConnection = nodeProperty.theConnection;
+        this.theProject = nodeProperty.theProject;
     }
 }

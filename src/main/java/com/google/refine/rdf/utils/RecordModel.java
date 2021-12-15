@@ -54,19 +54,26 @@ public class RecordModel {
     @JsonIgnore
     public void setRootRecord(Record theRecord) {
         this.theRecord = theRecord;
-        bRecordMode = (theRecord != null);
+        this.bRecordMode = (theRecord != null);
     }
 
     @JsonIgnore
-    public void setLink(ResourceNode nodeLink) {
-        this.setLink(nodeLink, false);
+    public void setLink(ResourceNode nodeProperty) {
+        this.setLink(nodeProperty, false);
     }
 
     @JsonIgnore
-    public void setLink(ResourceNode nodeLink, boolean bPerRow) {
-        this.iRowIndex = nodeLink.theRec.iRowIndex;
-        this.theRecord = nodeLink.theRec.theRecord;
-        this.bRecordPerRow = bPerRow;
+    public void setLink(ResourceNode nodeProperty, boolean bPerRow) {
+        // Set Row Mode...
+        this.iRowIndex = nodeProperty.theRec.iRowIndex;
+        // Set Record Mode only when Row Mode is off...
+        if ( ! this.isRowMode() ) {
+            this.theRecord = nodeProperty.theRec.theRecord;
+            this.bRecordMode = (theRecord != null);
+            this.bRecordPerRow = bPerRow;
+            // NOTE: When bRecordPerRow is true, further processing will be in Row Mode as
+            //       rowNext() will set iRowIndex values ( != -1 ).
+        }
     }
 
     @JsonIgnore
@@ -82,6 +89,8 @@ public class RecordModel {
     public void clear() {
         this.iRowIndex = -1;
         this.theRecord = null;
+        this.bRecordMode = false;
+        this.bRecordPerRow = false;
 
         this.bSubRecords = false;
         this.iSubRecordRowStart = -1;
@@ -120,6 +129,10 @@ public class RecordModel {
             this.iRowIndex = -1;
         }
         return false;
+    }
+
+    public void rowReset() {
+        this.iRowIndex = -1;
     }
 
 //    public int rowStart() {

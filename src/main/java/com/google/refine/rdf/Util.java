@@ -246,6 +246,9 @@ public class Util {
 		// Evaluate the expression on the cell and return results...
 		//   NOTE: Here is where we tie the RDF Transform model to the data.
 		//
+		if ( Util.isDebugMode() ) logger.info("DEBUG: evaluateExpression: Exp: [" + strExpression +
+																	   "] Col: [" + strColumnName +
+																	   "] Row: [" + iRowIndex + "]");
 
 		// Select the column reference (er, cell index) by given name...
 		int theColumn = -1;

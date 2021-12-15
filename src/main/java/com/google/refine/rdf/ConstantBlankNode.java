@@ -39,14 +39,20 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 	}
 
 	@Override
-	public List<Value> createResources() {
-        // For a Constant Blank Node, we only need one per record,
+	protected List<Value> createResources() {
+        // For a Constant Blank Node, we only need one common blank node resource per record,
         // so process as a row...
         return createRowResources();
     }
 
 	@Override
-	public List<Value> createRowResources() {
+	protected List<Value> createRecordResources() {
+        // NOT USED!
+        return null;
+    }
+
+	@Override
+	protected List<Value> createRowResources() {
 		List<Value> bnodes = new ArrayList<Value>();
 		bnodes.add(bnode);
         return bnodes;

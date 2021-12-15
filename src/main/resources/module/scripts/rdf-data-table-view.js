@@ -114,7 +114,7 @@ class RDFDataTableView {
  ****************************************************************************************************/
 
 /*
- *  CLASS RDFDataTableView
+ *  CLASS RDFExpressionPreviewDialog
  *
  *	This class is essentially a copy of OpenRefine's ExpressionPreviewDialog modified to
  *	preview the RDF transform of a given element (subject, property, or object) selected
@@ -449,7 +449,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		var tr = null;
 		var tdElem = null;
-		for (var iIndex = 0; iIndex < this.#rowValues.length; iIndex++) {
+		for (var iIndex = 0; iIndex < data.indicies.length; iIndex++) {
 			// Create a row...
 			tr = table.insertRow(table.rows.length);
 
@@ -470,7 +470,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			// Populate expression value...
 			tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
 			if (bIndices) {
-				tdElem.html( data.indicies[iIndex] );
+				//tdElem.html( data.indicies[iIndex] );
+				tdElem.html( this.#rowValues[iIndex] );
 			}
 
 			// Populate expression result...

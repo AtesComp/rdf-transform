@@ -28,6 +28,7 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
     public PreviewRDFRecordVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
         this.iLimit = Util.getSampleLimit();
+        if ( Util.isDebugMode() ) logger.info("DEBUG: Created...");
     }
 
     public boolean visit(Project theProject, Record theRecord) {
@@ -42,7 +43,7 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
             ValueFactory theFactory = theConnection.getValueFactory();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord );
+                root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
                     logger.info("DEBUG:   " +

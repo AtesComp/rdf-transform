@@ -16,7 +16,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CellBlankNode extends ResourceNode implements CellNode {
+	private final static Logger logger = LoggerFactory.getLogger("RDFT:CellBlankNode");
 
 	static private final String strNODETYPE = "cell-as-blank";
 
@@ -67,6 +71,60 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	public String getExpression() {
 		return this.strExpression.equals("value") ? null : this.strExpression;
 	}
+
+    /*
+     *  Method createResource() for Resource Node types
+     *
+     *  Return: List<Value>
+     *    Returns the Resources as generic Values since these are "object" elements in
+     *    ( source, predicate, object ) triples and need to be compatible with literals.
+     */
+    @Override
+    protected List<Value> createResources() {
+        if (Util.isDebugMode()) logger.info("DEBUG: createResources...");
+		List<Value> listResources = null;
+
+        //
+        // Record Mode
+        //
+		if ( this.theRec.isRecordMode() ) {
+            // For Record Mode, a node should not represent a "Row/Record Number" cell...
+            if ( ! this.isRowNumberCellNode() ) {
+                listResources = this.createRecordResources();
+            }
+            // Otherwise, we only need to get a single "Record Index" resource for the Record group...
+            else {
+                this.theRec.rowNext(); // ...set index for first (or any) row in the Record
+                listResources = this.createRowResources(); // ...get the one resource
+                this.theRec.rowReset(); // ...reset for any other row run on the Record
+            }
+        }
+        //
+        // Row Mode
+        //
+        else {
+            listResources = this.createRowResources();
+        }
+
+		return listResources;
+    }
+
+    @Override
+    protected List<Value> createRecordResources() {
+		// TODO: In general, for blank nodes, one per Record+Column is enough.  Review to limit!
+        if (Util.isDebugMode()) logger.info("DEBUG: createRecordResources...");
+        List<Value> listResources = new ArrayList<Value>();
+		List<Value> listResourcesNew = null;
+		while ( this.theRec.rowNext() ) {
+			listResourcesNew = this.createRowResources();
+			if (listResourcesNew != null) {
+				listResources.addAll(listResourcesNew);
+			}
+		}
+        if ( listResources.isEmpty() )
+			return null;
+		return listResources;
+    }
 
 	@Override
 	protected List<Value> createRowResources() {

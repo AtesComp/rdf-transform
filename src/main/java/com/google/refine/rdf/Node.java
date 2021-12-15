@@ -85,7 +85,7 @@ abstract public class Node {
      *
      *    Creates the object list for triple statements from this node.
      */
-    abstract protected List<Value> createObjects(ResourceNode nodeParent);
+    abstract protected List<Value> createObjects(ResourceNode nodeProperty);
 
     abstract public void write(JsonGenerator writer)
             throws JsonGenerationException, IOException;

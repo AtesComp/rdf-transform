@@ -47,10 +47,16 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     }
 
     @Override
-    public List<Value> createResources() {
-        // For a Constant Resource Node, we only need one per record,
+    protected List<Value> createResources() {
+        // For a Constant Resource Node, we only need one common resource per record,
         // so process as a row...
         return createRowResources();
+    }
+
+	@Override
+	protected List<Value> createRecordResources() {
+        // NOT USED!
+        return null;
     }
 
 	@Override

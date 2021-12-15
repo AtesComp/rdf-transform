@@ -18,7 +18,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
+//import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
@@ -77,7 +77,8 @@ public class VocabularySearcher implements IVocabularySearcher {
 	private Directory dirLucene;
 	private IndexWriter writer;
 	private IndexSearcher searcher;
-	private IndexReader reader;
+	//private IndexReader reader;
+	private DirectoryReader reader;
 
 	public VocabularySearcher(File dir) throws IOException {
 		if ( Util.isVerbose(3) ) logger.info("Creating vocabulary searcher...");
@@ -100,7 +101,8 @@ public class VocabularySearcher implements IVocabularySearcher {
 			this.writer.commit();
 		}
         //this.reader = DirectoryReader.open( FSDirectory.open( new File(dir, LUCENE_DIR).toPath() ) );
-        this.reader = DirectoryReader.open(this.dirLucene);
+        //this.reader = DirectoryReader.open(this.dirLucene);
+        this.reader = DirectoryReader.open(this.writer);
         this.searcher = new IndexSearcher(this.reader);
 		if ( Util.isVerbose(3) ) logger.info("...created vocabulary searcher");
 	}
@@ -185,11 +187,17 @@ public class VocabularySearcher implements IVocabularySearcher {
 
 	@Override
 	public void update() throws CorruptIndexException, IOException {
-		this.writer.commit();
-		// TODO: This shouldn't be required but it is not working without it...or is it???
-		//this.reader.close();
-		//this.reader = DirectoryReader.open(this.dirLucene);
-		//this.searcher = new IndexSearcher(this.reader);
+		if ( this.writer.hasUncommittedChanges() ) {
+			this.writer.commit();
+			//this.reader.close();
+			//this.reader = DirectoryReader.open(this.dirLucene);
+			//this.searcher = new IndexSearcher(this.reader);
+			DirectoryReader readerNew = DirectoryReader.openIfChanged(this.reader);
+			if (readerNew != null) {
+				this.reader = readerNew;
+				this.searcher = new IndexSearcher(this.reader);
+			}
+		}
 	}
 
 	@Override

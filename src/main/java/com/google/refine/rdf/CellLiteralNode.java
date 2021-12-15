@@ -92,17 +92,28 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
      *  from this node on Rows / Records.
      */
     @Override
-	protected List<Value> createObjects(ResourceNode nodeParent) {
-        super.createObjects(nodeParent);
+	protected List<Value> createObjects(ResourceNode nodeProperty) {
+        this.setObjectParameters(nodeProperty);
+		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createObjects...");
 
-        // TODO: Convert from Record to Row unless specifed as a Sub-Record
+        // TODO: Create process for Sub-Records
 
-        this.theRec.setLink(nodeParent, true);
         List<Value> literals = null;
-        if ( this.theRec.isRecordMode() ) {
+
+        //
+        // Record Mode
+        //
+		if ( nodeProperty.theRec.isRecordMode() ) { // ...link is Record, 
+			// ...set to Row Mode and process on current row as set by rowNext()...
+			this.theRec.setLink(nodeProperty, true);
             literals = this.createRecordObjects();
-        } // Row Mode...
+        }
+        //
+        // Row Mode
+        //
         else {
+			// ...process on current row as set by rowNext()...
+			this.theRec.setLink(nodeProperty);
             literals = this.createRowObjects();
         }
         this.theRec.clear();
@@ -115,6 +126,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
      *  from this node on Records
      */
     private List<Value> createRecordObjects() {
+		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createRecordObjects...");
 		List<Value> literals = new ArrayList<Value>();
 		List<Value> literalsNew = null;
 		while ( this.theRec.rowNext() ) {
@@ -133,6 +145,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
      *  from this node on Rows
      */
 	private List<Value> createRowObjects() {
+		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createRowObjects...");
 		Object results = null;
         try {
             results =

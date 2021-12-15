@@ -782,19 +782,22 @@ class RDFTransformUINode {
     }
 
     #preview(strColumnName, strExpression, isIRI) {
-        const iRowRecordIndex = -1;
-        const iCellIndex =
+        const iRowRecColumnIndex = -1;
+        const iColumnIndex =
             ( strColumnName ? // A non-empty string or an empty string
                 // Look up the cell index by column name...
                 RDFTransform.findColumn(strColumnName).cellIndex :
                 // No column name == Row / record Index...
-                iRowRecordIndex
+                iRowRecColumnIndex
             );
-        const objColumn = {
-            'cellIndex'  : iCellIndex,
-            'columnName' : strColumnName
+        const isRowNumberCell = (iColumnIndex == iRowRecColumnIndex);
+        var objColumn = null; // ...just get the rows
+        if ( ! isRowNumberCell ) {
+            objColumn = // ...get the rows and the related column values
+                {   'cellIndex'  : iColumnIndex,
+                    'columnName' : strColumnName
+                }
         };
-        const isRowNumberCell = (iCellIndex == iRowRecordIndex);
         const onDone = (strExpression) => {
             if (strExpression !== null) {
                 strExpression = strExpression.substring(5); // ...remove "grel:"

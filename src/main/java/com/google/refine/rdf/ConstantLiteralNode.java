@@ -71,8 +71,8 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
      *  from this node on Rows / Records.
      */
     @Override
-	protected List<Value> createObjects(ResourceNode nodeParent) {
-        super.createObjects(nodeParent);
+	protected List<Value> createObjects(ResourceNode nodeProperty) {
+        this.setObjectParameters(nodeProperty);
 
         // If there is no value to work with...
         if ( this.strValue == null || this.strValue.isEmpty() ) {
