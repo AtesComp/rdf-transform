@@ -655,7 +655,8 @@ class RDFTransformUINode {
         //frame.width("490px")
         frame
         .css({  minWidth: "490px",
-                minHeight: "300px"
+                width: "490px",
+                minHeight: "300px",
             });
 
         $('<div></div>').addClass("dialog-header").text( $.i18n('rdft-dialog/rdf-node') )
@@ -679,7 +680,7 @@ class RDFTransformUINode {
         elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
         elements.contentUsed.text(    $.i18n('rdft-dialog/content-used') + '...' );
         elements.useExpression.text(  $.i18n('rdft-dialog/use-exp') + '...'      );
-        elements.expEditPreview.text( $.i18n('rdft-dialog/preview-edit')         );
+        elements.expEditPreview.text( $.i18n('rdft-dialog/edit-preview')         );
 
         elements.asIRI.text(      $.i18n('rdft-as/iri')        );
         elements.asText.text(     $.i18n('rdft-as/text')       );

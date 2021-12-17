@@ -50,10 +50,15 @@ class RDFDataTableView {
 		// Use OpenRefine's DataTableView.sampleVisibleRows() to preview the working RDFTransform on a sample
 		// of the parent data...
 		//	 FROM: OpenRefine/main/webapp/modules/core/scripts/views/data-table/data-table-view.js
+		//   NOTE: On objColumn == null, just return the rows (no column information)
 		const rows = DataTableView.sampleVisibleRows(objColumn);
+		var strColumnName = ""; // ...for row index processing (missing column information)
+		if (objColumn !== null) {
+			strColumnName = objColumn.columnName
+		}
 	
 		const dlgRDFExpPreview = new RDFExpressionPreviewDialog(this, onDone);
-		dlgRDFExpPreview.preview(objColumn.columnName, rows, strExpression, isRowNumberCell);
+		dlgRDFExpPreview.preview(strColumnName, rows, strExpression, isRowNumberCell);
 	}
 }
 
@@ -447,40 +452,50 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		// Process rows (data.results) for data table...
 		//
-		var tr = null;
-		var tdElem = null;
-		for (var iIndex = 0; iIndex < data.indicies.length; iIndex++) {
-			// Create a row...
-			tr = table.insertRow(table.rows.length);
+		if (bResults) {
+			var tr = null;
+			var tdElem = null;
+			// Loop on "data.results" as that is the primary reason to process...
+			//   NOTE: Since "bResults", then "data.results" have a good index length.
+			for (var iIndex = 0; iIndex < data.results.length; iIndex++) {
+				// Create a row...
+				tr = table.insertRow(table.rows.length);
 
-			// Row is up to 4 cells...
-			// 0          | 1          | 2          | 3          |
-			// -----------+------------+------------+------------|
-			// Row/Rec    | Raw Row    | Expression | Abs IRI of |
-			// Index      | Index Value|  Result    | Expression |
-			// (1 based)  | (0 based)  |            | (Optional) |
-			// -----------+------------+------------+------------'
+				// Row is up to 4 cells...
+				// 0           | 1           | 2           | 3 (Optional)|
+				// ------------+-------------+-------------+-------------|
+				// Row/Rec     | Raw Row     | Expression  | Abs IRI of  |
+				// Index       | Index Value |  Result     | Expression  |
+				// (1 based)   | (0 based)   |             |             |
+				// ------------+-------------+-------------+-------------'
 
-			// Populate row index...
-			tdElem = $( tr.insertCell(0) ); //.attr("width", "1%");
-			if (bIndices) {
-				tdElem.html( String( parseInt( data.indicies[iIndex] ) + 1 ) + "." );
-			}
+				// Populate row index...
+				tdValue = (iIndex + 1) + "?";
+				if (bIndices) {
+					tdValue = String( parseInt( data.indicies[iIndex] ) + 1 ) + "."; 
+				}
+				tdElem = $( tr.insertCell(0) ); //.attr("width", "1%");
+				tdElem.html( tdValue );
 
-			// Populate expression value...
-			tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
-			if (bIndices) {
-				//tdElem.html( data.indicies[iIndex] );
-				tdElem.html( this.#rowValues[iIndex] );
-			}
+				// Populate row index or raw value for expression...
+				tdValue = "";
+				if (bIndices && this.#isRowNumberCell) {
+					// Row index "column"...
+					tdValue = data.indicies[iIndex];
+				}
+				else {
+					// Row values (raw) for real column...
+					tdValue = this.#rowValues[iIndex];
+				}
+				tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
+				tdElem.html( tdValue );
 
-			// Populate expression result...
-			if (bResults) {
+				// Populate results for expression evaluation...
 				tdElem = $( tr.insertCell(2) ).addClass("expression-preview-value");
 				tdValue = data.results[iIndex];
 				this.#renderValue(tdElem, tdValue);
 
-				// Populate Absolute IRI of expression result...
+				// Populate Absolute IRI of results, if applicable...
 				if (bAbsolutes) {
 					var tdElem = $( tr.insertCell(3) ).addClass("expression-preview-value");
 					var tdValue = data.absolutes[iIndex];
