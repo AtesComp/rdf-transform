@@ -91,8 +91,8 @@ git clone https://github.com/AtesComp/rdf-transform
 cd rdf-transform
 mvn clean compile
 mvn assembly:single
-rm -rf ~/path/to/openrefine/extensions/rdf-transform*
-unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/path/to/openrefine/extensions
+rm -rf ~/.local/share/openrefine/extensions/rdf-transform* 
+unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/.local/share/openrefine/extensions
 ~/path/to/openrefine/refine
 ```
 Long:
@@ -107,8 +107,8 @@ cd ../rdf-transform
 mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
 mvn clean compile
 mvn assembly:single
-rm -rf ../OpenRefine/extensions/rdf-transform*
-unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ../OpenRefine/extensions
+rm -rf ~/.local/share/openrefine/extensions/rdf-transform* 
+unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/.local/share/openrefine/extensions
 cd ../OpenRefine
 ./refine
 ```
