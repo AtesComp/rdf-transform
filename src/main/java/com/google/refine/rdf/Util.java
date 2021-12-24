@@ -338,7 +338,7 @@ public class Util {
 			// * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
 			// * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
 			//
-			Object prefVerbosity = prefStore.get("RDFTransform/verbose");
+			Object prefVerbosity = prefStore.get("RDFTransform.verbose");
 			if (prefVerbosity == null) {
 				prefVerbosity = prefStore.get("verbose"); // General OpenRefine Verbosity
 			}
@@ -367,7 +367,7 @@ public class Util {
 			//      1073741824 bytes / 100 bytes per statements ~= 10737418 statements
 			// This is the default limit and is overridden by the user preference.
 			//
-			Object prefExportStatementLimit = prefStore.get("RDFTransform/exportLimit");
+			Object prefExportStatementLimit = prefStore.get("RDFTransform.exportLimit");
 			if (prefExportStatementLimit != null) {
 				try {
 					Util.Preferences.put("ExportLimit", Integer.parseInt( prefExportStatementLimit.toString() ) );
@@ -382,7 +382,7 @@ public class Util {
 			//
 			// The Debug Mode (iDebug) is used to manage the output of specifically marked "debug" messages.
 			//
-			Object prefDebugMode = prefStore.get("RDFTransform/debug"); // RDFTransform Debug Mode
+			Object prefDebugMode = prefStore.get("RDFTransform.debug"); // RDFTransform Debug Mode
 			if (prefDebugMode == null) {
 				prefDebugMode = prefStore.get("debug"); // General OpenRefine Debug
 			}
