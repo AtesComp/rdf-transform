@@ -103,7 +103,7 @@
 											this.name, "request", "tid",
 											xhr.getResponseHeader("X-Metaweb-TID")
 										);
-								}
+									}
 								)
 								.fail(
 									(xhr, strStatus, errorThrown) => {

@@ -45,6 +45,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 		try {
             //
             // Set up response...
+            //   ...cause we're hand-jamming JSON responses directly...
             //
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "application/json");
@@ -58,7 +59,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
             String strRowIndices = request.getParameter("rowIndices");
             if (strRowIndices == null) {
-                PreviewRDFExpressionCommand.respond(response, "{ \"code\" : \"error\", \"message\" : \"No row/record indices specified\" }");
+                PreviewRDFExpressionCommand.respond(response, "{ \"code\" : \"error\", \"message\" : \"No row / record indices specified\" }");
                 return;
             }
             this.theRowIndices = ParsingUtilities.evaluateJsonStringToArrayNode(strRowIndices);

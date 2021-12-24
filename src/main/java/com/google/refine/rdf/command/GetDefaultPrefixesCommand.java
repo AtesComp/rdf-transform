@@ -98,14 +98,18 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 		public Collection<Vocabulary> prefixes;
 
 		@JsonCreator
-		public PrefixesList(
+		protected PrefixesList(
 				//@JsonProperty("prefixes")
 				Collection<Vocabulary> prefixes) {
 			this.prefixes = prefixes;
 		}
 
 		public Map<String, Vocabulary> getMap() {
-			return prefixes.stream().collect( Collectors.toMap( Vocabulary::getPrefix, Function.identity() ) );
+			return prefixes.stream().collect(
+						Collectors.toMap(
+							Vocabulary::getPrefix, Function.identity()
+						)
+					);
 		}
 	}
 }

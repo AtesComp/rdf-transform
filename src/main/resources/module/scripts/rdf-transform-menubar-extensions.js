@@ -34,7 +34,7 @@ class RDFExporterMenuBar
 {
     static exportRDF(format, ext) {
         if (! theProject.overlayModels.RDFTransform) {
-            alert( $.i18n("rdft-menu/alert-no-align") );
+            alert( $.i18n("rdft-menu/alert-no-transform") );
         }
         else {
             RDFExporterMenuBar.#exportRDFRows(format, ext);
@@ -44,10 +44,15 @@ class RDFExporterMenuBar
     static #exportRDFRows(format, ext) {
         var name =
             theProject.metadata.name
-            .replace(/^\p{Whitespace}+/, '')
-            .replace(/\p{Whitespace}+$/, '')
-            .replace(/[^\p{N}\p{L}_]/g, ' ')
-            .replace(/\p{Whitespace}+/g, '-');
+            .replace(/^\p{White_Space}+/u, '')
+            .replace(/\p{White_Space}+$/u, '')
+            .replace(/[^\p{L}\p{N}_]/gu, '_')
+            .replace(/\p{White_Space}+/gu, '-');
+        //alert("Project Name: " + theProject.metadata.name +
+        //    "\nCalc'ed Name: " + name +
+        //    "\nFormat: " + format +
+        //    "\nExt: " + ext);
+
         var form = document.createElement("form");
 
         $(form)

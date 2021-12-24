@@ -5,7 +5,7 @@ import java.util.Properties;
 
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.operation.SaveRDFTransformOperation;
+import com.google.refine.rdf.operation.ExportTemplateOperation;
 
 import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
@@ -18,9 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class SaveRDFTransformCommand extends RDFTransformCommand {
-
-    public SaveRDFTransformCommand(ApplicationContext ctxt) {
+public class ExportTemplateCommand extends RDFTransformCommand {
+    public ExportTemplateCommand(ApplicationContext ctxt) {
 		super(ctxt);
 	}
 
@@ -28,7 +27,7 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if ( ! this.hasValidCSRFToken(request) ) {
-            SaveRDFTransformCommand.respondCSRFError(response);
+            ExportTemplateCommand.respondCSRFError(response);
             return;
         }
 
@@ -39,13 +38,14 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             RDFTransform theTransform = RDFTransform.reconstruct(jnodeRoot);
 
-            AbstractOperation opSave = new SaveRDFTransformOperation(theTransform);
-            Process procSave = opSave.createProcess(theProject, new Properties());
+            AbstractOperation opExportStruct = new ExportTemplateOperation(theTransform);
+            Process procExportStruct = opExportStruct.createProcess(theProject, new Properties());
 
-            SaveRDFTransformCommand.performProcessAndRespond(request, response, theProject, procSave);
+            ExportTemplateCommand.performProcessAndRespond(request, response, theProject, procExportStruct);
         }
         catch (Exception ex) {
-            SaveRDFTransformCommand.respondException(response, ex);
+            ExportTemplateCommand.respondException(response, ex);
         }
     }
+    
 }

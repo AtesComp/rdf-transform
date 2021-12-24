@@ -13,6 +13,7 @@ import com.google.refine.rdf.operation.RDFVisitor;
 import com.google.refine.rdf.vocab.VocabularyIndexException;
 
 import com.google.refine.browsing.Engine;
+import com.google.refine.exporters.StreamExporter;
 import com.google.refine.exporters.WriterExporter;
 import com.google.refine.model.Project;
 
@@ -24,7 +25,7 @@ import org.eclipse.rdf4j.rio.Rio;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-public class RDFExporter implements WriterExporter {
+public class RDFExporter implements WriterExporter, StreamExporter {
     //private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFExporter");
 
     private RDFFormat format;
@@ -42,13 +43,13 @@ public class RDFExporter implements WriterExporter {
     public void export(Project theProject, Properties options, Engine theEngine,
                         OutputStream outputStream)
             throws IOException {
-	    export(theProject, options, theEngine, Rio.createWriter(this.format, outputStream));
+	    this.export(theProject, options, theEngine, Rio.createWriter(this.format, outputStream));
     }
 
 	public void export(Project theProject, Properties options, Engine theEngine,
 					    Writer theWriter)
              throws IOException {
-		export(theProject, options, theEngine, Rio.createWriter(this.format, theWriter));
+        this.export(theProject, options, theEngine, Rio.createWriter(this.format, theWriter));
 	}
 
 	private void export(Project theProject, Properties options, Engine theEngine,

@@ -843,14 +843,14 @@ class RDFTransformUINode {
         );
     }
 
-    #addNodeRDFType(id, name) {
+    #addNodeRDFType(strID, strName) {
         if (!this.#node.rdfTypes) {
             this.#node.rdfTypes = [];
         }
         this.#node.rdfTypes
         .push(
-            {   'iri'   : id,
-                'cirie' : name
+            {   'iri'   : strID,
+                'cirie' : strName
             }
         );
         this.#renderMain();
@@ -879,10 +879,11 @@ class RDFTransformUINode {
 
         var strIRI = this.#node.rdfTypes[iIndex].iri;
         var strCIRIE= this.#node.rdfTypes[iIndex].cirie;
-        var strText = strIRI;
+        var strText = strIRI; // ...display just the IRI
+        // If the IRI and the CIRIE differ, display both...
         if (strIRI.localeCompare(strCIRIE) != 0 ) {
             strText =
-                '  IRI: ' + strIRI + '\n' +
+                ' IRI : ' + strIRI + '\n' +
                 'CIRIE: ' + strCIRIE;
         }
 

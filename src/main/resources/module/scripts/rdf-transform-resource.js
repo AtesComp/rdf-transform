@@ -34,7 +34,7 @@ class RDFTransformResourceDialog {
                 "parent"      : '.rdf-transform-menu-search'
             }
         )
-        .bind('fb-select', // ...selected existing item...
+        .bind('fb-select', // ...select existing item...
             (evt, data) => {
                 MenuSystem.dismissAll();
                 if (! this.#onDone) {
@@ -45,14 +45,16 @@ class RDFTransformResourceDialog {
             }
         )
         .bind('fb-select-new', // ...add new item...
-            (evt, data) => {
+            async (evt, data) => {
                 MenuSystem.dismissAll();
                 if (! this.#onDone) {
                     alert( $.i18n('rdft-dialog/error') + "\nMissing onDone processor!" );
                     return;
                 }
                 // Does the data look like a prefixed IRI?
-                if ( RDFTransformPrefixesManager.isPrefixedQName(data) ) {
+                var iPrefixedIRI = await RDFTransformPrefixesManager.isPrefixedQName(data);
+                // Is it a prefixed IRI?
+                if ( iPrefixedIRI == 1 ) {
                     // Check that the prefix is defined...
                     var strPrefix = RDFTransformPrefixesManager.getPrefixFromQName(data);
                     // Is there an existing prefix matching the given prefix?
@@ -65,8 +67,9 @@ class RDFTransformResourceDialog {
                         }
                         this.#onDone(obj);
                     }
+                    // No, then this prefix is not recorded...
                     else {
-                        // ...no, create prefix (which may change) and add (re-prefixed) resource...
+                        // ...create prefix (which may change in here) and add (re-prefixed) resource...
                         this.#dialog.prefixesManager.addPrefix(
                             $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                             strPrefix,
@@ -80,12 +83,13 @@ class RDFTransformResourceDialog {
                                     // ...yes, set as before...
                                     var strIRI = RDFTransformPrefixesManager.getFullIRIFromQName(data);
                                     obj = {
-                                        "id"   : strIRI,
-                                        "name" : data
+                                        "id"   : strIRI, // Full IRI
+                                        "name" : data    // Prefixed IRI
                                     }
                                 }
+                                // No, then adjust...
                                 else {
-                                    // ...no, get new prefix IRI and adjust the prior user data...
+                                    // ...get new prefix IRI and adjust the prior user data...
                                     strResPrefixIRI =
                                         this.#dialog.prefixesManager.getIRIOfPrefix(strResPrefix);
                                     // Ensure the prefix's IRI was added...
@@ -93,8 +97,8 @@ class RDFTransformResourceDialog {
                                         var strSuffixIRI =
                                             this.#dialog.prefixesManager.getSuffixFromQName(data);
                                         var obj = {
-                                            "id"   : strResPrefixIRI + strSuffixIRI,
-                                            "name" : strResPrefix + ":" + strSuffixIRI
+                                            "id"   : strResPrefixIRI + strSuffixIRI,   // Full IRI
+                                            "name" : strResPrefix + ":" + strSuffixIRI // Prefixed IRI
                                         }
                                     }
                                     // If not, abort the resource addition with a null obj...
@@ -108,8 +112,24 @@ class RDFTransformResourceDialog {
                         );
                     }
                 }
-                else { // ...anything else...
-                    new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
+                // Is it a full IRI?
+                else if ( iPrefixedIRI == 0 ) {
+                    //new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
+                    // ...take it as is...
+                    var obj = {
+                        "id"   : strIRI, // Full IRI
+                        "name" : strIRI  // Prefixed IRI
+                    };
+                    this.#onDone(obj);
+                }
+                // Is it a BAD IRI?
+                else { // iPrefixedIRI == -1
+                    alert(
+                        $.i18n('rdft-dialog/alert-iri') + "\n" +
+                        $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
+                        strIRI
+                    );
+                    return;
                 }
             }
         )
@@ -122,61 +142,65 @@ class RDFTransformResourceDialog {
  *
  *  The resource resolver for the resource manager dialog
  */
-class RDFTransformResourceResolveDialog {
-    #onDone;
-
-    constructor(element, defaultVal, onDone) {
-        this.#onDone = onDone;
-
-        var menu = MenuSystem.createMenu().width('400px'); // ...6:1 on input size
-        menu.html(
-'<div class="rdf-transform-menu-search">' +
-  '<span class="rdf-transform-node-label">IRI: ' +
-    '<small>(' + $.i18n('rdft-dialog/resolve') + ')</small>' +
-  '</span>' +
-  '<input type="text" size="50" bind="rdftNewResourceIRI"><br/>' +
-  '<button class="button" bind="buttonApply">' +
-    $.i18n('rdft-buttons/apply') +
-  '</button>' +
-  '<button class="button" bind="buttonCancel">' +
-    $.i18n('rdft-buttons/cancel') +
-  '</button>' +
-'</div>'
-        );
-        MenuSystem.showMenu(menu, () => {} );
-        MenuSystem.positionMenuLeftRight(menu, $(element));
-    
-        var elements = DOM.bind(menu);
-        elements.rdftNewResourceIRI
-        .val(defaultVal)
-        .focus()
-        .select();
-    
-        elements.buttonCancel
-        .click( () => { MenuSystem.dismissAll(); } );
-    
-        elements.buttonApply
-        .click(
-            () => {
-                var strIRI = elements.rdftNewResourceIRI.val();
-                if (!strIRI) {
-                    alert( $.i18n('rdft-dialog/alert-iri') );
-                    return;
-                }
-                if ( ! RDFTransformCommon.validateIRI(strIRI) ) {
-                    alert( $.i18n('rdft-dialog/alert-iri' + "\nIRI is not valid:\n" + strIRI) );
-                    return;
-                }
-                MenuSystem.dismissAll();
-                //if (strIRI.charAt(0) === ':') {
-                //    strIRI = strIRI.substring(1);
-                //}
-                var obj = {
-                    "id"   : strIRI,
-                    "name" : strIRI
-                };
-                this.#onDone(obj);
-            }
-        );
-    }    
-} 
+// class RDFTransformResourceResolveDialog {
+//     #onDone;
+// 
+//     constructor(element, defaultVal, onDone) {
+//         this.#onDone = onDone;
+// 
+//         var menu = MenuSystem.createMenu().width('400px'); // ...6:1 on input size
+//         menu.html(
+// '<div class="rdf-transform-menu-search">' +
+//   '<span class="rdf-transform-node-label">IRI: ' +
+//     '<small>(' + $.i18n('rdft-dialog/resolve') + ')</small>' +
+//   '</span>' +
+//   '<input type="text" size="50" bind="rdftNewResourceIRI"><br/>' +
+//   '<button class="button" bind="buttonApply">' +
+//     $.i18n('rdft-buttons/apply') +
+//   '</button>' +
+//   '<button class="button" bind="buttonCancel">' +
+//     $.i18n('rdft-buttons/cancel') +
+//   '</button>' +
+// '</div>'
+//         );
+//         MenuSystem.showMenu(menu, () => {} );
+//         MenuSystem.positionMenuLeftRight(menu, $(element));
+// 
+//         var elements = DOM.bind(menu);
+//         elements.rdftNewResourceIRI
+//         .val(defaultVal)
+//         .focus()
+//         .select();
+// 
+//         elements.buttonCancel
+//         .click( () => { MenuSystem.dismissAll(); } );
+// 
+//         elements.buttonApply
+//         .click(
+//             async () => {
+//                 var strIRI = elements.rdftNewResourceIRI.val();
+//                 if (!strIRI) {
+//                     alert( $.i18n('rdft-dialog/alert-iri') );
+//                     return;
+//                 }
+//                 if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
+//                     alert(
+//                         $.i18n('rdft-dialog/alert-iri') + "\n" +
+//                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
+//                         strIRI
+//                     );
+//                     return;
+//                 }
+//                 MenuSystem.dismissAll();
+//                 //if (strIRI.charAt(0) === ':') {
+//                 //    strIRI = strIRI.substring(1);
+//                 //}
+//                 var obj = {
+//                     "id"   : strIRI, // Full IRI
+//                     "name" : strIRI  // Prefixed IRI
+//                 };
+//                 this.#onDone(obj);
+//             }
+//         );
+//     }    
+// } 

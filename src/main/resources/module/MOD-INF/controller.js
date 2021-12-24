@@ -31,9 +31,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
+// NOTE: This is a Server-Side JavaScript
+//
+//   The Server-Side JavaScript processor may be a limited funtionality
+//   processor, so many functions taken for granted in modern JavaScript
+//   processors may not be present in this implementation.
+
 importPackage(com.google.refine.rdf.commands);
 
-// Client side preferences mirrors Server side...
+// Client side preferences mirror Server side...
 var RDFTransformPrefs = {
 	"Verbosity"   : 0,
 	"ExportLimit" : 10737418,
@@ -68,6 +74,7 @@ function registerClientSide() {
 			"scripts/rdf-transform-prefixes-manager.js",
 			"scripts/rdf-transform-prefix-adder.js",
 			"scripts/rdf-transform-suggest-term.js",
+			"scripts/rdf-transform-export-template.js",
 			"scripts/rdf-transform-common.js",
 			"scripts/rdf-data-table-view.js",
 			//"scripts/externals/jquery.form.min.js",
@@ -109,12 +116,15 @@ function registerServerSide() {
      *  Server-side Ajax Commands...
 	 *    Each registration calls the class' init() method.
      */
+	var strExportRDFTemplate = "export-rdf-template";
 	var strSaveRDFTransform = "save-rdf-transform";
 	RefineServlet.registerCommand( module, "initialize",             new RDFTBaseApp.InitializationCommand(appContext) );
+	RefineServlet.registerCommand( module, strExportRDFTemplate,     new RDFTBaseCmd.ExportTemplateCommand(appContext) );
 	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTBaseCmd.SaveRDFTransformCommand(appContext) );
     RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTBaseCmd.SaveBaseIRICommand(appContext) );
     RefineServlet.registerCommand( module, "preview-rdf",            new RDFTBaseCmd.PreviewRDFCommand() );
     RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTBaseCmd.PreviewRDFExpressionCommand() );
+    RefineServlet.registerCommand( module, "validate-iri",           new RDFTBaseCmd.ValidateIRICommand() );
 	// Vocabs commands
     RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTBaseCmd.GetDefaultPrefixesCommand(appContext) );
     RefineServlet.registerCommand( module, "add-prefix",             new RDFTBaseCmd.AddPrefixCommand(appContext) );
@@ -143,6 +153,8 @@ function registerServerSide() {
     /*
      *  Server-side Operations...
      */
+    RefineBase.operations.OperationRegistry
+	.registerOperation( module, strExportRDFTemplate, RDFTBase.operation.ExportTemplateOperation );
     RefineBase.operations.OperationRegistry
 	.registerOperation( module, strSaveRDFTransform, RDFTBase.operation.SaveRDFTransformOperation );
 
@@ -190,7 +202,7 @@ function processPreferences() {
 	/*
 	 *  Process OpenRefine Preference Store...
 	 *
-	 *  NOTE: We have limited use for these preferences in this server-side
+	 *  NOTE: We have limited use for these preferences in this Server-Side
 	 *  controller.js code.  We use this opportunity to simple check and report
 	 *  on the preferences related to this extension.
 	 */
@@ -204,7 +216,7 @@ function processPreferences() {
 		if (prefVerbosity != null) {
 			var iVerbosity = parseInt(prefVerbosity);
 			if (iVerbosity != NaN) {
-				RDFTransformPrefs.Verbosity = iVerbosity;
+				RDFTransformPrefs["Verbosity"] = iVerbosity;
 			}
 		}
 		// Export Limit...
@@ -212,7 +224,7 @@ function processPreferences() {
 		if (prefExportLimit != null) {
 			var iExportLimit = parseInt(prefExportLimit);
 			if (iExportLimit != NaN) {
-				RDFTransformPrefs.ExportLimit = iExportLimit;
+				RDFTransformPrefs["ExportLimit"] = iExportLimit;
 			}
 		}
 		// Debug...
@@ -222,35 +234,39 @@ function processPreferences() {
 		}
 		if (prefDebug != null) {
 			var bDebug = (prefDebug.toLowerCase() == 'true');
-			RDFTransformPrefs.DebugMode = bDebug;
+			logger.info("DebugMode Test: " + prefDebug + " " + bDebug);
+			RDFTransformPrefs["DebugMode"] = bDebug;
 		}
-	}
 
-	//
-	// Output RDFTranform Preferences...
-	//
-	// NOTE: This really sucks because this server-side JavaScript is extremely limited!!!
-	//		1. Looping structure don't exist!
-	//		2. JSON object does not exist, so no stringify()!
-	// In other words, we can't automate the processing of the RDFTransformPrefs list, but
-	// must call out each pref by key explicitly.
-	var strPrefs = "Preferences: { ";
-	var strPref;
-	strPref = "Verbosity";
-	strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
-	strPref = "ExportLimit";
-	strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
-	strPref = "DebugMode";
-	strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " }";
-	logger.info(strPrefs);
+		//
+		// Output RDFTranform Preferences...
+		//
+		// NOTE: This really sucks because this server-side JavaScript is extremely limited!!!
+		//		1. Looping structure don't exist!
+		//		2. JSON object does not exist, so no stringify()!
+		// In other words, we can't automate the processing of the RDFTransformPrefs list, but
+		// must call out each pref by key explicitly.
+		var strPrefs = "Preferences: { ";
+		var strPref;
+		strPref = "Verbosity";
+		strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
+		strPref = "ExportLimit";
+		strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " , ";
+		strPref = "DebugMode";
+		strPrefs += strPref + " : " + RDFTransformPrefs[strPref].toString() + " }";
+		logger.info(strPrefs);
+	}
+	else {
+		logger.info("Preferences not yet loaded!");
+	}
 }
 
 /*
  * Initialization Function for RDF Transform Extension.
  */
 function init() {
-	logger.info("Initializing RDFTransform Extension");
-	logger.info( module.getMountPoint() );
+	logger.info("Initializing RDFTransform Extension...");
+	logger.info("  Ext Mount Point: " + module.getMountPoint() );
 
 	registerClientSide();
 	registerServerSide();

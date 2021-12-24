@@ -17,6 +17,12 @@ input[type="radio"] {
     vertical-align: middle;
 }
 
+pre {
+    font-family: Consolas,"courier new";
+    background-color: #f1f1f1;
+    font-size: 100%;
+}
+
 /*
  * RDF Transform Dialog
  */
@@ -83,6 +89,15 @@ div.rdf-transform-data-preview {
     min-height: 345px;
     overflow: scroll;
     flex: 1 1 auto;
+}
+
+div.rdf-transform-data-preview pre {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
 }
 
 div.rdf-transform-prefixes {

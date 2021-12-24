@@ -6,9 +6,6 @@ import com.google.refine.rdf.operation.RDFVisitor;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.Util;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import com.google.refine.browsing.Engine;
 import com.google.refine.commands.Command;
 import com.google.refine.model.Project;
@@ -24,19 +21,22 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PreviewRDFCommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
 
+    public String strStatements;
+
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 		try {
-            //response.setCharacterEncoding("UTF-8");
-            //response.setHeader("Content-Type", "application/json");
-
             Project theProject = this.getProject(request);
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
 
@@ -81,11 +81,11 @@ public class PreviewRDFCommand extends Command {
             theWriter.endRDF();
             // ...end writing
 
-            String strStatements = strwriterBase.getBuffer().toString();
+            this.strStatements = strwriterBase.getBuffer().toString();
             if ( Util.isVerbose(4) ) logger.info("Preview Statements:\n" + strStatements);
 
             // Send back to client...
-            PreviewRDFCommand.respondJSON( response, new PreviewResponse( strStatements ) );
+            PreviewRDFCommand.respondJSON( response, new PreviewResponse(strStatements) );
         }
 		catch (Exception ex) {
             PreviewRDFCommand.respondException(response, ex);
@@ -93,9 +93,11 @@ public class PreviewRDFCommand extends Command {
     }
 
     private class PreviewResponse {
-    	@JsonProperty("v")
-    	String strValue;
 
+    	@JsonProperty("v")
+    	public String strValue;
+
+        @JsonCreator
     	protected PreviewResponse(String strValue) {
     		this.strValue = strValue;
     	}

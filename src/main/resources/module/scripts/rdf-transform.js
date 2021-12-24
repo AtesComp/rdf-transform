@@ -192,6 +192,7 @@ class RDFTransformDialog {
         this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview')            );
         this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
         this.#elements.rdftAddRootNode.text(      $.i18n('rdft-buttons/add-root')              );
+        this.#elements.rdftExpTemplate.text(      $.i18n('rdft-buttons/export-template')       );
         this.#elements.rdftSaveTransform.text(    $.i18n('rdft-buttons/save')                  );
         this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok')                    );
         this.#elements.buttonCancel.text(         $.i18n('rdft-buttons/cancel')                );
@@ -254,6 +255,14 @@ class RDFTransformDialog {
             }
         );
 
+        // Hook up the Export RDF Template button...
+        this.#elements.rdftExpTemplate
+        .click( (evt) => {
+                evt.preventDefault();
+                this.#doExport();
+            }
+        );
+
         // Hook up the Save RDFTransform button...
         this.#elements.rdftSaveTransform
         .click( (evt) => {
@@ -296,6 +305,22 @@ class RDFTransformDialog {
 
         this.#processTransformTab();
         this.#processPreviewTab();
+    }
+
+    #doExport() {
+        var theTransform = this.getJSON();
+        //Refine.postProcess(
+        //    /* module */    'rdf-transform',
+        //    /* command */   'export-rdf-template',
+        //    /* params */    {},
+        //    /* body */      { [RDFTransform.KEY] : JSON.stringify( theTransform ) },
+        //    /* updateOps */ {},
+        //    /* callbacks */
+        //    {   onDone: () => {
+        //            theProject.overlayModels.RDFTransform = theTransform;
+        //        }
+        //    }
+        //);
     }
 
     #doSave() {
@@ -363,9 +388,16 @@ class RDFTransformDialog {
                             },
             /* updateOps */ {},
             /* callbacks */ {   onDone: (data) => {
-                                    var strPreview = RDFTransformCommon.toHTMLBreaks( data.v.toString() );
+                                    //var strPreview = RDFTransformCommon.toHTMLBreaks( data.v.toString() );
+                                    var strPreview =
+                                        data.v.toString()
+                                        .replace(/&/g, "&amp;")
+                                        .replace(/</g, "&lt;")
+                                        .replace(/>/g, "&gt;")
+                                        .replace(/"/g, "&quot;");
                                     this.#panePreview.empty();
-                                    this.#panePreview.html( RDFTransformCommon.toIRILink(strPreview) );
+                                    //this.#panePreview.html( RDFTransformCommon.toIRILink(strPreview) );
+                                    this.#panePreview.html("<pre>" + strPreview + "</pre>");
                                 }
                             }
         );
@@ -375,7 +407,6 @@ class RDFTransformDialog {
         var menu = MenuSystem.createMenu().width('300px'); // ...6:1 on input size
         menu.html(
 '<div id="rdf-transform-base-iri-value">' +
-//  '<input type="text" bind="rdftNewBaseIRIValue" size="50" />' +
   '<input type="text" bind="rdftNewBaseIRIValue" size="50" />' +
   '<button class="button" bind="buttonApply">' +
     $.i18n('rdft-buttons/apply') +
@@ -392,15 +423,24 @@ class RDFTransformDialog {
         var elements = DOM.bind(menu);
         elements.rdftNewBaseIRIValue.val(this.#theTransform.baseIRI).focus().select();
 
-        elements.buttonApply.click(
-            () => {
+        elements.buttonApply
+        .click(
+            async () => {
                 function endsWith(strTest, strSuffix) {
                     return strTest.indexOf(strSuffix, strTest.length - strSuffix.length) !== -1;
                 }
 
-                var rdftNewBaseIRIValue = elements.rdftNewBaseIRIValue.val();
+                var strIRI = elements.rdftNewBaseIRIValue.val();
+                if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
+                    alert(
+                        $.i18n('rdft-dialog/alert-iri') + "\n" +
+                        $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
+                        strIRI
+                    );
+                    return;
+                }
 
-                if ( !endsWith(rdftNewBaseIRIValue, "/") && !endsWith(rdftNewBaseIRIValue, "#") ) {
+                if ( !endsWith(strIRI, "/") && !endsWith(strIRI, "#") ) {
                     var ans = confirm(
                         $.i18n('rdft-dialog/confirm-one') + "\n" +
                         $.i18n('rdft-dialog/confirm-two'));
@@ -409,7 +449,7 @@ class RDFTransformDialog {
                 }
 
                 MenuSystem.dismissAll();
-                this.#replaceBaseIRI(rdftNewBaseIRIValue);
+                this.#replaceBaseIRI(strIRI);
                 this.#processPreviewTab();
             }
         );
@@ -417,15 +457,15 @@ class RDFTransformDialog {
         elements.buttonCancel.click( () => { MenuSystem.dismissAll(); } );
     }
 
-    #replaceBaseIRI(rdftNewBaseIRIValue, bSave = true) {
-        if (rdftNewBaseIRIValue != this.#theTransform.baseIRI) {
-            this.#theTransform.baseIRI = rdftNewBaseIRIValue;
+    #replaceBaseIRI(strIRI, bSave = true) {
+        if (strIRI != this.#theTransform.baseIRI) {
+            this.#theTransform.baseIRI = strIRI;
         }
 
         if (bSave) { // ...save the base IRI...
             // Refine.postCSRF(
             //     "command/rdf-transform/save-baseIRI" + "?" + $.param({ "project" : theProject.id }),
-            //     { "baseIRI" : rdftNewBaseIRIValue },
+            //     { "baseIRI" : strIRI },
             //     (data) => {
             //         if (data.code === "error") {
             //             alert($.i18n('rdft-dialog/error') + ':' + data.message);
@@ -436,7 +476,7 @@ class RDFTransformDialog {
             Refine.postCSRF(
                 "command/rdf-transform/save-baseIRI",
                 {   "project" : theProject.id,
-                    "baseIRI" : rdftNewBaseIRIValue
+                    "baseIRI" : strIRI
                 },
                 (data) => {
                     if (data.code === "error") {
@@ -447,7 +487,7 @@ class RDFTransformDialog {
                 "json"
             );
         }
-        this.#elements.rdftBaseIRIValue.empty().text(rdftNewBaseIRIValue);
+        this.#elements.rdftBaseIRIValue.empty().text(strIRI);
     }
 
     updatePreview() {

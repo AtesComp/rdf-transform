@@ -173,14 +173,15 @@ class RDFTransformPrefixesManager {
 	 * Some utility functions...
 	 */
 
-	static isPrefixedQName(strQName) {
-		if ( RDFTransformCommon.validateIRI(strQName) ) {
+	static async isPrefixedQName(strQName) {
+		if ( await RDFTransformCommon.validateIRI(strQName) ) {
 			var iIndex = strQName.indexOf(':');
-			if ( strQName.substring(iIndex, iIndex + 2) != "://" ) {
-				return true;
+			if ( strQName.substring(iIndex, iIndex + 3) != "://" ) {
+				return 1; // ...prefixed
 			}
+			return 0; // ...not prefixed, but good IRI
 		}
-		return false;
+		return -1; // ...bad IRI
 	}
 
 	static deAssembleQName(strQName) {
