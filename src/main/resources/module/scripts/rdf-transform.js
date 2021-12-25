@@ -308,19 +308,8 @@ class RDFTransformDialog {
     }
 
     #doExport() {
-        var theTransform = this.getJSON();
-        //Refine.postProcess(
-        //    /* module */    'rdf-transform',
-        //    /* command */   'export-rdf-template',
-        //    /* params */    {},
-        //    /* body */      { [RDFTransform.KEY] : JSON.stringify( theTransform ) },
-        //    /* updateOps */ {},
-        //    /* callbacks */
-        //    {   onDone: () => {
-        //            theProject.overlayModels.RDFTransform = theTransform;
-        //        }
-        //    }
-        //);
+        this.#doSave();
+        RDFExportTemplate.exportTemplate();
     }
 
     #doSave() {

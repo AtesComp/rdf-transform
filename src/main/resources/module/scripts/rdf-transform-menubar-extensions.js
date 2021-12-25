@@ -37,11 +37,11 @@ class RDFExporterMenuBar
             alert( $.i18n("rdft-menu/alert-no-transform") );
         }
         else {
-            RDFExporterMenuBar.#exportRDFRows(format, ext);
+            RDFExporterMenuBar.#exportRDFData(format, ext);
         }
     }
 
-    static #exportRDFRows(format, ext) {
+    static #exportRDFData(format, ext) {
         var name =
             theProject.metadata.name
             .replace(/^\p{White_Space}+/u, '')
@@ -91,7 +91,7 @@ ExporterManager.MenuItems.push({}); // ...add separator
 ExporterManager.MenuItems.push(
 	{   "id"    : "exportRDFXML",
         "label" : $.i18n("rdft-menu/rdf-xml"),
-        "click" : () => RDFExporterMenuBar.exportRDF("RDF", "rdf")
+        "click" : () => RDFExporterMenuBar.exportRDF("RDF/XML", "rdf")
 	}
 );
 

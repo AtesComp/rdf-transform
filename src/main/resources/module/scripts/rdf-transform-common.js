@@ -369,4 +369,40 @@ class RDFTransformCommon {
 		// Otherwise, treat it as a literal...
 		return RDFTransformCommon.shortenLiteral(strResource);
 	}
+
+	/*
+	 * Method saveFile(strTemplate, strName, strExt, strType, strDesc)
+	 *
+	 *	Save an RDF Transform template to local storage for later use/reuse
+	 *  	strTemplate: the string containing the RDF Transform template in
+	 *			JSON format
+	 *		strName: the suggested file name
+	 *		strExt: the file name extension
+	 *		strDesc: the description displayed for the file extension
+	 */
+	 static async saveFile(strTemplate, strFilename, strExt, strType, strDesc) {
+		const blobPart = [];
+		blobPart[0] = strTemplate;
+        // Create the blob object...
+        var theBlob =
+            new Blob( blobPart, { "type" : strType } );
+       
+        // Get the File Handler...
+        const fileHandle =
+            await window.showSaveFilePicker(
+                {	"excludeAcceptAllOption" : true,
+					"suggestedName" : strFilename,
+					"types" :
+                    [ { "description" : strDesc,
+                        "accept" : { [strType] : [ "." + strExt ] } } ]
+                }
+            );
+
+        // Get the File Sstream...
+        const fileStream = await fileHandle.createWritable();
+       
+        // Write the file...
+        await fileStream.write(theBlob);
+        await fileStream.close();
+    }
 }

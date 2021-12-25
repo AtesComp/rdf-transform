@@ -40,12 +40,11 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
             FileItemFactory factory = new DiskFileItemFactory();
             // Create a new file upload handler
             ServletFileUpload upload = new ServletFileUpload(factory);
-            String
-                strPrefix = null,
-                strNamespace = null,
-                strFormat = null,
-                strProjectID = null,
-                strFilename = "";
+            String strPrefix = null;
+            String strNamespace = null;
+            String strFormat = null;
+            String strProjectID = null;
+            String strFilename = "";
             InputStream instreamFile = null;
             List<FileItem> items = upload.parseRequest(request);
             for (FileItem item : items) {
@@ -75,10 +74,14 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
             RepositoryConnection theRepoConnection = theRepository.getConnection();
             RDFFormat theRDFFormat = RDFFormat.TURTLE;
             if (strFormat != null) {
+                //
+                // NOTE: See file "rdf-transform-prefix-add.html" for
+                //      matching values.
+                //
                 if (strFormat.equals("auto-detect")) {
                     theRDFFormat = guessFormat(strFilename);
                 }
-                else if (strFormat.equals("RDFXML")) {
+                else if (strFormat.equals("RDF/XML")) {
                     theRDFFormat = RDFFormat.RDFXML;
                 }
                 else if (strFormat.equals("TTL")) {
@@ -90,13 +93,13 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
                 else if (strFormat.equals("NTRIPLE")) {
                     theRDFFormat = RDFFormat.NTRIPLES;
                 }
-                else if (strFormat.equals("JSONLD")) {
+                else if (strFormat.equals("JSON-LD")) {
                     theRDFFormat = RDFFormat.JSONLD;
                 }
                 else if (strFormat.equals("NQUADS")) {
                     theRDFFormat = RDFFormat.NQUADS;
                 }
-                else if (strFormat.equals("RDFJSON")) {
+                else if (strFormat.equals("RDF/JSON")) {
                     theRDFFormat = RDFFormat.RDFJSON;
                 }
                 else if (strFormat.equals("TRIG")) {
@@ -175,7 +178,7 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
                 return RDFFormat.BINARY;
             }
         }
-        return RDFFormat.RDFXML;
+        return RDFFormat.TURTLE;
     }
 
 }

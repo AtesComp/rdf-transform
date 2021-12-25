@@ -4,54 +4,29 @@
 class RDFExportTemplate
 {
     static exportTemplate() {
-        if (! theProject.overlayModels.RDFTransform) {
+        // NOTE: No Server-Side processing required.  The current RDF Template
+        //      always resides on the Client-Side.  Prior processing should
+        //      save the template since we are exporting the current one.
+        const theTransform = theProject.overlayModels.RDFTransform;
+        if (! theTransform) {
             alert( $.i18n("rdft-menu/alert-no-transform") );
+            return;
         }
-        else {
-            RDFExporterMenuBar.#exportTemplateData();
-        }
-    }
 
-    static #exportTemplateData() {
-        var name =
+        const strTemplate = JSON.stringify( theTransform );
+        const strFilename =
             theProject.metadata.name
-            .replace(/^\p{White_Space}+/u, '')
-            .replace(/\p{White_Space}+$/u, '')
-            .replace(/[^\p{L}\p{N}_]/gu, '_')
-            .replace(/\p{White_Space}+/gu, '-');
+            .replace(/^\p{White_Space}+/u, '') // ...trim from beginning
+            .replace(/\p{White_Space}+$/u, '') // ...trim from end
+            .replace(/[^\p{L}\p{N}_]/gu, '_') // ...convert non-char to "_"
+            .replace(/\p{White_Space}+/gu, '-'); // ...convert sp to '-'
         //alert("Project Name: " + theProject.metadata.name +
-        //    "\nCalc'ed Name: " + name);
+        //    "\nCalc'ed Name: " + strFilename);
 
-        // TODO: BAD FORM
-        var form = document.createElement("form");
-
-        $(form)
-        .attr("method", "post")
-        .attr("action", "command/rdf-tranform/export-rdf-template/" + name + "." + ext)
-        .attr("target", "gridworks-export")
-        .hide();
-
-        $('<input />')
-        .attr("name", "engine")
-        .val( JSON.stringify( ui.browsingEngine.getJSON() ) )
-        .appendTo(form);
-
-        $('<input />')
-        .attr("name", "project")
-        .val(theProject.id)
-        .appendTo(form);
-
-        $('<input />')
-        .attr("name", "format")
-        .val("json")
-        .appendTo(form);
-
-        document.body.appendChild(form);
-
-        //window.open("about:blank", "gridworks-export");
-        window.open("Export RDF Template", "gridworks-export");
-        form.submit();
-
-        document.body.removeChild(form);
+        RDFTransformCommon.saveFile(
+            strTemplate, strFilename, "json",
+            "application/json",
+            "RDF Template (.json)"
+        );
     }
 }

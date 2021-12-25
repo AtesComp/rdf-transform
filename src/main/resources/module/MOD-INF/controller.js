@@ -116,10 +116,8 @@ function registerServerSide() {
      *  Server-side Ajax Commands...
 	 *    Each registration calls the class' init() method.
      */
-	var strExportRDFTemplate = "export-rdf-template";
 	var strSaveRDFTransform = "save-rdf-transform";
 	RefineServlet.registerCommand( module, "initialize",             new RDFTBaseApp.InitializationCommand(appContext) );
-	RefineServlet.registerCommand( module, strExportRDFTemplate,     new RDFTBaseCmd.ExportTemplateCommand(appContext) );
 	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTBaseCmd.SaveRDFTransformCommand(appContext) );
     RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTBaseCmd.SaveBaseIRICommand(appContext) );
     RefineServlet.registerCommand( module, "preview-rdf",            new RDFTBaseCmd.PreviewRDFCommand() );
@@ -128,7 +126,7 @@ function registerServerSide() {
 	// Vocabs commands
     RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTBaseCmd.GetDefaultPrefixesCommand(appContext) );
     RefineServlet.registerCommand( module, "add-prefix",             new RDFTBaseCmd.AddPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "upload-file-add-prefix", new RDFTBaseCmd.AddPrefixFromFileCommand(appContext) );
+    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTBaseCmd.AddPrefixFromFileCommand(appContext) );
     RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTBaseCmd.RefreshPrefixCommand(appContext) );
     RefineServlet.registerCommand( module, "remove-prefix",          new RDFTBaseCmd.RemovePrefixCommand(appContext) );
     RefineServlet.registerCommand( module, "save-prefixes",          new RDFTBaseCmd.SavePrefixesCommand(appContext) );
@@ -154,8 +152,6 @@ function registerServerSide() {
      *  Server-side Operations...
      */
     RefineBase.operations.OperationRegistry
-	.registerOperation( module, strExportRDFTemplate, RDFTBase.operation.ExportTemplateOperation );
-    RefineBase.operations.OperationRegistry
 	.registerOperation( module, strSaveRDFTransform, RDFTBase.operation.SaveRDFTransformOperation );
 
     /*
@@ -175,7 +171,7 @@ function registerServerSide() {
     var RDFTExp = RDFTBase.exporter.RDFExporter;
 	var RDFFormat = org.eclipse.rdf4j.rio.RDFFormat;
 
-    RefineExpReg.registerExporter( "RDF",         new RDFTExp(appContext, RDFFormat.RDFXML) );
+    RefineExpReg.registerExporter( "RDF/XML",     new RDFTExp(appContext, RDFFormat.RDFXML) );
     RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(appContext, RDFFormat.NTRIPLES) );
     RefineExpReg.registerExporter( "Turtle",      new RDFTExp(appContext, RDFFormat.TURTLE) );
     RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(appContext, RDFFormat.TURTLESTAR) );

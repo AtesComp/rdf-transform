@@ -32,6 +32,12 @@ class RDFTransformPrefixAdder {
 		this.#elements.rdf_transform_prefix_rdfxml.html(  $.i18n('rdft-prefix/rdfxml')      );
 		this.#elements.rdf_transform_prefix_n3.html(      $.i18n('rdft-prefix/n3')          );
 		this.#elements.rdf_transform_prefix_ntriple.html( $.i18n('rdft-prefix/ntriple')     );
+		this.#elements.rdf_transform_prefix_jsonld.html(  $.i18n('rdft-prefix/jsonld')      );
+		this.#elements.rdf_transform_prefix_nquads.html(  $.i18n('rdft-prefix/nquads')      );
+		this.#elements.rdf_transform_prefix_rdfjson.html( $.i18n('rdft-prefix/rdfjson')     );
+		this.#elements.rdf_transform_prefix_trig.html(    $.i18n('rdft-prefix/trig')        );
+		this.#elements.rdf_transform_prefix_trix.html(    $.i18n('rdft-prefix/trix')        );
+		this.#elements.rdf_transform_prefix_binary.html(  $.i18n('rdft-prefix/binary')      );
 
 		this.#elements.buttonOK.html( $.i18n('rdft-buttons/ok') );
 		this.#elements.buttonCancel.html( $.i18n('rdft-buttons/cancel') );
@@ -95,7 +101,7 @@ class RDFTransformPrefixAdder {
 					$('#vocab-hidden-iri').val(iri);
 					$('#vocab-hidden-project').val(theProject.id);
 
-					postCmd = "command/rdf-transform/upload-file-add-prefix";
+					postCmd = "command/rdf-transform/add-prefix-from-file";
 					postData = {
 						"dataType" : "json",
 						"headers"  : { 'X-CSRF-TOKEN': token }
@@ -136,12 +142,9 @@ class RDFTransformPrefixAdder {
 
 		this.#elements.buttonAdvanced
 		.click( () => {
-				this.#elements.fetching_options_table
-				.show();
-				$('#button_advanced_options')
-				.hide();
-				$('#button_advanced_options')
-				.prop("disabled", "true");
+				this.#elements.fetching_options_table.show();
+				$('#button-advanced-options').hide();
+				$('#button-advanced-options').prop("disabled", "true");
 			}
 		);
 
@@ -149,10 +152,10 @@ class RDFTransformPrefixAdder {
 		.hide()
 		.find('input[name="vocab_fetch_method"]')
 		.click( (evt) => {
-				var upload = $(evt.currentTarget).val() !== 'file';
+				var bHideUpload = ( $(evt.currentTarget).val() !== 'file' );
 				this.#elements.fetching_options_table
 				.find('.upload_file_inputs')
-				.prop('disabled', upload);
+				.prop('disabled', bHideUpload);
 			}
 		);
 
