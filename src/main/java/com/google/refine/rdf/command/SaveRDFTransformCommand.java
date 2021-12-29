@@ -3,10 +3,9 @@ package com.google.refine.rdf.command;
 import java.io.IOException;
 import java.util.Properties;
 
+import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.operation.SaveRDFTransformOperation;
-
+import com.google.refine.rdf.model.operation.SaveRDFTransformOperation;
 import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
 import com.google.refine.process.Process;

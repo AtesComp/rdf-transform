@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.app.ApplicationContext;
+import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.util.ParsingUtilities;
 
 import com.fasterxml.jackson.core.JsonGenerator;

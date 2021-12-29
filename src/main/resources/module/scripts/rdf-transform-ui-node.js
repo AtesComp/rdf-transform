@@ -838,19 +838,19 @@ class RDFTransformUINode {
         new RDFTransformResourceDialog(
             element, 'class', theProject.id, this.#dialog,
             (obj) => {
-                this.#addNodeRDFType(obj.id, obj.name);
+                this.#addNodeRDFType(obj.iri, obj.cirie);
             }
         );
     }
 
-    #addNodeRDFType(strID, strName) {
-        if (!this.#node.rdfTypes) {
+    #addNodeRDFType(strIRI, strCIRIE) {
+        if ( ! this.#node.rdfTypes ) {
             this.#node.rdfTypes = [];
         }
         this.#node.rdfTypes
         .push(
-            {   'iri'   : strID,
-                'cirie' : strName
+            {   'iri'   : strIRI,
+                'cirie' : strCIRIE
             }
         );
         this.#renderMain();

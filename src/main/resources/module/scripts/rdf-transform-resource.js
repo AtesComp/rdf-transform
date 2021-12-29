@@ -13,6 +13,14 @@ class RDFTransformResourceDialog {
         this.#dialog = dialog;
         this.#onDone = onDone;
 
+        // Can we finish?  If not, there is no point in continuing...
+        if ( ! this.#onDone ) {
+            alert(
+                $.i18n('rdft-dialog/error') + "\n" +
+                $.i18n("rdft-dialog/missing-proc") );
+            return;
+        }
+
         var menu = MenuSystem.createMenu().width('331px'); // ...331px fits Suggest Term
         menu.html(
 '<div id="rdf-transform-menu-search" class="rdf-transform-menu-search">' +
@@ -37,72 +45,70 @@ class RDFTransformResourceDialog {
         .bind('fb-select', // ...select existing item...
             (evt, data) => {
                 MenuSystem.dismissAll();
-                if (! this.#onDone) {
-                    alert( $.i18n('rdft-dialog/error') + "\nMissing onDone processor!" );
-                    return;
-                }
                 this.#onDone(data);
             }
         )
         .bind('fb-select-new', // ...add new item...
             async (evt, data) => {
-                MenuSystem.dismissAll();
-                if (! this.#onDone) {
-                    alert( $.i18n('rdft-dialog/error') + "\nMissing onDone processor!" );
-                    return;
-                }
                 // Does the data look like a prefixed IRI?
-                var iPrefixedIRI = await RDFTransformPrefixesManager.isPrefixedQName(data);
+                var iPrefixedIRI = await this.#dialog.prefixesManager.isPrefixedQName(data);
                 // Is it a prefixed IRI?
                 if ( iPrefixedIRI == 1 ) {
+                    MenuSystem.dismissAll();
+
                     // Check that the prefix is defined...
-                    var strPrefix = RDFTransformPrefixesManager.getPrefixFromQName(data);
+                    var strPrefix = this.#dialog.prefixesManager.getPrefixFromQName(data);
                     // Is there an existing prefix matching the given prefix?
                     if ( this.#dialog.prefixesManager.hasPrefix(strPrefix) ) {
                         // ...yes, add resource...
-                        var strIRI = RDFTransformPrefixesManager.getFullIRIFromQName(data);
+                        var strIRI = this.#dialog.prefixesManager.getFullIRIFromQName(data);
                         var obj = {
-                            "id"   : strIRI,
-                            "name" : data
+                            "iri"   : strIRI,
+                            "cirie" : data
                         }
                         this.#onDone(obj);
                     }
                     // No, then this prefix is not recorded...
                     else {
                         // ...create prefix (which may change in here) and add (re-prefixed) resource...
+                        //
+                        // NOTE: We are passing a function to RDFTransformPrefixesManager.addPrefix() which,
+                        //      in turn, passes it in an event function to RDFTransformPrefixAdder.show().
                         this.#dialog.prefixesManager.addPrefix(
                             $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                             strPrefix,
                             (strResPrefix) => {
-                                // NOTE: Only the prefix (without the related IRI) is returned.
-                                //      We likely don't need the IRI.  If we do, we will get the IRI
-                                //      later to ensure the IRI is present in the prefix manager.
+                                // NOTE: Only the prefix (without the related IRI) is returned.  We don't need
+                                //      the IRI...addPrefix() added it.  We will get the IRI from the prefix
+                                //      manager later to ensure the IRI is present.
                                 var obj = null;
-                                // Do the old and new prefixes match?
-                                if (strPrefix == strResPrefix) {
+                                // Do the original and resulting prefixes match?
+                                // NOTE: It can change via edits in RDFTransformPrefixAdder.show()
+                                if ( strPrefix.normalize() == strResPrefix.normalize() ) {
                                     // ...yes, set as before...
-                                    var strIRI = RDFTransformPrefixesManager.getFullIRIFromQName(data);
+                                    var strIRI = this.#dialog.prefixesManager.getFullIRIFromQName(data);
                                     obj = {
-                                        "id"   : strIRI, // Full IRI
-                                        "name" : data    // Prefixed IRI
+                                        "iri"   : strIRI, // Full IRI
+                                        "cirie" : data    // Prefixed IRI
                                     }
                                 }
                                 // No, then adjust...
                                 else {
                                     // ...get new prefix IRI and adjust the prior user data...
-                                    strResPrefixIRI =
+                                    var strResPrefixIRI =
                                         this.#dialog.prefixesManager.getIRIOfPrefix(strResPrefix);
                                     // Ensure the prefix's IRI was added...
                                     if ( strResPrefixIRI != null ) {
                                         var strSuffixIRI =
                                             this.#dialog.prefixesManager.getSuffixFromQName(data);
-                                        var obj = {
-                                            "id"   : strResPrefixIRI + strSuffixIRI,   // Full IRI
-                                            "name" : strResPrefix + ":" + strSuffixIRI // Prefixed IRI
+                                        obj = {
+                                            "iri"   : strResPrefixIRI + strSuffixIRI,   // Full IRI
+                                            "cirie" : strResPrefix + ":" + strSuffixIRI // Prefixed IRI
                                         }
                                     }
                                     // If not, abort the resource addition with a null obj...
                                 }
+
                                 // Do we have a good resource (obj) to add?
                                 if (obj != null) {
                                     // ...yes, add resource...
@@ -114,11 +120,13 @@ class RDFTransformResourceDialog {
                 }
                 // Is it a full IRI?
                 else if ( iPrefixedIRI == 0 ) {
+                    MenuSystem.dismissAll();
+
                     //new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
                     // ...take it as is...
                     var obj = {
-                        "id"   : strIRI, // Full IRI
-                        "name" : strIRI  // Prefixed IRI
+                        "iri"   : data, // Full IRI
+                        "cirie" : data  // Prefixed IRI
                     };
                     this.#onDone(obj);
                 }
@@ -127,7 +135,7 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        strIRI
+                        data
                     );
                     return;
                 }

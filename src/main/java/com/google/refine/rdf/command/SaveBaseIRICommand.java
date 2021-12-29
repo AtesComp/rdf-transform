@@ -7,10 +7,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.app.ApplicationContext;
+import com.google.refine.rdf.model.Util;
+import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
-import com.google.refine.rdf.Util;
-
 import com.google.refine.model.Project;
 
 public class SaveBaseIRICommand extends RDFTransformCommand {

@@ -10,13 +10,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.Util;
-import com.google.refine.rdf.vocab.PrefixExistException;
-import com.google.refine.rdf.vocab.Vocabulary;
-import com.google.refine.rdf.vocab.VocabularyImportException;
-import com.google.refine.rdf.vocab.VocabularyIndexException;
-
+import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.Util;
+import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyImportException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,7 +28,8 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 	}
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
         try{
@@ -55,14 +53,6 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 					getVocabularySearcher().
 						importAndIndexVocabulary(
 							vocab.getPrefix(), vocab.getNamespace(), vocab.getNamespace(), projectId);
-			}
-			catch (PrefixExistException ex) {
-				except = ex;
-			}
-			catch (VocabularyIndexException ex) {
-				bError = true;
-				strError = "Indexing";
-				except = ex;
 			}
 			catch (VocabularyImportException ex) {
 				bError = true;
@@ -106,9 +96,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 
 		public Map<String, Vocabulary> getMap() {
 			return prefixes.stream().collect(
-						Collectors.toMap(
-							Vocabulary::getPrefix, Function.identity()
-						)
+						Collectors.toMap( Vocabulary::getPrefix, Function.identity() )
 					);
 		}
 	}

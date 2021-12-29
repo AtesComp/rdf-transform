@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.commands.Command;
-import com.google.refine.rdf.Util;
+import com.google.refine.rdf.model.Util;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 

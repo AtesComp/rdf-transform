@@ -6,11 +6,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.Util;
-import com.google.refine.rdf.vocab.PrefixExistException;
-import com.google.refine.rdf.vocab.VocabularyImportException;
-import com.google.refine.rdf.vocab.VocabularyIndexException;
+import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.Util;
+import com.google.refine.rdf.model.vocab.VocabularyImportException;
 
 public class RefreshPrefixCommand extends RDFTransformCommand{
 
@@ -44,14 +42,6 @@ public class RefreshPrefixCommand extends RDFTransformCommand{
 				getVocabularySearcher().
 					importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
         }
-		catch (PrefixExistException ex) {
-			except = ex;
-		}
-		catch (VocabularyIndexException ex) {
-			bError = true;
-			strError = "Indexing";
-			except = ex;
-		}
 		catch (VocabularyImportException ex) {
 			bError = true;
 			strError = "Importing";

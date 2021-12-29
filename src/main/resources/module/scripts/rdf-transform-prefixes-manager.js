@@ -40,6 +40,13 @@ class RDFTransformPrefixesManager {
 		RDFTransformPrefixesManager.globalPrefixes = this.prefixes;
 	}
 
+	resetPrefixes() {
+		this.#dialog.thePrefixes.empty().html('<img src="images/small-spinner.gif" />');
+		this.prefixes = this.#dialog.getPrefixes();
+		this.#savePrefixes();
+		this.showPrefixes();
+	}
+
 	#getDefaultPrefixes() {
 		return new Promise(
 			(resolve, reject) => {
@@ -133,19 +140,21 @@ class RDFTransformPrefixesManager {
 		widget.show(
 			message,
 			prefix,
-			(name, iri) => {
+			(strPrefix, strIRI) => {
+				// NOTE: The RDFTransformPrefixAdder should have validated the
+				//		prefix information, so no checks are required here.
+
+				// Add the Prefix and its IRI...
 				var obj = {
-					"name" : name,
-					"iri"  : iri
+					"name" : strPrefix,
+					"iri"  : strIRI
 				}
 				this.prefixes.push(obj);
-				this.#savePrefixes(
-					() => {
-						this.showPrefixes();
-					}
-				);
+				this.#savePrefixes();
+				this.showPrefixes();
+
 				if (onDoneAdd) {
-					onDoneAdd(name);
+					onDoneAdd(strPrefix);
 				}
 			}
 		);
@@ -173,7 +182,7 @@ class RDFTransformPrefixesManager {
 	 * Some utility functions...
 	 */
 
-	static async isPrefixedQName(strQName) {
+	async isPrefixedQName(strQName) {
 		if ( await RDFTransformCommon.validateIRI(strQName) ) {
 			var iIndex = strQName.indexOf(':');
 			if ( strQName.substring(iIndex, iIndex + 3) != "://" ) {
@@ -184,7 +193,36 @@ class RDFTransformPrefixesManager {
 		return -1; // ...bad IRI
 	}
 
-	static deAssembleQName(strQName) {
+	getPrefixFromQName(strQName) {
+		var iIndex = strQName.indexOf(':');
+		if (iIndex === -1) {
+			return null;
+		}
+		return strQName.substring(0, iIndex);
+	}
+
+	getSuffixFromQName(strQName) {
+		var iIndex = strQName.indexOf(':');
+		if (iIndex === -1) {
+			return null;
+		}
+		return strQName.substring(iIndex + 1);
+	}
+
+	getFullIRIFromQName(strPrefixedQName) {
+		var strIRI = this.#deAssembleQName(strPrefixedQName);
+		if ( !strIRI.prefix ) {
+			return null;
+		}
+		for (const prefix of RDFTransformPrefixesManager.globalPrefixes) {
+			if (prefix.name === strIRI.prefix) {
+				return prefix.iri + strIRI.localPart;
+			}
+		}
+		return null;
+	}
+
+	#deAssembleQName(strQName) {
 		var iIndex = strQName.indexOf(':');
 		if (iIndex === -1) {
 			return {
@@ -196,34 +234,5 @@ class RDFTransformPrefixesManager {
 			"prefix"    : strQName.substring(0, iIndex),
 			"localPart" : strQName.substring(iIndex + 1)
 		};
-	}
-
-	static getPrefixFromQName(strQName) {
-		var iIndex = strQName.indexOf(':');
-		if (iIndex === -1) {
-			return null;
-		}
-		return strQName.substring(0, iIndex);
-	}
-
-	static getSuffixFromQName(strQName) {
-		var iIndex = strQName.indexOf(':');
-		if (iIndex === -1) {
-			return null;
-		}
-		return strQName.substring(iIndex);
-	}
-
-	static getFullIRIFromQName(strPrefixedQName) {
-		var strIRI = RDFTransformPrefixesManager.deAssembleQName(strPrefixedQName);
-		if ( !strIRI.prefix ) {
-			return null;
-		}
-		for (const prefix of RDFTransformPrefixesManager.globalPrefixes) {
-			if (prefix.name === strIRI.prefix) {
-				return prefix.iri + strIRI.localPart;
-			}
-		}
-		return null;
 	}
 };

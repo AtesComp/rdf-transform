@@ -1,11 +1,10 @@
 package com.google.refine.rdf.command;
 
-import com.google.refine.rdf.operation.PreviewRDFRecordVisitor;
-import com.google.refine.rdf.operation.PreviewRDFRowVisitor;
-import com.google.refine.rdf.operation.RDFVisitor;
 import com.google.refine.rdf.RDFTransform;
-import com.google.refine.rdf.Util;
-
+import com.google.refine.rdf.model.Util;
+import com.google.refine.rdf.model.operation.PreviewRDFRecordVisitor;
+import com.google.refine.rdf.model.operation.PreviewRDFRowVisitor;
+import com.google.refine.rdf.model.operation.RDFVisitor;
 import com.google.refine.browsing.Engine;
 import com.google.refine.commands.Command;
 import com.google.refine.model.Project;

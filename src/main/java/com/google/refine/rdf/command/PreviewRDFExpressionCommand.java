@@ -8,13 +8,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.Util;
-
 import com.google.refine.commands.expr.PreviewExpressionCommand;
 import com.google.refine.expr.EvalError;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
 import com.google.refine.model.Project;
+import com.google.refine.rdf.model.Util;
 import com.google.refine.util.ParsingUtilities;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;

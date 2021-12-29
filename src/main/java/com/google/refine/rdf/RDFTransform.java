@@ -8,11 +8,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.vocab.PrefixExistException;
-import com.google.refine.rdf.vocab.Vocabulary;
-import com.google.refine.rdf.vocab.VocabularyIndexException;
-
+import com.google.refine.rdf.model.CellBlankNode;
+import com.google.refine.rdf.model.CellLiteralNode;
+import com.google.refine.rdf.model.CellResourceNode;
+import com.google.refine.rdf.model.ConstantBlankNode;
+import com.google.refine.rdf.model.ConstantLiteralNode;
+import com.google.refine.rdf.model.ConstantResourceNode;
+import com.google.refine.rdf.model.Link;
+import com.google.refine.rdf.model.Node;
+import com.google.refine.rdf.model.RDFType;
+import com.google.refine.rdf.model.ResourceNode;
+import com.google.refine.rdf.model.Util;
+import com.google.refine.rdf.model.vocab.PrefixExistException;
+import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.model.OverlayModel;
 import com.google.refine.model.Project;
 
@@ -24,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +46,13 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************/
 
     static public final String EXTENSION = "RDFTransform";
+    static public final String VERSION_MAJOR = "2";
+    static public final String VERSION_MINOR = "0";
+    static public final String VERSION_MICRO = "0";
+    static public final String VERSION =
+        RDFTransform.VERSION_MAJOR + "." +
+        RDFTransform.VERSION_MINOR + "." +
+        RDFTransform.VERSION_MICRO;
     // This Server-side KEY matches Client-side RDFTransform.KEY
     static public final String KEY = "rdf_transform";
 
@@ -53,7 +67,7 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************/
 
     static public RDFTransform getRDFTransform(ApplicationContext theContext, Project theProject)
-			throws VocabularyIndexException, IOException {
+			throws IOException {
 		synchronized (theProject) {
 			RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
 			if (theTransform == null) {
@@ -66,8 +80,7 @@ public class RDFTransform implements OverlayModel {
 		}
 	}
 
-    static public RDFTransform load(Project theProject, JsonNode jnodeElement)
-            throws Exception {
+    static public RDFTransform load(Project theProject, JsonNode jnodeElement) {
         RDFTransform theTransform = RDFTransform.reconstruct(jnodeElement);
         return theTransform;
     }
@@ -108,8 +121,7 @@ public class RDFTransform implements OverlayModel {
      *      the Subject element.
      *      A Type list is held by a Subject element to describe its type tuples.
      */
-    static public RDFTransform reconstruct(JsonNode jnodeElement)
-            throws JsonGenerationException {
+    static public RDFTransform reconstruct(JsonNode jnodeElement) {
         if ( Util.isVerbose(2) ) logger.info("Reconstructing overlay...");
 
         if (jnodeElement == null) {
@@ -400,7 +412,8 @@ public class RDFTransform implements OverlayModel {
         if ( Util.isVerbose(2) ) logger.info("Created empty overlay");
     }
 
-    public RDFTransform(ApplicationContext theContext, Project theProject) throws VocabularyIndexException, IOException {
+    public RDFTransform(ApplicationContext theContext, Project theProject)
+            throws IOException {
         if ( Util.isVerbose(2) ) logger.info("Creating base overlay for project from context...");
 
         this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
@@ -500,7 +513,8 @@ public class RDFTransform implements OverlayModel {
         this.thePrefixes = mapPrefixes;
 	}
 
-    public void addPrefix(String strName, String strIRI) throws PrefixExistException {
+    public void addPrefix(String strName, String strIRI)
+            throws PrefixExistException {
         if (this.thePrefixes == null) {
             this.thePrefixes = new HashMap<String, Vocabulary>();
         }
@@ -578,7 +592,6 @@ public class RDFTransform implements OverlayModel {
     }
 
     public void write(JsonGenerator theWriter)
-            // JsonGenerationException is subclass of IOException
             throws IOException {
         theWriter.writeStartObject();
 

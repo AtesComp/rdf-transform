@@ -142,7 +142,7 @@ class RDFTransformDialog {
         //
         var cloneTransform = theTransform;
         // Is the transform valid?  No, then set a baseline...
-        if ( !theTransform ) {
+        if ( ! theTransform ) {
             cloneTransform = {};
         }
         // Clone the transform for modification...
@@ -192,6 +192,7 @@ class RDFTransformDialog {
         this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview')            );
         this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
         this.#elements.rdftAddRootNode.text(      $.i18n('rdft-buttons/add-root')              );
+        this.#elements.rdftImpTemplate.text(      $.i18n('rdft-buttons/import-template')       );
         this.#elements.rdftExpTemplate.text(      $.i18n('rdft-buttons/export-template')       );
         this.#elements.rdftSaveTransform.text(    $.i18n('rdft-buttons/save')                  );
         this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok')                    );
@@ -255,6 +256,14 @@ class RDFTransformDialog {
             }
         );
 
+        // Hook up the Import RDF Template button...
+        this.#elements.rdftImpTemplate
+        .click( (evt) => {
+                evt.preventDefault();
+                this.#doImport();
+            }
+        );
+
         // Hook up the Export RDF Template button...
         this.#elements.rdftExpTemplate
         .click( (evt) => {
@@ -303,17 +312,46 @@ class RDFTransformDialog {
         // Initialize baseIRI...
         this.#replaceBaseIRI(this.#theTransform.baseIRI || location.origin + '/', false);
 
+        // Initialize transform view...
+        this.#processTransformTab();
+        this.#processPreviewTab();
+    }
+
+    async #doImport() {
+        this.#doSave(); // ...for undo
+
+        var theTransform = null;
+        theTransform =
+            await RDFImportTemplate.importTemplate()
+            .catch( (error) => {
+                theTransform = null;
+                // ...ignore...
+            });
+        if ( theTransform == null ) {
+            return;
+        }
+        this.#theTransform = cloneDeep(theTransform);
+
+        // Initialize prefixes...
+        this.prefixesManager.resetPrefixes();
+
+        // Initialize baseIRI...
+        this.#replaceBaseIRI( this.#theTransform.baseIRI );
+
+        // Initialize transform view...
         this.#processTransformTab();
         this.#processPreviewTab();
     }
 
     #doExport() {
-        this.#doSave();
-        RDFExportTemplate.exportTemplate();
+        this.#doSave(); // ...for undo
+
+        const theTransform = this.getJSON();
+        RDFExportTemplate.exportTemplate( theTransform );
     }
 
     #doSave() {
-        var theTransform = this.getJSON();
+        const theTransform = this.getJSON();
         Refine.postProcess(
             /* module */    'rdf-transform',
             /* command */   'save-rdf-transform',
@@ -415,28 +453,13 @@ class RDFTransformDialog {
         elements.buttonApply
         .click(
             async () => {
-                function endsWith(strTest, strSuffix) {
-                    return strTest.indexOf(strSuffix, strTest.length - strSuffix.length) !== -1;
-                }
-
                 var strIRI = elements.rdftNewBaseIRIValue.val();
-                if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
-                    alert(
-                        $.i18n('rdft-dialog/alert-iri') + "\n" +
-                        $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        strIRI
-                    );
+
+                if ( ! await RDFTransformCommon.validatePrefix(strIRI) ) {
                     return;
                 }
 
-                if ( !endsWith(strIRI, "/") && !endsWith(strIRI, "#") ) {
-                    var ans = confirm(
-                        $.i18n('rdft-dialog/confirm-one') + "\n" +
-                        $.i18n('rdft-dialog/confirm-two'));
-                    if (ans == false)
-                        return;
-                }
-
+                // All Good, set the project's BaseIRI...
                 MenuSystem.dismissAll();
                 this.#replaceBaseIRI(strIRI);
                 this.#processPreviewTab();

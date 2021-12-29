@@ -74,6 +74,7 @@ function registerClientSide() {
 			"scripts/rdf-transform-prefixes-manager.js",
 			"scripts/rdf-transform-prefix-adder.js",
 			"scripts/rdf-transform-suggest-term.js",
+			"scripts/rdf-transform-import-template.js",
 			"scripts/rdf-transform-export-template.js",
 			"scripts/rdf-transform-common.js",
 			"scripts/rdf-data-table-view.js",
@@ -99,8 +100,8 @@ function registerServerSide() {
 	var RefineServlet = RefineBase.RefineServlet;
 
 	var RDFTBase = RefineBase.rdf;
-	var RDFTBaseApp = RDFTBase.app;
-	var RDFTBaseCmd = RDFTBase.command;
+	var RDFTCmd = RDFTBase.command;
+	var RDFTModel = RDFTBase.model;
 
     //
     //  Server-side Resources...
@@ -110,28 +111,28 @@ function registerServerSide() {
 	 *  Server-side Context Initialization...
 	 *    Tests a simple attempt to mimic dependency injection.
 	 */
-	var appContext = new RDFTBaseApp.ApplicationContext();
+	var appContext = new RDFTBase.ApplicationContext();
 
 	/*
      *  Server-side Ajax Commands...
 	 *    Each registration calls the class' init() method.
      */
 	var strSaveRDFTransform = "save-rdf-transform";
-	RefineServlet.registerCommand( module, "initialize",             new RDFTBaseApp.InitializationCommand(appContext) );
-	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTBaseCmd.SaveRDFTransformCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTBaseCmd.SaveBaseIRICommand(appContext) );
-    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTBaseCmd.PreviewRDFCommand() );
-    RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTBaseCmd.PreviewRDFExpressionCommand() );
-    RefineServlet.registerCommand( module, "validate-iri",           new RDFTBaseCmd.ValidateIRICommand() );
+	RefineServlet.registerCommand( module, "initialize",             new RDFTCmd.InitializationCommand(appContext) );
+	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTCmd.SaveRDFTransformCommand(appContext) );
+    RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTCmd.SaveBaseIRICommand(appContext) );
+    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTCmd.PreviewRDFCommand() );
+    RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTCmd.PreviewRDFExpressionCommand() );
+    RefineServlet.registerCommand( module, "validate-iri",           new RDFTCmd.ValidateIRICommand() );
 	// Vocabs commands
-    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTBaseCmd.GetDefaultPrefixesCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix",             new RDFTBaseCmd.AddPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTBaseCmd.AddPrefixFromFileCommand(appContext) );
-    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTBaseCmd.RefreshPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTBaseCmd.RemovePrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTBaseCmd.SavePrefixesCommand(appContext) );
-    RefineServlet.registerCommand( module, "suggest-term",           new RDFTBaseCmd.SuggestTermCommand(appContext) );
-    RefineServlet.registerCommand( module, "get-prefix-cc-iri",      new RDFTBaseCmd.SuggestPrefixIRICommand(appContext) );
+    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTCmd.GetDefaultPrefixesCommand(appContext) );
+    RefineServlet.registerCommand( module, "add-prefix",             new RDFTCmd.AddPrefixCommand(appContext) );
+    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTCmd.AddPrefixFromFileCommand(appContext) );
+    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTCmd.RefreshPrefixCommand(appContext) );
+    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.RemovePrefixCommand(appContext) );
+    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.SavePrefixesCommand(appContext) );
+    RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand(appContext) );
+    RefineServlet.registerCommand( module, "get-prefix-cc-iri",      new RDFTCmd.SuggestPrefixIRICommand(appContext) );
 	// Others:
 	//   CodeResponse - Standard Response Class for Commands
 	//   RDFTransformCommand - Abstract RDF Command Class
@@ -144,31 +145,31 @@ function registerServerSide() {
 	  	// Non-existent name--we are adding, not renaming...
 		strRefineBase + ".model.changes.DataExtensionChange",
 		// Added Change Class name...
-		strRefineBase + ".rdf.operation.RDFTransformChange"
+		strRefineBase + ".rdf.model.operation.RDFTransformChange"
 	);
-	RefineServlet.cacheClass(RDFTBase.operation.RDFTransformChange);
+	RefineServlet.cacheClass(RDFTModel.operation.RDFTransformChange);
 
     /*
      *  Server-side Operations...
      */
     RefineBase.operations.OperationRegistry
-	.registerOperation( module, strSaveRDFTransform, RDFTBase.operation.SaveRDFTransformOperation );
+	.registerOperation( module, strSaveRDFTransform, RDFTModel.operation.SaveRDFTransformOperation );
 
     /*
      *  Server-side GREL Functions and Binders...
      */
-	var RDFTGrelFuncReg = RefineBase.grel.ControlFunctionRegistry;
-    RDFTGrelFuncReg.registerFunction( "toIRIString", new RDFTBase.expr.func.str.toIRIString() );
-    RDFTGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTBase.expr.func.str.toStrippedLiteral() );
+	var RefineGrelFuncReg = RefineBase.grel.ControlFunctionRegistry;
+    RefineGrelFuncReg.registerFunction( "toIRIString", new RDFTModel.expr.functions.ToIRIString() );
+    RefineGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTModel.expr.functions.ToStrippedLiteral() );
 
 	RefineBase.expr.ExpressionUtils
-	.registerBinder( new RDFTBase.expr.RDFBinder(appContext) );
+	.registerBinder( new RDFTModel.expr.RDFBinder(appContext) );
 
     /*
      *  Server-side Exporters...
      */
     var RefineExpReg = RefineBase.exporters.ExporterRegistry;
-    var RDFTExp = RDFTBase.exporter.RDFExporter;
+    var RDFTExp = RDFTModel.exporter.RDFExporter;
 	var RDFFormat = org.eclipse.rdf4j.rio.RDFFormat;
 
     RefineExpReg.registerExporter( "RDF/XML",     new RDFTExp(appContext, RDFFormat.RDFXML) );

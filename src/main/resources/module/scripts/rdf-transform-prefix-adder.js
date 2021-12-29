@@ -45,7 +45,7 @@ class RDFTransformPrefixAdder {
 
 	}
 
-	show(message, prefix, onDoneAdding) {
+	async show(message, prefix, onDoneAdding) {
 		if (message) {
 			this.#elements.message.addClass('message').html(message);
 		}
@@ -59,7 +59,7 @@ class RDFTransformPrefixAdder {
 
 		Refine.wrapCSRF( (token) => {
 			this.#elements.file_upload_form
-			.submit( (evt) => {
+			.submit( async (evt) => {
 				evt.preventDefault();
 
 				var fetchOption =
@@ -67,52 +67,65 @@ class RDFTransformPrefixAdder {
 					.find('input[name="vocab_fetch_method"]:checked')
 					.val();
 
-				var name = this.#elements.prefix.val();
-				var iri = this.#elements.iri.val();
+				var strPrefix = this.#elements.prefix.val();
+				var strIRI = this.#elements.iri.val();
 
-				var bBlankIRI = (iri == undefined || iri == "");
-				var bDefinedPrefix = this.#prefixesManager.hasPrefix(name);
+				//
+				// Test the user supplied prefix and IRI...
+				//
+				var bBlankIRI = (strIRI == undefined || strIRI == "");
+				if ( ! bBlankIRI && ! await RDFTransformCommon.validatePrefix(strIRI) ) {
+					// NOTE: The validatePrefix() call does its own alert dialog.
+					// Let the user try again...
+					return;
+				}
+				var bDefinedPrefix = this.#prefixesManager.hasPrefix(strPrefix);
 				if (bBlankIRI || bDefinedPrefix) {
 					var strAlert =
 						$.i18n('rdft-prefix/pref') +
-						' "' + name + '" ' +
+						' "' + strPrefix + '" ' +
 						( bBlankIRI ?
 							$.i18n('rdft-prefix/iri-cannot-be-blank') :
 							$.i18n('rdft-prefix/defined')
 						);
 					alert(strAlert);
+					// Let the user try again...
 					return;
 				}
 
-				var dismissBusy;
+				//
+				// All Good: Process the Prefix Info for addition on the server...
+				//
+				var dismissBusy = null;
 				var postCmd = "command/rdf-transform/add-prefix";
+				// Prepare the data values...
 				var postData = {
 					"csrf_token" : token,
-					"name"       : name,
-					"iri"        : iri,
-					"fetch-url"  : iri,
+					"name"       : strPrefix,
+					"iri"        : strIRI,
+					"fetch-url"  : strIRI,
 					"project"    : theProject.id,
 					"fetch"      : fetchOption
 				};
 
 				if (fetchOption === 'file') {
-					// Prepare values...
-					$('#vocab-hidden-prefix').val(name);
-					$('#vocab-hidden-iri').val(iri);
-					$('#vocab-hidden-project').val(theProject.id);
+					// Prepare the form values by id attributes...
+					$('#vocab-prefix').val(strPrefix);
+					$('#vocab-iri').val(strIRI);
+					$('#vocab-project').val(theProject.id);
 
 					postCmd = "command/rdf-transform/add-prefix-from-file";
 					postData = {
-						"dataType" : "json",
-						"headers"  : { 'X-CSRF-TOKEN': token }
+						"csrf_token" : token,
+						"dataType" : "json"
 					};
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/voc-upload') + ' ' + iri);
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strIRI);
 				}
 				else if (fetchOption === 'web') {
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/web-import') + ' ' + iri);
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strIRI);
 				}
 				else if (fetchOption === 'prefix') {
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-only') + ' ' + iri);
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-only') + ' ' + strIRI);
 				}
 
 				$.post(
@@ -123,12 +136,12 @@ class RDFTransformPrefixAdder {
 						if (data.code === 'error') {
 							alert("Error: " + data.message);
 						}
-						else {
-							if (this.#onDoneAdding) {
-								this.#onDoneAdding(name, iri);
-							}
-							this.#dismiss();
+						else if (this.#onDoneAdding) {
+							// Since we've successfully added the Prefix Info on the server,
+							// add it to the client for viewing...
+							this.#onDoneAdding(strPrefix, strIRI);
 						}
+						this.#dismiss();
 					}
 				);
 			});

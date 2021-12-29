@@ -13,7 +13,7 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
 * Properly recognize the Row verses Record parameters and processing (row and record visitors)
 * Properly parse IRIs for valid structure, absolute and relative, using a base IRI as needed
 * Added two GREL functions:
-  * "toIRIString" - transforms and properly validates a string as an IRI component
+  * "toIRIString" - (replaces "urlify") transforms and properly validates a string as an IRI component
   * "toStrippedLiteral" - end trims a string with all known Unicode whitespace and non-breaking space characters
 * Properly process an IRI's Condensed IRI Expression (CIRIE) for output / export
 * Reserve flushing of scaled statements buffers (user definable) to speed exports
@@ -38,7 +38,7 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
 * Added "RFTransform.debug" preference (see OpenRefine preferences) to aid debugging
   * Controls the output of specifically marked "DEBUG" messages
 
-NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project.  Additionally, OpenRefine has native reconciliation services. 
+NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project. 
 
 ## DOWNLOAD ##
 

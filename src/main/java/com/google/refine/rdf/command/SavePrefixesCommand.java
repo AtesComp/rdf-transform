@@ -2,9 +2,8 @@ package com.google.refine.rdf.command;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.vocab.Vocabulary;
-
+import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.util.ParsingUtilities;
 
 import javax.servlet.ServletException;

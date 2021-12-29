@@ -3,12 +3,10 @@ package com.google.refine.rdf.command;
 import com.google.refine.ProjectManager;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
+import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
-import com.google.refine.rdf.Util;
-import com.google.refine.rdf.app.ApplicationContext;
-import com.google.refine.rdf.vocab.SearchResultItem;
-import com.google.refine.rdf.vocab.Vocabulary;
-import com.google.refine.rdf.vocab.VocabularyIndexException;
+import com.google.refine.rdf.model.vocab.SearchResultItem;
+import com.google.refine.rdf.model.vocab.Vocabulary;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,24 +15,16 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.regex.Pattern;
 
-//import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
-//import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class SuggestTermCommand extends RDFTransformCommand {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
-
-	//private static Pattern patternQName = Pattern.compile("^[_a-zA-Z][-._a-zA-Z0-9]*:([_a-zA-Z][-._a-zA-Z0-9]*)?");
-	                                                      //"^((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}?"
-														  //"^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$"
-														  //"^(?!:\/\/)(?=.{1,255}$)([\p{L}\p{N}_$]{1,63}\.){1,127}[\p{L}_$][\p{L}\p{N}_$]*"
+	//private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
 
 	public SuggestTermCommand(ApplicationContext context) {
 		super(context);
@@ -74,16 +64,8 @@ public class SuggestTermCommand extends RDFTransformCommand {
         }
 
         if (listResults.size() == 0) {
-            RDFTransform theTransform;
-            try {
-				theTransform =
-					RDFTransform.getRDFTransform( this.getContext(), this.getProject(request) );
-			}
-			catch (VocabularyIndexException ex) {
-				logger.error("ERROR: Could not get project's RDFTransform", ex);
-				if ( Util.isVerbose() ) ex.printStackTrace();
-				throw new ServletException(ex);
-			}
+            RDFTransform theTransform =
+				RDFTransform.getRDFTransform( this.getContext(), this.getProject(request) );
 			listResults = search(theTransform, strQuery);
         }
 
@@ -102,11 +84,36 @@ public class SuggestTermCommand extends RDFTransformCommand {
         writerBase.close();
     }
 
+	/*
+	 * OVERRIDE
+	 * Project getProject(HttpServletRequest request)
+	 * 		Overridden from Command since the ProjectID is held in a "term" parameter
+	 * 		instead of the normal "project" parameter.
+	 */
 	@Override
 	protected Project getProject(HttpServletRequest request)
 			throws ServletException {
-    	String strProjectID = request.getParameter("type");
-    	return ProjectManager.singleton.getProject(Long.parseLong(strProjectID));
+        if (request == null) {
+            throw new ServletException("parameter 'request' should not be null");
+        }
+        String strProjectID = request.getParameter("type");
+        if (strProjectID == null || "".equals(strProjectID)) {
+            throw new ServletException("Can't find type: missing ID parameter");
+        }
+        Long liProjectID;
+        try {
+            liProjectID = Long.parseLong(strProjectID);
+        }
+		catch (NumberFormatException ex) {
+            throw new ServletException("Can't find project: badly formatted id #", ex);
+        }
+        Project theProject = ProjectManager.singleton.getProject(liProjectID);
+        if (theProject != null) {
+            return theProject;
+        }
+		else {
+            throw new ServletException("Failed to find project id #" + strProjectID + " - may be corrupt");
+        }
 	}
 
 	private boolean isPrefixedQuery(String strQuery) {
@@ -144,7 +151,8 @@ public class SuggestTermCommand extends RDFTransformCommand {
 			// is a prefix for a CIRIE...
 
 			int iIndex = strQuery.indexOf(":");
-			if (iIndex > 0) { // ...we have a possible prefix (the ':' could also be in the path)...
+			 // If we have a possible prefix (the ':' could also be in the path)...
+			if (iIndex > 0) {
 				// Is there is a possible path...
 				//    iIndex + 1 = the length of strQuery to the ':' inclusive
 				//    Is there anything after...
@@ -166,8 +174,9 @@ public class SuggestTermCommand extends RDFTransformCommand {
 						// ...continue: strQuery is NOT an IRI...yet...
 					}
 				}
-				else { // ...we have a string "...:", so treat it as a possible prefix...
-					bIsPrefixed = true; // ...accept it
+				// Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
+				else if ( strQuery.matches("\\S+") ) { // ...contains no whitespace...
+						bIsPrefixed = true; // ...accept it
 				}
 			}
 		}
@@ -244,33 +253,3 @@ public class SuggestTermCommand extends RDFTransformCommand {
     	return result;
     }
 }
-
-/*
-class Result {
-
-	class IdName {
-		@JsonProperty("id")
-		String id;
-		@JsonProperty("name")
-		String name;
-
-		IdName(String i, String n) {
-			id = i;
-			name = n;
-		}
-	}
-
-	@JsonProperty("results")
-    private List<IdName> results = new ArrayList<IdName>();
-    @JsonProperty("prefix")
-    private String prefix;
-
-    Result(String p) {
-        this.prefix = p;
-    }
-
-	void addResult(String id, String name) {
-        results.add( new IdName(id, name) );
-    }
-}
-*/

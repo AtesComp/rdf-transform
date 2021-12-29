@@ -258,6 +258,37 @@ class RDFTransformCommon {
 	}
 
 	/*
+	 * Method validatePrefix(strText)
+	 *
+	 *	Test that ALL of the given string is a single IRI and properly ends
+	 *  with a prefix suffix "/" or "#"
+	 */
+	 static async validatePrefix(strIRI) {
+		function endsWith(strTest, strSuffix) {
+			return strTest.indexOf(strSuffix, strTest.length - strSuffix.length) !== -1;
+		}
+
+		if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
+			alert(
+				$.i18n('rdft-dialog/alert-iri') + "\n" +
+				$.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
+				strIRI
+			);
+			return false;
+		}
+
+		if ( !endsWith(strIRI, "/") && !endsWith(strIRI, "#") ) {
+			var ans = confirm(
+				$.i18n('rdft-dialog/confirm-one') + "\n" +
+				$.i18n('rdft-dialog/confirm-two'));
+			if (ans == false)
+				return false;
+		}
+
+		return true;
+	}
+
+	/*
 	 * Method toHTMLBreaks(strText)
 	 *
 	 *	Converts all line terminals to HTML breaks
@@ -398,11 +429,42 @@ class RDFTransformCommon {
                 }
             );
 
-        // Get the File Sstream...
+        // Get the File Stream...
         const fileStream = await fileHandle.createWritable();
        
         // Write the file...
         await fileStream.write(theBlob);
         await fileStream.close();
+    }
+
+	/*
+	 * Method openFile(strTemplate, strName, strExt, strType, strDesc)
+	 *
+	 *	Open an RDF Transform template from local storage for use
+	 *		strName: the suggested file name
+	 *		strExt: the file name extension
+	 *		strDesc: the description displayed for the file extension
+	 *
+	 * 		Returns:
+	 *  	strTemplate: the string containing the RDF Transform template in
+	 *			JSON format
+	 */
+	 static async openFile(strExt, strType, strDesc) {
+        // Get the File Handler...
+        const [ fileHandle ] =
+            await window.showOpenFilePicker(
+                {	"excludeAcceptAllOption" : true,
+					"multiple" : false,
+					"types" :
+                    [ { "description" : strDesc,
+                        "accept" : { [strType] : [ "." + strExt ] } } ]
+                }
+            );
+
+        // Get the File data...
+        const file = await fileHandle.getFile();
+		const strTemplate = await file.text();
+
+		return strTemplate;
     }
 }

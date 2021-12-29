@@ -1,7 +1,4 @@
-<!-- Replace PHP code with JS since we're not installing a PHP processor -->
-
-<?php
-
+<script type="text/javascript">
 /*
 TODO
 - Tons of content missing!
@@ -15,155 +12,202 @@ TODO
 
 // ============= SITE STRUCTURE AND PAGES  ==========================================
 
-$main_links = array(
-    'Home' => '',
-    'Showcases' => 'showcases',
-    'Docs' => 'docs',
-    'Support & Devel' => 'support-dev',
-);
+const listMainLinks = {
+    'Home' : '',
+    'Showcases' : 'showcases',
+    'Docs' : 'docs',
+    'Support & Devel' : 'support-dev'
+};
 
-$section_links = array(
-    'docs' => array(
-        'Overview' => 'docs',
-        'Installation guide' => 'installationDocs',
-		'RDF Transform' => 'rdfTransformDocs',
-        'Publications' => 'publications',
-		'FAQ' => 'faq'
-    ),
-    'support-dev' => array(
-        'Issue tracker' => 'issues',
-        'Source code' => 'source',
-    ),
-    'showcases' => array(
-		'Overview' => 'showcases',
-		'RDF Transform Example' => 'rdfTransformExample',
-    ),
+const listSectionLinks = {
+    'docs' : {
+        'Overview' : 'docs',
+        'Installation guide' : 'installationDocs',
+		'RDF Transform' : 'rdfTransformDocs',
+        'Publications' : 'publications',
+		'FAQ' : 'faq'
+    },
+    'support-dev' : {
+        'Issue tracker' : 'issues',
+        'Source code' : 'source'
+    },
+    'showcases' : {
+		'Overview' : 'showcases',
+		'RDF Transform Example' : 'rdfTransformExample'
+    }
+};
 
-);
-
-$pages = array(
-    '' => array(
-        'head_title' => 'OpenRefine RDF Transform',
-        'title_content' => 'home-intro',
-        'content' => 'home-text',
-    ),
-    'showcases' => array(
-        'title' => 'Showcases',
-        'text' => 'showcases',
-    ),
-    'docs' => array(
-        'title' => 'Documentation',
-        'text' => 'docs',
-    ),
-    'support-dev' => array(
-        'title' => 'Support and Development',
-        'text' => 'support-dev',
-        'sidebar' => 'team',
-    ),
-    'installationDocs' => array(
-        'title' => 'Installation Guide',
-        'section' => 'docs',
-        'text' => 'installation',
-    ),
-    'rdfTransformDocs' => array(
-        'title' => 'RDF Export',
-        'section' => 'docs',
-        'text' => 'rdf-transform-docs',
-    ),
-	'rdfTransformExample' => array(
-        'title' => 'RDF Transform Example',
-        'section' => 'showcases',
-        'text' => 'rdf-transform-exmple',
-    ),
-    'faq' => array(
-        'title' => 'Frequently Asked Questions',
-        'section' => 'docs',
-        'text' => 'faq',
-    ),
-    'publications' => array(
-        'title' => 'Academic Publications',
-        'section' => 'docs',
-        'text' => 'publications',
-    ),
-    'gpl' => array('redirect' => 'http://www.gnu.org/licenses/gpl-3.0-standalone.html'),
-    'download' => array('redirect' => 'https://github.com/AtesComp/openrefine-rdf-transform/downloads/list'),
-    'download-latest' => array('redirect' => 'https://github.com/AtesComp/openrefine-rdf-transform/files/rdf-transform-3.6.3.zip'),
-    'issues' => array('redirect' => 'https://github.com/AtesComp/openrefine-rdf-transform/issues'),
-    'source' => array('redirect' => 'https://github.com/AtesComp/openrefine-rdf-transform'),
-);
+const listPages = {
+    '' : {
+        'head_title' : 'OpenRefine RDF Transform',
+        'title_content' : 'home-intro',
+        'content' : 'home-text',
+    },
+    'docs' : {
+        'title' : 'Documentation',
+        'text' : 'docs',
+    },
+    'support-dev' : {
+        'title' : 'Support and Development',
+        'text' : 'support-dev',
+        'sidebar' : 'team',
+    },
+    'showcases' : {
+        'title' : 'Showcases',
+        'text' : 'showcases',
+    },
+    'installationDocs' : {
+        'title' : 'Installation Guide',
+        'section' : 'docs',
+        'text' : 'installation',
+    },
+    'rdfTransformDocs' : {
+        'title' : 'RDF Export',
+        'section' : 'docs',
+        'text' : 'rdf-transform-docs',
+    },
+	'rdfTransformExample' : {
+        'title' : 'RDF Transform Example',
+        'section' : 'showcases',
+        'text' : 'rdf-transform-exmple',
+    },
+    'faq' : {
+        'title' : 'Frequently Asked Questions',
+        'section' : 'docs',
+        'text' : 'faq',
+    },
+    'publications' : {
+        'title' : 'Academic Publications',
+        'section' : 'docs',
+        'text' : 'publications',
+    },
+    'gpl' : {
+        'redirect' : 'http://www.gnu.org/licenses/gpl-3.0-standalone.html'
+    },
+    'download' : {
+        'redirect' : 'https://github.com/AtesComp/rdf-transform/downloads/list'
+    },
+    'download-latest' : {
+        'redirect' : 'https://github.com/AtesComp/rdf-transform/files/rdf-transform-3.6.3.zip'
+    },
+    'issues' : {
+        'redirect' : 'https://github.com/AtesComp/rdf-transform/issues'
+    },
+    'source' : {
+        'redirect' : 'https://github.com/AtesComp/rdf-transform'
+    },
+};
 
 // ============= BEHAVIOUR CODE ==========================================
 
-$uri = $_SERVER['REQUEST_URI'];
-$path = str_replace('index.php', '', $_SERVER['SCRIPT_NAME']);
-$absolute_base = 'http://' . $_SERVER['HTTP_HOST'] . $path;
+var strURI = window.location.href;
+var strPath = window.location.pathname;
+var strAbsBase = 'http://' + window.location.hostname + strPath;
 
-if (substr($uri, 0, strlen($path)) == $path) {
-    $uri = substr($uri, strlen($path));
+var strSection;
+var strTitle;
+var strTarget;
+var strContent;
+var strHtml;
+
+if ( strURI.substr(0, strPath.length) == strPath ) {
+    strURI = strURI.substr( strPath.length );
 }
-if (!$uri) {
-    $uri = '';
+if ( ! strURI ) {
+    strURI = '';
 }
-if (!isset($pages[$uri])) {
-    $section = 'none';
-    $title = '404 Not Found';
-    $content = '404';
-    header("HTTP/1.0 404 Not Found");
-} else if (isset($pages[$uri]['redirect'])) {
-    $section = 'none';
-    $target = $pages[$uri]['redirect'];
-    $title = 'Redirect';
-    $text_html = '<p>The requested content is found at the following location: <a href="'
-            . htmlspecialchars($target) . '">' . htmlspecialchars($target) . '</a></p>';
-    header("Location: $target");
-    header("HTTP/1.0 302 Found");
+
+if ( ! (strURI in listPages) ) {
+    strSection = 'none';
+    strTitle = '404 Not Found';
+    strContent = '404';
+    strHtml =
+'<html>' +
+  '<head>' +
+    '<title>Simple 404 Error Page Design</title>' +
+  '</head>' +
+  '<body>' +
+    '<div>' +
+      '<h1>404</h1>' +
+      '<h2>Page Not Found</h2>' +
+      '<p>The Page you are looking for doesn\'t exist or an other error occured. Go to <a href="">Home Page.</a></p>' +
+    '</div>' +
+  '</body>' +
+'</html>';
+    // TODO: Do some kind of "HTTP/1.0 404 Not Found" redirect
+} else if ( 'redirect' in listPages[strURI] ) {
+    strSection = 'none';
+    strTarget = listPages[strURI]['redirect'];
+    strTitle = 'Redirect';
+    strHtml =
+        '<p>The requested content is found at the following location: <a href="' +
+        strTarget + '">' + strTarget + '</a></p>';
+    // TODO: Do some kind of "HTTP/1.0 302" redirect
+    window.location.replace(strTarget);
 } else {
-    $section = $uri;
-    foreach ($pages[$uri] as $varname => $var) {
-        $$varname = $var;
-    }
-    $page_links = @$section_links[$section];
+    strSection = strURI;
+    listPage = listPages[strURI]
+    listPageLinks = listSectionLinks[strSection];
 }
 
 // ============= TEMPLATE FUNCTIONS ==========================================
 
-function e($s) { echo htmlspecialchars($s); }
-function content($file) { readfile("content/$file.html"); }
+function e(strHtml) {
+    // TODO: Write out strHtml to document or as document
+};
+
+function content(strFile) {
+    // TODO: Read in the "content/" + strFile + ".html" file
+};
 
 // ============= BEGIN TEMPLATE ==============================================
 
-echo '<?xml version="1.0" encoding="UTF-8"?>
-';
-?>
+var elemHeadTitle = document.getElementById("head_title");
+if ( elemHeadTitle.value.length == 0 ) {
+    elemHeadTitle.html(strTitle + ' | RDF Transform');
+}
+
+var elemBaseIRI = document.getElementById("base_iri");
+elemBaseIRI.attr("href", strAbsBase);
+
+var elemHeader = document.getElementById("header");
+var strHeaderHtml = ' id="logo">RDF Extension for Google Refine';
+var strTag = 'div';
+if ( strURI.length == 0) {
+    strTag = 'h1';
+    elemHeader.html('<' + strTag + strHeaderHtml + '</' + strTag + '>');
+}
+
+var elemMainNav = document.getElementById("main-nav");
+var strNav = '';
+for ( const [strKey, strValue] of Object.entries(listMainLinks) ) {
+    if (strSection == strValue) {
+        strNav += '<li class="active"><span>' + strKey + '</span></li>';
+    }
+    else {
+        strNav += '<li><a href="' + strValue + '">' + strKey + '</a></li>';
+    }
+}
+strNav += '<li class="download"><a href="download">Download</a></li>';
+elemMainNav.html(strNav);
+
+</script>
+
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
     "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <title><?php e(@$head_title ? $head_title : ($title . ' | GRefine RDF Extension')); ?></title>
-    <base href="<?php e($absolute_base); ?>" />
+    <title id="head_title"></title>
+    <base id="base_iri" href="" />
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="stylesheet" type="text/css" href="rdf-transform.css" />
     <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
   </head>
   <body>
     <div id="header">
-      <<?php e(($uri == '') ? 'h1' : 'div'); ?> id="logo">RDF Extension for Google Refine</<?php e(($uri == '') ? 'h1' : 'div'); ?>>
       <ul id="main-nav">
-<?php
-foreach ($main_links as $label => $link) {
-    if ($section == $link) {
-?>
-        <li class="active"><span><?php e($label); ?></span></li>
-<?php
-    } else {
-?>
-        <li><a href="<?php e($link); ?>"><?php e($label); ?></a></li>
-<?php
-    }
-}
-?>
-        <li class="download"><a href="download">Download</a></li>
       </ul>
     </div>
     <div id="title-stripe">
@@ -215,22 +259,10 @@ if (@$content) {
       <div id="footer-text">
         <ul id="footer-links">
           <li><a href="about">About</a></li>
-          <li><a href="http://linkeddata.deri.ie/">Linked Data Research Centre</a></li>
-          <li><a href="http://deri.ie/">DERI</a></li>
-          <li><a href="http://www.nuigalway.ie/">National University of Ireland, Galway</a></li>
           <li class="last"><a href="gpl">GPL</a></li>
         </ul>
         <div id="tagline">Friendly Linked Data publishing</div>
       </div>
     </div>
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-12554587-1");
-pageTracker._trackPageview();
-} catch(err) {}</script>
   </body>
 </html>
