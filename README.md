@@ -13,30 +13,32 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
 * Properly recognize the Row verses Record parameters and processing (row and record visitors)
 * Properly parse IRIs for valid structure, absolute and relative, using a base IRI as needed
 * Added two GREL functions:
-  * "toIRIString" - (replaces "urlify") transforms and properly validates a string as an IRI component
-  * "toStrippedLiteral" - end trims a string with all known Unicode whitespace and non-breaking space characters
+  * toIRIString() - (replaces urlify()) transforms and properly validates a string as an IRI component
+  * toStrippedLiteral() - end trims a string with all known Unicode whitespace and non-breaking space characters
 * Properly process an IRI's Condensed IRI Expression (CIRIE) for output / export
-* Reserve flushing of scaled statements buffers (user definable) to speed exports
 * The RDF Transform templates are exportable / importable (like OntoRefine) between different (but similar data structure) projects
+* Reserve flushing of scaled statements buffers to speed exports (user definable, see "RFTransform.exportLimit" below)
 * General code cleanup and commenting throughout
-* Added "RFTransform.verbose" preference (see OpenRefine preferences) to aid checking and debugging
-  * Defaults to "verbose" preference (maybe OpenRefine will use it as a base preference) or 0
-  * 0 (or missing preference) == no verbosity and unknown, uncaught errors (stack traces, of course)
-  * 1 == basic functional information and all unknown, caught errors
-  * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
-  * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
-  * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
-* Added "RFTransform.exportLimit" preference (see OpenRefine preferences) to limit the statement buffer and optimize output
-  * The statement buffer (i.e., an internal memory RDF repository) stores created statements from the data
-  * The old system created one statement in the buffer, then flushed the buffer to disk--very inefficient
-  * The new system holds many statement before before flushing to disk.
-  * This buffer can become large if the data is large and produces many statements, so it is somewhat optimized:
-    * Given a default statement size of 100 bytes, the default buffer is limited to 1024 * 1024 * 1024 / 100 = 1GiB / 100 = 10737418 statements
-    * The 100 byte statement size is likely large as the average statement size is likely smaller
-    * Regardless, this keeps memory usage to about 1GiB or less and a user can set the preference to optimize for a given memory footprint and data size
-  * Then, the buffered statements optimize the creation and flush processes to speed the disk write
-* Added "RFTransform.debug" preference (see OpenRefine preferences) to aid debugging
-  * Controls the output of specifically marked "DEBUG" messages
+* Preferences:
+  * Added "RFTransform.verbose" preference (see OpenRefine preferences) to aid checking and debugging
+    * Defaults to "verbose" preference (maybe OpenRefine will use it as a base preference) or 0
+    * 0 (or missing preference) == no verbosity and unknown, uncaught errors (stack traces, of course)
+    * 1 == basic functional information and all unknown, caught errors
+    * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
+    * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
+    * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
+  * Added "RFTransform.exportLimit" preference (see OpenRefine preferences) to limit the statement buffer and optimize output
+    * The statement buffer (i.e., an internal memory RDF repository) stores created statements from the data
+    * The old system created one statement in the buffer, then flushed the buffer to disk--very inefficient
+    * The new system holds many statement before before flushing to disk.
+    * This buffer can become large if the data is large and produces many statements, so it is somewhat optimized:
+      * Given a default statement size of 100 bytes, the default buffer is limited to 1024 * 1024 * 1024 / 100 = 1GiB / 100 = 10737418 statements
+      * The 100 byte statement size is likely large as the average statement size is likely smaller
+      * Regardless, this keeps memory usage to about 1GiB or less and a user can set the preference to optimize for a given memory footprint and data size
+    * Then, the buffered statements optimize the creation and flush processes to speed the disk write
+    * A future enhancement may examine the project data size and system memory to determine an optimize buffer size and allocations
+  * Added "RFTransform.debug" preference (see OpenRefine preferences) to aid debugging
+    * Controls the output of specifically marked "DEBUG" messages
 
 NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project. 
 
