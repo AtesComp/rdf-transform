@@ -9,7 +9,7 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
 * Loops use iterators whenever possible
 * Cleaned and refactored UI elements
 * Resizable dialogs
-* Export capabilities have been expanded to all known RDF4J formats
+* RDF Export capabilities have been expanded to all known RDF4J formats
 * Properly recognize the Row verses Record parameters and processing (row and record visitors)
 * Properly parse IRIs for valid structure, absolute and relative, using a base IRI as needed
 * Added two GREL functions:
@@ -17,7 +17,7 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
   * "toStrippedLiteral" - end trims a string with all known Unicode whitespace and non-breaking space characters
 * Properly process an IRI's Condensed IRI Expression (CIRIE) for output / export
 * Reserve flushing of scaled statements buffers (user definable) to speed exports
-* Template graphs are exportable / importable (like OntoRefine) between different (but similar data structure) projects
+* The RDF Transform templates are exportable / importable (like OntoRefine) between different (but similar data structure) projects
 * General code cleanup and commenting throughout
 * Added "RFTransform.verbose" preference (see OpenRefine preferences) to aid checking and debugging
   * Defaults to "verbose" preference (maybe OpenRefine will use it as a base preference) or 0
