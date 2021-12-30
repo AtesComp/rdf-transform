@@ -38,6 +38,7 @@
     "rdft-dialog/alert-cresource": "Queste triple avranno la risorsa costante",
     "rdft-dialog/alert-custom": "È richiesto un IRI tipodati personalizzato!",
     "rdft-dialog/alert-enter-const": "È richiesto un valore costante!",
+    "rdft-dialog/alert-enter-exp": "È richiesto un espressione!",
     "rdft-dialog/alert-iri": "È richiesto un IRI!",
     "rdft-dialog/alert-iri-invalid": "Il fornito IRI non valida:",
     "rdft-dialog/available-prefix": "Prefissi Disponibili",

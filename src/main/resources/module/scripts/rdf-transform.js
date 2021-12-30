@@ -87,16 +87,17 @@ class RDFTransformDialog {
     }
 
     static #createRootNode() {
-        // Setup default Root Node...
-        const nodeRoot =
+        // Setup default Master Root Node...
+        // ...assume Cell As Resource with Index Expression and No Links...
+        const nodeMasterRoot =
             {   "nodeType"        : RDFTransformCommon.g_strRDFT_CRESOURCE,
                 "expression"      : RDFTransform.strExpressionIndex,
                 "isRowNumberCell" : true,
                 "links"           : []
             };
 
-        // Retrieve a copy...
-        return cloneDeep(nodeRoot);
+        // Retrieve a copy of the Master Root Node...
+        return cloneDeep(RDFTransform.nodeMasterRoot);
     }
 
     /*
@@ -520,8 +521,7 @@ class RDFTransformDialog {
 
         // Get the current prefixes...
         var prefixes = [];
-        if (typeof this.prefixesManager.prefixes != 'undefined' &&
-            this.prefixesManager.prefixes != null)
+        if (this.prefixesManager.prefixes != null)
         {
             for (const prefix of this.prefixesManager.prefixes) {
                 if (prefix) {

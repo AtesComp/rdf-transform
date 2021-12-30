@@ -38,6 +38,7 @@
     "rdft-dialog/alert-cresource": "These triples will have the constant resource",
     "rdft-dialog/alert-custom": "A custom datatype IRI is required!",
     "rdft-dialog/alert-enter-const": "A constant value is required!",
+    "rdft-dialog/alert-enter-exp": "An expression is required!",
     "rdft-dialog/alert-iri": "An IRI is required!",
     "rdft-dialog/alert-iri-invalid": "The given IRI is invalid:",
     "rdft-dialog/available-prefix": "Available Prefixes",

@@ -210,18 +210,21 @@ class RDFTransformCommon {
 		//       server-side IRI parser.
 		//return RDFTransformCommon.#reIRI_COMPLETE_iu.test(strIRI);
 
-		var waitOnValidIRI =
-			async () => {
-				return await RDFTransformCommon.#getValidIRI(strIRI);
-			}
-		var data = await waitOnValidIRI();
-		var bGoodIRI = false;
-		if ( typeof data !== 'undefined' && data != null) {
-			if ( typeof data.good !== 'undefined' && data.good != null) {
-				if (data.good == "1") {
-					bGoodIRI = true;
+		//var waitOnValidIRI =
+		//	async () => {
+		//		return await RDFTransformCommon.#getValidIRI(strIRI);
+		//	}
+		var data = {};
+		data =
+			await RDFTransformCommon.#getValidIRI(strIRI)
+			.catch(
+				(error) => {
+					data = {};
 				}
-			}
+			);
+		var bGoodIRI = false;
+		if (data.good == "1") {
+			bGoodIRI = true;
 		}
 		return bGoodIRI;
 	}

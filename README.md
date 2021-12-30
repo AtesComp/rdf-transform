@@ -18,6 +18,7 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
 * Properly process an IRI's Condensed IRI Expression (CIRIE) for output / export
 * The RDF Transform templates are exportable / importable (like OntoRefine) between different (but similar data structure) projects
 * Reserve flushing of scaled statements buffers to speed exports (user definable, see "RFTransform.exportLimit" below)
+* The "prefixes" and "predefined_vocabs" support files are processed using general whitespace separation (not strictly tab delimited)
 * General code cleanup and commenting throughout
 * Preferences:
   * Added "RFTransform.verbose" preference (see OpenRefine preferences) to aid checking and debugging

@@ -65,8 +65,9 @@ function registerClientSide() {
 		"project/scripts",
 		module,
 		// Script files to inject into /project page...
-		[	"scripts/rdf-transform-menubar-extensions.js", // must be first: language and menu load
+		[	"scripts/rdf-transform-menubar-extensions.js",	// 1. must be first: language and menu load
 			"scripts/rdf-transform.js",
+			"scripts/rdf-transform-common.js",
 			"scripts/rdf-transform-resource.js",
 			"scripts/rdf-transform-ui-link.js",
 			"scripts/rdf-transform-ui-node.js",
@@ -76,7 +77,6 @@ function registerClientSide() {
 			"scripts/rdf-transform-suggest-term.js",
 			"scripts/rdf-transform-import-template.js",
 			"scripts/rdf-transform-export-template.js",
-			"scripts/rdf-transform-common.js",
 			"scripts/rdf-data-table-view.js",
 			//"scripts/externals/jquery.form.min.js",
 		]
@@ -212,7 +212,7 @@ function processPreferences() {
 		}
 		if (prefVerbosity != null) {
 			var iVerbosity = parseInt(prefVerbosity);
-			if (iVerbosity != NaN) {
+			if ( ! isNaN(iVerbosity) ) {
 				RDFTransformPrefs["Verbosity"] = iVerbosity;
 			}
 		}
@@ -220,7 +220,7 @@ function processPreferences() {
 		var prefExportLimit = prefStore.get('RDFTransform.exportLimit');
 		if (prefExportLimit != null) {
 			var iExportLimit = parseInt(prefExportLimit);
-			if (iExportLimit != NaN) {
+			if ( ! isNaN(iExportLimit) ) {
 				RDFTransformPrefs["ExportLimit"] = iExportLimit;
 			}
 		}

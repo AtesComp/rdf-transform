@@ -281,12 +281,19 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//   this._timerID    MAINTAIN - used by parent functions we call
 	// --------------------------------------------------------------------------------
 
+	//
+	// Variables
+	// --------------------
+	//
+	// NOTE: Underscore (_) variables are holdovers from the older OpenRefine class
+	//      and are required for proper processing using the parent functions.
+	//
+	// --------------------------------------------------------------------------------
+
 	// Public...
 	expression;
 
 	// Private...
-	// Underscore (_) variables are holdovers from the OpenRefine object and are required
-	// for proper processing using the parent functions
 	_elmts;
 	#isIRI;
 	#isRowNumberCell;
@@ -296,6 +303,15 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	#rowValues;
 	_timerID;
 	_tabContentWidth;
+
+	//
+	// Methods
+	// --------------------
+	//
+	// NOTE: Underscore (_) methods are holdovers from the older OpenRefine class
+	//      and are required for proper processing using the parent functions.
+	//
+	// --------------------------------------------------------------------------------
 
 	//
 	// Method constructor(): OVERRIDE Base
@@ -389,10 +405,9 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	// Method _renderPreview(): OVERRIDES base function
 	//
 	_renderPreview(data) {
-		const bIndices = ( typeof data.indicies !== 'undefined' && data.indicies != null );
-		const bResults = ( typeof data.results !== 'undefined' && data.results != null );
-		const bAbsolutes = ( this.#isIRI && typeof data.absolutes !== 'undefined' && data.absolutes != null);
-		//console.log(data);
+		const bIndices = ( data.indicies != null );
+		const bResults = ( data.results != null );
+		const bAbsolutes = ( this.#isIRI && data.absolutes != null );
 
 		//
 		// Process status...
