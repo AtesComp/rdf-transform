@@ -1,0 +1,203 @@
+Template Mapping:
+
+{
+  "baseIRI": value,
+  "namespaces": {
+    "(prefix name)": "(prefix iri)",
+  },
+  "subjectMappings": [
+    {
+      "subject": {
+OPT     "namespace": "(prefix name: applied to valueSource)",
+        "valueSource": {
+          "source": "(source)",
+OPT       "(source key)": "(value)"
+        },
+OPT     "expression": {
+  ""      "language": "(exp lang)",
+  ""      "code": "(exp)"
+  ""    }
+      },
+      "propertyMappings": [
+        {
+          "property": {
+OPT         "namespace": "(prefix name: applied to valueSource)",
+            "valueSource": {
+              "source": "(source)",
+OPT           "(source key)": "(value)"
+            },
+OPT         "expression": {
+  ""          "language": "(exp lang)",
+  ""          "code": "(exp)"
+  ""        }
+          },
+          "objectMappings": [
+            {
+OPT: IRI      "namespace": "(prefix name: applied to valueSource)",
+              "valueType": {
+                "type": "(type)",
+OPT: DT/L       "(value type key)": {
+OPT: DT    OPT    "namespace": "(prefix name: applied to valueSource)",
+OPT: DT/L         "valueSource": {
+  ""                "source": "(source: column, constant, expression)",
+  ""       OPT      "(source key)": "(value)"
+  ""              },
+  ""       OPT    "expression": {
+  ""       OPT      "language": "(exp lang)",
+  ""       OPT      "code": "(exp)"
+  ""       OPT    }
+  ""            },
+OPT: IRI        "propertyMappings": [(...repeat...)],
+  ""            "typeMappings": [
+  ""              {
+  ""       OPT      "namespace": "(prefix name: applied to valueSource)",
+  ""                "valueSource": {
+  ""                  "source": "(source)",
+  ""                  "(source key)": "(value)"
+  ""                },
+  ""       OPT      "expression": {
+  ""       OPT        "language": "(exp lang)",
+  ""       OPT        "code": "(exp)"
+  ""       OPT      }
+  ""              },
+  ""              {...repeat a typeMapping...}
+  ""            ]
+              },
+              "valueSource": {
+                "source": "(source type)",
+                "(source type key)": "(value)"
+              },
+OPT           "expression": {
+  ""            "language": "(exp lang)",
+  ""            "code": "(exp)"
+  ""          }
+            },
+            {...repeat a objectMapping...}
+          ]
+        },
+        {...repeat a propertyMapping...}
+      ],
+OPT   "typeMappings": [
+  ""    {
+  ""  OPT "namespace": "(prefix name: applied to valueSource)",
+  ""      "valueSource": {
+  ""        "source": "(source)"
+  ""        "(source key)": "(value)"
+  ""      },
+  ""  OPT "expression": {
+  ""  OPT   "language": "(exp lang)",
+  ""  OPT   "code": "(exp)"
+  ""  OPT }
+  ""    },
+  ""    {...repeat a typeMapping...}
+  ""  ]
+    },
+    {...repeat a subjectMapping...}
+  ]
+}
+
+[namespace]
+  when missing indicates <raw IRI>
+
+[typeMappings]
+  are "a" [propertyMappings] to an IRI and look like [objectMappings] to IRIs (no valueType)
+
+[expression]
+Language       Code
+  grel           grel exp
+
+[valueType]
+Type                Key
+  iri                 N/A
+  literal             N/A
+  datatype_literal    datatype
+  language_literal    language
+  value_bnode
+  bnode
+
+[valueSource]
+Source        Key
+  column        columnName
+  constant      constant
+  record_id     N/A
+  row_index     N/A
+  expression    N/A (then, [expression] exists)
+
+OPT: xxx is related to the (value type)
+
+"rootNodes" -> "subjectMappings"
+    "" -> "subject: { ... },"
+      "expression": "(value)" -> "expression" : { "language": "grel", "code", "(value)"
+      "nodeType" : "cell-as-resource" ->
+            "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+            "isRowNumberCell": "false" && columnName": "(value)" ->
+                    "valueSource": { "source": "column", "columnName": "(value)" }
+      "rdfTypes" -> "typeMappings"
+          "cirie" & "iri" ->
+                "namespace"
+                "valueSource": { "source": "constant", "constant": "(value)" }
+                  expand to other source types
+                expand for "expression": { "language": "grel", "code": "(exp)" }
+
+    "links" -> "propertyMappings"
+        "cirie" & "iri" ->
+                "property":
+                  "namespace"
+                  "valueSource": { "source": "constant", "constant": "(value)" }
+                    expand to other source types
+                    expand for "expression": { "language": "grel", "code": "(exp)" }
+        "" -> "objectMappings"
+            "target" ->
+
+              "nodeType" : "cell-as-literal" ->
+                    "valueType": { "type": "literal" },
+                    "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+                    "isRowNumberCell": "false" && columnName": "(value)" ->
+                            "valueSource": { "source": "column", "columnName": "(value)" }
+                OPT "datatype" / "language": {
+                      "valueSource": { "source": "(source: column, constant, expression)", "(source key)": "(value)" },
+                      "expression": { "language": "grel", "code": "(exp)" }
+                    }
+                    "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
+
+              "nodeType" : "cell-as-resource" ->
+                    "namespace"
+                    "valueType": { "type": "iri" }
+                    "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+                    "isRowNumberCell": "false" && columnName": "(value)" ->
+                            "valueSource": { "source": "column", "columnName": "(value)" }
+                    "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
+                    "rdfTypes" -> "typeMappings"
+                    "links" -> "propertyMappings"
+
+              "nodeType" : "cell-as-blank" ->
+                    "valueType": { "type": "value_bnode" }
+                    "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+                    "isRowNumberCell": "false" && columnName": "(value)" ->
+                            "valueSource": { "source": "column", "columnName": "(value)" }
+                    "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
+                    "rdfTypes" -> "typeMappings"
+                    "links" -> "propertyMappings"
+
+              "nodeType" : "literal" ->
+                    "valueType": { "type": "literal" },
+                    "valueSource": { "source": "constant"/"expression", "constant": "(value)" }
+                    "datatype" / "language": {
+                      "valueSource": { "source": "(source: column, constant, expression)", "(source key)": "(value)" },
+                      "expression": { "language": "grel", "code": "(exp)" }
+                    }
+                    "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
+
+              "nodeType" : "resource" ->
+                    "namespace"
+                    "valueType": { "type": "iri" }
+                    "valueSource": { "source": "constant"/"expression", "constant": "(value)" }
+                    "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
+                    "rdfTypes" -> "typeMappings"
+                    "links" -> "propertyMappings"
+
+              "nodeType" : "blank" ->
+                    "valueType": { "type": "bnode" }
+                    "rdfTypes" -> "typeMappings"
+                    "links" -> "propertyMappings"
+
