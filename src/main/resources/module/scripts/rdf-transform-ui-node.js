@@ -178,12 +178,12 @@ class RDFTransformUINode {
 
             var strNodeLabel = ' IRI';
             if (this.#node.nodeType === RDFTransformCommon.g_strRDFT_CLITERAL) {
-                strNodeLabel = this.#node.isRowNumberCell ? ' Literal' : ' ' + $.i18n('rdft-dialog/cell');
+                strNodeLabel = this.#node.bIsIndex ? ' Literal' : ' ' + $.i18n('rdft-dialog/cell');
             }
 
             var span = $('<span></span>').addClass("rdf-transform-node-label");
             var strSPAN = "";
-            if (this.#node.isRowNumberCell) {
+            if (this.#node.bIsIndex) {
                 strSPAN = '[' + $.i18n('rdft-dialog/row-index') + ']';
             }
             else if ("columnName" in this.#node) {
@@ -581,13 +581,13 @@ class RDFTransformUINode {
                     // NOTE: An empty column name == a Row / Record Index
                     const strColumnName = $("input[name='rdf-column-radio']:checked").val();
                     const strExpression = $("#rdf-cell-expr").text();
-                    const isIRI = ( nodeSubtype === RDFTransformCommon.g_strRDFT_RESOURCE );
+                    const bIsIRI = ( nodeSubtype === RDFTransformCommon.g_strRDFT_RESOURCE );
                     if (nodeSubtype === RDFTransformCommon.g_strRDFT_BLANK) {
                         // Blank (not much to do)...
                         alert( $.i18n('rdft-dialog/alert-blank') );
                     }
                     else { // Expression preview...
-                        this.#preview(strColumnName, strExpression, isIRI);
+                        this.#preview(strColumnName, strExpression, bIsIRI);
                     }
                 }
             }
@@ -601,7 +601,7 @@ class RDFTransformUINode {
     //      node.nodeType           | All Nodes
     //      node.lang               | All Literals
     //      node.valueType          | All Literals
-    //      node.isRowNumberCell    | All Cell Resources
+    //      node.bIsIndex           | All Cell Resources
     //      node.columnName         | Column Cell Resources
     //      node.expression         | Non-Blank Cell Nodes
     //      node.value              | Non-Blank Constant Nodes
@@ -642,8 +642,8 @@ class RDFTransformUINode {
         // NOTE: The "nodeType" reflects the node's designation:
         //      ("cell-as-" or "") + ("resource" or "literal" or "blank")
         //      For "cell-as-":
-        //          Index Nodes:  "isRowNumberCell" == true
-        //          Column Nodes: "isRowNumberCell" == false
+        //          Index Nodes:  "bIsIndex" == true
+        //          Column Nodes: "bIsIndex" == false
         //      For "": Constant Node
         node.nodeType = strNodeType + strNodeSubtype;
 
@@ -684,14 +684,14 @@ class RDFTransformUINode {
 
         // All Cell-based Nodes...
         if (strNodeType === RDFTransformCommon.g_strRDFT_CELLAS) {
-            // Prepare isRowNumberCell...
-            node.isRowNumberCell = true;
+            // Prepare bIsIndex...
+            node.bIsIndex = true;
 
             // Prepare columnName...
             const strColumnName = $("input[name='rdf-column-radio']:checked").val();
             if (strColumnName.length > 0) { // ...good columnName...
                 // ...not an Index Cell...
-                node.isRowNumberCell = false;
+                node.bIsIndex = false;
                 // ...get columnName...
                 node.columnName = strColumnName;
             }
@@ -783,7 +783,7 @@ class RDFTransformUINode {
 
         // Interrogation...
         var isCellNode = this.#node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS);
-        var isRowIndex = this.#node.isRowNumberCell != null ? this.#node.isRowNumberCell : false;
+        var isRowIndex = this.#node.bIsIndex != null ? this.#node.bIsIndex : false;
         //var isNewNode = !isRowIndex && isCellNode;
         //this.#makeIndexChoice(tableColumns, (isRowIndex || isNewNode));
         // NOTE: Since the above isNewNode was used in #makeIndexChoice() as shown,
@@ -863,7 +863,7 @@ class RDFTransformUINode {
                                 this.node.columnName = theProject.columnModel.columns[node.columnIndex].name;
                             }
                             else {
-                                this.node.isRowNumberCell = true;
+                                this.node.bIsIndex = true;
                             }
                         }*/
                         DialogSystem.dismissUntil(this.#level - 1);
@@ -896,18 +896,20 @@ class RDFTransformUINode {
         this.#level = DialogSystem.showDialog(frame);
     }
 
-    #preview(strColumnName, strExpression, isIRI) {
-        const iRowRecColumnIndex = -1;
+    #preview(strColumnName, strExpression, bIsIRI) {
+        // The column (cell) index is a zero (0) based index.
+        // Since there is no "Row / Record Index column", we use -1 to represent it.
+        const iIndexColumn = -1;
         const iColumnIndex =
             ( strColumnName ? // A non-empty string or an empty string
-                // Look up the cell index by column name...
+                // Look up the column index by column name...
                 RDFTransform.findColumn(strColumnName).cellIndex :
-                // No column name == Row / record Index...
-                iRowRecColumnIndex
+                // No column name == Row / Record Index "column"...
+                iIndexColumn
             );
-        const isRowNumberCell = (iColumnIndex == iRowRecColumnIndex);
+        const bIsIndex = (iColumnIndex == iIndexColumn);
         var objColumn = null; // ...just get the rows
-        if ( ! isRowNumberCell ) {
+        if ( ! bIsIndex ) {
             objColumn = // ...get the rows and the related column values
                 {   'cellIndex'  : iColumnIndex,
                     'columnName' : strColumnName
@@ -921,8 +923,8 @@ class RDFTransformUINode {
         };
 
         // Data Preview: Resource (IRI) or Literal...
-        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), isIRI );
-        dialogDataTable.preview(objColumn, strExpression, isRowNumberCell, onDone);
+        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), bIsIRI );
+        dialogDataTable.preview(objColumn, strExpression, bIsIndex, onDone);
     }
 
     #render() {
@@ -1046,7 +1048,7 @@ class RDFTransformUINode {
         if ( this.#node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS) ) {
             // For "cell-as-*", the node must have either a column name or
             // is an index cell...
-            if ( ! ("columnName" in this.#node || "isRowNumberCell" in this.#node) ) {
+            if ( ! ("columnName" in this.#node || "isIndex" in this.#node) ) {
                 return null;
             }
 
@@ -1083,10 +1085,10 @@ class RDFTransformUINode {
             if (this.#node.columnName) {
                 result.columnName = this.#node.columnName;
             }
-            result.isRowNumberCell = this.#node.isRowNumberCell;
+            result.bIsIndex = this.#node.bIsIndex;
         }
         else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE) {
-            if ( ! ("value" in this.#node) || ! this.#node.value) {                     ! ( "value" in this.#node && this.#node.value)
+            if ( ! this.#node.value ) {
                 return null;
             }
             result = {

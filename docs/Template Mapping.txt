@@ -7,17 +7,15 @@ Template Mapping:
   },
   "subjectMappings": [
     {
-      "subject": {
-OPT     "namespace": "(prefix name: applied to valueSource)",
-        "valueSource": {
-          "source": "(source)",
-OPT       "(source key)": "(value)"
-        },
-OPT     "expression": {
-  ""      "language": "(exp lang)",
-  ""      "code": "(exp)"
-  ""    }
+OPT   "namespace": "(prefix name: applied to valueSource)",
+      "valueSource": {
+        "source": "(source)",
+OPT     "(source key)": "(value)"
       },
+OPT   "expression": {
+  ""    "language": "(exp lang)",
+  ""    "code": "(exp)"
+  ""  },
       "propertyMappings": [
         {
           "property": {
@@ -117,20 +115,30 @@ Type                Key
 
 [valueSource]
 Source        Key
+  row_index     N/A
+  record_id     N/A
   column        columnName
   constant      constant
-  record_id     N/A
-  row_index     N/A
   expression    N/A (then, [expression] exists)
 
 OPT: xxx is related to the (value type)
+
+
+"prefixes" : [
+      {
+         "name" : "(prefix name)",
+         "iri" : "(prefix iri)"
+      },
+ -> "namespaces" : {
+    "(prefix name)": "(prefix iri)",
+  }
 
 "rootNodes" -> "subjectMappings"
     "" -> "subject: { ... },"
       "expression": "(value)" -> "expression" : { "language": "grel", "code", "(value)"
       "nodeType" : "cell-as-resource" ->
-            "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
-            "isRowNumberCell": "false" && columnName": "(value)" ->
+            "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+            "isIndex": "false" && columnName": "(value)" ->
                     "valueSource": { "source": "column", "columnName": "(value)" }
       "rdfTypes" -> "typeMappings"
           "cirie" & "iri" ->
@@ -151,8 +159,8 @@ OPT: xxx is related to the (value type)
 
               "nodeType" : "cell-as-literal" ->
                     "valueType": { "type": "literal" },
-                    "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
-                    "isRowNumberCell": "false" && columnName": "(value)" ->
+                    "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+                    "isIndex": "false" && columnName": "(value)" ->
                             "valueSource": { "source": "column", "columnName": "(value)" }
                 OPT "datatype" / "language": {
                       "valueSource": { "source": "(source: column, constant, expression)", "(source key)": "(value)" },
@@ -163,8 +171,8 @@ OPT: xxx is related to the (value type)
               "nodeType" : "cell-as-resource" ->
                     "namespace"
                     "valueType": { "type": "iri" }
-                    "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
-                    "isRowNumberCell": "false" && columnName": "(value)" ->
+                    "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+                    "isIndex": "false" && columnName": "(value)" ->
                             "valueSource": { "source": "column", "columnName": "(value)" }
                     "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
                     "rdfTypes" -> "typeMappings"
@@ -172,8 +180,8 @@ OPT: xxx is related to the (value type)
 
               "nodeType" : "cell-as-blank" ->
                     "valueType": { "type": "value_bnode" }
-                    "isRowNumberCell": "true" -> "valueSource": { "source": "record_id"/"row_index" }
-                    "isRowNumberCell": "false" && columnName": "(value)" ->
+                    "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+                    "isIndex": "false" && columnName": "(value)" ->
                             "valueSource": { "source": "column", "columnName": "(value)" }
                     "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
                     "rdfTypes" -> "typeMappings"

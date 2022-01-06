@@ -68,7 +68,7 @@ public class ApplicationContext {
 
 	public String getDefaultBaseIRI() {
 		if (this.strHost.isEmpty() && this.strIFace.isEmpty())
-			return DEFAULT_SITE; // Default
+			return DEFAULT_SITE; // ...default
 		String strIRI =
 			"http://" +
 			( this.strHost.isEmpty() ? this.strIFace : this.strHost ) +

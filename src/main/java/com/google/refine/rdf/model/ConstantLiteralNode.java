@@ -120,9 +120,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     }
 
 	@Override
-    public void write(JsonGenerator writer) throws JsonGenerationException, IOException {
-        writer.writeStartObject();
-
+    public void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
         writer.writeStringField("nodeType", ConstantLiteralNode.strNODETYPE);
         writer.writeStringField("value", strValue);
         if (strValueType != null) {
@@ -131,7 +129,5 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
         if (strLanguage != null) {
             writer.writeStringField("lang", strLanguage);
         }
-
-        writer.writeEndObject();
     }
 }

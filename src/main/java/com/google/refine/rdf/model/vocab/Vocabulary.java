@@ -44,12 +44,14 @@ public class Vocabulary {
 		return false;
 	}
 
-    public void write(JsonGenerator writer)throws JsonGenerationException, IOException {
-        writer.writeStartObject();
+    public void write(JsonGenerator theWriter)
+			throws JsonGenerationException, IOException {
+        //theWriter.writeStartObject();
 
-        writer.writeStringField("name", strPrefix);
-        writer.writeStringField("iri", strNamespace);
+        //writer.writeStringField("name", strPrefix);
+        //writer.writeStringField("iri", strNamespace);
+        theWriter.writeStringField(strPrefix, strNamespace);
 
-        writer.writeEndObject();
-    }
+        //theWriter.writeEndObject();
+	}
 }

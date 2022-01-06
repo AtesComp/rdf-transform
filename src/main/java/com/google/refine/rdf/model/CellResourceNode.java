@@ -27,17 +27,16 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 
     private final String strColumnName;
     private final String strExpression;
-    private final boolean bIsRowNumberCell;
 
     @JsonCreator
     public CellResourceNode(
-    		@JsonProperty("columnName")      String strColumnName,
-    		@JsonProperty("expression")      String strExp,
-    		@JsonProperty("isRowNumberCell") boolean bIsRowNumberCell )
+    		@JsonProperty("columnName")  String strColumnName,
+    		@JsonProperty("expression")  String strExp,
+    		@JsonProperty("isIndex")     boolean bIsIndex )
     {
     	this.strColumnName = strColumnName;
         this.strExpression = strExp;
-        this.bIsRowNumberCell = bIsRowNumberCell;
+        this.bIsIndex = bIsIndex;
     }
 
     static String getNODETYPE() {
@@ -46,7 +45,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 
 	@Override
 	public String getNodeName() {
-		return ( bIsRowNumberCell ? "<ROW#>" : this.strColumnName ) + 
+		return ( this.bIsIndex ? "<Index#>" : this.strColumnName ) + 
                 ( "<" + this.strExpression + ">" );
 	}
 
@@ -61,67 +60,10 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 		return this.strColumnName;
 	}
 
-	@JsonProperty("isRowNumberCell")
-	public boolean isRowNumberCellNode() {
-		return this.bIsRowNumberCell;
-	}
-
     @JsonProperty("expression")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
     public String getExpression() {
         return this.strExpression;
-    }
-
-    /*
-     *  Method createResource() for Resource Node types
-     *
-     *  Return: List<Value>
-     *    Returns the Resources as generic Values since these are "object" elements in
-     *    ( source, predicate, object ) triples and need to be compatible with literals.
-     */
-    @Override
-    protected List<Value> createResources() {
-        if (Util.isDebugMode()) logger.info("DEBUG: createResources...");
-		List<Value> listResources = null;
-
-        //
-        // Record Mode
-        //
-        if ( this.theRec.isRecordMode() ) {
-            // For Record Mode, a node should not represent a "Row/Record Number" cell...
-            if ( ! this.isRowNumberCellNode() ) {
-                listResources = this.createRecordResources();
-            }
-            // Otherwise, we only need to get a single "Record Number" resource for the Record group...
-            else {
-                this.theRec.rowNext(); // ...set index for first (or any) row in the Record
-                listResources = this.createRowResources(); // ...get the one resource
-                this.theRec.rowReset(); // ...reset for any other row run on the Record
-            }
-        }
-        //
-        // Row Mode
-        //
-        else {
-            listResources = this.createRowResources();
-        }
-
-		return listResources;
-    }
-
-    @Override
-    protected List<Value> createRecordResources() {
-        if (Util.isDebugMode()) logger.info("DEBUG: createRecordResources...");
-        List<Value> listResources = new ArrayList<Value>();
-		List<Value> listResourcesNew = null;
-		while ( this.theRec.rowNext() ) {
-			listResourcesNew = this.createRowResources();
-			if (listResourcesNew != null) {
-				listResources.addAll(listResourcesNew);
-			}
-		}
-        if ( listResources.isEmpty() )
-			return null;
-		return listResources;
     }
 
     @Override
@@ -167,10 +109,14 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 	@Override
 	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
 		writer.writeStringField("nodeType", CellResourceNode.strNODETYPE);
-        if (strColumnName != null) {
+        if (this.strColumnName != null) {
         	writer.writeStringField("columnName", this.strColumnName);
         }
-        writer.writeStringField("expression", this.strExpression);
-        writer.writeBooleanField("isRowNumberCell", this.bIsRowNumberCell);
+        if (this.strExpression != null) {
+            writer.writeStringField("expression", this.strExpression);
+        }
+        if (this.bIsIndex) {
+            writer.writeBooleanField("isIndex", this.bIsIndex);
+        }
 	}
 }

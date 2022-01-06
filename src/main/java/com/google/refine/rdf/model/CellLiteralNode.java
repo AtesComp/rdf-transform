@@ -27,20 +27,19 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 
     private final String strColumnName;
     private final String strExpression;
-    private final boolean bIsRowNumberCell;
 
     @JsonCreator
     public CellLiteralNode(
-    		@JsonProperty("columnName")      String strColumnName,
-    		@JsonProperty("expression")      String strExp,
-    		@JsonProperty("valueType")       String strValueType,
-    		@JsonProperty("lang")            String strLanguage,
-    		@JsonProperty("isRowNumberCell") boolean bIsRowNumberCell )
+    		@JsonProperty("columnName")  String strColumnName,
+    		@JsonProperty("expression")  String strExp,
+    		@JsonProperty("valueType")   String strValueType,
+    		@JsonProperty("lang")        String strLanguage,
+    		@JsonProperty("isIndex")     boolean bIsIndex )
 	{
         super(strValueType, strLanguage);
     	this.strColumnName    = strColumnName;
         this.strExpression    = ( strExp == null ? "value" : strExp );
-        this.bIsRowNumberCell = bIsRowNumberCell;
+        this.bIsIndex = bIsIndex;
     }
 
     static String getNODETYPE() {
@@ -50,7 +49,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 	@Override
 	public String getNodeName() {
 		String strName =
-			( bIsRowNumberCell ? "<ROW#>" : this.strColumnName ) + 
+			( this.bIsIndex ? "<ROW#>" : this.strColumnName ) + 
             ( "<" + this.strExpression + ">" );
 
         // If there is a value type...
@@ -77,9 +76,9 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 		return this.strColumnName;
 	}
 
-	@JsonProperty("isRowNumberCell")
-	public boolean isRowNumberCellNode() {
-		return this.bIsRowNumberCell;
+	@JsonProperty("isIndex")
+	public boolean isIndexNode() {
+		return this.bIsIndex;
 	}
 
     @JsonProperty("expression")
@@ -92,7 +91,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
      *  from this node on Rows / Records.
      */
     @Override
-	protected List<Value> createObjects(ResourceNode nodeProperty) {
+	protected List<Value> createObjects(ResourceNode nodeProperty) { //TODO: See ResourceNode -> createResources() and following
         this.setObjectParameters(nodeProperty);
 		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createObjects...");
 
@@ -217,23 +216,23 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     }
 
 	@Override
-	public void write(JsonGenerator writer)
+	public void writeNode(JsonGenerator writer)
 			throws JsonGenerationException, IOException {
-		writer.writeStartObject();
-
 		writer.writeStringField("nodeType", CellLiteralNode.strNODETYPE);
-		if (strColumnName != null) {
+		if (this.strColumnName != null) {
 			writer.writeStringField("columnName", this.strColumnName);
 		}
-		writer.writeStringField("expression", this.strExpression);
-		if (strValueType != null ) {
+		if (this.strExpression != null) {
+			writer.writeStringField("expression", this.strExpression);
+		}
+		if (this.strValueType != null ) {
 			writer.writeStringField("valueType", this.strValueType);
 		}
-		if (strLanguage != null) {
-			writer.writeStringField("lang", this.strLanguage);
+		else if (this.strLanguage != null) {
+			writer.writeStringField("language", this.strLanguage);
 		}
-		writer.writeBooleanField("isRowNumberCell", this.bIsRowNumberCell);
-
-		writer.writeEndObject();
+		if (this.bIsIndex) {
+			writer.writeBooleanField("isIndex", this.bIsIndex);
+		}
 	}
 }

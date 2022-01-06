@@ -31,15 +31,21 @@ abstract public class Node {
 
     @JsonIgnore
     protected ParsedIRI baseIRI = null;
+
     @JsonIgnore
     protected ValueFactory theFactory = null;
+
     @JsonIgnore
     protected RepositoryConnection theConnection = null;
+
     @JsonIgnore
     protected Project theProject = null;
 
     @JsonIgnore
     public RecordModel theRec = null;
+
+    @JsonIgnore
+    protected boolean bIsIndex = false;
 
     @JsonIgnore
     public Node() {
@@ -56,6 +62,11 @@ abstract public class Node {
     public Project getProject() {
         return theProject;
     }
+
+	@JsonProperty("isIndex")
+	public boolean isIndexNode() {
+		return this.bIsIndex;
+	}
 
     protected String expandPrefixedIRI(String strObjectIRI) {
         String strExpanded = strObjectIRI;

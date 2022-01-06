@@ -60,16 +60,16 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method normalizeResource() for Resource Node to IRI
      */
-    protected void normalizeResource(Object objResult, List<Value> listResource) {
+    protected void normalizeResource(Object objResult, List<Value> listResources) {
         String strIRI = Util.toSpaceStrippedString(objResult);
-        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Given IRI: " + strIRI);
-        if ( strIRI != null && ! strIRI.isEmpty() ) {
+        if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Given IRI: " + strIRI);
+        if ( ! ( strIRI == null || strIRI.isEmpty() ) ) {
             try {
                 String strResource = Util.resolveIRI(this.baseIRI, strIRI);
                 if (strResource != null) {
                     strResource = this.expandPrefixedIRI(strResource);
                     if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strResource);
-                    listResource.add( this.theFactory.createIRI(strResource) );
+                    listResources.add( this.theFactory.createIRI(strResource) );
                 }
             }
             catch (IRIParsingException | IllegalArgumentException ex) {
@@ -170,8 +170,53 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    abstract protected List<Value> createResources();
-    abstract protected List<Value> createRecordResources();
+    protected List<Value> createResources() {
+        if (Util.isDebugMode()) logger.info("DEBUG: createResources...");
+		List<Value> listResources = null;
+
+        // TODO: Create process for Sub-Records
+
+        //
+        // Record Mode
+        //
+        if ( this.theRec.isRecordMode() ) {
+            // If a column node, the node should iterate all records in the Record group...
+            if ( ! this.bIsIndex ) {
+                listResources = this.createRecordResources();
+            }
+            // Otherwise, we only need to get a single "Record Number" resource for the Record group...
+            else {
+                this.theRec.rowNext(); // ...set index for first (or any) row in the Record
+                listResources = this.createRowResources(); // ...get the one resource
+                this.theRec.rowReset(); // ...reset for any other row run on the Record
+            }
+        }
+        //
+        // Row Mode
+        //
+        else {
+            listResources = this.createRowResources();
+        }
+
+		return listResources;
+    }
+
+    protected List<Value> createRecordResources() {
+        // TODO: For blank nodes, one per Record+Column is enough?  Review to limit! HINT: see createResources() -> (! this.bIsIndex)
+        if (Util.isDebugMode()) logger.info("DEBUG: createRecordResources...");
+        List<Value> listResources = new ArrayList<Value>();
+		List<Value> listResourcesNew = null;
+		while ( this.theRec.rowNext() ) {
+			listResourcesNew = this.createRowResources();
+			if (listResourcesNew != null) {
+				listResources.addAll(listResourcesNew);
+			}
+		}
+        if ( listResources.isEmpty() )
+			return null;
+		return listResources;
+    }
+
     abstract protected List<Value> createRowResources();
 
     /*
@@ -444,10 +489,10 @@ abstract public class ResourceNode extends Node {
         // Write node...
         this.writeNode(writer);
 
-        // Write types...getClass
-        writer.writeFieldName("rdfTypes");
+        // Write Type Mappings...
+        writer.writeFieldName("typeMappings");
         writer.writeStartArray();
-        for ( RDFType type : this.getTypes() ) {
+        for ( RDFType type : this.listRDFTypes ) {
             writer.writeStartObject();
             writer.writeStringField("iri",   type.getResource());
             writer.writeStringField("cirie", type.getPrefixedResource());
@@ -455,8 +500,8 @@ abstract public class ResourceNode extends Node {
         }
         writer.writeEndArray();
 
-        // Write links...
-        writer.writeFieldName("links");
+        // Write Property Mappings...
+        writer.writeFieldName("propertyMappings");
         writer.writeStartArray();
         for (Link link : this.listLinks) {
             link.write(writer);

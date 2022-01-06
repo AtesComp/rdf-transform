@@ -24,14 +24,14 @@
  */
 class RDFDataTableView {
 	#strBaseIRI;
-	#isIRI;
+	#bIsIRI;
 	#strTitle;
 
-	constructor(baseIRI, isIRI) {
+	constructor(baseIRI, bIsIRI) {
 		this.#strBaseIRI = baseIRI;
-		this.#isIRI = isIRI;
-		this.#strTitle = ( isIRI ? $.i18n('rdft-dialog/preview-iri-val') :
-								   $.i18n('rdft-dialog/preview-lit-val') );
+		this.#bIsIRI = bIsIRI;
+		this.#strTitle = ( bIsIRI ? $.i18n('rdft-dialog/preview-iri-val') :
+									$.i18n('rdft-dialog/preview-lit-val') );
 	}
 
 	getBaseIRI() {
@@ -43,10 +43,10 @@ class RDFDataTableView {
 	}
 
 	isIRI() {
-		return this.#isIRI;
+		return this.#bIsIRI;
 	}
 
-	preview(objColumn, strExpression, isRowNumberCell, onDone) {
+	preview(objColumn, strExpression, bIsIndex, onDone) {
 		// Use OpenRefine's DataTableView.sampleVisibleRows() to preview the working RDFTransform on a sample
 		// of the parent data...
 		//	 FROM: OpenRefine/main/webapp/modules/core/scripts/views/data-table/data-table-view.js
@@ -58,7 +58,7 @@ class RDFDataTableView {
 		}
 	
 		const dlgRDFExpPreview = new RDFExpressionPreviewDialog(this, onDone);
-		dlgRDFExpPreview.preview(strColumnName, rows, strExpression, isRowNumberCell);
+		dlgRDFExpPreview.preview(strColumnName, rows, strExpression, bIsIndex);
 	}
 }
 
@@ -204,7 +204,7 @@ class RDFExpressionPreviewDialog {
 		footer.appendTo(this.#frame);
 	}
 
-	preview(strColumnName, rows, strExpression, isRowNumberCell, ) {
+	preview(strColumnName, rows, strExpression, bIsIndex) {
 		this.#frame
 		.css( { "minWidth" : "700px" } )
 		.resizable()
@@ -227,7 +227,7 @@ class RDFExpressionPreviewDialog {
 		this.#previewWidget =
 			new RDFWidget(
 				this.#dtvManager.getBaseIRI(), strColumnName, rows, strExpression,
-				this.#dtvManager.isIRI(), isRowNumberCell, this.#elements
+				this.#dtvManager.isIRI(), bIsIndex, this.#elements
 			);
 		this.#previewWidget.preview();
 	}
@@ -295,8 +295,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 	// Private...
 	_elmts;
-	#isIRI;
-	#isRowNumberCell;
+	#bIsIRI;
+	#bIsIndex;
 	#baseIRI;
 	#columnName;
 	#rowIndices;
@@ -316,7 +316,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	// Method constructor(): OVERRIDE Base
 	//
-	constructor(strBaseIRI, strColumnName, rows, strExpression,	isIRI, isRowNumberCell, elements)
+	constructor(strBaseIRI, strColumnName, rows, strExpression,	bIsIRI, bIsIndex, elements)
 	{
 		super(); // ...empty constructor to get "this"
 
@@ -330,8 +330,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			this.expression = RDFTransform.strDefaultExpression; //'value';
 		}
 
-		this.#isIRI = isIRI;
-		this.#isRowNumberCell = isRowNumberCell;
+		this.#bIsIRI = bIsIRI;
+		this.#bIsIndex = bIsIndex;
 		this._elmts = elements;
 		
 		this._timerID = null; // ...used by _scheduleUpdate()
@@ -380,8 +380,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			"project"    : theProject.id,
 			"expression" : this.expression,
 			"rowIndices" : JSON.stringify(this.#rowIndices),
-			"isIRI"      : this.#isIRI ? "1" : "0",
-			"columnName" : this.#isRowNumberCell ? "" : this.#columnName,
+			"isIRI"      : this.#bIsIRI ? "1" : "0",
+			"columnName" : this.#bIsIndex ? "" : this.#columnName,
 			"baseIRI"    : this.#baseIRI
 		};
 		//this._prepareUpdate(params); // ...empty function, not overridden
@@ -407,7 +407,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	_renderPreview(data) {
 		const bIndices = ( data.indicies != null );
 		const bResults = ( data.results != null );
-		const bAbsolutes = ( this.#isIRI && data.absolutes != null );
+		const bAbsolutes = ( this.#bIsIRI && data.absolutes != null );
 
 		//
 		// Process status...
@@ -455,11 +455,11 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 		// Create table column headings...
 		var tr = table.insertRow(0);
-		var tdValue = (this.#isRowNumberCell ? "Index" : "Value");
+		var tdValue = (this.#bIsIndex ? "Index" : "Value");
 		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.strIndexTitle);
 		$( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
 		$( tr.insertCell(2) ).addClass("expression-preview-heading").text("Expression");
-		if (this.#isIRI) { // ...for resources, add the IRI resolution column...
+		if (this.#bIsIRI) { // ...for resources, add the IRI resolution column...
 			tdValue = $.i18n('rdft-data/table-resolved');
 			$( tr.insertCell(3) ).addClass("expression-preview-heading").text(tdValue);
 		}
@@ -494,7 +494,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 				// Populate row index or raw value for expression...
 				tdValue = "";
-				if (bIndices && this.#isRowNumberCell) {
+				if (bIndices && this.#bIsIndex) {
 					// Row index "column"...
 					tdValue = data.indicies[iIndex];
 				}

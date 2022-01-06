@@ -7,7 +7,10 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class PrefixManager {
+	@JsonIgnore
 	private Map<String, String> prefixMap = new HashMap<String, String>();
 
 	public PrefixManager(InputStream inStream) throws IOException {
@@ -36,6 +39,7 @@ public class PrefixManager {
 		}
 	}
 
+	@JsonIgnore
 	public String getNamespace(String strPrefix) {
 		return prefixMap.get(strPrefix);
 	}

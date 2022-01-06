@@ -90,10 +90,10 @@ class RDFTransformDialog {
         // Setup default Master Root Node...
         // ...assume Cell As Resource with Index Expression and No Links...
         const nodeMasterRoot =
-            {   "nodeType"        : RDFTransformCommon.g_strRDFT_CRESOURCE,
-                "expression"      : RDFTransform.strExpressionIndex,
-                "isRowNumberCell" : true,
-                "links"           : []
+            {   "nodeType"   : RDFTransformCommon.g_strRDFT_CRESOURCE,
+                "expression" : RDFTransform.strExpressionIndex,
+                "isIndex"    : true,
+                "links"      : []
             };
 
         // Retrieve a copy of the Master Root Node...
