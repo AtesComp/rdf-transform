@@ -107,11 +107,11 @@ class RDFTransformUILink {
         var ahrefLink = $('<a href="javascript:{}"></a>')
             .addClass("rdf-transform-link")
             .html(RDFTransformCommon.shortenResource(label))
-            .appendTo(this.#tdMain)
             .click( (evt) => { this.#startEditProperty(evt); } );
-
         $('<img />').attr("src", "images/arrow-start.png").prependTo(ahrefLink);
         $('<img />').attr("src", "images/arrow-end.png").appendTo(ahrefLink);
+
+        this.#tdMain.append(ahrefLink);
     }
 
     #renderDetails() {

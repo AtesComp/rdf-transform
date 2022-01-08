@@ -28,39 +28,39 @@ import org.slf4j.LoggerFactory;
 abstract public class ResourceNode extends Node {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:ResNode");
 
-	@JsonProperty("rdfTypes")
-    private List<RDFType> listRDFTypes = new ArrayList<RDFType>();
+    @JsonProperty("propertyMappings")
+    private List<Property> listProperties = new ArrayList<Property>();
 
-    @JsonProperty("links")
-    private List<Link> listLinks = new ArrayList<Link>();
-
-    @JsonIgnore
-    private List<Value> listResources = null;
+	@JsonProperty("typeMappings")
+    private List<RDFType> listTypes = new ArrayList<RDFType>();
 
     @JsonIgnore
-    public void addType(RDFType type) {
-        this.listRDFTypes.add(type);
+    protected List<Value> listResources = null;
+
+    @JsonIgnore
+    public void addType(RDFType typeNew) {
+        this.listTypes.add(typeNew);
     }
 
     @JsonIgnore
-    public void addLink(Link link) {
-        this.listLinks.add(link);
+    public void addProperty(Property propNew) {
+        this.listProperties.add(propNew);
     }
 
-    @JsonProperty("rdfTypes")
+    @JsonProperty("typeMappings")
     public List<RDFType> getTypes() {
-        return this.listRDFTypes;
+        return this.listTypes;
     }
 
-    @JsonProperty("links")
-    public List<Link> getLinks() {
-		return this.listLinks;
+    @JsonProperty("propertyMappings")
+    public List<Property> getProperties() {
+		return this.listProperties;
 	}
 
     /*
      *  Method normalizeResource() for Resource Node to IRI
      */
-    protected void normalizeResource(Object objResult, List<Value> listResources) {
+    protected void normalizeResource(Object objResult) {
         String strIRI = Util.toSpaceStrippedString(objResult);
         if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Given IRI: " + strIRI);
         if ( ! ( strIRI == null || strIRI.isEmpty() ) ) {
@@ -69,15 +69,14 @@ abstract public class ResourceNode extends Node {
                 if (strResource != null) {
                     strResource = this.expandPrefixedIRI(strResource);
                     if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strResource);
-                    listResources.add( this.theFactory.createIRI(strResource) );
+                    this.listResources.add( this.theFactory.createIRI(strResource) );
                 }
             }
             catch (IRIParsingException | IllegalArgumentException ex) {
                 // An IRIParsingException from Util.resolveIRI() means a bad IRI.
                 // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
                 // In either case, record error and eat the exception...
-                ResourceNode.logger.error( "ERROR: Bad IRI: " + strIRI );
-                ResourceNode.logger.error( "ERROR: Bad IRI: " + ex.getMessage() );
+                ResourceNode.logger.error( "ERROR: Bad IRI: " + strIRI, ex);
             }
         }
     }
@@ -121,11 +120,12 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatementsWorker() for Resource Node types
      *
-     *  Return: List<Value>
-     *    Returns the Resources as generic Values since these are "object" elements in
+     *  Return: void
+     * 
+     *  Stores the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    private List<Value> createStatementsWorker()
+    private void createStatementsWorker()
             throws RuntimeException {
         if (Util.isDebugMode()) logger.info("DEBUG: createStatementsWorker...");
 
@@ -135,9 +135,9 @@ abstract public class ResourceNode extends Node {
         if ( this.theRec.isRecordPerRow() ) {
             List<Value> listResourcesAll = new ArrayList<Value>();
             while ( this.theRec.rowNext() ) {
-                this.listResources = this.createRowResources(); // ...Row only
+                this.createRowResources(); // ...Row only
                 if ( ! ( this.listResources == null || this.listResources.isEmpty() ) ) {
-                    this.createResourceStatements();
+                    this.createResourceStatements(); // ...relies on this.listResources iteration
                     listResourcesAll.addAll(this.listResources);
                 }
             }
@@ -151,7 +151,7 @@ abstract public class ResourceNode extends Node {
         // Standard Record or Row processing...
         //
         else {
-            this.listResources = this.createResources(); // ...Record or Row
+            this.createResources(); // ...Record or Row
             if ( ! ( this.listResources == null || this.listResources.isEmpty() ) ) {
                 this.createResourceStatements();
             }
@@ -159,8 +159,6 @@ abstract public class ResourceNode extends Node {
                 this.listResources = null;
             }
         }
-
-        return this.listResources;
     }
 
     /*
@@ -170,9 +168,8 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    protected List<Value> createResources() {
+    protected void createResources() {
         if (Util.isDebugMode()) logger.info("DEBUG: createResources...");
-		List<Value> listResources = null;
 
         // TODO: Create process for Sub-Records
 
@@ -182,12 +179,12 @@ abstract public class ResourceNode extends Node {
         if ( this.theRec.isRecordMode() ) {
             // If a column node, the node should iterate all records in the Record group...
             if ( ! this.bIsIndex ) {
-                listResources = this.createRecordResources();
+                this.createRecordResources();
             }
             // Otherwise, we only need to get a single "Record Number" resource for the Record group...
             else {
                 this.theRec.rowNext(); // ...set index for first (or any) row in the Record
-                listResources = this.createRowResources(); // ...get the one resource
+                this.createRowResources(); // ...get the one resource
                 this.theRec.rowReset(); // ...reset for any other row run on the Record
             }
         }
@@ -195,29 +192,29 @@ abstract public class ResourceNode extends Node {
         // Row Mode
         //
         else {
-            listResources = this.createRowResources();
+            this.createRowResources();
         }
-
-		return listResources;
     }
 
-    protected List<Value> createRecordResources() {
+    protected void createRecordResources() {
         // TODO: For blank nodes, one per Record+Column is enough?  Review to limit! HINT: see createResources() -> (! this.bIsIndex)
         if (Util.isDebugMode()) logger.info("DEBUG: createRecordResources...");
-        List<Value> listResources = new ArrayList<Value>();
-		List<Value> listResourcesNew = null;
+
+        this.listResources = null;
+		List<Value> listResourcesAll = new ArrayList<Value>();
 		while ( this.theRec.rowNext() ) {
-			listResourcesNew = this.createRowResources();
-			if (listResourcesNew != null) {
-				listResources.addAll(listResourcesNew);
+			this.createRowResources();
+            if ( ! ( this.listResources == null || this.listResources.isEmpty() ) ) {
+				listResourcesAll.addAll(this.listResources);
 			}
 		}
-        if ( listResources.isEmpty() )
-			return null;
-		return listResources;
-    }
+        if ( listResourcesAll.isEmpty() ) {
+            listResourcesAll = null;
+        }
+        this.listResources = listResourcesAll;
+}
 
-    abstract protected List<Value> createRowResources();
+    abstract protected void createRowResources();
 
     /*
      *  Method createStatements() for Resource Node types
@@ -229,7 +226,7 @@ abstract public class ResourceNode extends Node {
             throws RuntimeException {
         try {
             this.createTypeStatements();
-            this.createLinkStatements();
+            this.createPropertyStatements();
         }
         catch (RepositoryException ex) {
             throw new RuntimeException(ex);
@@ -285,21 +282,21 @@ abstract public class ResourceNode extends Node {
             if (strResult != null & strResult.length() > 0 ) {
                 try {
                     strResource = Util.resolveIRI(this.baseIRI, strResult);
+                    if (strResource != null) {
+                        strResource = this.expandPrefixedIRI(strResource);
+                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: " + strResource);
+                        //if (bNamespace) {
+                        //    iriResource = this.theFactory.createIRI(strNamespace, strLocalName);
+                        //}
+                        //else {
+                        //    iriResource = this.theFactory.createIRI(strResource);
+                        //}
+                        iriResource = this.theFactory.createIRI(strResource);
+                        listTypes.add(iriResource);
+                    }
                 }
-                catch (Util.IRIParsingException ex) {
-                    // ...continue...
-                }
-                if (strResource != null) {
-                    strResource = this.expandPrefixedIRI(strResource);
-                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: " + strResource);
-                    //if (bNamespace) {
-                    //    iriResource = this.theFactory.createIRI(strNamespace, strLocalName);
-                    //}
-                    //else {
-                    //    iriResource = this.theFactory.createIRI(strResource);
-                    //}
-                    iriResource = this.theFactory.createIRI(strResource);
-                    listTypes.add(iriResource);
+                catch (IRIParsingException | IllegalArgumentException ex) {
+                    logger.error( "ERROR: Bad Property IRI: " + strResult, ex);
                 }
     		}
     	}
@@ -324,17 +321,17 @@ abstract public class ResourceNode extends Node {
      *    Given a set of source resources, create the (source, property, object) triple statements
      *    for each of the sources.
      */
-    private void createLinkStatements()
+    private void createPropertyStatements()
             throws RepositoryException {
         if ( Util.isDebugMode() ) {
             String strLinkCount = "DEBUG: Link Count: {}";
             int iLinkCount = 0;
-            if (this.listLinks != null) {
-                iLinkCount = listLinks.size();
+            if (this.listProperties != null) {
+                iLinkCount = listProperties.size();
             }
             ResourceNode.logger.info(strLinkCount, iLinkCount);
         }
-        if (this.listLinks == null) {
+        if (this.listProperties == null) {
             return;
         }
         String strProperty = null;
@@ -351,28 +348,30 @@ abstract public class ResourceNode extends Node {
 
         @JsonIgnoreType
         class PropertyObjectList {
-            private IRI prop;
-            private List<Value> objs;
+            private IRI iriProp;
+            private List<Value> listObjs;
 
-            PropertyObjectList(IRI prop, List<Value> objs) {
-                this.prop = prop;
-                this.objs = objs;
+            PropertyObjectList(IRI iriProp, List<Value> listObjs) {
+                this.iriProp = iriProp;
+                this.listObjs = listObjs;
             }
             public IRI getProperty() {
-                return this.prop;
+                return this.iriProp;
             }
             public List<Value> getObjects() {
-                return this.objs;
+                return this.listObjs;
             }
         }
 
         //
-        // Process one set of links
+        // Process one set of properties
         //
-        List<PropertyObjectList> polistLinks = new ArrayList<PropertyObjectList>();
-        for (Link link : this.listLinks) {
+        List<PropertyObjectList> listPOL = new ArrayList<PropertyObjectList>();
+        for (Property propItem : this.listProperties) {
+            //
             // OBJECTS
-            nodeObject = link.getObject();
+            //
+            nodeObject = propItem.getObject();
             if (nodeObject == null) {
                 continue;
             }
@@ -381,7 +380,9 @@ abstract public class ResourceNode extends Node {
                 continue;
             }
 
+            //
             // PROPERTY
+            //
 
             //bNamespace = false;
             //strIRI = link.getProperty();
@@ -399,29 +400,28 @@ abstract public class ResourceNode extends Node {
             //}
             iriProperty = null;
             strProperty = null;
-            strTypeProperty = link.getProperty();
+            strTypeProperty = propItem.getProperty();
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: " + strTypeProperty);
             String strResult = Util.toSpaceStrippedString(strTypeProperty);
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Result: " + strResult);
             if (strResult != null & strResult.length() > 0 ) {
                 try {
                     strProperty = Util.resolveIRI(this.baseIRI, strResult);
+                    if (strProperty != null) {
+                        strProperty = this.expandPrefixedIRI(strProperty);
+                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: " + strProperty);
+                        //if (bNamespace) {
+                        //    iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
+                        //}
+                        //else {
+                        //    iriProperty = this.theFactory.createIRI(strProperty);
+                        //}
+                        iriProperty = this.theFactory.createIRI(strProperty);
+                        listPOL.add( new PropertyObjectList(iriProperty, listObjects) );
+                    }
                 }
-                catch (Util.IRIParsingException ex) {
-                    // ...continue...
-                }
-                if (strProperty != null) {
-                    strProperty = this.expandPrefixedIRI(strProperty);
-                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: " + strProperty);
-                    //if (bNamespace) {
-                    //    iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
-                    //}
-                    //else {
-                    //    iriProperty = this.theFactory.createIRI(strProperty);
-                    //}
-                    iriProperty = this.theFactory.createIRI(strProperty);
-                    polistLinks.add( new PropertyObjectList(iriProperty, listObjects) );
-
+                catch (IRIParsingException | IllegalArgumentException ex) {
+                    logger.error( "ERROR: Bad Property IRI: " + strResult, ex);
                 }
             }
         }
@@ -430,10 +430,10 @@ abstract public class ResourceNode extends Node {
         // Process statements...
         //
         for (Value valSource : this.listResources) {
-            for ( PropertyObjectList polist : polistLinks )
+            for ( PropertyObjectList polObj : listPOL )
             {
-                iriProperty = polist.getProperty();
-                listObjects = polist.getObjects();
+                iriProperty = polObj.getProperty();
+                listObjects = polObj.getObjects();
                 for (Value valObject : listObjects) {
                     this.theConnection.add(
                         this.theFactory.createStatement(
@@ -461,24 +461,22 @@ abstract public class ResourceNode extends Node {
 
         // TODO: Create process for Sub-Records
 
-        //
-        // Record Mode
-        //
+        // Record Mode...
 		if ( nodeProperty.theRec.isRecordMode() ) {
 			// ...set to Row Mode and process on current row as set by rowNext()...
-			this.theRec.setLink(nodeProperty, true);
+			this.theRec.setMode(nodeProperty, true);
         }
-        //
-        // Row Mode
-        //
+        // Row Mode...
         else {
 			// ...process on current row as set by rowNext()...
-			this.theRec.setLink(nodeProperty);
+			this.theRec.setMode(nodeProperty);
         }
-        List<Value> listObjects = this.createStatementsWorker();
+        this.createStatementsWorker();
         this.theRec.clear();
 
-        return listObjects;
+        // Return the collected resources from the statement processing as Objects
+        // to the given Property...
+        return this.listResources;
     }
 
     abstract protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException;
@@ -492,10 +490,10 @@ abstract public class ResourceNode extends Node {
         // Write Type Mappings...
         writer.writeFieldName("typeMappings");
         writer.writeStartArray();
-        for ( RDFType type : this.listRDFTypes ) {
+        for ( RDFType typeObj : this.listTypes ) {
             writer.writeStartObject();
-            writer.writeStringField("iri",   type.getResource());
-            writer.writeStringField("cirie", type.getPrefixedResource());
+            writer.writeStringField("iri",   typeObj.getResource());
+            writer.writeStringField("cirie", typeObj.getPrefixedResource());
             writer.writeEndObject();
         }
         writer.writeEndArray();
@@ -503,8 +501,8 @@ abstract public class ResourceNode extends Node {
         // Write Property Mappings...
         writer.writeFieldName("propertyMappings");
         writer.writeStartArray();
-        for (Link link : this.listLinks) {
-            link.write(writer);
+        for (Property propObj : this.listProperties) {
+            propObj.write(writer);
         }
         writer.writeEndArray();
 

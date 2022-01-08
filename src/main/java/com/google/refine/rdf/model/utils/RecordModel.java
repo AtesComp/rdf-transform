@@ -56,12 +56,12 @@ public class RecordModel {
     }
 
     @JsonIgnore
-    public void setLink(ResourceNode nodeProperty) {
-        this.setLink(nodeProperty, false);
+    public void setMode(ResourceNode nodeProperty) {
+        this.setMode(nodeProperty, false);
     }
 
     @JsonIgnore
-    public void setLink(ResourceNode nodeProperty, boolean bPerRow) {
+    public void setMode(ResourceNode nodeProperty, boolean bPerRow) {
         // Set Row Mode...
         this.iRowIndex = nodeProperty.theRec.iRowIndex;
         // Set Record Mode only when Row Mode is off...

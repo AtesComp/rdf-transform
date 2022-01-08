@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 //		NOTE: Blank node resources have distinct processing requirements
 //				not found here.
 //
-public class Link {
+public class Property {
 	// The Predicate: An Absolute IRI
 	@JsonProperty("iri")
     private final String strProperty;
@@ -36,7 +36,7 @@ public class Link {
     private final Node nodeObject;
 
     @JsonCreator
-    public Link(	@JsonProperty("iri")    String strIRI,
+    public Property(@JsonProperty("iri")    String strIRI,
 					@JsonProperty("cirie")  String strCIRIE,
 					@JsonProperty("target") Node nodeObject	) {
         this.strProperty = strIRI;

@@ -163,7 +163,7 @@ function registerServerSide() {
     RefineGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTModel.expr.functions.ToStrippedLiteral() );
 
 	RefineBase.expr.ExpressionUtils
-	.registerBinder( new RDFTModel.expr.RDFBinder(appContext) );
+	.registerBinder( new RDFTModel.expr.RDFTransformBinder(appContext) );
 
     /*
      *  Server-side Exporters...

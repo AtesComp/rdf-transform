@@ -8,6 +8,7 @@ import java.util.List;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
 
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Value;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -26,6 +27,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 
     private final String strColumnName;
     private final String strExpression;
+	//private final BNode bnode;
 
     @JsonCreator
     public CellBlankNode(
@@ -36,6 +38,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
         this.strColumnName    = strColumnName;
         this.strExpression    = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
+		//this.bnode = this.theFactory.createBNode();
     }
 
     static String getNODETYPE() {
@@ -46,7 +49,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	public String getNodeName() {
 		return "<BNode>:" +
 				( this.bIsIndex ? "<ROW#>" : this.strColumnName ) + 
-				( "<" + this.strExpression + ">" );
+				( "<" + this.strExpression + ">" ) + "BNode(s) depend on results";
 	}
 
 	@Override
@@ -63,29 +66,36 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	@JsonProperty("expression")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getExpression() {
+		// TODO: Add prefix "\"_:\" + " here or elsewhere in the class?
+		//      ( see createRowResources() and normalizeBNodeResource() )
 		return this.strExpression.equals("value") ? null : this.strExpression;
 	}
 
 	@Override
-	protected List<Value> createRowResources() {
+	protected void createRowResources() {
         if (Util.isDebugMode()) logger.info("DEBUG: createRowResources...");
+
+		this.listResources = null;
 		Object results = null;
     	try {
-    		results =
-				Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
+			// NOTE: Currently, the expression just results in a "true" (some non-empty string is evaluated)
+			//		or "false" (a null or empty string is evaluated).
+			//		When "true", a BNode is automatically generated.
+			results =
+				Util.evaluateExpression( this.theProject, this.getExpression(), this.strColumnName, this.theRec.row() );
 		}
 		catch (ParsingException ex) {
             // An cell might result in a ParsingException when evaluating an IRI expression.
             // Eat the exception...
-			return null;
+			return;
     	}
 
 		// Results cannot be classed...
 		if ( results == null || ExpressionUtils.isError(results) ) {
-			return null;
+			return;
 		}
 
-        List<Value> listResources = new ArrayList<Value>();
+        this.listResources = new ArrayList<Value>();
 
 		// Results are an array...
 		if ( results.getClass().isArray() ) {
@@ -93,23 +103,24 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 
 			List<Object> listResult = Arrays.asList(results);
 			for (Object objResult : listResult) {
-				this.normalizeBNodeResource(objResult, listResources);
+				this.normalizeBNodeResource(objResult);
 			}
 		}
 		// Results are singular...
 		else {
-			this.normalizeBNodeResource(results, listResources);
+			this.normalizeBNodeResource(results);
 		}
 
-		if ( listResources.isEmpty() )
-			listResources = null;
-		return listResources;
+		if ( this.listResources.isEmpty() ) {
+			this.listResources = null;
+		}
     }
 
-	private void normalizeBNodeResource(Object objResult, List<Value> listResources) {
+	private void normalizeBNodeResource(Object objResult) {
+		// TODO: Add prefix "\"_:\" + " and use it or just "true" or "false"?
 		String strResult = objResult.toString();
 		if ( ! ( strResult == null || strResult.isEmpty() ) ) {
-			listResources.add( this.theFactory.createBNode() );
+			this.listResources.add( this.theFactory.createBNode() );
 		}
 	}
 

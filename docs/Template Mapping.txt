@@ -18,17 +18,15 @@ OPT   "expression": {
   ""  },
       "propertyMappings": [
         {
-          "property": {
-OPT         "namespace": "(prefix name: applied to valueSource)",
-            "valueSource": {
-              "source": "(source)",
-OPT           "(source key)": "(value)"
-            },
-OPT         "expression": {
-  ""          "language": "(exp lang)",
-  ""          "code": "(exp)"
-  ""        }
+OPT       "namespace": "(prefix name: applied to valueSource)",
+          "valueSource": {
+            "source": "(source)",
+OPT         "(source key)": "(value)"
           },
+OPT       "expression": {
+  ""        "language": "(exp lang)",
+  ""        "code": "(exp)"
+  ""      },
           "objectMappings": [
             {
 OPT: IRI      "namespace": "(prefix name: applied to valueSource)",
@@ -46,20 +44,7 @@ OPT: DT/L         "valueSource": {
   ""       OPT    }
   ""            },
 OPT: IRI        "propertyMappings": [(...repeat...)],
-  ""            "typeMappings": [
-  ""              {
-  ""       OPT      "namespace": "(prefix name: applied to valueSource)",
-  ""                "valueSource": {
-  ""                  "source": "(source)",
-  ""                  "(source key)": "(value)"
-  ""                },
-  ""       OPT      "expression": {
-  ""       OPT        "language": "(exp lang)",
-  ""       OPT        "code": "(exp)"
-  ""       OPT      }
-  ""              },
-  ""              {...repeat a typeMapping...}
-  ""            ]
+  ""            "typeMappings": [(...repeat...)]
               },
               "valueSource": {
                 "source": "(source type)",
@@ -70,10 +55,10 @@ OPT           "expression": {
   ""            "code": "(exp)"
   ""          }
             },
-            {...repeat a objectMapping...}
+            {...repeat a object...}
           ]
         },
-        {...repeat a propertyMapping...}
+        {...repeat a propertg...}
       ],
 OPT   "typeMappings": [
   ""    {
@@ -87,10 +72,10 @@ OPT   "typeMappings": [
   ""  OPT   "code": "(exp)"
   ""  OPT }
   ""    },
-  ""    {...repeat a typeMapping...}
+  ""    {...repeat a type...}
   ""  ]
     },
-    {...repeat a subjectMapping...}
+    {...repeat a subject...}
   ]
 }
 
@@ -110,8 +95,8 @@ Type                Key
   literal             N/A
   datatype_literal    datatype
   language_literal    language
-  value_bnode
-  bnode
+  value_bnode         N/A
+  bnode               N/A
 
 [valueSource]
 Source        Key

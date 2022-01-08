@@ -15,10 +15,11 @@ import com.google.refine.rdf.model.CellResourceNode;
 import com.google.refine.rdf.model.ConstantBlankNode;
 import com.google.refine.rdf.model.ConstantLiteralNode;
 import com.google.refine.rdf.model.ConstantResourceNode;
-import com.google.refine.rdf.model.Link;
 import com.google.refine.rdf.model.Node;
-import com.google.refine.rdf.model.RDFType;
 import com.google.refine.rdf.model.ResourceNode;
+import com.google.refine.rdf.model.LiteralNode;
+import com.google.refine.rdf.model.Property;
+import com.google.refine.rdf.model.RDFType;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.PrefixExistException;
 import com.google.refine.rdf.model.vocab.Vocabulary;
@@ -31,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import org.slf4j.Logger;
@@ -72,12 +72,10 @@ public class RDFTransform implements OverlayModel {
     static public final String gstrBaseIRI = "baseIRI";
     static public final String gstrNamespaces = "namespaces";
     static public final String gstrSubjectMappings = "subjectMappings";
-    static public final String gstrSubject = "subject";
     static public final String gstrTypeMappings = "typeMappings";
     static public final String gstrPropertyMappings = "propertyMappings";
-    static public final String gstrProperty = "property";
     static public final String gstrObjectMappings = "objectMappings";
-    static public final String gstrNamespace = "namespace";
+    static public final String gstrPrefix = "prefix";
     static public final String gstrValueType = "valueType";
     static public final String gstrType = "type";
     static public final String gstrIRI = "iri";                          // type
@@ -234,33 +232,24 @@ public class RDFTransform implements OverlayModel {
         //
         // Construct Base IRI from "baseIRI"...
         //
-        JsonNode jnodeBaseIRI = jnodeRoot.get(RDFTransform.gstrBaseIRI);
-        if (jnodeBaseIRI == null) {
-            if ( Util.isVerbose(2) ) logger.warn("  No Base IRI!");
+        JsonNode jnodeBaseIRI = null;
+        if ( jnodeRoot.has(RDFTransform.gstrBaseIRI) ) {
+            jnodeBaseIRI = jnodeRoot.get(RDFTransform.gstrBaseIRI);
+            theTransform.setBaseIRI(jnodeBaseIRI);
         }
         else {
-            theTransform.setBaseIRI(jnodeBaseIRI);
+            if ( Util.isVerbose(2) ) logger.warn("  No Base IRI!");
         }
 
         //
         // Construct prefixesMap from "namespaces"...
         //
-        //JsonNode jnodePrefixes = jnodeElement.get("prefixes");
+        //  NOTE: The map "thePrefixes" is just a convenience map to store and look up vocabularies
+        //      based on the prefix as a key.
         Map<String, Vocabulary> thePrefixes = new HashMap<String, Vocabulary>();
-        JsonNode jnodePrefixes = jnodeRoot.get(RDFTransform.gstrNamespaces);
-        if (jnodePrefixes == null) {
-            if ( Util.isVerbose(2) ) logger.warn("  No Namespaces!");
-        }
-        else {
-            //if ( ! jnodePrefixes.isArray() ) {
-            //    jnodePrefixes = JsonNodeFactory.instance.arrayNode();
-            //}
-            //Map<String, Vocabulary> thePrefixes = new HashMap<String, Vocabulary>();
-            //for (JsonNode jnodePrefix : jnodePrefixes) {
-            //    String strPrefix = jnodePrefix.get("name").asText();
-            //    String strIRI    = jnodePrefix.get("iri").asText();
-        	//    thePrefixes.put( strPrefix, new Vocabulary(strPrefix, strIRI) );
-            //}
+        JsonNode jnodePrefixes = null;
+        if ( jnodeRoot.has(RDFTransform.gstrNamespaces) ) {
+            jnodePrefixes = jnodeRoot.get(RDFTransform.gstrNamespaces);
             if ( jnodePrefixes.isObject() ) {
                 Iterator<Entry<String, JsonNode>> iterNodes = jnodePrefixes.fields();
                 Map.Entry<String, JsonNode> mePrefix;
@@ -273,32 +262,21 @@ public class RDFTransform implements OverlayModel {
                 theTransform.setPrefixesMap(thePrefixes);
             }
         }
+        else {
+            if ( Util.isVerbose(2) ) logger.warn("  No Namespaces!");
+        }
 
         //
         // Construct listRootNodes from "subjectMappings"...
         //
-        //JsonNode jnodeRoots = jnodeRoot.get("rootNodes");
-        JsonNode jnodeSubjects = jnodeRoot.get(RDFTransform.gstrSubjectMappings);
-        if (jnodeSubjects == null) {
-            if ( Util.isVerbose(2) ) logger.warn("  No Subjects!");
-        }
-        else {
-            //List<ResourceNode> theRootNodes = new ArrayList<ResourceNode>();
-            //if ( ! jnodeRoots.isNull() ) {
-            //    for (JsonNode jNodeRoot : jnodeRoots) {
-            //        Node nodeRoot = reconstructNode( jNodeRoot, theTransform.getBaseIRI() );
-            //        if (nodeRoot != null && nodeRoot instanceof ResourceNode) {
-            //            theRootNodes.add( (ResourceNode) nodeRoot );
-            //        }
-            //        // Otherwise, non-resource nodes (literals, generic nodes) cannot be root nodes.
-            //        // So, skip them.  They should never have been in the root node list anyway.
-            //    }
-            //}
+        JsonNode jnodeSubjectMappings = null;
+        if ( jnodeRoot.has(RDFTransform.gstrSubjectMappings) ) {
+            jnodeSubjectMappings = jnodeRoot.get(RDFTransform.gstrSubjectMappings);
             List<ResourceNode> theRootNodes = new ArrayList<ResourceNode>();
-            if ( jnodeSubjects.isArray() ) {
-                for (JsonNode jnodeSubjectContainer : jnodeSubjects) {
+            if ( jnodeSubjectMappings.isArray() ) {
+                for (JsonNode jnodeSubject : jnodeSubjectMappings) {
                     Node nodeRoot =
-                        RDFTransform.reconstructNode( jnodeSubjectContainer, theTransform.getBaseIRI(), thePrefixes );
+                        RDFTransform.reconstructNode( jnodeSubject, theTransform.getBaseIRI(), thePrefixes );
                     if (nodeRoot != null && nodeRoot instanceof ResourceNode) {
                         theRootNodes.add( (ResourceNode) nodeRoot );
                     }
@@ -307,6 +285,9 @@ public class RDFTransform implements OverlayModel {
                 }
             }
             theTransform.setRoots(theRootNodes);
+        }
+        else {
+            if ( Util.isVerbose(2) ) logger.warn("  No Subjects!");
         }
 
         if ( Util.isVerbose(2) ) logger.info("...reconstructed overlay");
@@ -329,11 +310,12 @@ public class RDFTransform implements OverlayModel {
         }
 
         //
-        // Get Subject's Namespace...
+        // Get Subject's Prefix...
         //
-        String strNamespace = null;
-        if ( jnodeSubject.has(RDFTransform.gstrNamespace) ) {
-            strNamespace = jnodeSubject.get(RDFTransform.gstrNamespace).asText();
+        String strPrefix = null;
+        if ( jnodeSubject.has(RDFTransform.gstrPrefix) ) {
+            strPrefix = jnodeSubject.get(RDFTransform.gstrPrefix).asText();
+        }
 
         //
         // Get Subject's Value Source...
@@ -350,43 +332,52 @@ public class RDFTransform implements OverlayModel {
         }
 
         boolean bIsIndex = false;
-        NodeType eNodeType;
-        String strColumn = null;
-        String strConstant = null;
+        NodeType eNodeType = null;
+        boolean bValueNode = false;
+        boolean bConstNode = false;
+        String strValue = null;
         boolean bIsExpression = false;
 
         if ( strSource.equals(RDFTransform.gstrRowIndex) ) {
             // A Row Index based node...
             bIsIndex = true;
             eNodeType = NodeType.ROW;
+            bValueNode = true;
         }
         else if ( strSource.equals(RDFTransform.gstrRecordID) ) {
             // A Record Index (group of rows) based node...
             bIsIndex = true;
             eNodeType = NodeType.RECORD;
+            bValueNode = true;
         }
         else if ( strSource.equals(RDFTransform.gstrColumn) && jnodeValueSrc.has(RDFTransform.gstrColumnName) ) {
             // A Column Name based node...
-            strColumn = jnodeValueSrc.get(RDFTransform.gstrColumnName).asText();
+            strValue = jnodeValueSrc.get(RDFTransform.gstrColumnName).asText();
             eNodeType = NodeType.COLUMN;
+            bValueNode = true;
         }
         else if ( strSource.equals(RDFTransform.gstrConstant) && jnodeValueSrc.has(RDFTransform.gstrConstant)) {
             // A Constant based node...
-            strConstant = jnodeValueSrc.get(RDFTransform.gstrConstant).asText();
+            strValue = jnodeValueSrc.get(RDFTransform.gstrConstant).asText();
             eNodeType = NodeType.CONSTANT;
+            bConstNode = true;
         }
         else if ( strSource.equals(RDFTransform.gstrExpression) ) {
             // An Expression based node...
             eNodeType = NodeType.EXPRESSION;
+            bIsExpression = true;
             // TODO: Not currently supported by itself.
             //      Expressions may be embedded in the others.
+            //      Is it a Value or Constant node?
+            //bValueNode = true;
+            //bConstNode = true;
         }
 
         //
         // Get Subject's Expression...
         //
-        String strExpLang = "grel";
-        String strExpCode = "value";
+        String strExpLang = "grel"; // ...default
+        String strExpCode = null;   // ...default, Node instances report "value" when null
         if ( jnodeSubject.has(RDFTransform.gstrExpression) ) {
             JsonNode jnodeExp = jnodeSubject.get(RDFTransform.gstrExpression);
             if ( jnodeExp.has(RDFTransform.gstrLanguage) ) {
@@ -402,9 +393,11 @@ public class RDFTransform implements OverlayModel {
         //
         //      Based on Type, get type information
         //
-        String strType = RDFTransform.gstrIRI; // ...default, for root nodes
-        JsonNode jnodeValueType = jnodeSubject; // ...for root nodes
-        if ( jnodeSubject.has(RDFTransform.gstrValueType) ) {
+        String strType = RDFTransform.gstrIRI;  // ...default for Root nodes
+        JsonNode jnodeValueType = jnodeSubject; // ...for Root nodes
+        boolean bResource = false;
+        boolean bLiteral = false;
+        if ( jnodeSubject.has(RDFTransform.gstrValueType) ) { // ...for Object nodes
             jnodeValueType = jnodeSubject.get(RDFTransform.gstrValueType);
             if ( jnodeValueType.has(RDFTransform.gstrType) ) {
                 JsonNode jnodeType = jnodeValueType.get(RDFTransform.gstrType);
@@ -414,154 +407,299 @@ public class RDFTransform implements OverlayModel {
                 }
             }
         }
+        if ( strType.equals(RDFTransform.gstrIRI) ||
+             strType.equals(RDFTransform.gstrBNode) ||
+             strType.equals(RDFTransform.gstrValueBNode) ) {
+            bResource = true;
+        }
+        if ( strType.equals(RDFTransform.gstrLiteral) ||
+             strType.equals(RDFTransform.gstrDatatypeLiteral) ||
+             strType.equals(RDFTransform.gstrLanguageLiteral) ) {
+            bLiteral = true;
+        }
 
-        String strDatatypeNamespace = null;
-        String strDatatypeConstant = null;
-        String strLanguageCode = null;
+        //
+        // Process Subject into a Node...
+        //
         ResourceNode rnodeResource = null;
+        LiteralNode lnodeLiteral = null;
 
-        if ( strType.equals(RDFTransform.gstrIRI) ) {
-            if ( eNodeType == NodeType.ROW || eNodeType == NodeType.RECORD || eNodeType == NodeType.COLUMN ) {
-                rnodeResource = new CellResourceNode(strColumn, strExpCode, bIsIndex);
+        // Resource types...
+        // TODO: Adjust all resource node classes to take prefix reference
+        if (bResource) {
+            if ( strType.equals(RDFTransform.gstrIRI) ) {
+                if ( bValueNode ) {
+                    rnodeResource = new CellResourceNode(strValue, strExpCode, bIsIndex);
+                }
+                else if ( bConstNode ) {
+                    rnodeResource = new ConstantResourceNode(strValue);
+                }
+                else if ( eNodeType == NodeType.EXPRESSION ) {
+                    // TODO: Currently unsupported
+                }
             }
-            else if ( eNodeType == NodeType.CONSTANT ) {
-                rnodeResource = new ConstantResourceNode(strConstant);
+            else if ( strType.equals(RDFTransform.gstrBNode) ) {
+                rnodeResource = new CellBlankNode(strValue, strExpCode, bIsIndex);
+            }
+            else if ( strType.equals(RDFTransform.gstrValueBNode) ) {
+                rnodeResource = new ConstantBlankNode(strValue);
+            }
+
+            if ( rnodeResource != null ) {
+                //
+                // Construct Types from "typeMappings"...
+                //
+                RDFTransform.reconstructTypes(rnodeResource, jnodeSubject, thePrefixes);
+
+                //
+                // Construct Properties from "propertyMappings"...
+                //
+                RDFTransform.reconstructProperties(rnodeResource, jnodeSubject, baseIRI, thePrefixes);
+            }
+
+            nodeElement = rnodeResource;
+        }
+
+        // Literal types...
+        else if (bLiteral) {
+            String strDatatypePrefix = null;
+            String strDatatypeValue = null;
+            String strDataType = null;
+            String strLanguageCode = null;
+
+            if ( strType.equals(RDFTransform.gstrLiteral) ) {
+                // Nothing to do...
+            }
+            else if ( strType.equals(RDFTransform.gstrDatatypeLiteral) ) {
+                // A Datatype Literal based node...
+                JsonNode jnodeDatatype = jnodeValueType.get(RDFTransform.gstrDatatype);
+                if (jnodeDatatype != null) {
+                    // ...get prefix, if exists...
+                    JsonNode jnodeDatatypePrefix = jnodeDatatype.get(RDFTransform.gstrPrefix);
+                    if (jnodeDatatypePrefix != null) {
+                        strDatatypePrefix = jnodeDatatypePrefix.asText();
+                    }
+                    // ...get IRI value, always a constant...
+                    JsonNode jnodeValueSource = jnodeDatatype.get(RDFTransform.gstrValueSource);
+                    if (jnodeValueSource != null) {
+                        JsonNode jnodeDatatypeConstant = jnodeValueSource.get(RDFTransform.gstrConstant);
+                        if (jnodeDatatypeConstant != null) {
+                            strDatatypeValue = jnodeDatatypeConstant.asText();
+
+                            // Validate the full IRI (Namespace + Datatype)...
+                            ParsedIRI iriNamespace = baseIRI; // ...default
+                            if ( thePrefixes.containsKey(strDatatypePrefix) ) {
+                                String strDatatypeNamespace = thePrefixes.get(strDatatypePrefix).getNamespace();
+                                if (strDatatypeNamespace != null) {
+                                    try {
+                                        iriNamespace = new ParsedIRI( strDatatypeNamespace );
+                                    }
+                                    catch (Exception ex) {
+                                        logger.error("ERROR: Bad Namespace in Prefixes: " + strDatatypeNamespace, ex);
+                                        // ...given Namespace doesn't parse, so use baseIRI...
+                                    }
+                                }
+                            }
+                            strDataType = Util.getDataType(iriNamespace, strDatatypeValue);
+                            if ( ! ( strDataType == null || strDataType.isEmpty() ) ) {
+                                // Set the Datatype to the CIRIE (Prefix + Datatype)...
+                                strDataType = strDatatypePrefix + ":" + strDatatypeValue;
+                            }
+                        }
+                    }
+                }
+            }
+            else if ( strType.equals(RDFTransform.gstrLanguageLiteral) ) {
+                strLanguageCode = jnodeValueType.get(RDFTransform.gstrLanguage).asText();
+            }
+
+            if ( bValueNode ) {
+                lnodeLiteral = new CellLiteralNode(strValue, strExpCode, bIsIndex, strDataType, strLanguageCode);
+            }
+            else if ( bConstNode ) {
+                lnodeLiteral = new ConstantLiteralNode(strValue, strDataType, strLanguageCode);
+            }
+            else if ( eNodeType == NodeType.EXPRESSION ) {
+                // TODO: Currently unsupported - what is an expression? Value or Constant?
+            }
+
+            nodeElement = lnodeLiteral;
+        }
+
+        return nodeElement;
+    }
+
+    /*
+     * Method reconstructProperties()
+     *
+     *      Helper function for reconstruct()
+     *
+     *      Reconstruct the Node Properties.  Nodes are generic descriptors for a related
+     *      transformation.  They are transformed into RDF Resource and Literal nodes to construct
+     *      (Subject, Property, Object) tuples for an RDF graph.  This method constructs the Properties
+     *      for regular statements (Subject, Property, Object).
+     */
+    static private void reconstructProperties(ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI, Map<String, Vocabulary> thePrefixes) {
+        if ( ! jnodeParent.has(RDFTransform.gstrPropertyMappings) ) {
+            return;
+        }
+
+        JsonNode jnodePropertyMappings = jnodeParent.get(RDFTransform.gstrPropertyMappings);
+        if ( jnodePropertyMappings.isArray() ) {
+            return;
+        }
+
+        for (JsonNode jnodeProperty : jnodePropertyMappings) {
+            //
+            // Get Property's Namespace Prefix...
+            //
+            String strPrefix = null;
+            if ( jnodeProperty.has(RDFTransform.gstrPrefix) ) {
+                strPrefix = jnodeProperty.get(RDFTransform.gstrPrefix).asText();
+            }
+
+            //
+            // Get Property's Value Source...
+            //
+            //      Based on Source, get source information
+            //
+            //  NOTE: All property sources are currently "constant"
+            //
+            String strSource = "";
+            JsonNode jnodeValueSrc = null;
+            if ( jnodeProperty.has(RDFTransform.gstrValueSource) ) {
+                jnodeValueSrc = jnodeProperty.get(RDFTransform.gstrValueSource);
+                if ( jnodeValueSrc.has(RDFTransform.gstrSource) ) {
+                    strSource = jnodeValueSrc.get(RDFTransform.gstrSource).asText();
+                }
+            }
+
+            //boolean bIsIndex = false;
+            NodeType eNodeType = null;
+            boolean bValueNode = false;
+            boolean bConstNode = false;
+            String strValue = null;
+            boolean bIsExpression = false;
+    
+            //if ( strSource.equals(RDFTransform.gstrRowIndex) ) {
+            //    // A Row Index based node...
+            //    bIsIndex = true;
+            //    eNodeType = NodeType.ROW;
+            //    bValueNode = true;
+            //}
+            //else if ( strSource.equals(RDFTransform.gstrRecordID) ) {
+            //    // A Record Index (group of rows) based node...
+            //    bIsIndex = true;
+            //    eNodeType = NodeType.RECORD;
+            //    bValueNode = true;
+            //}
+            if ( strSource.equals(RDFTransform.gstrColumn) && jnodeValueSrc.has(RDFTransform.gstrColumnName) ) {
+                // A Column Name based node...
+                strValue = jnodeValueSrc.get(RDFTransform.gstrColumnName).asText();
+                eNodeType = NodeType.COLUMN;
+                bValueNode = true;
+            }
+            else if ( strSource.equals(RDFTransform.gstrConstant) && jnodeValueSrc.has(RDFTransform.gstrConstant)) {
+                // A Constant based node...
+                strValue = jnodeValueSrc.get(RDFTransform.gstrConstant).asText();
+                eNodeType = NodeType.CONSTANT;
+                bConstNode = true;
+            }
+            else if ( strSource.equals(RDFTransform.gstrExpression) ) {
+                // An Expression based node...
+                eNodeType = NodeType.EXPRESSION;
+                bIsExpression = true;
+                // TODO: Not currently supported by itself.
+                //      Expressions may be embedded in the others.
+                //      Is it a Value or Constant node?
+                //bValueNode = true;
+                //bConstNode = true;
+            }
+            if (strValue == null) {
+                logger.error("ERROR: Bad Property: Source: " + strSource);
+                continue;
+            }
+
+            //
+            // Get Property's Expression...
+            //
+            String strExpLang = "grel"; // ...default
+            String strExpCode = null;   // ...default, Node instances report "value" when null
+            if ( jnodeProperty.has(RDFTransform.gstrExpression) ) {
+                JsonNode jnodeExp = jnodeProperty.get(RDFTransform.gstrExpression);
+                if ( jnodeExp.has(RDFTransform.gstrLanguage) ) {
+                    strExpLang = jnodeExp.get(RDFTransform.gstrLanguage).asText();
+                }
+                if ( jnodeExp.has(RDFTransform.gstrCode) ) {
+                    strExpCode = jnodeExp.get(RDFTransform.gstrCode).asText().strip();
+                }
+            }
+
+            //
+            // Process Property into a Node...
+            //
+            //  NOTE: At this time, We are doing nothing mode than checking that a node can be created
+            //      from the property information.
+            //
+            ResourceNode rnodeResource = null;
+            if ( bValueNode ) {
+                rnodeResource = new CellResourceNode(strValue, strExpCode, false);
+            }
+            else if ( bConstNode ) {
+                rnodeResource = new ConstantResourceNode(strValue);
             }
             else if ( eNodeType == NodeType.EXPRESSION ) {
                 // TODO: Currently unsupported
             }
-        }
-        else if ( strType.equals(RDFTransform.gstrLiteral) ) {
+            if (rnodeResource == null) {
+                logger.error("ERROR: Bad Property: IRI: " + strValue);
+                continue;
+            }
 
-        }
-        else if ( strType.equals(RDFTransform.gstrDatatypeLiteral) ) {
-            // A Datatype Literal based node...
-            JsonNode jnodeDatatype = jnodeValueType.get(RDFTransform.gstrDatatype);
-            if (jnodeDatatype != null) {
-                // ...get namespace, if exists...
-                JsonNode jnodeDatatypeNamespace = jnodeDatatype.get(RDFTransform.gstrNamespace);
-                if (jnodeDatatypeNamespace != null) {
-                    strDatatypeNamespace = jnodeDatatypeNamespace.asText();
+            // TODO: Change following for Property storage to prefix, IRI, & nodeObject
+            String strIRI = strValue;
+            if (bValueNode) {
+                // TODO: Unsupported. Need to evaluate expression on column to get IRI...or later
+                //strIRI = strValue;
+            }
+            else if (bConstNode) {
+                strIRI = strValue;
+            }
+            String strCIRIE = strIRI;
+            if (strPrefix != null) {
+                strCIRIE = strPrefix + ":" + strValue;
+                Vocabulary vocab = thePrefixes.get(strPrefix);
+                if (vocab != null) {
+                    strIRI = vocab.getNamespace() + strValue;
                 }
-                // ...get IRI, always a constant...
-                JsonNode jnodeValueSource = jnodeDatatype.get(RDFTransform.gstrValueSource);
-                if (jnodeValueSource != null) {
-                    JsonNode jnodeDatatypeConstant = jnodeValueSource.get(RDFTransform.gstrConstant);
-                    if (jnodeDatatypeConstant != null) {
-                        strDatatypeConstant = jnodeDatatypeConstant.asText();
+            }
+
+            //
+            // Get Property's Object Mappings...
+            //
+            List<Node> theObjectNodes = new ArrayList<Node>();
+            if ( jnodeProperty.has(RDFTransform.gstrObjectMappings) ) {
+                JsonNode jnodeObjectMappings = jnodeProperty.get(RDFTransform.gstrObjectMappings);
+                if ( jnodeObjectMappings.isArray() ) {
+                    Node nodeObject = null;
+                    for (JsonNode jnodeObject : jnodeObjectMappings) {
+                        nodeObject = RDFTransform.reconstructNode( jnodeObject, baseIRI, thePrefixes );
+                        if (nodeObject != null) {
+                            theObjectNodes.add(nodeObject);
+                        }
                     }
                 }
             }
-        }
-        else if ( strType.equals(RDFTransform.gstrLanguageLiteral) ) {
-            strLanguageCode = jnodeValueType.get(RDFTransform.gstrLanguage).asText();
-        }
-        else if ( strType.equals(RDFTransform.gstrBNode) ) {
-
-        }
-        else if ( strType.equals(RDFTransform.gstrValueBNode) ) {
-
-        }
-
-        if ( rnodeResource != null ) {
-            RDFTransform.reconstructTypes(rnodeResource, jnodeValueType, thePrefixes);
-
-            if ( jnodeValueType.has(RDFTransform.gstrPropertyMappings) ) {
-                    JsonNode jnodePropertyMappings = jnodeValueType.get(RDFTransform.gstrPropertyMappings);
-            }
-        }
-
-
-
-
-
-        //String strNodeType = jnodeSubject.get("nodeType").asText();
-
-        // Node contains Cell is a...
-        if ( strNodeType.startsWith("cell-as-") ) {
-            JsonNode jNodeRowNumberCell = jnodeSubject.get("isIndex");
-        	boolean bIsIndex = (jNodeRowNumberCell == null) ? false : jNodeRowNumberCell.asBoolean(false);
-
-            // Get cell's ColumnName: null (for row number) or column...
-            String strColumnName = null;
-            if ( !bIsIndex ) {
-            	strColumnName = jnodeSubject.get("columnName").asText();
+            if ( theObjectNodes.isEmpty() ) {
+                theObjectNodes.add(null);
             }
 
-            // Get cell's Expression: "value" or expression string...
-            JsonNode jnodeExp = jnodeSubject.get("expression");
-            String strExp = (jnodeExp == null) ? "value" : jnodeExp.asText().strip();
-
-            // Resource Node...
-            if ( "cell-as-resource".equals(strNodeType) ) {
-                CellResourceNode nodeCellResource = new CellResourceNode(strColumnName, strExp, bIsIndex);
-                RDFTransform.reconstructTypes(nodeCellResource, jnodeSubject);
-                nodeElement = nodeCellResource;
-            }
-            // Literal...
-            else if ("cell-as-literal".equals(strNodeType)) {
-                JsonNode jnodeValueType = jnodeSubject.get("valueType");
-                String strValueType =
-                    (jnodeValueType == null) ?
-                        null : Util.getDataType( baseIRI, jnodeValueType.asText() );
-
-                JsonNode jnodeLang = jnodeSubject.get("lang");
-                String strLang = (jnodeLang == null) ? null : RDFTransform.stripLanguageMarker( jnodeLang.asText() );
-
-                nodeElement = new CellLiteralNode(strColumnName, strExp, strValueType, strLang, bIsIndex);
-            }
-            // Blank Node...
-            else if ( "cell-as-blank".equals(strNodeType) ) {
-                CellBlankNode nodeCellBlank = new CellBlankNode(strColumnName, strExp, bIsIndex);
-                RDFTransform.reconstructTypes(nodeCellBlank, jnodeSubject );
-                nodeElement = nodeCellBlank;
+            for ( Node nodeObj : theObjectNodes ) {
+                rnodeParent.addProperty(
+                    new Property(strIRI, strCIRIE, nodeObj)
+                );
             }
         }
-        // Node contains Constant Resource...
-        else if ( "resource".equals(strNodeType) ) {
-            ConstantResourceNode nodeConstResource = new ConstantResourceNode( jnodeSubject.get("value").asText() );
-            RDFTransform.reconstructTypes(nodeConstResource, jnodeSubject);
-            nodeElement = nodeConstResource;
-        }
-        // Node contains Constant Literal...
-        else if ( "literal".equals(strNodeType) ) {
-            JsonNode jnodeValueType = jnodeSubject.get("valueType");
-            String strValueType =
-                (jnodeValueType == null) ?
-                    null : Util.getDataType( baseIRI, jnodeValueType.asText() );
-            JsonNode jnodeLang = jnodeSubject.get("lang");
-            String strLang =
-                jnodeLang == null ? null : RDFTransform.stripLanguageMarker( jnodeLang.asText() );
-            JsonNode jnodeValue = jnodeSubject.get("value");
-            nodeElement = new ConstantLiteralNode(jnodeValue.asText(), strValueType, strLang);
-        }
-        // Node contains Constant Blank Node Resource...
-        else if ( "blank".equals(strNodeType) ) {
-            ConstantBlankNode nodeConstBlank = new ConstantBlankNode();
-            RDFTransform.reconstructTypes(nodeConstBlank, jnodeSubject);
-            nodeElement = nodeConstBlank;
-        }
-
-        // For Resource Nodes, process any links...
-        if ( nodeElement != null && nodeElement instanceof ResourceNode ) {
-            JsonNode jnodeLinks = jnodeSubject.get("links");
-            if ( jnodeLinks != null && ! jnodeLinks.isNull() && jnodeLinks.isArray() ) {
-                for (JsonNode jnodeLink : jnodeLinks) {
-                    JsonNode jnodeLinkTarget = jnodeLink.get("target");
-                    Node nodeLink = null;
-                    if ( jnodeLinkTarget != null && ! jnodeLinkTarget.isNull() )
-                        nodeLink = RDFTransform.reconstructNode(jnodeLinkTarget, baseIRI);
-                    ((ResourceNode) nodeElement).addLink(
-                        new Link(
-                            jnodeLink.get("iri").asText(),
-                            jnodeLink.get("cirie").asText(),
-                            nodeLink)
-                    );
-                }
-            }
-        }
-
-        return nodeElement;
     }
 
     /*
@@ -571,55 +709,63 @@ public class RDFTransform implements OverlayModel {
      *
      *      Reconstruct the Node Types.  Nodes are generic descriptors for a related
      *      transformation.  They are transformed into RDF Resource and Literal nodes to construct
-     *      (Subject, Property, Object) tuples for an RDF graph.
+     *      (Subject, Property, Object) tuples for an RDF graph.  This method constructs the Types
+     *      for type statements (Subject, a, TypeObject).
+     * 
      */
-    static private void reconstructTypes(ResourceNode rnodeResource, JsonNode jnodeParent, Map<String, Vocabulary> thePrefixes) {
-    	if ( jnodeParent.has(RDFTransform.gstrTypeMappings) ) {
-    		JsonNode jnodeTypeMappings = jnodeParent.get(RDFTransform.gstrTypeMappings);
-            if ( jnodeTypeMappings.isArray() ) {
-                for (JsonNode jnodeType : jnodeTypeMappings) {
-                    String strPrefix = null;
-                    if ( jnodeType.has(RDFTransform.gstrNamespace) ) {
-                        strPrefix = jnodeType.get(RDFTransform.gstrNamespace).asText();
-                    }
-                    String strIRIPath = null;
-                    if ( jnodeType.has(RDFTransform.gstrValueSource) ) {
-                        JsonNode jnodeValueSrc = jnodeType.get(RDFTransform.gstrValueSource);
-                        if ( jnodeValueSrc.has(RDFTransform.gstrConstant) ) {
-                            strIRIPath = jnodeValueSrc.get(RDFTransform.gstrConstant).asText();
-                        }
-                    }
+    static private void reconstructTypes(ResourceNode rnodeParent, JsonNode jnodeParent, Map<String, Vocabulary> thePrefixes) {
+    	if ( ! jnodeParent.has(RDFTransform.gstrTypeMappings) ) {
+            return;
+        }
 
-                    // TODO: Change following for RDFType storage to prefix & IRI
-                    String strIRI = strIRIPath;
-                    String strCIRIE = strIRI;
-                    if (strPrefix != null) {
-                        strCIRIE = strPrefix + ":" + strIRIPath;
-                        Vocabulary vocab = thePrefixes.get(strPrefix);
-                        if (vocab != null) {
-                            strIRI = vocab.getNamespace() + strIRIPath;
-                        }
-                        
-                    }
-                    rnodeResource.addType( new RDFType(strIRI, strCIRIE) );
+        JsonNode jnodeTypeMappings = jnodeParent.get(RDFTransform.gstrTypeMappings);
+        if ( ! jnodeTypeMappings.isArray() ) {
+            return;
+        }
+
+        for (JsonNode jnodeType : jnodeTypeMappings) {
+            //
+            // Get Type's Namespace Prefix...
+            //
+            String strPrefix = null;
+            if ( jnodeType.has(RDFTransform.gstrPrefix) ) {
+                strPrefix = jnodeType.get(RDFTransform.gstrPrefix).asText();
+            }
+
+            //
+            // Get Type's Value Source...
+            //
+            //      Based on Source, get source information
+            //
+            String strSource = "";
+            String strValue = null;
+            if ( jnodeType.has(RDFTransform.gstrValueSource) ) {
+                JsonNode jnodeValueSrc = jnodeType.get(RDFTransform.gstrValueSource);
+                if ( jnodeValueSrc.has(RDFTransform.gstrSource) ) {
+                    strSource = jnodeValueSrc.get(RDFTransform.gstrSource).asText();
+                }
+                if ( strSource.equals(RDFTransform.gstrConstant) && jnodeValueSrc.has(RDFTransform.gstrConstant)) {
+                    strValue = jnodeValueSrc.get(RDFTransform.gstrConstant).asText();
                 }
             }
-        }
-    }
+            if (strValue == null) {
+                logger.error("ERROR: Bad Property: Source: " + strSource);
+                continue;
+            }
 
-    /*
-     * Method stripLanguageMarker()
-     *
-     *      Helper function for reconstructNode()
-     *
-     *      Strip the starting '@' character, the language marker, from the string.  This function
-     *      assumes it is given a language type string from a literal node.
-     */
-    static private String stripLanguageMarker(String strLanguage) {
-    	if (strLanguage != null && strLanguage.startsWith("@")) {
-    		return strLanguage.substring(1);
-    	}
-    	return strLanguage;
+            // TODO: Change following for RDFType storage to prefix & IRI
+            String strIRI = strValue;
+            String strCIRIE = strIRI;
+            if (strPrefix != null) {
+                strCIRIE = strPrefix + ":" + strValue;
+                Vocabulary vocab = thePrefixes.get(strPrefix);
+                if (vocab != null) {
+                    strIRI = vocab.getNamespace() + strValue;
+                }
+                
+            }
+            rnodeParent.addType( new RDFType(strIRI, strCIRIE) );
+        }
     }
 
     /****************************************************************************************************
@@ -701,7 +847,7 @@ public class RDFTransform implements OverlayModel {
         if ( Util.isVerbose(2) ) logger.info("Creating base overlay for project from context...");
 
         this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
-       	this.thePrefixes = clonePrefixes( theContext.getPredefinedVocabularyManager().getPredefinedVocabulariesMap() );
+       	this.thePrefixes = this.clonePrefixes( theContext.getPredefinedVocabularyManager().getPredefinedVocabulariesMap() );
        	// Copy the index of predefined vocabularies...
        	//   Each project will have its own copy of these predefined vocabs to enable, delete, update...
        	theContext.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
@@ -713,12 +859,27 @@ public class RDFTransform implements OverlayModel {
     /*
         Methods
     */
+    private Map<String, Vocabulary> clonePrefixes(Map<String, Vocabulary> mapPrefixes) {
+    	Map<String, Vocabulary> mapPrefixesCopy = new HashMap<String, Vocabulary>();
+
+        for ( Entry<String, Vocabulary> entryPrefix : mapPrefixes.entrySet() ) {
+    		mapPrefixesCopy.put(
+                entryPrefix.getKey(),
+                new Vocabulary(
+                    entryPrefix.getValue().getPrefix(),
+                    entryPrefix.getValue().getNamespace() )
+            );
+    	}
+
+    	return mapPrefixesCopy;
+    }
+
     @JsonIgnore // ...see getBaseIRIAsString()
     public ParsedIRI getBaseIRI() {
         return this.theBaseIRI;
     }
 
-    @JsonProperty("baseIRI")
+    @JsonProperty(RDFTransform.gstrBaseIRI)
     public String getBaseIRIAsString() {
         return this.theBaseIRI.toString();
     }
@@ -729,7 +890,7 @@ public class RDFTransform implements OverlayModel {
         this.theBaseIRI = iriBase;
     }
 
-    @JsonProperty("baseIRI")
+    @JsonProperty(RDFTransform.gstrBaseIRI)
     public void setBaseIRI(JsonNode jnodeBaseIRI)  {
         if ( Util.isVerbose(2) ) logger.info("Setting Base IRI from JSON Node...");
 
@@ -798,7 +959,9 @@ public class RDFTransform implements OverlayModel {
                 }
             }
         }
-        this.theBaseIRI = iriBase;
+        if (iriBase != null) {
+            this.theBaseIRI = iriBase;
+        }
     }
 
     @JsonIgnore
@@ -830,8 +993,7 @@ public class RDFTransform implements OverlayModel {
         }
     }
 
-    //@JsonProperty("prefixes")
-    @JsonProperty("namespaces")
+    @JsonProperty(RDFTransform.gstrNamespaces)
     public Collection<Vocabulary> getPrefixes() {
         if ( Util.isVerbose(2) ) logger.info("Getting prefixes...");
         if (thePrefixes != null) {
@@ -840,8 +1002,7 @@ public class RDFTransform implements OverlayModel {
         return null;
     }
 
-    //@JsonProperty("prefixes")
-    @JsonProperty("namespaces")
+    @JsonProperty(RDFTransform.gstrNamespaces)
     public void setPrefixes(Vocabulary[] aVocabularies) {
         if ( Util.isVerbose(2) ) logger.info("Setting prefixes...");
         if (this.thePrefixes == null) {
@@ -855,14 +1016,12 @@ public class RDFTransform implements OverlayModel {
         }
     }
 
-    //@JsonProperty("rootNodes")
     @JsonProperty("subjectMappings")
 	public List<ResourceNode> getRoots() {
         if ( Util.isVerbose(2) ) logger.info("Getting root nodes: size = " + this.theRootNodes.size());
         return this.theRootNodes;
     }
 
-    //@JsonProperty("rootNodes")
     @JsonProperty("subjectMappings")
 	public void setRoots(List<ResourceNode> listRootNodes) {
         if ( Util.isVerbose(2) ) logger.info("Setting root nodes...");
@@ -900,23 +1059,21 @@ public class RDFTransform implements OverlayModel {
      * The template's format is:
      * 
      * The Base IRI
-     * The Namespaces ( "namespaces" ) containing each namespace
+     * The Namespaces ( "namespaces" ) containing each namespace keyed to its prefix
      * The Subject Mappings array of Subjects ( "subjectMappings" ) consisting of
-     *      the Subject ( "subject" ) containing
-     *          the Subject's Namespace ( "namespace" )
-     *          the Subject's Source ( "valueSource" )
-     *          the Subject's Expression ( "expression" )
+     *      the Subject's Prefix ( "prefix" )
+     *      the Subject's Source ( "valueSource" )
+     *      the Subject's Expression ( "expression" )
      *      the Subject's Type Mappings ( "typeMappings" ) array of Types [via rdf:type ("a") property, an IRI] consisting of
-     *          the Type's Namespace (namespace)
+     *          the Type's Prefix (prefix)
      *          the Type's Source (valueSource)
      *          the Type's Expression (expression)
      *      the Subject's Property Mappings ( "propertyMappings" ) array of Properties consisting of
-     *          the Property (property) containing
-     *              the Property's Namespace (namespace)
-     *              the Property's Source (valueSource)
-     *              the Property's Expression (expression)
+     *          the Property's Prefix (prefix)
+     *          the Property's Source (valueSource)
+     *          the Property's Expression (expression)
      *          the Property's Objects (values) array of Objects [resource IRI or literal Data] consisting of
-     *              the Object's Namespace (namespace) [for resources]
+     *              the Object's Prefix (prefix) [for resources]
      *              the Object's Source (valueSource)
      *              the Object's Type (valueType) [Datatype for literals]
      *              the Object's Expression (expression)
@@ -927,44 +1084,40 @@ public class RDFTransform implements OverlayModel {
      *      ...
      * }
      * "subjectMappings" : [
-     *      {   "subject" : { },
-     *          "typeMappings" : [ { } ],
-     *          "propertyMappings" : [ { } ]
+     *      {   "prefix" : a prefix,
+     *          "valueSource" : { },
+     *          "expression": { }
+     *          "typeMappings" : [ { }, ... ],
+     *          "propertyMappings" : [ { }, ... ]
      *      },
      *      ...
      * ]
      * 
-     * "subject" : { 
-     *      "namespace" : a prefix,
-     *      "valueSource" : { },
-     *      "expression": { }
-     * }
      * "typeMappings" : [
-     *      {   "namespace" : a prefix,
+     *      {   "prefix" : a prefix,
      *          "valueSource" : { },
      *          "expression": { }
      *      },
      *      ...
      * ]
      * "propertyMappings" : [
-     *      {   "property" : {
-     *              "namespace" : a prefix,
-     *              "valueSource" : { },
-     *              "expression": { }
-     *          },
-     *          "values": [
-     *              {   "namespace" : a prefix,
-     *                  "valueSource" : { },
-     *                  "valueType" : { },
-     *                  "expression": { }
-     *              },
-     *              ...
-     *          ]
+     *      {   "prefix" : a prefix,
+     *          "valueSource" : { },
+     *          "expression": { },
+     *          "objectMappings": [ { }, ... ]
+     *      },
+     *      ...
+     * ]
+     * "objectMappings": [
+     *      {   "prefix" : a prefix,
+     *          "valueSource" : { },
+     *          "valueType" : { },
+     *          "expression": { }
      *      },
      *      ...
      * ]
      * 
-     * "namespace" : a prefix from "namespaces"
+     * "prefix" : a prefix from "namespaces"
      * 
      * "valueSource" : {
      *      "source": a source ["row_index", "record_id", "constant", "column", "expression"],
@@ -977,21 +1130,21 @@ public class RDFTransform implements OverlayModel {
      * "valueType" : {
      *      "type": a type ["iri", "literal", "language_literal", "datatype_literal", "value_bnode", "bnode"],
      *    for "iri":
-     *      "propertyMappings": [],
      *      "typeMappings": []
+     *      "propertyMappings": [],
      *    for "language_literal":
      *      "language": a language code ("en", ...)
      *    for "datatype_literal":
      *      "datatype": {
-     *          "namespace" : a prefix,
+     *          "prefix" : a prefix,
      *          "valueSource": { }
      *          "expression": { },
      *      }
      * }
      *      
      * "expression": {
-     *      "language": a code language ("grel"),
-     *      "code": the language expression
+     *      "language": a code language such as "grel",
+     *      "code": the code language expression
      * }
      */
     public void write(JsonGenerator theWriter)
@@ -1001,13 +1154,12 @@ public class RDFTransform implements OverlayModel {
         //
         // The Base IRI (baseIRI)...
         //
-        theWriter.writeStringField("baseIRI", this.theBaseIRI.toString());
+        theWriter.writeStringField(RDFTransform.gstrBaseIRI, this.theBaseIRI.toString());
 
         //
         // The Namespaces (namespaces)...
         //
-        //theWriter.writeFieldName("prefixes");
-        theWriter.writeFieldName("namespaces");
+        theWriter.writeFieldName(RDFTransform.gstrNamespaces);
         theWriter.writeStartObject();
         for ( Vocabulary vocab : this.thePrefixes.values() ) {
             vocab.write(theWriter);
@@ -1017,7 +1169,6 @@ public class RDFTransform implements OverlayModel {
         //
         // The Subject Mappings (subjectMappings) array...
         //
-        //theWriter.writeFieldName("rootNodes");
         theWriter.writeFieldName("subjectMappings");
         theWriter.writeStartArray();
         for (Node nodeRoot : this.theRootNodes) {
@@ -1028,20 +1179,5 @@ public class RDFTransform implements OverlayModel {
         theWriter.writeEndObject();
 
         theWriter.flush();
-    }
-
-    private Map<String, Vocabulary> clonePrefixes(Map<String, Vocabulary> mapPrefixes) {
-    	Map<String, Vocabulary> mapPrefixesCopy = new HashMap<String, Vocabulary>();
-
-        for ( Entry<String, Vocabulary> entryPrefix : mapPrefixes.entrySet() ) {
-    		mapPrefixesCopy.put(
-                entryPrefix.getKey(),
-                new Vocabulary(
-                    entryPrefix.getValue().getPrefix(),
-                    entryPrefix.getValue().getNamespace() )
-            );
-    	}
-
-    	return mapPrefixesCopy;
     }
 }

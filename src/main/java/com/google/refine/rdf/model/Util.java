@@ -27,53 +27,54 @@ import org.slf4j.LoggerFactory;
  * 	The Util class is a convenience class holding common values and functions used by others.
  */
 public class Util {
+	private final static String XSD_PREFIX        = "xsd:"; // for namespace http://www.w3.org/2001/XMLSchema#
 
-	private final static String XSD_DUR_IRI      = "http://www.w3.org/2001/XMLSchema#duration";
-	private final static String XSD_DT_IRI       = "http://www.w3.org/2001/XMLSchema#dateTime";
-	private final static String XSD_TIME_IRI     = "http://www.w3.org/2001/XMLSchema#time";
-	private final static String XSD_DATE_IRI     = "http://www.w3.org/2001/XMLSchema#date";
-	private final static String XSD_GYM_IRI      = "http://www.w3.org/2001/XMLSchema#gYearMonth";
-	private final static String XSD_GYEAR_IRI    = "http://www.w3.org/2001/XMLSchema#gYear";
-	private final static String XSD_GMD_IRI      = "http://www.w3.org/2001/XMLSchema#gMonthday";
-	private final static String XSD_GDAY_IRI     = "http://www.w3.org/2001/XMLSchema#gDay";
-	private final static String XSD_GMONTH_IRI   = "http://www.w3.org/2001/XMLSchema#gMonth";
-	private final static String XSD_BOOL_IRI     = "http://www.w3.org/2001/XMLSchema#boolean";
-	private final static String XSD_B64BIN_IRI   = "http://www.w3.org/2001/XMLSchema#base64Binary";
-	private final static String XSD_XBIN_IRI     = "http://www.w3.org/2001/XMLSchema#hexBinary";
-	private final static String XSD_FLOAT_IRI    = "http://www.w3.org/2001/XMLSchema#float";
-	private final static String XSD_DOUBLE_IRI   = "http://www.w3.org/2001/XMLSchema#double";
-	private final static String XSD_ANY_IRI      = "http://www.w3.org/2001/XMLSchema#anyURI";
-	private final static String XSD_QNAME_IRI    = "http://www.w3.org/2001/XMLSchema#QName";
-	private final static String XSD_NOTATION_IRI = "http://www.w3.org/2001/XMLSchema#NOTATION";
+	private final static String XSD_DUR_IRI      = XSD_PREFIX + "duration";
+	private final static String XSD_DT_IRI       = XSD_PREFIX + "dateTime";
+	private final static String XSD_TIME_IRI     = XSD_PREFIX + "time";
+	private final static String XSD_DATE_IRI     = XSD_PREFIX + "date";
+	private final static String XSD_GYM_IRI      = XSD_PREFIX + "gYearMonth";
+	private final static String XSD_GYEAR_IRI    = XSD_PREFIX + "gYear";
+	private final static String XSD_GMD_IRI      = XSD_PREFIX + "gMonthDay";
+	private final static String XSD_GDAY_IRI     = XSD_PREFIX + "gDay";
+	private final static String XSD_GMONTH_IRI   = XSD_PREFIX + "gMonth";
+	private final static String XSD_BOOL_IRI     = XSD_PREFIX + "boolean";
+	private final static String XSD_B64BIN_IRI   = XSD_PREFIX + "base64Binary";
+	private final static String XSD_XBIN_IRI     = XSD_PREFIX + "hexBinary";
+	private final static String XSD_FLOAT_IRI    = XSD_PREFIX + "float";
+	private final static String XSD_DOUBLE_IRI   = XSD_PREFIX + "double";
+	private final static String XSD_ANY_IRI      = XSD_PREFIX + "anyURI";
+	private final static String XSD_QNAME_IRI    = XSD_PREFIX + "QName";
+	private final static String XSD_NOTATION_IRI = XSD_PREFIX + "NOTATION";
 
-	private final static String XSD_STR_IRI      = "http://www.w3.org/2001/XMLSchema#string";
-	private final static String XSD_NSTR_IRI     = "http://www.w3.org/2001/XMLSchema#normalizedString";
-	private final static String XSD_TOKEN_IRI    = "http://www.w3.org/2001/XMLSchema#token";
-	private final static String XSD_LANG_IRI     = "http://www.w3.org/2001/XMLSchema#language";
-	private final static String XSD_NAME_IRI     = "http://www.w3.org/2001/XMLSchema#Name";
-	private final static String XSD_NCNAME_IRI   = "http://www.w3.org/2001/XMLSchema#NCName";
-	private final static String XSD_ID_IRI       = "http://www.w3.org/2001/XMLSchema#ID";
-	private final static String XSD_IDREF_IRI    = "http://www.w3.org/2001/XMLSchema#IDREF";
-	private final static String XSD_IDREFS_IRI   = "http://www.w3.org/2001/XMLSchema#IDREFS";
-	private final static String XSD_ENITY_IRI    = "http://www.w3.org/2001/XMLSchema#ENTITY";
-	private final static String XSD_ENITIES_IRI  = "http://www.w3.org/2001/XMLSchema#ENTITIES";
-	private final static String XSD_NMTOKEN_IRI  = "http://www.w3.org/2001/XMLSchema#NMTOKEN";
-	private final static String XSD_NMTOKENS_IRI = "http://www.w3.org/2001/XMLSchema#NMTOKENS";
+	private final static String XSD_STR_IRI      = XSD_PREFIX + "string";
+	private final static String XSD_NSTR_IRI     = XSD_PREFIX + "normalizedString";
+	private final static String XSD_TOKEN_IRI    = XSD_PREFIX + "token";
+	private final static String XSD_LANG_IRI     = XSD_PREFIX + "language";
+	private final static String XSD_NAME_IRI     = XSD_PREFIX + "Name";
+	private final static String XSD_NCNAME_IRI   = XSD_PREFIX + "NCName";
+	private final static String XSD_ID_IRI       = XSD_PREFIX + "ID";
+	private final static String XSD_IDREF_IRI    = XSD_PREFIX + "IDREF";
+	private final static String XSD_IDREFS_IRI   = XSD_PREFIX + "IDREFS";
+	private final static String XSD_ENITY_IRI    = XSD_PREFIX + "ENTITY";
+	private final static String XSD_ENITIES_IRI  = XSD_PREFIX + "ENTITIES";
+	private final static String XSD_NMTOKEN_IRI  = XSD_PREFIX + "NMTOKEN";
+	private final static String XSD_NMTOKENS_IRI = XSD_PREFIX + "NMTOKENS";
 
-	private final static String XSD_DEC_IRI      = "http://www.w3.org/2001/XMLSchema#decimal";
-	private final static String XSD_INTEGER_IRI  = "http://www.w3.org/2001/XMLSchema#integer";
-	private final static String XSD_NPINT_IRI    = "http://www.w3.org/2001/XMLSchema#nonPositiveInteger";
-	private final static String XSD_NINT_IRI     = "http://www.w3.org/2001/XMLSchema#negativeInteger";
-	private final static String XSD_LONG_IRI     = "http://www.w3.org/2001/XMLSchema#long";
-	private final static String XSD_INT_IRI      = "http://www.w3.org/2001/XMLSchema#int";
-	private final static String XSD_SHORT_IRI    = "http://www.w3.org/2001/XMLSchema#short";
-	private final static String XSD_BYTE_IRI     = "http://www.w3.org/2001/XMLSchema#byte";
-	private final static String XSD_NNINT_IRI    = "http://www.w3.org/2001/XMLSchema#nonNegativeInteger";
-	private final static String XSD_ULONG_IRI    = "http://www.w3.org/2001/XMLSchema#unsignedLong";
-	private final static String XSD_UINT_IRI     = "http://www.w3.org/2001/XMLSchema#unsignedInt";
-	private final static String XSD_USHORT_IRI   = "http://www.w3.org/2001/XMLSchema#unsignedShort";
-	private final static String XSD_UBYTE_IRI    = "http://www.w3.org/2001/XMLSchema#unsignedByte";
-	private final static String XSD_PINT_IRI     = "http://www.w3.org/2001/XMLSchema#positiveInteger";
+	private final static String XSD_DEC_IRI      = XSD_PREFIX + "decimal";
+	private final static String XSD_INTEGER_IRI  = XSD_PREFIX + "integer";
+	private final static String XSD_NPINT_IRI    = XSD_PREFIX + "nonPositiveInteger";
+	private final static String XSD_NINT_IRI     = XSD_PREFIX + "negativeInteger";
+	private final static String XSD_LONG_IRI     = XSD_PREFIX + "long";
+	private final static String XSD_INT_IRI      = XSD_PREFIX + "int";
+	private final static String XSD_SHORT_IRI    = XSD_PREFIX + "short";
+	private final static String XSD_BYTE_IRI     = XSD_PREFIX + "byte";
+	private final static String XSD_NNINT_IRI    = XSD_PREFIX + "nonNegativeInteger";
+	private final static String XSD_ULONG_IRI    = XSD_PREFIX + "unsignedLong";
+	private final static String XSD_UINT_IRI     = XSD_PREFIX + "unsignedInt";
+	private final static String XSD_USHORT_IRI   = XSD_PREFIX + "unsignedShort";
+	private final static String XSD_UBYTE_IRI    = XSD_PREFIX + "unsignedByte";
+	private final static String XSD_PINT_IRI     = XSD_PREFIX + "positiveInteger";
 
 	private final static List<String> XML_SCHEMA_DEFS = Arrays.asList(
 		XSD_DUR_IRI, XSD_DT_IRI, XSD_TIME_IRI, XSD_DATE_IRI,
@@ -210,16 +211,16 @@ public class Util {
 			return null;
 		}
 
-		ParsedIRI baseIRI = null;
+		ParsedIRI iriNew = null;
 		try {
-			baseIRI = new ParsedIRI(strIRI);
+			iriNew = new ParsedIRI(strIRI);
 		}
 		catch (Exception ex) {
 			logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
-			baseIRI = null;
+			iriNew = null;
 		}
 
-		return baseIRI;
+		return iriNew;
 	}
 
 	public static Object evaluateExpression(Project theProject, String strExpression, String strColumnName, int iRowIndex)

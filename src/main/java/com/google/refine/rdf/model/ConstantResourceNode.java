@@ -47,25 +47,26 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     }
 
     @Override
-    protected List<Value> createResources() {
+    protected void createResources() {
         // For a Constant Resource Node, we only need one common resource per record,
         // so process as a row...
-        return createRowResources();
+        this.createRowResources();
     }
 
 	@Override
-	protected List<Value> createRecordResources() {
+	protected void createRecordResources() {
         // NOT USED!
-        return null;
+        this.listResources = null;
     }
 
 	@Override
-	protected List<Value> createRowResources() {
-        List<Value> listResources = new ArrayList<Value>();
-        this.normalizeResource(this.strIRI, listResources);
-        if ( listResources.isEmpty() )
-            listResources = null;
-        return listResources;
+	protected void createRowResources() {
+        this.listResources = new ArrayList<Value>();
+        this.normalizeResource(this.strIRI);
+
+        if ( this.listResources.isEmpty() ) {
+            this.listResources = null;
+        }
     }
 
 	@Override

@@ -15,13 +15,34 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	static private final String strNODETYPE = "blank";
+	static private final String strBNodePrefix = "_:";
+	static private final String strNotFirstLast = "[\\.]+";
+	static private final String strNotFirst = "^[-\u00B7\u0300\u036F\u203F\u2040]+";
 
 	private final BNode bnode;
+	private final String strConstant;
 
 	@JsonCreator
-	public ConstantBlankNode() {
-		// A Constant Blank Node is a singular blank node...
-		this.bnode = this.theFactory.createBNode();
+	public ConstantBlankNode(String strConstant) {
+		// NOTE: A Constant Blank Node is a singular blank node base on the supplied constant value.
+		this.strConstant = strConstant;
+
+		//
+		// Validate the supplied constant value as a BNode ID based on Turtle limits...
+		//
+		String strBNodeValue = Util.toSpaceStrippedString(strConstant).replaceAll("[\\p{Whitespace}", "_");
+		while ( strBNodeValue.startsWith(ConstantBlankNode.strBNodePrefix) ) {
+			strBNodeValue = strBNodeValue.substring(2);
+		}
+
+		// Not First or Last...
+		strBNodeValue = strBNodeValue.replaceFirst("^" + ConstantBlankNode.strNotFirstLast, "");
+		strBNodeValue = strBNodeValue.replaceFirst(ConstantBlankNode.strNotFirstLast + "$", "");
+
+		// Not First...
+		strBNodeValue = strBNodeValue.replaceFirst(ConstantBlankNode.strNotFirst, "");
+
+		this.bnode = this.theFactory.createBNode(ConstantBlankNode.strBNodePrefix + strBNodeValue);
 	}
 
     static String getNODETYPE() {
@@ -30,7 +51,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	public String getNodeName() {
-		return "<BNode>";
+		return "<BNode>:" + "<" + this.strConstant + ">" + this.bnode.getID();
 	}
 
 	@Override
@@ -39,23 +60,22 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 	}
 
 	@Override
-	protected List<Value> createResources() {
+	protected void createResources() {
         // For a Constant Blank Node, we only need one common blank node resource per record,
         // so process as a row...
-        return createRowResources();
+        this.createRowResources();
     }
 
 	@Override
-	protected List<Value> createRecordResources() {
+	protected void createRecordResources() {
         // NOT USED!
-        return null;
+        this.listResources = null;
     }
 
 	@Override
-	protected List<Value> createRowResources() {
-		List<Value> bnodes = new ArrayList<Value>();
-		bnodes.add(bnode);
-        return bnodes;
+	protected void createRowResources() {
+		this.listResources = new ArrayList<Value>();
+		this.listResources.add(bnode);
     }
 
 	@Override

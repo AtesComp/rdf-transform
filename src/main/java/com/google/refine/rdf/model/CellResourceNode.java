@@ -67,8 +67,10 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     }
 
     @Override
-    protected List<Value> createRowResources() {
+    protected void createRowResources() {
         if (Util.isDebugMode()) logger.info("DEBUG: createRowResources...");
+
+        this.listResources = null;
         Object results = null;
         try {
         	results =
@@ -77,15 +79,15 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         catch (ParsingException ex) {
             // An cell might result in a ParsingException when evaluating an IRI expression.
             // Eat the exception...
-            return null;
+            return;
         }
 
         // Results cannot be classed...
         if ( results == null || ExpressionUtils.isError(results) ) {
-            return null;
+            return;
         }
 
-        List<Value> listResources = new ArrayList<Value>();
+        this.listResources = new ArrayList<Value>();
 
         // Results are an array...
         if ( results.getClass().isArray() ) {
@@ -93,17 +95,17 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 
             List<Object> listResult = Arrays.asList(results);
             for (Object objResult : listResult) {
-                this.normalizeResource(objResult, listResources);
+                this.normalizeResource(objResult);
             }
         }
         // Results are singular...
         else {
-            this.normalizeResource(results, listResources);
+            this.normalizeResource(results);
         }
 
-        if ( listResources.isEmpty() )
-            listResources = null;
-        return listResources;
+        if ( this.listResources.isEmpty() ) {
+            this.listResources = null;
+        }
     }
 
 	@Override

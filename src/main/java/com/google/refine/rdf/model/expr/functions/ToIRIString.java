@@ -10,12 +10,17 @@ import com.google.refine.grel.Function;
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 
 /*
- * forIRI: Convert string to qualify as an IRI component
+ * Class ToIRIString: Convert string to qualify as an RDF IRI component
+ * 
+ *  NOTE: We don't check for a leading scheme.  We could append the baseIRI
+ *      by retrieving the current baseIRI setting from the binding properties.
  */
 
 public class ToIRIString implements Function {
 
     public Object call(Properties bindings, Object[] args) {
+        //String strBaseIRI = bindings.get("baseIRI").toString();
+
         if (args.length != 1) {
             return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " expects one string!");
         }
@@ -29,12 +34,14 @@ public class ToIRIString implements Function {
 
         int iTry = 0;
         do {
-            // Check if it's already an acceptable IRI (absolute or relative)...
+            // Check if it's an acceptable IRI now (absolute or relative)...
             try {
                 new ParsedIRI(strConvert);
                 break;
             }
             catch (Exception ex) {
+                if (iTry > 7)
+                    break;
                 // ...continue by narrowing the conversion string...
             }
             switch (iTry) {
@@ -46,7 +53,7 @@ public class ToIRIString implements Function {
                             replaceAll("[\\p{Whitespace}" + Pattern.quote("<>\"{}|\\^`") + "]+", "_");
                     break;
                 case 1:
-                    // Replace any NOT Supported characters with underscores...
+                    // Replace any unsupported characters with underscores...
                     strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~:/\\?#\\[\\]@\\%!\\$&'\\(\\)\\*\\+,;=]+", "_");
                     break;
                 case 2:
@@ -74,9 +81,8 @@ public class ToIRIString implements Function {
                     strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~", "_");
                     break;
             }
+            // Condense underscores...
             strConvert = strConvert.replaceAll("__+", "_");
-            if (iTry >= 7)
-                break;
             ++iTry;
         } while (true);
 

@@ -6,9 +6,18 @@ import com.google.refine.expr.EvalError;
 import com.google.refine.grel.ControlFunctionRegistry;
 import com.google.refine.grel.Function;
 
+/*
+ * Class ToStrippedLiteral: Convert string to qualify as an RDF Literal
+ * 
+ *  NOTE: We don't check for a leading scheme.  We could append the baseIRI
+ *      by retrieving the current baseIRI setting from the binding properties.
+ */
+
 public class ToStrippedLiteral implements Function {
 
     public Object call(Properties bindings, Object[] args) {
+        //String strBaseIRI = bindings.get("baseIRI").toString();
+
         if (args.length != 1) {
             return new EvalError(ControlFunctionRegistry.getFunctionName(this) + " expects a single string!");
         }
@@ -17,9 +26,12 @@ public class ToStrippedLiteral implements Function {
         }
         String strConvert = args[0].toString();
         if ( strConvert.isEmpty() ) {
-            return strConvert;
+            return new EvalError("empty string");
         }
-        return strConvert.replaceAll("\uC2A0", " ").replaceAll("\\h", " ").strip();
+
+        strConvert = strConvert.replaceAll("\uC2A0", " ").replaceAll("\\h", " ").strip();
+
+        return strConvert;
     }
 
     @Override

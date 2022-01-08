@@ -23,10 +23,10 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     @JsonCreator
     public ConstantLiteralNode(
     		@JsonProperty("value")     String strValue,
-    		@JsonProperty("valueType") String strValueType,
-    		@JsonProperty("lang")      String strLanguage )
+    		@JsonProperty("datatype")  String strDatatype,
+    		@JsonProperty("language")  String strLanguage )
     {
-        super(strValueType, strLanguage);
+        super(strDatatype, strLanguage);
         this.strValue = strValue; // ..no stripping here!
     }
 
@@ -43,8 +43,8 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
             strName = this.strValue;
 
             // If there is a value type...
-            if (this.strValueType != null) {
-                strName += "^^" + this.strValueType;
+            if (this.strDatatype != null) {
+                strName += "^^" + this.strDatatype;
             }
 
             // If there is not a value type AND there is a language...
@@ -82,12 +82,12 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
         Literal literal = null;
 
         // If there is a value type...
-        if (this.strValueType != null) {
+        if (this.strDatatype != null) {
             IRI iriValueType = null;
             try {
                 iriValueType =
                     this.theFactory.createIRI(
-                        this.expandPrefixedIRI(this.strValueType)
+                        this.expandPrefixedIRI(this.strDatatype)
                     );
             }
             catch (IllegalArgumentException ex) {
@@ -116,6 +116,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
 
         List<Value> literals = new ArrayList<Value>();
         literals.add(literal);
+
         return literals;
     }
 
@@ -123,8 +124,8 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     public void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
         writer.writeStringField("nodeType", ConstantLiteralNode.strNODETYPE);
         writer.writeStringField("value", strValue);
-        if (strValueType != null) {
-            writer.writeStringField("valueType", strValueType);
+        if (strDatatype != null) {
+            writer.writeStringField("valueType", strDatatype);
         }
         if (strLanguage != null) {
             writer.writeStringField("lang", strLanguage);

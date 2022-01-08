@@ -9,30 +9,32 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 abstract public class LiteralNode extends Node {
-    protected final String strValueType;
+    protected final String strDatatype;
     protected final String strLanguage;
 
-    public LiteralNode(String strValueType, String strLanguage)
+    public LiteralNode(String strDatatype, String strLanguage)
     {
-        this.strValueType = strValueType;
+        this.strDatatype = strDatatype;
         this.strLanguage = strLanguage;
     }
 
-    @JsonProperty("valueType")
+    @JsonProperty("datatype")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String getValueType() {
-        return this.strValueType;
+    public String getDatatype() {
+        return this.strDatatype;
     }
 
-    @JsonProperty("lang")
+    @JsonProperty("language")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getLanguage() {
         return this.strLanguage;
     }
 
     /*
-     *  Method createObjects() creates the object list for triple statements
-     *  from this node on Rows / Records.
+     *  Method setObjectParameters()
+     * 
+     *  Copy to this Literal object the parameters from the given Property resource.
+     * 
      */
     @JsonIgnore
 	protected void setObjectParameters(ResourceNode nodeProperty) {

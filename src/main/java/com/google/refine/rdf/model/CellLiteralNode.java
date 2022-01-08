@@ -32,11 +32,11 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     public CellLiteralNode(
     		@JsonProperty("columnName")  String strColumnName,
     		@JsonProperty("expression")  String strExp,
-    		@JsonProperty("valueType")   String strValueType,
-    		@JsonProperty("lang")        String strLanguage,
-    		@JsonProperty("isIndex")     boolean bIsIndex )
+    		@JsonProperty("isIndex")     boolean bIsIndex,
+    		@JsonProperty("datatype")    String strDatatype,
+    		@JsonProperty("language")    String strLanguage )
 	{
-        super(strValueType, strLanguage);
+        super(strDatatype, strLanguage);
     	this.strColumnName    = strColumnName;
         this.strExpression    = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
@@ -53,8 +53,8 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
             ( "<" + this.strExpression + ">" );
 
         // If there is a value type...
-        if (this.strValueType != null) {
-            strName += "^^" + this.strValueType;
+        if (this.strDatatype != null) {
+            strName += "^^" + this.strDatatype;
         }
 
         // If there is not a value type AND there is a language...
@@ -91,7 +91,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
      *  from this node on Rows / Records.
      */
     @Override
-	protected List<Value> createObjects(ResourceNode nodeProperty) { //TODO: See ResourceNode -> createResources() and following
+	protected List<Value> createObjects(ResourceNode nodeProperty) {
         this.setObjectParameters(nodeProperty);
 		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createObjects...");
 
@@ -102,9 +102,9 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
         //
         // Record Mode
         //
-		if ( nodeProperty.theRec.isRecordMode() ) { // ...link is Record, 
+		if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based, 
 			// ...set to Row Mode and process on current row as set by rowNext()...
-			this.theRec.setLink(nodeProperty, true);
+			this.theRec.setMode(nodeProperty, true);
             literals = this.createRecordObjects();
         }
         //
@@ -112,7 +112,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
         //
         else {
 			// ...process on current row as set by rowNext()...
-			this.theRec.setLink(nodeProperty);
+			this.theRec.setMode(nodeProperty);
             literals = this.createRowObjects();
         }
         this.theRec.clear();
@@ -198,8 +198,8 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 		List<Value> literals = new ArrayList<Value>();
 		for (String strValue : listStrings) {
 			Literal literal;
-			if (this.strValueType != null) {
-				literal = this.theFactory.createLiteral( strValue, this.theFactory.createIRI(this.strValueType) );
+			if (this.strDatatype != null) {
+				literal = this.theFactory.createLiteral( strValue, this.theFactory.createIRI(this.strDatatype) );
 			}
 			else if (this.strLanguage != null) {
 				literal = this.theFactory.createLiteral( strValue, this.strLanguage );
@@ -225,8 +225,8 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 		if (this.strExpression != null) {
 			writer.writeStringField("expression", this.strExpression);
 		}
-		if (this.strValueType != null ) {
-			writer.writeStringField("valueType", this.strValueType);
+		if (this.strDatatype != null ) {
+			writer.writeStringField("valueType", this.strDatatype);
 		}
 		else if (this.strLanguage != null) {
 			writer.writeStringField("language", this.strLanguage);
