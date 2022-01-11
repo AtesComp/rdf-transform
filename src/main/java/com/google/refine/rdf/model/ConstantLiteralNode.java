@@ -14,20 +14,22 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:ConstLitNode");
 
     static private final String strNODETYPE = "literal";
 
-    private final String strValue;
+    private final String strConstant;
 
     @JsonCreator
-    public ConstantLiteralNode(
-    		@JsonProperty("value")     String strValue,
-    		@JsonProperty("datatype")  String strDatatype,
-    		@JsonProperty("language")  String strLanguage )
+    public ConstantLiteralNode(String strConstant, ConstantResourceNode nodeDatatype, String strLanguage )
     {
-        super(strDatatype, strLanguage);
-        this.strValue = strValue; // ..no stripping here!
+        this.strConstant = strConstant; // ..no stripping here!
+        this.nodeDatatype = nodeDatatype;
+        this.strLanguage = strLanguage;
     }
 
     static String getNODETYPE() {
@@ -36,24 +38,19 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
 
 	@Override
 	public String getNodeName() {
-        String strName = "<NULL>";
+        String strName = "Constant Literal: <[" + this.strConstant +  "]";
 
-        // If there is a value to work with...
-        if (this.strValue != null && this.strValue.length() > 0) {
-            strName = this.strValue;
-
-            // If there is a value type...
-            if (this.strDatatype != null) {
-                strName += "^^" + this.strDatatype;
-            }
-
-            // If there is not a value type AND there is a language...
-            else if (this.strLanguage != null) {
-                strName += "@" + strLanguage;
-            }
+        // If there is a datatype...
+        if (this.nodeDatatype != null) {
+            strName += "^^" + this.nodeDatatype.normalizeResourceAsString();
         }
 
-		return strName;
+        // If there is NOT a datatype BUT there is a language...
+        else if (this.strLanguage != null) {
+            strName += "@" + strLanguage;
+        }
+
+		return strName + ">";
 	}
 
 	@Override
@@ -61,71 +58,42 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
 		return ConstantLiteralNode.strNODETYPE;
 	}
 
-    @JsonProperty("value")
-    public String getValue() {
-        return this.strValue;
+    public String getConstant() {
+        return this.strConstant;
+    }
+
+    @Override
+	protected void createRecordLiterals() {
+        // For a Constant Literal Node, we only need one constant literal per record,
+        // so process as a row...
+        this.createRowLiterals();
     }
 
     /*
-     *  Method createObjects() creates the object list for triple statements
-     *  from this node on Rows / Records.
+     *  Method createRowLiterals() creates the object list for triple statements
+     *  from this node on a Row.
      */
     @Override
-	protected List<Value> createObjects(ResourceNode nodeProperty) {
-        this.setObjectParameters(nodeProperty);
+	protected void createRowLiterals() {
+		if (Util.isDebugMode()) ConstantLiteralNode.logger.info("DEBUG: createRowLiterals...");
+
+		this.listValues = null;
 
         // If there is no value to work with...
-        if ( this.strValue == null || this.strValue.isEmpty() ) {
-            return null;
+        if ( this.strConstant == null || this.strConstant.isEmpty() ) {
+            return;
         }
 
-        Literal literal = null;
-
-        // If there is a value type...
-        if (this.strDatatype != null) {
-            IRI iriValueType = null;
-            try {
-                iriValueType =
-                    this.theFactory.createIRI(
-                        this.expandPrefixedIRI(this.strDatatype)
-                    );
-            }
-            catch (IllegalArgumentException ex) {
-                // ...continue to get literal another way...
-            }
-            if (iriValueType != null) {
-                literal = this.theFactory.createLiteral( this.strValue, iriValueType );
-            }
-        }
-
-        // If there is NOT a value type BUT there is a language...
-        if (literal == null && this.strLanguage != null) {
-                literal = this.theFactory.createLiteral(this.strValue, strLanguage);
-        }
-
-        // If there is NOT a value type OR language...
-        if (literal == null) {
-            // Don't decorate the value...
-            literal = this.theFactory.createLiteral(this.strValue);
-        }
-
-        // If there is still no literal...
-        if (literal == null) {
-            return null;
-        }
-
-        List<Value> literals = new ArrayList<Value>();
-        literals.add(literal);
-
-        return literals;
+        this.listValues = new ArrayList<Value>();
+        this.normalizeLiteral(this.strConstant);
     }
 
 	@Override
     public void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
         writer.writeStringField("nodeType", ConstantLiteralNode.strNODETYPE);
-        writer.writeStringField("value", strValue);
-        if (strDatatype != null) {
-            writer.writeStringField("valueType", strDatatype);
+        writer.writeStringField("value", strConstant);
+        if (nodeDatatype != null) {
+            writer.writeStringField("valueType", nodeDatatype);
         }
         if (strLanguage != null) {
             writer.writeStringField("lang", strLanguage);

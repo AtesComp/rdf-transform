@@ -335,7 +335,7 @@ public class RDFTransform implements OverlayModel {
         NodeType eNodeType = null;
         boolean bValueNode = false;
         boolean bConstNode = false;
-        String strValue = null;
+        String strValue = null; // ..as Column Name or Constant
         boolean bIsExpression = false;
 
         if ( strSource.equals(RDFTransform.gstrRowIndex) ) {
@@ -429,10 +429,10 @@ public class RDFTransform implements OverlayModel {
         if (bResource) {
             if ( strType.equals(RDFTransform.gstrIRI) ) {
                 if ( bValueNode ) {
-                    rnodeResource = new CellResourceNode(strValue, strExpCode, bIsIndex);
+                    rnodeResource = new CellResourceNode(strValue, strPrefix, strExpCode, bIsIndex);
                 }
                 else if ( bConstNode ) {
-                    rnodeResource = new ConstantResourceNode(strValue);
+                    rnodeResource = new ConstantResourceNode(strValue, strPrefix);
                 }
                 else if ( eNodeType == NodeType.EXPRESSION ) {
                     // TODO: Currently unsupported
@@ -465,6 +465,7 @@ public class RDFTransform implements OverlayModel {
             String strDatatypePrefix = null;
             String strDatatypeValue = null;
             String strDataType = null;
+            ConstantResourceNode nodeDatatype = null;
             String strLanguageCode = null;
 
             if ( strType.equals(RDFTransform.gstrLiteral) ) {
@@ -503,7 +504,8 @@ public class RDFTransform implements OverlayModel {
                             strDataType = Util.getDataType(iriNamespace, strDatatypeValue);
                             if ( ! ( strDataType == null || strDataType.isEmpty() ) ) {
                                 // Set the Datatype to the CIRIE (Prefix + Datatype)...
-                                strDataType = strDatatypePrefix + ":" + strDatatypeValue;
+                                //strDataType = strDatatypePrefix + ":" + strDatatypeValue;
+                                nodeDatatype = new ConstantResourceNode(strDatatypeValue, strDatatypePrefix);
                             }
                         }
                     }
@@ -514,10 +516,10 @@ public class RDFTransform implements OverlayModel {
             }
 
             if ( bValueNode ) {
-                lnodeLiteral = new CellLiteralNode(strValue, strExpCode, bIsIndex, strDataType, strLanguageCode);
+                lnodeLiteral = new CellLiteralNode(strValue, strExpCode, bIsIndex, nodeDatatype, strLanguageCode);
             }
             else if ( bConstNode ) {
-                lnodeLiteral = new ConstantLiteralNode(strValue, strDataType, strLanguageCode);
+                lnodeLiteral = new ConstantLiteralNode(strValue, nodeDatatype, strLanguageCode);
             }
             else if ( eNodeType == NodeType.EXPRESSION ) {
                 // TODO: Currently unsupported - what is an expression? Value or Constant?
@@ -580,7 +582,7 @@ public class RDFTransform implements OverlayModel {
             boolean bConstNode = false;
             String strValue = null;
             boolean bIsExpression = false;
-    
+
             //if ( strSource.equals(RDFTransform.gstrRowIndex) ) {
             //    // A Row Index based node...
             //    bIsIndex = true;
@@ -638,15 +640,15 @@ public class RDFTransform implements OverlayModel {
             //
             // Process Property into a Node...
             //
-            //  NOTE: At this time, We are doing nothing mode than checking that a node can be created
+            //  TODO NOTE: At this time, we are doing nothing more than checking that a node can be created
             //      from the property information.
             //
             ResourceNode rnodeResource = null;
             if ( bValueNode ) {
-                rnodeResource = new CellResourceNode(strValue, strExpCode, false);
+                rnodeResource = new CellResourceNode(strValue, strPrefix, strExpCode, false);
             }
             else if ( bConstNode ) {
-                rnodeResource = new ConstantResourceNode(strValue);
+                rnodeResource = new ConstantResourceNode(strValue, strPrefix);
             }
             else if ( eNodeType == NodeType.EXPRESSION ) {
                 // TODO: Currently unsupported

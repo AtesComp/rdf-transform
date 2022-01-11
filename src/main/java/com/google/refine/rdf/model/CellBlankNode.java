@@ -21,21 +21,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellBlankNode extends ResourceNode implements CellNode {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:CellBlankNode");
+	static private final Logger logger = LoggerFactory.getLogger("RDFT:CellBlankNode");
 
 	static private final String strNODETYPE = "cell-as-blank";
 
     private final String strColumnName;
-    private final String strExpression;
 	//private final BNode bnode;
 
     @JsonCreator
-    public CellBlankNode(
-    		@JsonProperty("columnName")  String strColumnName,
-			@JsonProperty("expression")  String strExp,
-			@JsonProperty("isIndex")     boolean bIsIndex )
+    public CellBlankNode(String strColumnName, String strExp, boolean bIsIndex)
 	{
         this.strColumnName    = strColumnName;
+		// Prefix not required for blank nodes
         this.strExpression    = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
 		//this.bnode = this.theFactory.createBNode();
@@ -47,9 +44,9 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 
 	@Override
 	public String getNodeName() {
-		return "<BNode>:" +
-				( this.bIsIndex ? "<ROW#>" : this.strColumnName ) + 
-				( "<" + this.strExpression + ">" ) + "BNode(s) depend on results";
+		return "Cell BNode: <[" +
+			( this.bIsIndex ? "Index#" : this.strColumnName ) +
+			"] on [" + this.strExpression + "]>";
 	}
 
 	@Override
@@ -75,7 +72,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	protected void createRowResources() {
         if (Util.isDebugMode()) logger.info("DEBUG: createRowResources...");
 
-		this.listResources = null;
+		this.listValues = null;
 		Object results = null;
     	try {
 			// NOTE: Currently, the expression just results in a "true" (some non-empty string is evaluated)
@@ -95,7 +92,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 			return;
 		}
 
-        this.listResources = new ArrayList<Value>();
+        this.listValues = new ArrayList<Value>();
 
 		// Results are an array...
 		if ( results.getClass().isArray() ) {
@@ -111,8 +108,8 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 			this.normalizeBNodeResource(results);
 		}
 
-		if ( this.listResources.isEmpty() ) {
-			this.listResources = null;
+		if ( this.listValues.isEmpty() ) {
+			this.listValues = null;
 		}
     }
 
@@ -120,7 +117,8 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 		// TODO: Add prefix "\"_:\" + " and use it or just "true" or "false"?
 		String strResult = objResult.toString();
 		if ( ! ( strResult == null || strResult.isEmpty() ) ) {
-			this.listResources.add( this.theFactory.createBNode() );
+			BNode bnode = this.theFactory.createBNode();
+			this.listValues.add(bnode);
 		}
 	}
 

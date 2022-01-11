@@ -21,20 +21,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellResourceNode extends ResourceNode implements CellNode {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:CellResNode");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:CellResNode");
 
 	static private final String strNODETYPE = "cell-as-resource";
 
     private final String strColumnName;
-    private final String strExpression;
+    private final String strPrefix;
 
     @JsonCreator
-    public CellResourceNode(
-    		@JsonProperty("columnName")  String strColumnName,
-    		@JsonProperty("expression")  String strExp,
-    		@JsonProperty("isIndex")     boolean bIsIndex )
+    public CellResourceNode(String strColumnName, String strPrefix, String strExp, boolean bIsIndex)
     {
     	this.strColumnName = strColumnName;
+        this.strPrefix     = Util.toSpaceStrippedString(strPrefix);
         this.strExpression = strExp;
         this.bIsIndex = bIsIndex;
     }
@@ -45,8 +43,9 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 
 	@Override
 	public String getNodeName() {
-		return ( this.bIsIndex ? "<Index#>" : this.strColumnName ) + 
-                ( "<" + this.strExpression + ">" );
+        return "Cell IRI: <" + this.strPrefix + ":[" +
+            ( this.bIsIndex ? "Index#" : this.strColumnName ) + 
+            "] on [" + this.strExpression + "]>";
 	}
 
 	@Override
@@ -60,6 +59,12 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 		return this.strColumnName;
 	}
 
+	@JsonProperty("prefix")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public String getPrefix() {
+		return this.strPrefix;
+	}
+
     @JsonProperty("expression")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
     public String getExpression() {
@@ -68,9 +73,9 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 
     @Override
     protected void createRowResources() {
-        if (Util.isDebugMode()) logger.info("DEBUG: createRowResources...");
+        if (Util.isDebugMode()) CellResourceNode.logger.info("DEBUG: createRowResources...");
 
-        this.listResources = null;
+        this.listValues = null;
         Object results = null;
         try {
         	results =
@@ -87,24 +92,24 @@ public class CellResourceNode extends ResourceNode implements CellNode {
             return;
         }
 
-        this.listResources = new ArrayList<Value>();
+        this.listValues = new ArrayList<Value>();
 
         // Results are an array...
         if ( results.getClass().isArray() ) {
-            if (Util.isDebugMode()) logger.info("DEBUG: Result is Array...");
+            if (Util.isDebugMode()) CellResourceNode.logger.info("DEBUG: Result is Array...");
 
             List<Object> listResult = Arrays.asList(results);
             for (Object objResult : listResult) {
-                this.normalizeResource(objResult);
+                this.normalizeResource(this.strPrefix, objResult);
             }
         }
         // Results are singular...
         else {
-            this.normalizeResource(results);
+            this.normalizeResource(this.strPrefix, results);
         }
 
-        if ( this.listResources.isEmpty() ) {
-            this.listResources = null;
+        if ( this.listValues.isEmpty() ) {
+            this.listValues = null;
         }
     }
 

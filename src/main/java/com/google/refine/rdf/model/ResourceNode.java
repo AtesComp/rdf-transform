@@ -26,16 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class ResourceNode extends Node {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:ResNode");
+	static private final Logger logger = LoggerFactory.getLogger("RDFT:ResNode");
+
+    static protected final String strBNodePrefix = "_:";
 
     @JsonProperty("propertyMappings")
     private List<Property> listProperties = new ArrayList<Property>();
 
 	@JsonProperty("typeMappings")
     private List<RDFType> listTypes = new ArrayList<RDFType>();
-
-    @JsonIgnore
-    protected List<Value> listResources = null;
 
     @JsonIgnore
     public void addType(RDFType typeNew) {
@@ -60,16 +59,17 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method normalizeResource() for Resource Node to IRI
      */
-    protected void normalizeResource(Object objResult) {
-        String strIRI = Util.toSpaceStrippedString(objResult);
+    protected void normalizeResource(String strPrefix, Object objResult) {
+        String strIRI = Util.toSpaceStrippedString(strPrefix) + Util.toSpaceStrippedString(objResult);
         if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Given IRI: " + strIRI);
+
         if ( ! ( strIRI == null || strIRI.isEmpty() ) ) {
             try {
-                String strResource = Util.resolveIRI(this.baseIRI, strIRI);
-                if (strResource != null) {
-                    strResource = this.expandPrefixedIRI(strResource);
-                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strResource);
-                    this.listResources.add( this.theFactory.createIRI(strResource) );
+                String strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+                if (strPrefixedIRI != null) {
+                    String strFullIRI = this.expandPrefixedIRI(strPrefixedIRI);
+                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
+                    this.listValues.add( this.theFactory.createIRI(strPrefixedIRI) );
                 }
             }
             catch (IRIParsingException | IllegalArgumentException ex) {
@@ -136,15 +136,15 @@ abstract public class ResourceNode extends Node {
             List<Value> listResourcesAll = new ArrayList<Value>();
             while ( this.theRec.rowNext() ) {
                 this.createRowResources(); // ...Row only
-                if ( ! ( this.listResources == null || this.listResources.isEmpty() ) ) {
+                if ( ! ( this.listValues == null || this.listValues.isEmpty() ) ) {
                     this.createResourceStatements(); // ...relies on this.listResources iteration
-                    listResourcesAll.addAll(this.listResources);
+                    listResourcesAll.addAll(this.listValues);
                 }
             }
             if ( listResourcesAll.isEmpty() ) {
                 listResourcesAll = null;
             }
-            this.listResources = listResourcesAll;
+            this.listValues = listResourcesAll;
         }
 
         //
@@ -152,11 +152,11 @@ abstract public class ResourceNode extends Node {
         //
         else {
             this.createResources(); // ...Record or Row
-            if ( ! ( this.listResources == null || this.listResources.isEmpty() ) ) {
+            if ( ! ( this.listValues == null || this.listValues.isEmpty() ) ) {
                 this.createResourceStatements();
             }
             else {
-                this.listResources = null;
+                this.listValues = null;
             }
         }
     }
@@ -196,23 +196,26 @@ abstract public class ResourceNode extends Node {
         }
     }
 
+    /*
+     *  Method createRecordResources() creates the object list for triple statements
+     *  from this node on Records
+     */
     protected void createRecordResources() {
+        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createRecordResources...");
         // TODO: For blank nodes, one per Record+Column is enough?  Review to limit! HINT: see createResources() -> (! this.bIsIndex)
-        if (Util.isDebugMode()) logger.info("DEBUG: createRecordResources...");
-
-        this.listResources = null;
-		List<Value> listResourcesAll = new ArrayList<Value>();
+        List<Value> listResources = new ArrayList<Value>();
 		while ( this.theRec.rowNext() ) {
 			this.createRowResources();
-            if ( ! ( this.listResources == null || this.listResources.isEmpty() ) ) {
-				listResourcesAll.addAll(this.listResources);
+            if ( this.listValues != null ) {
+				listResources.addAll(this.listValues);
 			}
 		}
-        if ( listResourcesAll.isEmpty() ) {
-            listResourcesAll = null;
+        if ( listResources.isEmpty() ) {
+            listResources = null;
         }
-        this.listResources = listResourcesAll;
-}
+
+        this.listValues = listResources;
+    }
 
     abstract protected void createRowResources();
 
@@ -304,7 +307,7 @@ abstract public class ResourceNode extends Node {
         //
         // Process statements...
         //
-        for (Value valSource : this.listResources) {
+        for (Value valSource : this.listValues) {
             for (IRI iriType : listTypes) {
                 this.theConnection.add(
                     this.theFactory.createStatement(
@@ -429,7 +432,7 @@ abstract public class ResourceNode extends Node {
         //
         // Process statements...
         //
-        for (Value valSource : this.listResources) {
+        for (Value valSource : this.listValues) {
             for ( PropertyObjectList polObj : listPOL )
             {
                 iriProperty = polObj.getProperty();
@@ -454,29 +457,36 @@ abstract public class ResourceNode extends Node {
      */
     protected List<Value> createObjects(ResourceNode nodeProperty)
             throws RuntimeException {
-        this.baseIRI = nodeProperty.baseIRI;
-        this.theFactory = nodeProperty.theFactory;
-        this.theConnection = nodeProperty.theConnection;
-        this.theProject = nodeProperty.theProject;
+        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createObjects...");
+
+        this.setObjectParameters(nodeProperty);
 
         // TODO: Create process for Sub-Records
 
+		this.listValues = null;
+
+        //
         // Record Mode...
-		if ( nodeProperty.theRec.isRecordMode() ) {
+		//
+        if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based,
 			// ...set to Row Mode and process on current row as set by rowNext()...
 			this.theRec.setMode(nodeProperty, true);
         }
+
+        //
         // Row Mode...
+        //
         else {
 			// ...process on current row as set by rowNext()...
 			this.theRec.setMode(nodeProperty);
         }
+
         this.createStatementsWorker();
         this.theRec.clear();
 
         // Return the collected resources from the statement processing as Objects
         // to the given Property...
-        return this.listResources;
+        return this.listValues;
     }
 
     abstract protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException;

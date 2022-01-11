@@ -193,15 +193,15 @@ public class Util {
 			return strDataType;
 		}
 
-		String strRetVal = null;
+		String strResolvedDatatype = null;
 		try {
-			strRetVal = resolveIRI(baseIRI, strDataType);
+			strResolvedDatatype = resolveIRI(baseIRI, strDataType);
 		}
 		catch (IRIParsingException ex) {
-			// strRetVal is still null...
+			// strResolvedDatatype is still null...
 			// ...continue...
 		}
-		return strRetVal;
+		return strResolvedDatatype;
 	}
 
 	public static ParsedIRI buildIRI(String strIRI) {
@@ -229,9 +229,9 @@ public class Util {
 		// Evaluate the expression on the cell and return results...
 		//   NOTE: Here is where we tie the RDF Transform model to the data.
 		//
-		if ( Util.isDebugMode() ) logger.info("DEBUG: evaluateExpression: Exp: [" + strExpression +
-																	   "] Col: [" + strColumnName +
-																	   "] Row: [" + iRowIndex + "]");
+		if ( Util.isDebugMode() ) logger.info("DEBUG: evaluateExpression: Exp: [" + strExpression + "] " +
+																	     "Col: [" + strColumnName + "] " +
+																	     "Row: [" + iRowIndex     + "]");
 
 		// Select the column reference (er, cell index) by given name...
 		int theColumn = -1;

@@ -45,7 +45,13 @@ abstract public class Node {
     public RecordModel theRec = null;
 
     @JsonIgnore
+    protected String strExpression;
+
+    @JsonIgnore
     protected boolean bIsIndex = false;
+
+    @JsonIgnore
+    protected List<Value> listValues = null;
 
     @JsonIgnore
     public Node() {
@@ -89,6 +95,20 @@ abstract public class Node {
             }
         }
         return strExpanded;
+    }
+
+    /*
+     *  Method setObjectParameters()
+     * 
+     *  Copy the parameters from the given Property resource to this Node object.
+     * 
+     */
+    @JsonIgnore
+	protected void setObjectParameters(ResourceNode nodeProperty) {
+        this.baseIRI = nodeProperty.baseIRI;
+        this.theFactory = nodeProperty.theFactory;
+        this.theConnection = nodeProperty.theConnection;
+        this.theProject = nodeProperty.theProject;
     }
 
     /*

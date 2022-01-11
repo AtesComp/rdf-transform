@@ -6,11 +6,11 @@ import java.util.List;
 import java.io.IOException;
 
 import com.google.refine.expr.ExpressionUtils;
+import com.google.refine.expr.ParsingException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -26,20 +26,18 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 	static private final String strNODETYPE = "cell-as-literal";
 
     private final String strColumnName;
-    private final String strExpression;
 
     @JsonCreator
     public CellLiteralNode(
-    		@JsonProperty("columnName")  String strColumnName,
-    		@JsonProperty("expression")  String strExp,
-    		@JsonProperty("isIndex")     boolean bIsIndex,
-    		@JsonProperty("datatype")    String strDatatype,
-    		@JsonProperty("language")    String strLanguage )
+		String strColumnName, String strExp, boolean bIsIndex,
+		ConstantResourceNode nodeDatatype, String strLanguage )
 	{
-        super(strDatatype, strLanguage);
     	this.strColumnName    = strColumnName;
+		// Prefix not required for literal nodes
         this.strExpression    = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
+        this.nodeDatatype = nodeDatatype;
+        this.strLanguage = strLanguage;
     }
 
     static String getNODETYPE() {
@@ -48,13 +46,13 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 
 	@Override
 	public String getNodeName() {
-		String strName =
-			( this.bIsIndex ? "<ROW#>" : this.strColumnName ) + 
-            ( "<" + this.strExpression + ">" );
+		String strName = "Cell Literal: <[" +
+			( this.bIsIndex ? "Index#" : this.strColumnName ) +
+			"] on [" + this.strExpression + "]>";
 
         // If there is a value type...
-        if (this.strDatatype != null) {
-            strName += "^^" + this.strDatatype;
+        if (this.nodeDatatype != null) {
+            strName += "^^" + this.nodeDatatype.normalizeResourceAsString();
         }
 
         // If there is not a value type AND there is a language...
@@ -87,81 +85,31 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     }
 
     /*
-     *  Method createObjects() creates the object list for triple statements
-     *  from this node on Rows / Records.
-     */
-    @Override
-	protected List<Value> createObjects(ResourceNode nodeProperty) {
-        this.setObjectParameters(nodeProperty);
-		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createObjects...");
-
-        // TODO: Create process for Sub-Records
-
-        List<Value> literals = null;
-
-        //
-        // Record Mode
-        //
-		if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based, 
-			// ...set to Row Mode and process on current row as set by rowNext()...
-			this.theRec.setMode(nodeProperty, true);
-            literals = this.createRecordObjects();
-        }
-        //
-        // Row Mode
-        //
-        else {
-			// ...process on current row as set by rowNext()...
-			this.theRec.setMode(nodeProperty);
-            literals = this.createRowObjects();
-        }
-        this.theRec.clear();
-
-        return literals;
-    }
-
-    /*
-     *  Method createRecordObjects() creates the object list for triple statements
-     *  from this node on Records
-     */
-    private List<Value> createRecordObjects() {
-		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createRecordObjects...");
-		List<Value> literals = new ArrayList<Value>();
-		List<Value> literalsNew = null;
-		while ( this.theRec.rowNext() ) {
-			literalsNew = this.createRowObjects();
-			if (literalsNew != null) {
-				literals.addAll(literalsNew);
-			}
-		}
-        if ( literals.isEmpty() )
-			return null;
-		return literals;
-	}
-
-    /*
      *  Method createRowLiterals() creates the object list for triple statements
      *  from this node on Rows
      */
-	private List<Value> createRowObjects() {
-		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createRowObjects...");
+	@Override
+	protected void createRowLiterals() {
+		if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createRowLiterals...");
+
+		this.listValues = null;
 		Object results = null;
         try {
             results =
 				Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
 		}
-		catch (Exception e) {
-			// An empty cell might result in an exception out of evaluating IRI expression,
-			//   so it is intended to eat the exception...
-			return null;
+		catch (ParsingException ex) {
+            // An cell might result in a ParsingException when evaluating an IRI expression.
+            // Eat the exception...
+			return;
 		}
 	
 		// Results cannot be classed...
 		if ( results == null || ExpressionUtils.isError(results) ) {
-			return null;
+			return;
 		}
 
-		List<String> listStrings = new ArrayList<String>();
+		this.listValues = new ArrayList<Value>();
 
 		// Results are an array...
 		if ( results.getClass().isArray() ) {
@@ -169,50 +117,17 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 
 			List<Object> listResult = Arrays.asList(results);
 			for (Object objResult : listResult) {
-				String strResult = Util.toSpaceStrippedString(objResult);
-				if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: strResult: " + strResult);
-				if ( strResult != null && ! strResult.isEmpty() ) {
-					listStrings.add( strResult );
-				}
+				this.normalizeLiteral(objResult);
 			}
 		}
 		// Results are singular...
 		else {
-			String strResult = Util.toSpaceStrippedString(results);
-			if (Util.isDebugMode()) logger.info("DEBUG: strResult: " + strResult);
-			if (strResult != null && ! strResult.isEmpty() ) {
-				listStrings.add(strResult);
-			}
+			this.normalizeLiteral(results);
 		}
 
-		if ( listStrings.isEmpty() ) {
-			return null;
+        if ( this.listValues.isEmpty() ) {
+			this.listValues = null;
 		}
-
-		//
-		// Process each string as a Literal with the following preference:
-		//    1. a given Datatype
-		//    2. a given Language code
-		//    3. nothing, just a simple string Literal
-		//
-		List<Value> literals = new ArrayList<Value>();
-		for (String strValue : listStrings) {
-			Literal literal;
-			if (this.strDatatype != null) {
-				literal = this.theFactory.createLiteral( strValue, this.theFactory.createIRI(this.strDatatype) );
-			}
-			else if (this.strLanguage != null) {
-				literal = this.theFactory.createLiteral( strValue, this.strLanguage );
-			}
-			else {
-				literal = this.theFactory.createLiteral( strValue );
-			}
-			literals.add(literal);
-		}
-
-        if ( literals.isEmpty() )
-			literals = null;
-		return literals;
     }
 
 	@Override
@@ -225,8 +140,8 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 		if (this.strExpression != null) {
 			writer.writeStringField("expression", this.strExpression);
 		}
-		if (this.strDatatype != null ) {
-			writer.writeStringField("valueType", this.strDatatype);
+		if (this.nodeDatatype != null ) {
+			writer.writeStringField("valueType", this.nodeDatatype);
 		}
 		else if (this.strLanguage != null) {
 			writer.writeStringField("language", this.strLanguage);

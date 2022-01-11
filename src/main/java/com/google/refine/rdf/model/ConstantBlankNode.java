@@ -1,7 +1,6 @@
 package com.google.refine.rdf.model;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import java.io.IOException;
 
@@ -12,12 +11,15 @@ import org.eclipse.rdf4j.model.Value;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ConstantBlankNode extends ResourceNode implements ConstantNode {
+	static private final Logger logger = LoggerFactory.getLogger("RDFT:ConstBlankNode");
 
 	static private final String strNODETYPE = "blank";
-	static private final String strBNodePrefix = "_:";
-	static private final String strNotFirstLast = "[\\.]+";
-	static private final String strNotFirst = "^[-\u00B7\u0300\u036F\u203F\u2040]+";
+	static private final String strNotLast = "[\\.]+";
+	static private final String strNotFirst = "[-\\.\\u00B7\\u0300\\u036F\\u203F\\u2040]+";
 
 	private final BNode bnode;
 	private final String strConstant;
@@ -26,23 +28,42 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 	public ConstantBlankNode(String strConstant) {
 		// NOTE: A Constant Blank Node is a singular blank node base on the supplied constant value.
 		this.strConstant = strConstant;
+		// When there is nothing to evaluate...
+		if ( strConstant == null || strConstant.isEmpty() ) {
+			// ...produce a generic blank node...
+			logger.warn("WARNING: The ConstantBlankNode constant is empty! Creating generic BNode.");
+			this.bnode = this.theFactory.createBNode();
+			return;
+		}
 
 		//
 		// Validate the supplied constant value as a BNode ID based on Turtle limits...
 		//
 		String strBNodeValue = Util.toSpaceStrippedString(strConstant).replaceAll("[\\p{Whitespace}", "_");
-		while ( strBNodeValue.startsWith(ConstantBlankNode.strBNodePrefix) ) {
-			strBNodeValue = strBNodeValue.substring(2);
+		String strBNodeValueBegin;
+		do {
+			strBNodeValueBegin = strBNodeValue;
+			while ( strBNodeValue.startsWith(ResourceNode.strBNodePrefix) ) {
+				strBNodeValue = strBNodeValue.substring(2);
+			}
+			// Not First...
+			strBNodeValue = strBNodeValue.replaceFirst("^" + ConstantBlankNode.strNotFirst, "");
+			// Not Last...
+			strBNodeValue = strBNodeValue.replaceFirst(ConstantBlankNode.strNotLast + "$", "");
+			// On no change, break...
+			if ( strBNodeValueBegin.equals(strBNodeValue) )
+				break;
+			// Otherwise, something was removed so recheck...
+		} while (true);
+
+		// When there is nothing to evaluate...
+		if ( strConstant == null || strConstant.isEmpty() ) {
+			logger.error("ERROR: The ConstantBlankNode constant evaluates to nothing! Creating generic BNode.");
+			this.bnode = this.theFactory.createBNode();
+			return;
 		}
 
-		// Not First or Last...
-		strBNodeValue = strBNodeValue.replaceFirst("^" + ConstantBlankNode.strNotFirstLast, "");
-		strBNodeValue = strBNodeValue.replaceFirst(ConstantBlankNode.strNotFirstLast + "$", "");
-
-		// Not First...
-		strBNodeValue = strBNodeValue.replaceFirst(ConstantBlankNode.strNotFirst, "");
-
-		this.bnode = this.theFactory.createBNode(ConstantBlankNode.strBNodePrefix + strBNodeValue);
+		this.bnode = this.theFactory.createBNode(ResourceNode.strBNodePrefix + strBNodeValue);
 	}
 
     static String getNODETYPE() {
@@ -51,7 +72,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	public String getNodeName() {
-		return "<BNode>:" + "<" + this.strConstant + ">" + this.bnode.getID();
+		return "Constant BNode: <[" + this.strConstant + "]" + this.bnode.getID() + ">";
 	}
 
 	@Override
@@ -61,7 +82,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	protected void createResources() {
-        // For a Constant Blank Node, we only need one common blank node resource per record,
+        // For a Constant Blank Node, we only need one constant blank node resource per record,
         // so process as a row...
         this.createRowResources();
     }
@@ -69,13 +90,15 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 	@Override
 	protected void createRecordResources() {
         // NOT USED!
-        this.listResources = null;
+        this.listValues = null;
     }
 
 	@Override
 	protected void createRowResources() {
-		this.listResources = new ArrayList<Value>();
-		this.listResources.add(bnode);
+		if (Util.isDebugMode()) logger.info("DEBUG: createRowResources...");
+
+		this.listValues = new ArrayList<Value>();
+		this.listValues.add(bnode);
     }
 
 	@Override

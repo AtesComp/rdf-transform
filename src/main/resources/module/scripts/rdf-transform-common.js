@@ -206,7 +206,7 @@ class RDFTransformCommon {
 	 *	Test that ALL of the given string is a single IRI
 	 */
 	static async validateIRI(strIRI) {
-		// NOTE: Replaced the local IRI validation regual expression with the
+		// NOTE: Replaced the local IRI validation regular expression with the
 		//       server-side IRI parser.
 		//return RDFTransformCommon.#reIRI_COMPLETE_iu.test(strIRI);
 
