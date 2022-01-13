@@ -27,6 +27,48 @@ import org.slf4j.LoggerFactory;
  * 	The Util class is a convenience class holding common values and functions used by others.
  */
 public class Util {
+	public static enum NodeType {
+		ROW,
+		RECORD,
+		COLUMN,
+		CONSTANT,
+		EXPRESSION
+	}
+	
+    // RDF Transform JSON Strings
+    // --------------------------------------------------------------------------------
+    static public final String gstrExtension = "extension";
+    static public final String gstrVersion = "version";
+    static public final String gstrBaseIRI = "baseIRI";
+    static public final String gstrNamespaces = "namespaces";
+    static public final String gstrSubjectMappings = "subjectMappings";
+    static public final String gstrTypeMappings = "typeMappings";
+    static public final String gstrPropertyMappings = "propertyMappings";
+    static public final String gstrObjectMappings = "objectMappings";
+    static public final String gstrPrefix = "prefix";
+    static public final String gstrValueType = "valueType";
+    static public final String gstrType = "type";
+    static public final String gstrIRI = "iri";                          // type
+    static public final String gstrLiteral = "literal";                  // type
+    static public final String gstrDatatypeLiteral = "datatype_literal"; // type
+    static public final String gstrDatatype = "datatype";                // key
+    static public final String gstrLanguageLiteral = "language_literal"; // type
+    static public final String gstrBNode = "bnode";                      // type
+    static public final String gstrValueBNode = "value_bnode";           // type
+    static public final String gstrValueSource = "valueSource";
+    static public final String gstrSource = "source";
+    static public final String gstrConstant = "constant";     // source & key
+    static public final String gstrColumn = "column";         // source
+    static public final String gstrColumnName = "columnName"; // key
+    static public final String gstrRowIndex = "row_index";    // source, no key
+    static public final String gstrRecordID = "record_id";    // source, no key
+    static public final String gstrExpression = "expression"; // also source
+    static public final String gstrLanguage = "language";     // also type key
+	static public final String gstrGREL = "grel";
+    static public final String gstrCode = "code";
+
+    // XML Schema Strings
+    // --------------------------------------------------------------------------------
 	private final static String XSD_PREFIX        = "xsd:"; // for namespace http://www.w3.org/2001/XMLSchema#
 
 	private final static String XSD_DUR_IRI      = XSD_PREFIX + "duration";
@@ -143,7 +185,7 @@ public class Util {
 
 		// Not an Absolute IRI?
 		if (strAbsoluteIRI == null && baseIRI != null) {
-			// Create Absolute IRI from Relative IRI using Base IRI...
+			// Create Absolute IRI with Relative IRI using Base IRI...
 			try {
 				strAbsoluteIRI = baseIRI.resolve(strIRI);
 			}
@@ -152,7 +194,7 @@ public class Util {
 				// ...continue in case it needs a little adjusting...
 			}
 
-			// Create Absolute IRI from adjusted Relative IRI using Base IRI...
+			// Create Absolute IRI with adjusted Relative IRI using Base IRI...
 			if (strAbsoluteIRI == null)
 			{
 				try {
@@ -280,6 +322,7 @@ public class Util {
 	public static boolean isVerbose() {
 		return ( Util.isVerbose(1) );
 	}
+
 	public static boolean isVerbose(int iVerbose) {
 		return ( (int) Util.Preferences.get("Verbosity") >= iVerbose );
 	}
@@ -381,6 +424,41 @@ public class Util {
 	}
 
 	public static String toSpaceStrippedString(Object obj) {
+		if (obj == null) {
+			return null;
+		}
 		return obj.toString().replaceAll("\uC2A0", " ").replaceAll("\\h", " ").strip();
+	}
+
+	public static String toNodeTypeString(NodeType eNodeType) {
+		if ( eNodeType.equals(NodeType.ROW) ) {
+			return "ROW";
+		}
+		if ( eNodeType.equals(NodeType.RECORD) ) {
+			return "RECORD";
+		}
+		if ( eNodeType.equals(NodeType.COLUMN) ) {
+			return "COLUMN";
+		}
+		if ( eNodeType.equals(NodeType.CONSTANT) ) {
+			return "CONSTANT";
+		}
+		return "EXPRESSION";
+	}
+
+	public static String toNodeSourceString(NodeType eNodeType) {
+		if ( eNodeType.equals(NodeType.ROW) ) {
+			return Util.gstrRowIndex;
+		}
+		if ( eNodeType.equals(NodeType.RECORD) ) {
+			return Util.gstrRecordID;
+		}
+		if ( eNodeType.equals(NodeType.COLUMN) ) {
+			return Util.gstrColumn;
+		}
+		if ( eNodeType.equals(NodeType.CONSTANT) ) {
+			return Util.gstrConstant;
+		}
+		return Util.gstrExpression;
 	}
 }

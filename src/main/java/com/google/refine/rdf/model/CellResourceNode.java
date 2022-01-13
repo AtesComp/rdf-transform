@@ -29,12 +29,13 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     private final String strPrefix;
 
     @JsonCreator
-    public CellResourceNode(String strColumnName, String strPrefix, String strExp, boolean bIsIndex)
+    public CellResourceNode(String strColumnName, String strPrefix, String strExp, boolean bIsIndex, Util.NodeType eNodeType)
     {
     	this.strColumnName = strColumnName;
         this.strPrefix     = Util.toSpaceStrippedString(strPrefix);
         this.strExpression = strExp;
         this.bIsIndex = bIsIndex;
+        this.eNodeType = eNodeType;
     }
 
     static String getNODETYPE() {
@@ -43,9 +44,11 @@ public class CellResourceNode extends ResourceNode implements CellNode {
 
 	@Override
 	public String getNodeName() {
+        String strSubType = Util.toNodeTypeString(eNodeType);
         return "Cell IRI: <" + this.strPrefix + ":[" +
-            ( this.bIsIndex ? "Index#" : this.strColumnName ) + 
-            "] on [" + this.strExpression + "]>";
+            ( this.bIsIndex ? "Index#" : this.strColumnName ) +
+            "] (" + strSubType +
+            ") on [" + this.strExpression + "]>";
 	}
 
 	@Override
@@ -114,16 +117,33 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     }
 
 	@Override
-	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-		writer.writeStringField("nodeType", CellResourceNode.strNODETYPE);
-        if (this.strColumnName != null) {
-        	writer.writeStringField("columnName", this.strColumnName);
+	protected void writeNode(JsonGenerator writer)
+            throws JsonGenerationException, IOException {
+		// Prefix
+        if (this.strPrefix != null) {
+            writer.writeStringField(Util.gstrPrefix, this.strPrefix);
         }
-        if (this.strExpression != null) {
-            writer.writeStringField("expression", this.strExpression);
+
+		// Source
+        writer.writeObjectFieldStart(Util.gstrValueSource);
+		String strType = Util.toNodeSourceString(this.eNodeType);
+		writer.writeStringField(Util.gstrSource, strType);
+        if ( ! ( this.bIsIndex || this.strColumnName == null ) ) {
+        	writer.writeStringField(Util.gstrColumnName, this.strColumnName);
         }
-        if (this.bIsIndex) {
-            writer.writeBooleanField("isIndex", this.bIsIndex);
+		writer.writeEndObject();
+
+		// Expression
+        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+			writer.writeObjectFieldStart(Util.gstrExpression);
+			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeStringField(Util.gstrCode, this.strExpression);
+			writer.writeEndObject();
         }
+
+		// Value Type
+        writer.writeObjectFieldStart(Util.gstrValueType);
+		writer.writeStringField(Util.gstrType, Util.gstrIRI);
+		writer.writeEndObject();
 	}
 }

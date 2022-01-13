@@ -2,17 +2,12 @@ package com.google.refine.rdf.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonGenerationException;
+import org.eclipse.rdf4j.model.Value;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Value;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +25,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
         this.strConstant = strConstant; // ..no stripping here!
         this.nodeDatatype = nodeDatatype;
         this.strLanguage = strLanguage;
+        this.eNodeType = Util.NodeType.CONSTANT;
     }
 
     static String getNODETYPE() {
@@ -89,14 +85,62 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     }
 
 	@Override
-    public void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-        writer.writeStringField("nodeType", ConstantLiteralNode.strNODETYPE);
-        writer.writeStringField("value", strConstant);
-        if (nodeDatatype != null) {
-            writer.writeStringField("valueType", nodeDatatype);
+    public void writeNode(JsonGenerator writer)
+            throws JsonGenerationException, IOException {
+		// Prefix
+		//	N/A
+
+		// Source
+        writer.writeObjectFieldStart(Util.gstrValueSource);
+		writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+        writer.writeStringField(Util.gstrConstant, this.strConstant);
+		writer.writeEndObject();
+
+		// Expression
+        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+			writer.writeObjectFieldStart(Util.gstrExpression);
+			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeStringField(Util.gstrCode, this.strExpression);
+			writer.writeEndObject();
         }
-        if (strLanguage != null) {
-            writer.writeStringField("lang", strLanguage);
-        }
+
+		// Value Type
+        writer.writeObjectFieldStart(Util.gstrValueType);
+		if (this.nodeDatatype != null) {
+			// Datatype Literal
+			writer.writeStringField(Util.gstrType, Util.gstrDatatypeLiteral);
+
+			// Datatype
+			writer.writeObjectFieldStart(Util.gstrDatatype);
+
+			// Datatype: Prefix
+			writer.writeStringField( Util.gstrPrefix, this.nodeDatatype.getPrefix() );
+
+			// Datatype: Source
+			writer.writeObjectFieldStart(Util.gstrValueSource);
+			writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+			writer.writeStringField( Util.gstrConstant, this.nodeDatatype.getConstant() );
+			writer.writeEndObject();
+
+			// Datatype: Expression
+			if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals("value") ) ) {
+				writer.writeObjectFieldStart(Util.gstrExpression);
+				writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+				writer.writeStringField(Util.gstrCode, this.nodeDatatype.strExpression);
+				writer.writeEndObject();
+			}
+
+			writer.writeEndObject();
+		}
+		else if (this.strLanguage != null) {
+			// Language Literal
+			writer.writeStringField(Util.gstrType, Util.gstrLanguageLiteral);
+			// Language (2 char code)
+			writer.writeStringField(Util.gstrLanguage, this.strLanguage);
+		}
+		else {
+			writer.writeStringField(Util.gstrType, Util.gstrLiteral);
+		}
+		writer.writeEndObject();
     }
 }

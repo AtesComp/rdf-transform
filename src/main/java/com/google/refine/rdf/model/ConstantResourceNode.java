@@ -27,6 +27,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         // A Constant Resource Node is a singular IRI...
         this.strConstant = Util.toSpaceStrippedString(strConstant);
         this.strPrefix = Util.toSpaceStrippedString(strPrefix);
+        this.eNodeType = Util.NodeType.CONSTANT;
     }
 
     static String getNODETYPE() {
@@ -108,8 +109,30 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     }
 
 	@Override
-	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-		writer.writeStringField("nodeType", ConstantResourceNode.strNODETYPE);
-        writer.writeStringField("value", strConstant);
+	protected void writeNode(JsonGenerator writer)
+            throws JsonGenerationException, IOException {
+		// Prefix
+        if (this.strPrefix != null) {
+            writer.writeStringField(Util.gstrPrefix, this.strPrefix);
+        }
+
+		// Source
+        writer.writeObjectFieldStart(Util.gstrValueSource);
+		writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+        writer.writeStringField(Util.gstrConstant, this.strConstant);
+		writer.writeEndObject();
+
+		// Expression
+        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+			writer.writeObjectFieldStart(Util.gstrExpression);
+			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeStringField(Util.gstrCode, this.strExpression);
+			writer.writeEndObject();
+        }
+
+		// Value Type
+        writer.writeObjectFieldStart(Util.gstrValueType);
+		writer.writeStringField(Util.gstrType, Util.gstrIRI);
+		writer.writeEndObject();
 	}
 }

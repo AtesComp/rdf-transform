@@ -30,7 +30,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     @JsonCreator
     public CellLiteralNode(
 		String strColumnName, String strExp, boolean bIsIndex,
-		ConstantResourceNode nodeDatatype, String strLanguage )
+		ConstantResourceNode nodeDatatype, String strLanguage, Util.NodeType eNodeType )
 	{
     	this.strColumnName    = strColumnName;
 		// Prefix not required for literal nodes
@@ -38,6 +38,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
         this.bIsIndex = bIsIndex;
         this.nodeDatatype = nodeDatatype;
         this.strLanguage = strLanguage;
+		this.eNodeType = eNodeType;
     }
 
     static String getNODETYPE() {
@@ -133,21 +134,63 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
 	@Override
 	public void writeNode(JsonGenerator writer)
 			throws JsonGenerationException, IOException {
-		writer.writeStringField("nodeType", CellLiteralNode.strNODETYPE);
-		if (this.strColumnName != null) {
-			writer.writeStringField("columnName", this.strColumnName);
-		}
-		if (this.strExpression != null) {
-			writer.writeStringField("expression", this.strExpression);
-		}
-		if (this.nodeDatatype != null ) {
-			writer.writeStringField("valueType", this.nodeDatatype);
+		// Prefix
+		//	N/A
+
+		// Source
+        writer.writeObjectFieldStart(Util.gstrValueSource);
+		String strType = Util.toNodeSourceString(this.eNodeType);
+		writer.writeStringField(Util.gstrSource, strType);
+        if ( ! ( this.bIsIndex || this.strColumnName == null ) ) {
+        	writer.writeStringField(Util.gstrColumnName, this.strColumnName);
+        }
+		writer.writeEndObject();
+
+		// Expression
+        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+			writer.writeObjectFieldStart(Util.gstrExpression);
+			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeStringField(Util.gstrCode, this.strExpression);
+			writer.writeEndObject();
+        }
+
+		// Value Type
+        writer.writeObjectFieldStart(Util.gstrValueType);
+		if (this.nodeDatatype != null) {
+			// Datatype Literal
+			writer.writeStringField(Util.gstrType, Util.gstrDatatypeLiteral);
+
+			// Datatype
+			writer.writeObjectFieldStart(Util.gstrDatatype);
+
+			// Datatype: Prefix
+			writer.writeStringField( Util.gstrPrefix, this.nodeDatatype.getPrefix() );
+
+			// Datatype: Source
+			writer.writeObjectFieldStart(Util.gstrValueSource);
+			writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+			writer.writeStringField( Util.gstrConstant, this.nodeDatatype.getConstant() );
+			writer.writeEndObject();
+
+			// Datatype: Expression
+			if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals("value") ) ) {
+				writer.writeObjectFieldStart(Util.gstrExpression);
+				writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+				writer.writeStringField(Util.gstrCode, this.nodeDatatype.strExpression);
+				writer.writeEndObject();
+			}
+
+			writer.writeEndObject();
 		}
 		else if (this.strLanguage != null) {
-			writer.writeStringField("language", this.strLanguage);
+			// Language Literal
+			writer.writeStringField(Util.gstrType, Util.gstrLanguageLiteral);
+			// Language (2 char code)
+			writer.writeStringField(Util.gstrLanguage, this.strLanguage);
 		}
-		if (this.bIsIndex) {
-			writer.writeBooleanField("isIndex", this.bIsIndex);
+		else {
+			writer.writeStringField(Util.gstrType, Util.gstrLiteral);
 		}
+		writer.writeEndObject();
 	}
 }

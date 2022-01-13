@@ -28,10 +28,12 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 	public ConstantBlankNode(String strConstant) {
 		// NOTE: A Constant Blank Node is a singular blank node base on the supplied constant value.
 		this.strConstant = strConstant;
+		this.eNodeType = Util.NodeType.CONSTANT;
+
 		// When there is nothing to evaluate...
 		if ( strConstant == null || strConstant.isEmpty() ) {
 			// ...produce a generic blank node...
-			logger.warn("WARNING: The ConstantBlankNode constant is empty! Creating generic BNode.");
+			ConstantBlankNode.logger.warn("WARNING: The ConstantBlankNode constant is empty! Creating generic BNode.");
 			this.bnode = this.theFactory.createBNode();
 			return;
 		}
@@ -58,7 +60,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 		// When there is nothing to evaluate...
 		if ( strConstant == null || strConstant.isEmpty() ) {
-			logger.error("ERROR: The ConstantBlankNode constant evaluates to nothing! Creating generic BNode.");
+			ConstantBlankNode.logger.error("ERROR: The ConstantBlankNode constant evaluates to nothing! Creating generic BNode.");
 			this.bnode = this.theFactory.createBNode();
 			return;
 		}
@@ -95,7 +97,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	protected void createRowResources() {
-		if (Util.isDebugMode()) logger.info("DEBUG: createRowResources...");
+		if (Util.isDebugMode()) ConstantBlankNode.logger.info("DEBUG: createRowResources...");
 
 		this.listValues = new ArrayList<Value>();
 		this.listValues.add(bnode);
@@ -103,6 +105,26 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-		writer.writeStringField("nodeType", ConstantBlankNode.strNODETYPE);
+		// Prefix
+		//	N/A
+
+		// Source
+        writer.writeObjectFieldStart(Util.gstrValueSource);
+		writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+        writer.writeStringField(Util.gstrConstant, this.strConstant);
+		writer.writeEndObject();
+
+		// Expression
+        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+			writer.writeObjectFieldStart(Util.gstrExpression);
+			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeStringField(Util.gstrCode, this.strExpression);
+			writer.writeEndObject();
+        }
+
+		// Value Type
+        writer.writeObjectFieldStart(Util.gstrValueType);
+		writer.writeStringField(Util.gstrType, Util.gstrBNode);
+		writer.writeEndObject();
 	}
 }

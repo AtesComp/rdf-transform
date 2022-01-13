@@ -29,12 +29,13 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	//private final BNode bnode;
 
     @JsonCreator
-    public CellBlankNode(String strColumnName, String strExp, boolean bIsIndex)
+    public CellBlankNode(String strColumnName, String strExp, boolean bIsIndex, Util.NodeType eNodeType)
 	{
         this.strColumnName    = strColumnName;
 		// Prefix not required for blank nodes
         this.strExpression    = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
+		this.eNodeType = eNodeType;
 		//this.bnode = this.theFactory.createBNode();
     }
 
@@ -124,15 +125,29 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 
     @Override
     protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
-        writer.writeStringField("nodeType", CellBlankNode.strNODETYPE);
-        if (this.strColumnName != null) {
-        	writer.writeStringField("columnName", this.strColumnName);
+		// Prefix
+		//	N/A
+
+		// Source
+        writer.writeObjectFieldStart(Util.gstrValueSource);
+		String strType = Util.toNodeSourceString(this.eNodeType);
+		writer.writeStringField(Util.gstrSource, strType);
+        if ( ! ( this.bIsIndex || this.strColumnName == null ) ) {
+        	writer.writeStringField(Util.gstrColumnName, this.strColumnName);
         }
-        if (this.strExpression != null) {
-            writer.writeStringField("expression", this.strExpression);
+		writer.writeEndObject();
+
+		// Expression
+        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+			writer.writeObjectFieldStart(Util.gstrExpression);
+			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeStringField(Util.gstrCode, this.strExpression);
+			writer.writeEndObject();
         }
-        if (this.bIsIndex) {
-            writer.writeBooleanField("isIndex", this.bIsIndex);
-        }
+
+		// Value Type
+        writer.writeObjectFieldStart(Util.gstrValueType);
+		writer.writeStringField(Util.gstrType, Util.gstrValueBNode);
+		writer.writeEndObject();
     }
 }

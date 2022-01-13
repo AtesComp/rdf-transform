@@ -118,8 +118,8 @@ OPT: xxx is related to the (value type)
     "(prefix name)": "(prefix iri)",
   }
 
-"rootNodes" -> "subjectMappings"
-    "" -> "subject: { ... },"
+"rootNodes" -> "subjectMappings : [ ... ]"
+    "" -> "{ ... },"
       "expression": "(value)" -> "expression" : { "language": "grel", "code", "(value)"
       "nodeType" : "cell-as-resource" ->
             "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
@@ -132,15 +132,15 @@ OPT: xxx is related to the (value type)
                   expand to other source types
                 expand for "expression": { "language": "grel", "code": "(exp)" }
 
-    "links" -> "propertyMappings"
+    "links" -> "propertyMappings : [ ... ]"
+      "" -> "{ ... },"
         "cirie" & "iri" ->
-                "property":
                   "namespace"
                   "valueSource": { "source": "constant", "constant": "(value)" }
                     expand to other source types
                     expand for "expression": { "language": "grel", "code": "(exp)" }
-        "" -> "objectMappings"
-            "target" ->
+        "" -> "objectMappings : [ ... ]"
+            "target" -> "{ ... }"
 
               "nodeType" : "cell-as-literal" ->
                     "valueType": { "type": "literal" },

@@ -60,15 +60,25 @@ abstract public class ResourceNode extends Node {
      *  Method normalizeResource() for Resource Node to IRI
      */
     protected void normalizeResource(String strPrefix, Object objResult) {
-        String strIRI = Util.toSpaceStrippedString(strPrefix) + Util.toSpaceStrippedString(objResult);
+        String strIRI = "";
+        if ( strPrefix != null ) {
+            strIRI = strPrefix + ":";
+        }
+        if ( objResult != null) {
+            strIRI += objResult.toString();
+        }
         if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Given IRI: " + strIRI);
 
-        if ( ! ( strIRI == null || strIRI.isEmpty() ) ) {
+        if ( ! strIRI.isEmpty() ) {
             try {
                 String strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
                 if (strPrefixedIRI != null) {
-                    String strFullIRI = this.expandPrefixedIRI(strPrefixedIRI);
-                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
+                    //String strNamespace = "";
+                    //if (strPrefix != null) {
+                    //    strNamespace = this.theConnection.getNamespace(strPrefix);
+                    //}
+                    //String strFullIRI = strNamespace + objResult.toString();
+                    //if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
                     this.listValues.add( this.theFactory.createIRI(strPrefixedIRI) );
                 }
             }
@@ -244,62 +254,60 @@ abstract public class ResourceNode extends Node {
      */
     private void createTypeStatements()
             throws RepositoryException {
-        String strResource = null;
-        String strTypeObject = null;
-        //String strIRI = null;
-        //String strCIRIE = null;
-        //String strPrefix = null;
-        //String strNamespace = null;
-        //String strLocalName = null;
-        //boolean bNamespace = false;
-        IRI iriResource = null;
+        if ( Util.isDebugMode() ) {
+            String strLinkCount = "DEBUG: Type Count: {}";
+            int iLinkCount = 0;
+            if (this.listTypes != null) {
+                iLinkCount = listTypes.size();
+            }
+            ResourceNode.logger.info(strLinkCount, iLinkCount);
+        }
+        if (this.listTypes == null) {
+            return;
+        }
+
+        String strPrefix = null;
+        String strType = null;
+
+        String strNamespace;
+        String strLocalName;
+        boolean bNamespace;
+        String strFullType;
+        IRI iriType;
 
         //
-        // Process one set of object types
+        // Process one set of types
         //
-        List<IRI> listTypes = new ArrayList<IRI>();
-        for ( RDFType typeObject : this.getTypes() ) {
-            //bNamespace = false;
-            //strIRI = typeObject.getResource();
-            //strCIRIE = typeObject.getPrefixedResource();
-            //strTypeObject = strCIRIE;
-            //if (strTypeObject == null) {
-            //    strTypeObject = strIRI;
-            //    //strPrefix = "";
-            //    strLocalName = "";
-            //    strNamespace = "";
-            //}
-            //else { // ...prefixed...
-            //    int iIndex = strCIRIE.indexOf(":") + 1;
-            //    //strPrefix = strCIRIE.substring(0, iIndex);
-            //    strLocalName = strCIRIE.substring(iIndex);
-            //    strNamespace = strCIRIE.replace(strLocalName, "");
-            //    bNamespace = true;
-            //}
-            iriResource = null;
-            strResource = null;
-            strTypeObject = typeObject.getResource();
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: " + strTypeObject);
-            String strResult = Util.toSpaceStrippedString(strTypeObject);
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Result: " + strResult);
-            if (strResult != null & strResult.length() > 0 ) {
+        List<IRI> listTypesForStmts = new ArrayList<IRI>();
+        for ( RDFType typeItem : this.listTypes ) {
+            strPrefix = typeItem.getPrefix();
+            strType = typeItem.getPathIRI(); // ...assume FULL IRI
+            strLocalName = null;
+            strNamespace = null;
+            bNamespace = false;
+            if (strPrefix != null) { // ...prefixed...
+                strLocalName = strType;
+                strNamespace = this.theConnection.getNamespace(strPrefix);
+                strType = strPrefix + ":" + strLocalName; // ...CIRIE
+                bNamespace = true;
+            }
+            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: " + strType);
+            if ( ! (strType == null || strType.isEmpty() ) ) {
                 try {
-                    strResource = Util.resolveIRI(this.baseIRI, strResult);
-                    if (strResource != null) {
-                        strResource = this.expandPrefixedIRI(strResource);
-                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: " + strResource);
-                        //if (bNamespace) {
-                        //    iriResource = this.theFactory.createIRI(strNamespace, strLocalName);
-                        //}
-                        //else {
-                        //    iriResource = this.theFactory.createIRI(strResource);
-                        //}
-                        iriResource = this.theFactory.createIRI(strResource);
-                        listTypes.add(iriResource);
+                    strFullType = Util.resolveIRI(this.baseIRI, strType);
+                    if (strFullType != null) {
+                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: " + strFullType);
+                        if (bNamespace) {
+                            iriType = this.theFactory.createIRI(strNamespace, strLocalName);
+                        }
+                        else {
+                            iriType = this.theFactory.createIRI(strFullType);
+                        }
+                        listTypesForStmts.add(iriType);
                     }
                 }
                 catch (IRIParsingException | IllegalArgumentException ex) {
-                    logger.error( "ERROR: Bad Property IRI: " + strResult, ex);
+                    logger.error( "ERROR: Bad Type IRI: " + strType, ex);
                 }
     		}
     	}
@@ -308,10 +316,10 @@ abstract public class ResourceNode extends Node {
         // Process statements...
         //
         for (Value valSource : this.listValues) {
-            for (IRI iriType : listTypes) {
+            for (IRI iriTypeItem : listTypesForStmts) {
                 this.theConnection.add(
                     this.theFactory.createStatement(
-                        (Resource) valSource, RDF.TYPE, iriType
+                        (Resource) valSource, RDF.TYPE, iriTypeItem
                     )
                 );
             }
@@ -327,7 +335,7 @@ abstract public class ResourceNode extends Node {
     private void createPropertyStatements()
             throws RepositoryException {
         if ( Util.isDebugMode() ) {
-            String strLinkCount = "DEBUG: Link Count: {}";
+            String strLinkCount = "DEBUG: Property Count: {}";
             int iLinkCount = 0;
             if (this.listProperties != null) {
                 iLinkCount = listProperties.size();
@@ -337,17 +345,17 @@ abstract public class ResourceNode extends Node {
         if (this.listProperties == null) {
             return;
         }
+
+        String strPrefix = null;
         String strProperty = null;
-        String strTypeProperty = null;
-        //String strIRI = null;
-        //String strCIRIE = null;
-        //String strPrefix = null;
-        //String strNamespace = null;
-        //String strLocalName = null;
-        //boolean bNamespace = false;
-        Node nodeObject = null;
-        IRI iriProperty = null;
-        List<Value> listObjects = null;
+
+        String strNamespace;
+        String strLocalName;
+        boolean bNamespace;
+        Node nodeObject;
+        List<Value> listObjects;
+        String strFullProperty;
+        IRI iriProperty;
 
         @JsonIgnoreType
         class PropertyObjectList {
@@ -369,8 +377,23 @@ abstract public class ResourceNode extends Node {
         //
         // Process one set of properties
         //
-        List<PropertyObjectList> listPOL = new ArrayList<PropertyObjectList>();
+        List<PropertyObjectList> listPropsForStmts = new ArrayList<PropertyObjectList>();
         for (Property propItem : this.listProperties) {
+            //
+            // PROPERTY
+            //
+            strPrefix = propItem.getPrefix();
+            strProperty = propItem.getPathProperty(); // ...assume FULL IRI
+            strLocalName = null;
+            strNamespace = null;
+            bNamespace = false;
+            if (strPrefix != null) { // ...prefixed...
+                strLocalName = strProperty;
+                strNamespace = this.theConnection.getNamespace(strPrefix);
+                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
+                bNamespace = true;
+            }
+
             //
             // OBJECTS
             //
@@ -383,48 +406,23 @@ abstract public class ResourceNode extends Node {
                 continue;
             }
 
-            //
-            // PROPERTY
-            //
-
-            //bNamespace = false;
-            //strIRI = link.getProperty();
-            //strCIRIE = link.getPrefixedProperty();
-            //strTypeProperty = strCIRIE;
-            //if (strTypeProperty == null) {
-            //    strTypeProperty = strIRI;
-            //}
-            //else {
-            //    int iIndex = strCIRIE.indexOf(":") + 1;
-            //    //strPrefix = strCIRIE.substring(0, iIndex);
-            //    strLocalName = strCIRIE.substring(iIndex);
-            //    strNamespace = strCIRIE.replace(strLocalName, "");
-            //    bNamespace = true;
-            //}
-            iriProperty = null;
-            strProperty = null;
-            strTypeProperty = propItem.getProperty();
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: " + strTypeProperty);
-            String strResult = Util.toSpaceStrippedString(strTypeProperty);
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Result: " + strResult);
-            if (strResult != null & strResult.length() > 0 ) {
+            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: " + strProperty);
+            if ( ! ( strProperty == null || strProperty.isEmpty() ) ) {
                 try {
-                    strProperty = Util.resolveIRI(this.baseIRI, strResult);
-                    if (strProperty != null) {
-                        strProperty = this.expandPrefixedIRI(strProperty);
-                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: " + strProperty);
-                        //if (bNamespace) {
-                        //    iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
-                        //}
-                        //else {
-                        //    iriProperty = this.theFactory.createIRI(strProperty);
-                        //}
-                        iriProperty = this.theFactory.createIRI(strProperty);
-                        listPOL.add( new PropertyObjectList(iriProperty, listObjects) );
+                    strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
+                    if (strFullProperty != null) {
+                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: " + strFullProperty);
+                        if (bNamespace) {
+                            iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
+                        }
+                        else {
+                            iriProperty = this.theFactory.createIRI(strProperty);
+                        }
+                        listPropsForStmts.add( new PropertyObjectList(iriProperty, listObjects) );
                     }
                 }
                 catch (IRIParsingException | IllegalArgumentException ex) {
-                    logger.error( "ERROR: Bad Property IRI: " + strResult, ex);
+                    logger.error( "ERROR: Bad Property IRI: " + strProperty, ex);
                 }
             }
         }
@@ -433,15 +431,13 @@ abstract public class ResourceNode extends Node {
         // Process statements...
         //
         for (Value valSource : this.listValues) {
-            for ( PropertyObjectList polObj : listPOL )
+            for ( PropertyObjectList polPropItem : listPropsForStmts )
             {
-                iriProperty = polObj.getProperty();
-                listObjects = polObj.getObjects();
+                iriProperty = polPropItem.getProperty();
+                listObjects = polPropItem.getObjects();
                 for (Value valObject : listObjects) {
                     this.theConnection.add(
-                        this.theFactory.createStatement(
-                            (Resource) valSource, iriProperty, valObject
-                        )
+                        this.theFactory.createStatement( (Resource) valSource, iriProperty, valObject )
                     );
                 }
             }
@@ -489,32 +485,37 @@ abstract public class ResourceNode extends Node {
         return this.listValues;
     }
 
-    abstract protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException;
+    abstract protected void writeNode(JsonGenerator writer)
+            throws JsonGenerationException, IOException;
 
-    public void write(JsonGenerator writer) throws JsonGenerationException, IOException {
+    public void write(JsonGenerator writer)
+            throws JsonGenerationException, IOException {
         writer.writeStartObject();
 
         // Write node...
         this.writeNode(writer);
 
         // Write Type Mappings...
-        writer.writeFieldName("typeMappings");
-        writer.writeStartArray();
-        for ( RDFType typeObj : this.listTypes ) {
-            writer.writeStartObject();
-            writer.writeStringField("iri",   typeObj.getResource());
-            writer.writeStringField("cirie", typeObj.getPrefixedResource());
-            writer.writeEndObject();
+        if (this.listTypes != null) {
+            writer.writeArrayFieldStart(Util.gstrTypeMappings);
+            for ( RDFType typeObj : this.listTypes ) {
+                if (typeObj != null) {
+                    typeObj.write(writer);
+                }
+            }
+            writer.writeEndArray();
         }
-        writer.writeEndArray();
 
         // Write Property Mappings...
-        writer.writeFieldName("propertyMappings");
-        writer.writeStartArray();
-        for (Property propObj : this.listProperties) {
-            propObj.write(writer);
+        if (this.listProperties != null) {
+            writer.writeArrayFieldStart(Util.gstrPropertyMappings);
+            for (Property propObj : this.listProperties) {
+                if (propObj != null) {
+                    propObj.write(writer);
+                }
+            }
+            writer.writeEndArray();
         }
-        writer.writeEndArray();
 
         writer.writeEndObject();
     }
