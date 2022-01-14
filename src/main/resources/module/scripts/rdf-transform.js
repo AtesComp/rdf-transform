@@ -139,7 +139,7 @@ class RDFTransformDialog {
     #init(theTransform) {
         //
         // theTransform has the base structure:
-        //   { "baseIRI" : "", "prefixes" : [], "rootNodes" : [] };
+        //   { "baseIRI" : "", "namespaces" : [], "subjectMappings" : [] };
         //
         var cloneTransform = theTransform;
         // Is the transform valid?  No, then set a baseline...
@@ -149,7 +149,7 @@ class RDFTransformDialog {
         // Clone the transform for modification...
         this.#theTransform = cloneDeep(cloneTransform); // ...clone current transform
 
-        // ...and set up the baseIRI, prefixes, and rootNodes...
+        // ...and set up the baseIRI, namespaces, and subjectMappings...
 
         //
         // Base IRI
@@ -157,22 +157,22 @@ class RDFTransformDialog {
         // --------------------------------------------------------------------------------
 
         //
-        // Prefixes
-        //   The prefixes can be null and will be set to a default later...
+        // Namespaces
+        //   The namespaces can be null and will be set to a default later...
         // --------------------------------------------------------------------------------
 
         //
-        // Root Nodes
-        //   The root nodes must mave at least one default node...
+        // Subject Mappings
+        //   The subject mappings must mave at least one default root node...
         // --------------------------------------------------------------------------------
 
-        // Does the transform have a root node array?  No, then set an array...
-        if ( ! this.#theTransform.hasOwnProperty("rootNodes") || ! this.#theTransform.rootNodes ) {
-            this.#theTransform.rootNodes = [];
+        // Does the transform have a Subject Mappings array?  No, then set an array...
+        if ( ! this.#theTransform.hasOwnProperty("subjectMappings") || ! this.#theTransform.subjectMappings ) {
+            this.#theTransform.subjectMappings = [];
         }
         // Does the transform have any root nodes?  No, then set the initial root node...
-        if ( this.#theTransform.rootNodes.length == 0) {
-            this.#theTransform.rootNodes.push( RDFTransformDialog.#createInitialRootNode() );
+        if ( this.#theTransform.subjectMappings.length == 0) {
+            this.#theTransform.subjectMappings.push( RDFTransformDialog.#createInitialRootNode() );
         }
 
         this.#nodeUIs = []; // ...array of RDFTransformUINode
@@ -245,7 +245,7 @@ class RDFTransformDialog {
         .click( (evt) => {
                 evt.preventDefault();
                 var nodeRootNew = RDFTransformDialog.#createRootNode();
-                this.#theTransform.rootNodes.push(nodeRootNew);
+                this.#theTransform.subjectMappings.push(nodeRootNew);
                 this.#nodeUIs.push(
                     new RDFTransformUINode(
                         /* dialog */  this,
@@ -305,7 +305,7 @@ class RDFTransformDialog {
     }
 
     async initTransform() {
-        // Initialize prefixes...
+        // Initialize namespaces...
         this.thePrefixes = this.#elements.rdftEditPrefixes; // ...used in RDFTransformPrefixesManager
         this.prefixesManager = new RDFTransformPrefixesManager(this);
         await this.prefixesManager.initPrefixes();
@@ -333,7 +333,7 @@ class RDFTransformDialog {
         }
         this.#theTransform = cloneDeep(theTransform);
 
-        // Initialize prefixes...
+        // Initialize namespaces...
         this.prefixesManager.resetPrefixes();
 
         // Initialize baseIRI...
@@ -378,7 +378,7 @@ class RDFTransformDialog {
             .addClass("rdf-transform-table-layout");
         this.#tableNodes = table[0];
 
-        for (const nodeRoot of this.#theTransform.rootNodes) {
+        for (const nodeRoot of this.#theTransform.subjectMappings) {
             if (nodeRoot) {
                 this.#nodeUIs.push(
                     new RDFTransformUINode(
@@ -467,7 +467,8 @@ class RDFTransformDialog {
             }
         );
 
-        elements.buttonCancel.click( () => { MenuSystem.dismissAll(); } );
+        elements.buttonCancel
+        .click( () => { MenuSystem.dismissAll(); } );
     }
 
     #replaceBaseIRI(strIRI, bSave = true) {
@@ -517,19 +518,15 @@ class RDFTransformDialog {
 
     getJSON() {
         // Get the current base IRI...
-        var baseIRI = this.#theTransform.baseIRI;
+        var strBaseIRI = this.#theTransform.baseIRI;
 
-        // Get the current prefixes...
-        var prefixes = [];
+        // Get the current namespaces...
+        var listNamespaces = {};
         if (this.prefixesManager.prefixes != null)
         {
-            for (const prefix of this.prefixesManager.prefixes) {
-                if (prefix) {
-                    prefixes.push(
-                        {   "name" : prefix.name,
-                            "iri"  : prefix.iri
-                        }
-                    );
+            for (const strPrefix of this.prefixesManager.prefixes) {
+                if (strPrefix) {
+                    listNamespaces[strPrefix] = this.prefixesManager.prefixes[strPrefix] 
                 }
             }
         }
@@ -537,21 +534,21 @@ class RDFTransformDialog {
         //    alert("No prefixes!");
         //}
 
-        // Get the current root nodes...
-        var rootNodes = [];
+        // Get the current Subject Mapping nodes...
+        var arraySubjectMappings = [];
         for (const nodeUI of this.#nodeUIs) {
             if (nodeUI) {
                 var node = nodeUI.getJSON();
                 if (node !== null) {
-                    rootNodes.push(node);
+                    arraySubjectMappings.push(node);
                 }
             }
         }
 
         return {
-            "baseIRI"   : baseIRI,
-            "prefixes"  : prefixes,
-            "rootNodes" : rootNodes
+            "baseIRI"         : strBaseIRI,
+            "namespaces"      : listNamespaces,
+            "subjectMappings" : arraySubjectMappings
         };
     }
 };

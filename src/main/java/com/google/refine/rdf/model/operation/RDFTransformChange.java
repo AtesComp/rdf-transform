@@ -72,7 +72,7 @@ public class RDFTransformChange implements Change {
             theWriter.write('\n');
             theWriter.write("old=");
             if (this.thePreviousTransform != null) {
-                this.thePreviousTransform.write(jsonWriter);;
+                this.thePreviousTransform.write(jsonWriter);
             }
             theWriter.write('\n');
             theWriter.write("/ec/\n"); // ...end of change marker

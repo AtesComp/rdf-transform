@@ -1,10 +1,10 @@
 package com.google.refine.rdf.model;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
 
 import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 
@@ -36,7 +36,7 @@ public class RDFType {
     static public void reconstructTypes(
                             Node.NodeReconstructor theNodeReconstructor,
                             ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
-                            Map<String, Vocabulary> thePrefixes) {
+                            VocabularyList thePrefixes) {
         Objects.requireNonNull(theNodeReconstructor);
 
         RDFType.reconstructTypes(rnodeParent, jnodeParent, baseIRI, thePrefixes);
@@ -44,7 +44,7 @@ public class RDFType {
 
     static private void reconstructTypes(
                             ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
-                            Map<String, Vocabulary> thePrefixes) {
+                            VocabularyList thePrefixes) {
         if ( ! jnodeParent.has(Util.gstrTypeMappings) ) {
             return;
         }
@@ -111,9 +111,9 @@ public class RDFType {
         return this.strPathIRI;
 	}
 
-    public String getFullIRI(Map<String, Vocabulary> thePrefixes) {
+    public String getFullIRI(VocabularyList thePrefixes) {
         if (this.strPrefix != null) {
-            Vocabulary vocab = thePrefixes.get(this.strPrefix);
+            Vocabulary vocab = thePrefixes.findByPrefix(this.strPrefix);
             if (vocab != null) {
                 return vocab.getNamespace() + this.strPathIRI;
             }

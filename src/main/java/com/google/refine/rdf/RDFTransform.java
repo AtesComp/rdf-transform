@@ -2,8 +2,6 @@ package com.google.refine.rdf;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +10,8 @@ import java.util.Map.Entry;
 import com.google.refine.rdf.model.Node;
 import com.google.refine.rdf.model.ResourceNode;
 import com.google.refine.rdf.model.Util;
-import com.google.refine.rdf.model.vocab.PrefixExistException;
 import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 import com.google.refine.model.OverlayModel;
 import com.google.refine.model.Project;
 
@@ -75,7 +73,7 @@ public class RDFTransform implements OverlayModel {
 
     static public RDFTransform getRDFTransform(ApplicationContext theContext, Project theProject)
 			throws IOException {
-		synchronized (theProject) {
+		synchronized(theProject) {
 			RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
 			if (theTransform == null) {
 				theTransform = new RDFTransform(theContext, theProject);
@@ -227,7 +225,7 @@ public class RDFTransform implements OverlayModel {
         //
         //  NOTE: The map "thePrefixes" is just a convenience map to store and look up vocabularies
         //      based on the prefix as a key.
-        Map<String, Vocabulary> thePrefixes = new HashMap<String, Vocabulary>();
+        VocabularyList thePrefixes = new VocabularyList();
         JsonNode jnodePrefixes = null;
         if ( jnodeRoot.has(Util.gstrNamespaces) ) {
             jnodePrefixes = jnodeRoot.get(Util.gstrNamespaces);
@@ -238,7 +236,7 @@ public class RDFTransform implements OverlayModel {
                     mePrefix = (Map.Entry<String, JsonNode>) iterNodes.next();
                     String strPrefix = mePrefix.getKey();
                     String strIRI    = mePrefix.getValue().asText();
-                    thePrefixes.put( strPrefix, new Vocabulary(strPrefix, strIRI) );
+                    thePrefixes.add( new Vocabulary(strPrefix, strIRI) );
                 }
                 theTransform.setPrefixesMap(thePrefixes);
             }
@@ -322,7 +320,7 @@ public class RDFTransform implements OverlayModel {
      *       foaf:knows
      */ 
     @JsonIgnore
-    private Map<String, Vocabulary> thePrefixes;
+    private VocabularyList thePrefixes;
 
     /*
      * Root Nodes for Document
@@ -354,7 +352,7 @@ public class RDFTransform implements OverlayModel {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Creating base overlay for project from context...");
 
         this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
-       	this.thePrefixes = this.clonePrefixes( theContext.getPredefinedVocabularyManager().getPredefinedVocabulariesMap() );
+       	this.thePrefixes = theContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
        	// Copy the index of predefined vocabularies...
        	//   Each project will have its own copy of these predefined vocabs to enable, delete, update...
        	theContext.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
@@ -366,21 +364,6 @@ public class RDFTransform implements OverlayModel {
     /*
         Methods
     */
-    private Map<String, Vocabulary> clonePrefixes(Map<String, Vocabulary> mapPrefixes) {
-    	Map<String, Vocabulary> mapPrefixesCopy = new HashMap<String, Vocabulary>();
-
-        for ( Entry<String, Vocabulary> entryPrefix : mapPrefixes.entrySet() ) {
-    		mapPrefixesCopy.put(
-                entryPrefix.getKey(),
-                new Vocabulary(
-                    entryPrefix.getValue().getPrefix(),
-                    entryPrefix.getValue().getNamespace() )
-            );
-    	}
-
-    	return mapPrefixesCopy;
-    }
-
     @JsonIgnore // ...see getBaseIRIAsString()
     public ParsedIRI getBaseIRI() {
         return this.theBaseIRI;
@@ -472,53 +455,42 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-    public Map<String, Vocabulary> getPrefixesMap() {
+    public VocabularyList getPrefixesMap() {
 		return this.thePrefixes;
 	}
 
     @JsonIgnore
-    public void setPrefixesMap(Map<String, Vocabulary> mapPrefixes) {
+    public void setPrefixesMap(VocabularyList mapPrefixes) {
         this.thePrefixes = mapPrefixes;
 	}
 
-    public void addPrefix(String strName, String strIRI)
-            throws PrefixExistException {
+    public void addPrefix(String strPrefix, String strNamespace) {
         if (this.thePrefixes == null) {
-            this.thePrefixes = new HashMap<String, Vocabulary>();
+            this.thePrefixes = new VocabularyList();
         }
-        synchronized(this.thePrefixes) {
-    		if ( this.thePrefixes.containsKey(strName) ) {
-    		    throw new PrefixExistException(strName + " already defined");
-    		}
-    		this.thePrefixes.put( strName, new Vocabulary(strName, strIRI) );
-    	}
+        this.thePrefixes.add( new Vocabulary(strPrefix, strNamespace) );
     }
 
-    public void removePrefix(String strName) {
-        synchronized(this.thePrefixes) {
-            this.thePrefixes.remove(strName);
-        }
+    public void removePrefix(String strPrefix) {
+        this.thePrefixes.removeByPrefix(strPrefix);
     }
 
     @JsonProperty(Util.gstrNamespaces)
-    public Collection<Vocabulary> getPrefixes() {
+    public VocabularyList getPrefixes() {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting prefixes...");
-        if (thePrefixes != null) {
-    	    return this.thePrefixes.values();
-        }
-        return null;
+        return thePrefixes;
     }
 
     @JsonProperty(Util.gstrNamespaces)
     public void setPrefixes(Vocabulary[] aVocabularies) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting prefixes...");
         if (this.thePrefixes == null) {
-            this.thePrefixes = new HashMap<String, Vocabulary>();
+            this.thePrefixes = new VocabularyList();
         }
         synchronized(this.thePrefixes) {
             this.thePrefixes.clear();
             for (Vocabulary vocab : aVocabularies) {
-                this.thePrefixes.put( vocab.getPrefix(), vocab );
+                this.thePrefixes.add( vocab );
             }
         }
     }
@@ -673,7 +645,7 @@ public class RDFTransform implements OverlayModel {
         // The Namespaces (namespaces)...
         //
         theWriter.writeObjectFieldStart(Util.gstrNamespaces);
-        for ( Vocabulary vocab : this.thePrefixes.values() ) {
+        for ( Vocabulary vocab : this.thePrefixes ) {
             vocab.write(theWriter);
         }
         theWriter.writeEndObject();

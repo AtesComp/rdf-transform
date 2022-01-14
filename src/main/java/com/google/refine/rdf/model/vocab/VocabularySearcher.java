@@ -188,12 +188,12 @@ public class VocabularySearcher implements IVocabularySearcher {
 	}
 
 	@Override
-	public void synchronize(String strProjectID, Set<String> sstrPrefixes)
+	public void synchronize(String strProjectID, Set<String> setPrefixes)
 			throws IOException {
-		Set<String> sstrAllPrefixes = getPrefixesOfProjectID(strProjectID);
-		sstrAllPrefixes.removeAll(sstrPrefixes);
-		if (!sstrAllPrefixes.isEmpty()) {
-			this.deletePrefixesOfProjectID(strProjectID, sstrAllPrefixes);
+		Set<String> setAllPrefixes = this.getPrefixesOfProjectID(strProjectID);
+		setAllPrefixes.removeAll(setPrefixes);
+		if ( ! setAllPrefixes.isEmpty() ) {
+			this.deletePrefixesOfProjectID(strProjectID, setAllPrefixes);
 		}
 		this.update();
 	}
@@ -210,7 +210,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 	 */
 	private void deleteTerms(String strPrefix, String strProjectID)
 			throws IOException {
-		if (strProjectID == null || strProjectID.isEmpty()) {
+		if ( strProjectID == null || strProjectID.isEmpty() ) {
 			throw new RuntimeException("projectId is null");
 		}
 

@@ -10,7 +10,7 @@ import java.io.IOException;
 
 @JsonIgnoreType
 public class Vocabulary {
-	private String strPrefix;		// Short name that represents the Namespace (Prefix for entities within the Namespace)
+	private String strPrefix;		// Short name that represents the Namespace
 	private String strNamespace;	// The fully qualified Namespace
 
     public Vocabulary(String strPrefix, String strNamespace )

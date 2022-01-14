@@ -88,8 +88,8 @@ class RDFTransformPrefixesManager {
 
 	showPrefixes() {
 		this.#dialog.thePrefixes.empty();
-		for (const prefix of this.prefixes) {
-			this.#renderPrefix(prefix.name, prefix.iri);
+		for (const strPrefix of this.prefixes) {
+			this.#renderPrefix(strPrefix, this.prefixes[strPrefix]);
 		}
 		// Add button...
 		$('<a href="#" class="add-prefix-box">' + $.i18n('rdft-prefix/add') + '</a>')
@@ -114,20 +114,20 @@ class RDFTransformPrefixesManager {
 		// TODO: Add refresh all button
 	}
 
-	#renderPrefix(prefix, iri) {
+	#renderPrefix(prefix, namespace) {
 		this.#dialog.thePrefixes
 		.append(
 			$('<span/>')
 			.addClass('rdf-transform-prefix-box')
-			.attr('title', iri)
+			.attr('title', namespace)
 			.text(prefix)
 		);
 	}
 
-	removePrefix(name) {
+	removePrefix(strPrefixFind) {
 		var iIndex = 0;
-		for (const prefix of this.prefixes) {
-			if (name === prefix.name) {
+		for (const strPrefix of this.prefixes) {
+			if (strPrefixFind === strPrefix) {
 				this.prefixes.splice(iIndex, 1);
 				iIndex--;
 			}
@@ -135,19 +135,18 @@ class RDFTransformPrefixesManager {
 		}
 	}
 	
-	addPrefix(message, prefix, onDoneAdd) {
+	addPrefix(strMessage, strPrefixGiven, onDoneAdd) {
 		var widget = new RDFTransformPrefixAdder(this);
 		widget.show(
-			message,
-			prefix,
-			(strPrefix, strIRI) => {
+			strMessage,
+			strPrefixGiven,
+			(strPrefix, strNamespace) => {
 				// NOTE: The RDFTransformPrefixAdder should have validated the
 				//		prefix information, so no checks are required here.
 
-				// Add the Prefix and its IRI...
+				// Add the Prefix and its Namespace...
 				var obj = {
-					"name" : strPrefix,
-					"iri"  : strIRI
+					[strPrefix] : strNamespace
 				}
 				this.prefixes.push(obj);
 				this.#savePrefixes();
@@ -160,19 +159,19 @@ class RDFTransformPrefixesManager {
 		);
 	}
 	
-	hasPrefix(name) {
+	hasPrefix(strPrefixFind) {
 		for (const prefix of this.prefixes) {
-			if (prefix.name === name) {
+			if (prefix === strPrefixFind) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	getIRIOfPrefix(name) {
-		for (const prefix of this.prefixes) {
-			if (prefix.name === name) {
-				return prefix.iri;
+	getNamespaceOfPrefix(strPrefixFind) {
+		for (const strPrefix of this.prefixes) {
+			if (strPrefix === strPrefixFind) {
+				return this.prefixes[strPrefix];
 			}
 		}
 		return null;
@@ -210,13 +209,13 @@ class RDFTransformPrefixesManager {
 	}
 
 	getFullIRIFromQName(strPrefixedQName) {
-		var strIRI = this.#deAssembleQName(strPrefixedQName);
-		if ( !strIRI.prefix ) {
+		var objIRI = this.#deAssembleQName(strPrefixedQName);
+		if ( !objIRI.prefix ) {
 			return null;
 		}
 		for (const prefix of RDFTransformPrefixesManager.globalPrefixes) {
-			if (prefix.name === strIRI.prefix) {
-				return prefix.iri + strIRI.localPart;
+			if (prefix === objIRI.prefix) {
+				return RDFTransformPrefixesManager.globalPrefixes[prefix] + objIRI.localPart;
 			}
 		}
 		return null;

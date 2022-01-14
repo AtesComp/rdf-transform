@@ -6,19 +6,19 @@
     </div>
     <table width="100%">
       <tr>
-        <td bind="rdf_transform_prefix_pre"></td>
+        <td bind="rdf_transform_prefix_prefix"></td>
         <td style="padding-bottom:4px"> <input type="text" bind="prefix" size="4" /></td>
       </tr>
       <tr>
-        <td bind="rdf_transform_prefix_iri"></td>
+        <td bind="rdf_transform_prefix_namespace"></td>
         <td style="padding-bottom:4px">
-            <input type="text" bind="iri" size="32" />
-            <div class="rdf-transform-prefix-note" bind="iri_note"></div>
+            <input type="text" bind="namespace" size="32" />
+            <div class="rdf-transform-prefix-note" bind="namespace_note"></div>
         </td>
       </tr>
     </table>
     <div bind="fetching_options_table">
-      <fieldset class="rdf-reconcile-fieldset">
+      <fieldset class="rdf-transform-prefix-fieldset">
         <legend><span bind="rdf_transform_prefix_voc"></span></legend>
         <table>
           <tr>
@@ -39,7 +39,7 @@
               <span bind="rdf_transform_prefix_imp"></span>
               <form id="file-upload-form" bind="file_upload_form" enctype="multipart/form-data">
                 <input type="hidden" id="vocab-prefix" name="vocab_prefix" />
-                <input type="hidden" id="vocab-iri" name="vocab_iri" />
+                <input type="hidden" id="vocab-namespace" name="vocab_namespace" />
                 <input type="hidden" id="vocab-project" name="vocab_project" />
                 <table class="rdf-indented-table" id="upload-file-table" bind="upload_file_table">
                   <tr>

@@ -18,26 +18,26 @@ class RDFTransformPrefixAdder {
 		this.#elements = DOM.bind(this.#dialog);
 		this.#level = DialogSystem.showDialog(this.#dialog);
 
-		this.#elements.dialogHeader.html(                 $.i18n('rdft-prefix/header')      );
-		this.#elements.rdf_transform_prefix_pre.html(     $.i18n('rdft-prefix/pre') + ":"   );
-		this.#elements.rdf_transform_prefix_iri.html(     $.i18n('rdft-prefix/iri') + ":"   );
-		this.#elements.rdf_transform_prefix_voc.html(     $.i18n('rdft-prefix/voc')         );
-		this.#elements.rdf_transform_prefix_only.html(    $.i18n('rdft-prefix/prefix')      );
-		this.#elements.rdf_transform_prefix_fetch.html(   $.i18n('rdft-prefix/fetch')       );
-		this.#elements.rdf_transform_prefix_imp.html(     $.i18n('rdft-prefix/imp')         );
-		this.#elements.rdf_transform_prefix_file.html(    $.i18n('rdft-prefix/file') + ":"  );
-		this.#elements.rdf_transform_prefix_format.html(  $.i18n('rdft-prefix/format') + ":");
-		this.#elements.rdf_transform_prefix_auto.html(    $.i18n('rdft-prefix/auto')        );
-		this.#elements.rdf_transform_prefix_turtle.html(  $.i18n('rdft-prefix/turtle')      );
-		this.#elements.rdf_transform_prefix_rdfxml.html(  $.i18n('rdft-prefix/rdfxml')      );
-		this.#elements.rdf_transform_prefix_n3.html(      $.i18n('rdft-prefix/n3')          );
-		this.#elements.rdf_transform_prefix_ntriple.html( $.i18n('rdft-prefix/ntriple')     );
-		this.#elements.rdf_transform_prefix_jsonld.html(  $.i18n('rdft-prefix/jsonld')      );
-		this.#elements.rdf_transform_prefix_nquads.html(  $.i18n('rdft-prefix/nquads')      );
-		this.#elements.rdf_transform_prefix_rdfjson.html( $.i18n('rdft-prefix/rdfjson')     );
-		this.#elements.rdf_transform_prefix_trig.html(    $.i18n('rdft-prefix/trig')        );
-		this.#elements.rdf_transform_prefix_trix.html(    $.i18n('rdft-prefix/trix')        );
-		this.#elements.rdf_transform_prefix_binary.html(  $.i18n('rdft-prefix/binary')      );
+		this.#elements.dialogHeader.html(                   $.i18n('rdft-prefix/header')          );
+		this.#elements.rdf_transform_prefix_prefix.html(    $.i18n('rdft-prefix/prefix') + ":"    );
+		this.#elements.rdf_transform_prefix_namespace.html( $.i18n('rdft-prefix/namespace') + ":" );
+		this.#elements.rdf_transform_prefix_voc.html(       $.i18n('rdft-prefix/voc')             );
+		this.#elements.rdf_transform_prefix_only.html(      $.i18n('rdft-prefix/prefix-add-only') );
+		this.#elements.rdf_transform_prefix_fetch.html(     $.i18n('rdft-prefix/fetch')           );
+		this.#elements.rdf_transform_prefix_imp.html(       $.i18n('rdft-prefix/imp')             );
+		this.#elements.rdf_transform_prefix_file.html(      $.i18n('rdft-prefix/file') + ":"      );
+		this.#elements.rdf_transform_prefix_format.html(    $.i18n('rdft-prefix/format') + ":"    );
+		this.#elements.rdf_transform_prefix_auto.html(      $.i18n('rdft-prefix/auto')            );
+		this.#elements.rdf_transform_prefix_turtle.html(    $.i18n('rdft-prefix/turtle')          );
+		this.#elements.rdf_transform_prefix_rdfxml.html(    $.i18n('rdft-prefix/rdfxml')          );
+		this.#elements.rdf_transform_prefix_n3.html(        $.i18n('rdft-prefix/n3')              );
+		this.#elements.rdf_transform_prefix_ntriple.html(   $.i18n('rdft-prefix/ntriple')         );
+		this.#elements.rdf_transform_prefix_jsonld.html(    $.i18n('rdft-prefix/jsonld')          );
+		this.#elements.rdf_transform_prefix_nquads.html(    $.i18n('rdft-prefix/nquads')          );
+		this.#elements.rdf_transform_prefix_rdfjson.html(   $.i18n('rdft-prefix/rdfjson')         );
+		this.#elements.rdf_transform_prefix_trig.html(      $.i18n('rdft-prefix/trig')            );
+		this.#elements.rdf_transform_prefix_trix.html(      $.i18n('rdft-prefix/trix')            );
+		this.#elements.rdf_transform_prefix_binary.html(    $.i18n('rdft-prefix/binary')          );
 
 		this.#elements.buttonOK.html( $.i18n('rdft-buttons/ok') );
 		this.#elements.buttonCancel.html( $.i18n('rdft-buttons/cancel') );
@@ -52,7 +52,7 @@ class RDFTransformPrefixAdder {
 
 		if (prefix) {
 			this.#elements.prefix.val(prefix);
-			this.#suggestIRI(prefix);
+			this.#suggestNamespace(prefix);
 		}
 
 		this.#onDoneAdding = onDoneAdding;
@@ -68,24 +68,24 @@ class RDFTransformPrefixAdder {
 					.val();
 
 				var strPrefix = this.#elements.prefix.val();
-				var strIRI = this.#elements.iri.val();
+				var strNamespace = this.#elements.namespace.val();
 
 				//
-				// Test the user supplied prefix and IRI...
+				// Test the user supplied prefix and namespace...
 				//
-				var bBlankIRI = (strIRI == undefined || strIRI == "");
-				if ( ! bBlankIRI && ! await RDFTransformCommon.validatePrefix(strIRI) ) {
+				var bUndefinedNamespace = (strNamespace == undefined || strNamespace == "");
+				if ( ! bUndefinedNamespace && ! await RDFTransformCommon.validatePrefix(strNamespace) ) {
 					// NOTE: The validatePrefix() call does its own alert dialog.
 					// Let the user try again...
 					return;
 				}
 				var bDefinedPrefix = this.#prefixesManager.hasPrefix(strPrefix);
-				if (bBlankIRI || bDefinedPrefix) {
+				if (bUndefinedNamespace || bDefinedPrefix) {
 					var strAlert =
-						$.i18n('rdft-prefix/pref') +
+						$.i18n('rdft-prefix/prefix') +
 						' "' + strPrefix + '" ' +
-						( bBlankIRI ?
-							$.i18n('rdft-prefix/iri-cannot-be-blank') :
+						( bUndefinedNamespace ?
+							$.i18n('rdft-prefix/must-define') :
 							$.i18n('rdft-prefix/defined')
 						);
 					alert(strAlert);
@@ -101,9 +101,9 @@ class RDFTransformPrefixAdder {
 				// Prepare the data values...
 				var postData = {
 					"csrf_token" : token,
-					"name"       : strPrefix,
-					"iri"        : strIRI,
-					"fetch-url"  : strIRI,
+					"prefix"     : strPrefix,
+					"namespace"  : strNamespace,
+					"fetch-url"  : strNamespace,
 					"project"    : theProject.id,
 					"fetch"      : fetchOption
 				};
@@ -111,7 +111,7 @@ class RDFTransformPrefixAdder {
 				if (fetchOption === 'file') {
 					// Prepare the form values by id attributes...
 					$('#vocab-prefix').val(strPrefix);
-					$('#vocab-iri').val(strIRI);
+					$('#vocab-namespace').val(strNamespace);
 					$('#vocab-project').val(theProject.id);
 
 					postCmd = "command/rdf-transform/add-prefix-from-file";
@@ -119,13 +119,13 @@ class RDFTransformPrefixAdder {
 						"csrf_token" : token,
 						"dataType" : "json"
 					};
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strIRI);
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace);
 				}
 				else if (fetchOption === 'web') {
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strIRI);
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
 				}
 				else if (fetchOption === 'prefix') {
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-only') + ' ' + strIRI);
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
 				}
 
 				$.post(
@@ -139,7 +139,7 @@ class RDFTransformPrefixAdder {
 						else if (this.#onDoneAdding) {
 							// Since we've successfully added the Prefix Info on the server,
 							// add it to the client for viewing...
-							this.#onDoneAdding(strPrefix, strIRI);
+							this.#onDoneAdding(strPrefix, strNamespace);
 						}
 						this.#dismiss();
 					}
@@ -173,26 +173,26 @@ class RDFTransformPrefixAdder {
 		);
 
 		this.#elements.prefix
-		.change( (evt) => { this.#suggestIRI( $(evt.currentTarget).val() ); } )
+		.change( (evt) => { this.#suggestNamespace( $(evt.currentTarget).val() ); } )
 		.focus();
 	}
 
-	#suggestIRI(prefix) {
+	#suggestNamespace(prefix) {
 		$.get(
-			'command/rdf-transform/get-prefix-cc-iri',
+			'command/rdf-transform/suggest-namespace',
 			{ prefix: prefix },
 			(data) => {
-				if ( !this.#elements.iri.val() && data.iri ) {
-					this.#elements.iri.val(data.iri);
+				if ( !this.#elements.namespace.val() && data.namespace ) {
+					this.#elements.namespace.val(data.namespace);
 					if ( this.#elements.message.text() ) {
-						this.#elements.iri_note.html(
+						this.#elements.namespace_note.html(
 							'(' + $.i18n('rdft-prefix/suggestion') +
 							' <em><a target="_blank" href="http://prefix.cc">prefix.cc</a></em> ' +
 							$.i18n('rdft-prefix/provided') + ')'
 						);
 					}
 					else {
-						this.#elements.iri_note.html(
+						this.#elements.namespace_note.html(
 							'(' + $.i18n('rdft-prefix/suggested') +
 							' <a target="_blank" href="http://prefix.cc">prefix.cc</a>)'
 						);

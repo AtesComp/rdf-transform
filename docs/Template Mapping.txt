@@ -123,7 +123,7 @@ OPT: xxx is related to the (value type)
       "expression": "(value)" -> "expression" : { "language": "grel", "code", "(value)"
       "nodeType" : "cell-as-resource" ->
             "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
-            "isIndex": "false" && columnName": "(value)" ->
+            "isIndex": "false" && "columnName": "(value)" ->
                     "valueSource": { "source": "column", "columnName": "(value)" }
       "rdfTypes" -> "typeMappings"
           "cirie" & "iri" ->

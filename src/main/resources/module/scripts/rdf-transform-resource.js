@@ -45,6 +45,13 @@ class RDFTransformResourceDialog {
         .bind('fb-select', // ...select existing item...
             (evt, data) => {
                 MenuSystem.dismissAll();
+                alert("DEBUG: Existing Item:\n" +
+                    data
+                );
+                //var obj = {
+                //    "iri"   : data,
+                //    "cirie" : data
+                //}
                 this.#onDone(data);
             }
         )

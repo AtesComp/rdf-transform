@@ -1,10 +1,6 @@
 package com.google.refine.rdf.command;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -14,8 +10,7 @@ import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.rdf.model.vocab.VocabularyImportException;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +38,8 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 	private void getDefaultPrefixes(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String projectId = request.getParameter("project");
-		Collection<Vocabulary> collVocab = this.getRDFTransform(request).getPrefixes();
-		for (Vocabulary vocab : collVocab) {
+		VocabularyList listVocabs = this.getRDFTransform(request).getPrefixes();
+		for (Vocabulary vocab : listVocabs) {
 			Exception except = null;
 			boolean bError = false;
 			String strError = null;
@@ -79,25 +74,6 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 				// ...continue processing the other vocabularies...
 			}
 		}
-		GetDefaultPrefixesCommand.respondJSON(response, new PrefixesList(collVocab));
-	}
-
-	public class PrefixesList {
-
-		@JsonProperty("prefixes")
-		public Collection<Vocabulary> prefixes;
-
-		@JsonCreator
-		protected PrefixesList(
-				//@JsonProperty("prefixes")
-				Collection<Vocabulary> prefixes) {
-			this.prefixes = prefixes;
-		}
-
-		public Map<String, Vocabulary> getMap() {
-			return prefixes.stream().collect(
-						Collectors.toMap( Vocabulary::getPrefix, Function.identity() )
-					);
-		}
+		GetDefaultPrefixesCommand.respondJSON(response, listVocabs);
 	}
 }

@@ -14,29 +14,29 @@ import com.fasterxml.jackson.core.JsonGenerator;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class SuggestPrefixIRICommand extends RDFTransformCommand{
+public class SuggestNamespaceCommand extends RDFTransformCommand {
 
-	public SuggestPrefixIRICommand(ApplicationContext ctxt) {
-		super(ctxt);
+	public SuggestNamespaceCommand(ApplicationContext context) {
+		super(context);
 	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String prefix = request.getParameter("prefix");
-		String iri = this.getContext().getPrefixManager().getNamespace(prefix);
+		String strPrefix = request.getParameter("prefix");
+		String strNamespace = this.getContext().getPrefixManager().getNamespace(strPrefix);
 		try {
 			response.setCharacterEncoding("UTF-8");
 	        response.setHeader("Content-Type", "application/json");
-	        Writer w = response.getWriter();
-	        JsonGenerator writer = ParsingUtilities.mapper.getFactory().createGenerator(w);
-            writer.writeStartObject();
-            writer.writeStringField("code", "ok");
-            writer.writeStringField("iri", iri);
-            writer.writeEndObject();
+	        Writer writer = response.getWriter();
+	        JsonGenerator jgWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
+            jgWriter.writeStartObject();
+            jgWriter.writeStringField("code", "ok");
+            jgWriter.writeStringField("namespace", strNamespace);
+            jgWriter.writeEndObject();
+            jgWriter.flush();
+            jgWriter.close();
             writer.flush();
             writer.close();
-            w.flush();
-            w.close();
 		} catch(Exception e) {
 			respondException(response, e);
 		}

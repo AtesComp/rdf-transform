@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 import com.google.refine.util.ParsingUtilities;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 public class SavePrefixesCommand extends RDFTransformCommand {
 
@@ -30,20 +31,24 @@ public class SavePrefixesCommand extends RDFTransformCommand {
 		}
         try {
 			// Update prefixes...
-			Map<String, Vocabulary> prefixesMap = new HashMap<String, Vocabulary>();
-			ArrayNode aPrefixes =
+			VocabularyList listVocabs = new VocabularyList();
+			ArrayNode arrayPrefixes =
 				ParsingUtilities.evaluateJsonStringToArrayNode( request.getParameter("prefixes") );
-			for (JsonNode prefix : aPrefixes) {
-				String strPrefixName = prefix.get("name").asText();
-				prefixesMap.put( strPrefixName, new Vocabulary( strPrefixName, prefix.get("iri").asText() ) );
-			}
-			this.getRDFTransform(request).setPrefixesMap(prefixesMap);
+
+
+			Iterator<Entry<String, JsonNode>> fields = arrayPrefixes.fields();
+			fields.forEachRemaining(prefix -> {
+				String strPrefix = prefix.getKey();
+				String strNamespace = prefix.getValue().asText();
+				listVocabs.add( new Vocabulary( strPrefix, strNamespace ) );
+			});
+			this.getRDFTransform(request).setPrefixesMap(listVocabs);
 
 			// ...and the prefixes' vocabulary searcher...
 			String projectID = request.getParameter("project");
 			this.getContext().
 				getVocabularySearcher().
-					synchronize( projectID, prefixesMap.keySet() );
+					synchronize( projectID, listVocabs.getPrefixSet() );
 
 			SavePrefixesCommand.respondJSON(response, CodeResponse.ok);
 		}

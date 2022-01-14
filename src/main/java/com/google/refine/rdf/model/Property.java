@@ -3,10 +3,9 @@ package com.google.refine.rdf.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 
@@ -56,14 +55,16 @@ public class Property {
      */
     static public void reconstructProperties(
 							Node.NodeReconstructor theNodeReconstructor,
-							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI, Map<String, Vocabulary> thePrefixes) {
+							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
+                            VocabularyList thePrefixes) {
         Objects.requireNonNull(theNodeReconstructor);
 
 		Property.reconstructProperties(rnodeParent, jnodeParent, baseIRI, thePrefixes);
 	}
 
     static private void reconstructProperties(
-							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI, Map<String, Vocabulary> thePrefixes) {
+							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
+                            VocabularyList thePrefixes) {
 		if ( ! jnodeParent.has(Util.gstrPropertyMappings) ) {
             return;
         }

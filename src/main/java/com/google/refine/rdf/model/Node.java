@@ -2,13 +2,12 @@ package com.google.refine.rdf.model;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.google.refine.model.Project;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.utils.RecordModel;
-import com.google.refine.rdf.model.vocab.Vocabulary;
+import com.google.refine.rdf.model.vocab.VocabularyList;
 
 import org.eclipse.rdf4j.common.net.ParsedIRI;
 import org.eclipse.rdf4j.model.Value;
@@ -53,7 +52,7 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             RDFTransform.Reconstructor theReconstructor,
-                            JsonNode jnodeSubject, final ParsedIRI baseIRI, Map<String, Vocabulary> thePrefixes) {
+                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
         Objects.requireNonNull(theReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, thePrefixes);
@@ -61,13 +60,13 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             Property.PropertyReconstructor thePropReconstructor,
-                            JsonNode jnodeSubject, final ParsedIRI baseIRI, Map<String, Vocabulary> thePrefixes) {
+                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
         Objects.requireNonNull(thePropReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, thePrefixes);
     }
 
-    static private Node reconstructNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, Map<String, Vocabulary> thePrefixes) {
+    static private Node reconstructNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
         Node nodeElement = null;
         if (jnodeSubject == null) {
             Node.logger.warn("WARNING: Missing Subject for Node");
@@ -259,8 +258,8 @@ abstract public class Node {
 
                             // Validate the full IRI (Namespace + Datatype)...
                             ParsedIRI iriNamespace = baseIRI; // ...default
-                            if ( thePrefixes.containsKey(strDatatypePrefix) ) {
-                                String strDatatypeNamespace = thePrefixes.get(strDatatypePrefix).getNamespace();
+                            if ( thePrefixes.containsPrefix(strDatatypePrefix) ) {
+                                String strDatatypeNamespace = thePrefixes.findByPrefix(strDatatypePrefix).getNamespace();
                                 if (strDatatypeNamespace != null) {
                                     try {
                                         iriNamespace = new ParsedIRI( strDatatypeNamespace );

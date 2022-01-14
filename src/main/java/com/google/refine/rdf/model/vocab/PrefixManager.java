@@ -7,17 +7,17 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 
+@JsonIgnoreType
 public class PrefixManager {
-	@JsonIgnore
 	private Map<String, String> prefixMap = new HashMap<String, String>();
 
 	public PrefixManager(InputStream inStream) throws IOException {
 		BufferedReader buffReader = new BufferedReader( new InputStreamReader(inStream) );
 		String strLine, strPrefix = null, strNamespace = null;
 
-		//	Read ontology file lines...
+		//	Read Prefix file lines...
 		//  	There should be 2 entries per line:
 		//			Prefix, Namespace
 		//		Each entry should be separated by whitespace.
@@ -39,7 +39,6 @@ public class PrefixManager {
 		}
 	}
 
-	@JsonIgnore
 	public String getNamespace(String strPrefix) {
 		return prefixMap.get(strPrefix);
 	}

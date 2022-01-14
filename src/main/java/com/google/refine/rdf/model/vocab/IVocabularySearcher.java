@@ -43,20 +43,20 @@ public interface IVocabularySearcher {
 	 * @throws VocabularyImportException
 	 * @throws IOException
 	 */
-	public void importAndIndexVocabulary(String strPrefix, String strNamespace, Repository repository,
+	public void importAndIndexVocabulary(String strPrefix, String strNamespace, Repository theRepository,
 											String strProjectID)
 					throws VocabularyImportException, IOException;
 
-	public List<SearchResultItem> searchClasses(String str, String strProjectID)
+	public List<SearchResultItem> searchClasses(String strClass, String strProjectID)
 					throws IOException;
 
-	public List<SearchResultItem> searchProperties(String str, String strProjectID)
+	public List<SearchResultItem> searchProperties(String strProperty, String strProjectID)
 					throws IOException;
 
-	public void deleteTermsOfVocabs(Set<Vocabulary> toRemove,String strProjectID)
+	public void deleteTermsOfVocabs(Set<Vocabulary> setVocabToRemove, String strProjectID)
 					throws IOException;
 
-	public void deleteTermsOfVocab(String vocabName, String strProjectID)
+	public void deleteTermsOfVocab(String strVocab, String strProjectID)
 					throws IOException;
 
 	public void addPredefinedVocabulariesToProject(long liProjectID)
@@ -65,6 +65,6 @@ public interface IVocabularySearcher {
 	public void update()
 					throws IOException;
 
-	public void synchronize(String strProjectID, Set<String> prefixes)
+	public void synchronize(String strProjectID, Set<String> setPrefixes)
 					throws IOException;
 }

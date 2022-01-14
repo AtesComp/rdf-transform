@@ -99,7 +99,7 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
             if (item.getFieldName().equals("vocab_prefix")) {
                 this.strPrefix = item.getString();
             }
-            else if (item.getFieldName().equals("vocab_iri")) {
+            else if (item.getFieldName().equals("vocab_namespace")) {
                 this.strNamespace = item.getString();
             }
             else if (item.getFieldName().equals("vocab_project")) {

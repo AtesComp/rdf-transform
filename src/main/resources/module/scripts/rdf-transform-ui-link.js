@@ -137,8 +137,8 @@ class RDFTransformUILink {
         new RDFTransformResourceDialog(
             evt.target, 'property', theProject.id, this.#dialog,
             (obj) => {
-                this.#link.iri   = obj.id;
-                this.#link.cirie = obj.name;
+                this.#link.iri   = obj.iri;
+                this.#link.cirie = obj.cirie;
                 this.#dialog.updatePreview();
                 this.#renderMain();
             }

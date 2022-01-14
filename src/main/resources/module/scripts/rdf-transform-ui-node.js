@@ -464,40 +464,35 @@ class RDFTransformUINode {
         else if ( this.#node.nodeType === RDFTransformCommon.g_strRDFT_LITERAL ||
                   this.#node.nodeType === RDFTransformCommon.g_strRDFT_CLITERAL ) {
             // Literal node...
-            if (this.#node.lang) {
-                // ...with Language tag...
+            if (this.#node.literal.lang) { // ...with Language tag...
                 elements.rdf_content_lang_radio.prop(this.#checkedTrue);
-                elements.rdf_content_lang_input.prop(this.#disabledFalse).val(this.#node.lang);
+                elements.rdf_content_lang_input.prop(this.#disabledFalse).val(this.#node.literal.lang);
             }
-            else {
-                // ...with Datatype tag...
-                if (this.#node.valueType) {
-                    // Standard Datatype tags...
-                    if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#int') {
-                        elements.rdf_content_int_radio.prop(this.#checkedTrue);
-                    }
-                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#double') {
-                        elements.rdf_content_non_int_radio.prop(this.#checkedTrue);
-                    }
-                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#date') {
-                        elements.rdf_content_date_radio.prop(this.#checkedTrue);
-                    }
-                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#dateTime') {
-                        elements.rdf_content_date_time_radio.prop(this.#checkedTrue);
-                    }
-                    else if (this.#node.valueType === 'http://www.w3.org/2001/XMLSchema#boolean') {
-                        elements.rdf_content_boolean_radio.prop(this.#checkedTrue);
-                    }
-                    else {
-                        // Custom Datatype tag...
-                        elements.rdf_content_type_radio.prop(this.#checkedTrue);
-                        elements.rdf_content_type_input.prop(this.#disabledFalse).val(this.#node.valueType);
-                    }
+            else if (this.#node.literal.valueType) { // ...with Datatype tag... http://www.w3.org/2001/XMLSchema#
+                // Standard Datatype tags...
+                if (this.#node.literal.valueType === 'int') {
+                    elements.rdf_content_int_radio.prop(this.#checkedTrue);
+                }
+                else if (this.#node.literal.valueType === 'double') {
+                    elements.rdf_content_non_int_radio.prop(this.#checkedTrue);
+                }
+                else if (this.#node.literal.valueType === 'date') {
+                    elements.rdf_content_date_radio.prop(this.#checkedTrue);
+                }
+                else if (this.#node.literal.valueType === 'dateTime') {
+                    elements.rdf_content_date_time_radio.prop(this.#checkedTrue);
+                }
+                else if (this.#node.literal.valueType === 'boolean') {
+                    elements.rdf_content_boolean_radio.prop(this.#checkedTrue);
                 }
                 else {
-                    // No tag, simple string...
-                    elements.rdf_content_txt_radio.prop(this.#checkedTrue);
+                    // Custom Datatype tag...
+                    elements.rdf_content_type_radio.prop(this.#checkedTrue);
+                    elements.rdf_content_type_input.prop(this.#disabledFalse).val(this.#node.literal.valueType);
                 }
+            }
+            else { // No tag, simple string...
+                elements.rdf_content_txt_radio.prop(this.#checkedTrue);
             }
         }
         else if ( this.#node.nodeType === RDFTransformCommon.g_strRDFT_BLANK ||
@@ -649,26 +644,29 @@ class RDFTransformUINode {
 
         // All Literal Nodes...
         if (strNodeSubtype === RDFTransformCommon.g_strRDFT_LITERAL) {
+            node.literal = {};
             // Get language...
             if ( $('#rdf-content-lang-radio').prop('checked') ) {
-                node.lang = $('#rdf-content-lang-input').val();
+                node.literal.lang = $('#rdf-content-lang-input').val();
             }
             else {
                 // Get value type...
+                node.literal.datatype = {};
+                node.literal.datatype.namespace = "xsd"; // http://www.w3.org/2001/XMLSchema#
                 if ( $('#rdf-content-int-radio').prop('checked') ) {
-                    node.valueType = 'http://www.w3.org/2001/XMLSchema#int';
+                    node.literal.datatype.type = 'int';
                 }
                 else if ( $('#rdf-content-non-int-radio').prop('checked') ) {
-                    node.valueType = 'http://www.w3.org/2001/XMLSchema#double';
+                    node.literal.datatype.type = 'double';
                 }
                 else if ( $('#rdf-content-date-radio').prop('checked') ) {
-                    node.valueType = 'http://www.w3.org/2001/XMLSchema#date';
+                    node.literal.datatype.type = 'date';
                 }
                 else if ( $('#rdf-content-date-time-radio').prop('checked') ) {
-                    node.valueType = 'http://www.w3.org/2001/XMLSchema#dateTime';
+                    node.literal.datatype.type = 'dateTime';
                 }
                 else if ( $('#rdf-content-boolean-radio').prop('checked') ) {
-                    node.valueType = 'http://www.w3.org/2001/XMLSchema#boolean';
+                    node.literal.datatype.type = 'boolean';
                 }
                 else if ( $('#rdf-content-type-radio').prop('checked') ) {
                     // Check for custom datatype IRI value...
@@ -677,7 +675,8 @@ class RDFTransformUINode {
                         alert( $.i18n('rdft-dialog/alert-custom') );
                         return null;
                     }
-                    node.valueType = value;
+                    delete node.literal.datatype.namespace;
+                    node.literal.datatype.type = value;
                 }
             }
         }
@@ -1042,107 +1041,118 @@ class RDFTransformUINode {
     }
 
     getJSON() {
-        var result = null;
+        var result = {};
+        result.valueSource = {};
+        result.valueType = {};
         var bGetLinks = false;
 
+        if ("namespace" in this.#node) {
+            result.namespace = this.#node.namespace;
+        }
+
+        //
+        // CELL Nodes...
+        //
         if ( this.#node.nodeType.startsWith(RDFTransformCommon.g_strRDFT_CELLAS) ) {
             // For "cell-as-*", the node must have either a column name or
             // is an index cell...
-            if ( ! ("columnName" in this.#node || "isIndex" in this.#node) ) {
+            bIsIndex = ("bIsIndex" in this.#node);
+            if ( ! ("columnName" in this.#node || bIsIndex) ) {
                 return null;
             }
 
-            if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE) {
-                result = {
-                    "nodeType"   : this.#node.nodeType,
-                    "expression" : this.#node.expression,
-                    "rdfTypes"   : [],
-                    "links"      : []
-                };
-                bGetLinks = true;
+            if (bIsIndex) {
+                result.valueSource.source = "record_id"; // or "row_index";
             }
-            else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL) {
-                result = {
-                    "nodeType"   : this.#node.nodeType,
-                    "expression" : this.#node.expression
-                };
-                if (this.#node.valueType) {
-                    result.valueType = this.#node.valueType;
-                }
-                if (this.#node.lang) {
-                    result.lang = this.#node.lang;
-                }
+            else {
+                result.valueSource.source = "column";
+                result.valueSource.columnName = this.#node.columnName;
             }
-            else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
-                result = {
-                    "nodeType" : this.#node.nodeType,
-                    "rdfTypes" : [],
-                    "links"    : []
-                };
-                bGetLinks = true;
-            }
-
-            if (this.#node.columnName) {
-                result.columnName = this.#node.columnName;
-            }
-            result.bIsIndex = this.#node.bIsIndex;
         }
-        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE) {
-            if ( ! this.#node.value ) {
+        //
+        // CONSTANT Nodes...
+        //
+        else {
+            if ( ! this.#node.value) {
                 return null;
             }
-            result = {
-                "nodeType" : this.#node.nodeType,
-                "value"    : this.#node.value,
-                "rdfTypes" : [],
-                "links"    : []
-            };
+
+            result.valueSource.source = "constant";
+            result.valueSource.constant = this.#node.value;
+        }
+
+        //
+        // RESOURCE Nodes...
+        //
+        if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE || 
+            this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE ) {
+            result.valueType.type = "iri";
             bGetLinks = true;
         }
-        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL) {
-            if ( ! ("value" in this.#node) || ! this.#node.value) {
-                return null;
+        //
+        // LITERAL Nodes...
+        //
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL ||
+                 this.#node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL ) {
+            if (this.#node.literal.datatype) {
+                result.valueType.type = "datatype_literal";
+                result.valueType.datatype = {};
+                result.valueType.datatype.namespace = this.#node.literal.datatype.namespace;
+                result.valueType.datatype.valueSource = {};
+                result.valueType.datatype.valueSource.source = "constant";
+                result.valueType.datatype.valueSource.constant = this.#node.literal.datatype.type;
+                if (this.#node.literal.datatype.expression) {
+                    result.valueType.datatype.expression = {};
+                    result.valueType.datatype.expression.language = "grel";
+                    result.valueType.datatype.expression.code = this.#node.expression;
+                }
             }
-            result = {
-                "nodeType" : this.#node.nodeType,
-                "value"    : this.#node.value,
-            };
-            if (this.#node.valueType) {
-                result.valueType = this.#node.valueType;
+            else if (this.#node.literal.lang) {
+                result.valueType.type = "language_literal";
+                result.valueType.language = this.#node.literal.lang;
             }
-            if (this.#node.lang) {
-                result.lang = this.#node.lang;
+            else {
+                result.valueType.type = "literal";
             }
         }
-        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
-            result = {
-                "nodeType" : this.#node.nodeType,
-                "rdfTypes" : [],
-                "links"    : []
-            };
+        //
+        // BLANK Nodes...
+        //
+        else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK ||
+                 this.#node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
+            if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
+                result.valueType.type = "bnode";
+            }
+            else {
+                result.valueType.type = "value_bnode";
+            }
             bGetLinks = true;
         }
 
-        if ( result == null ) {
-            return null;
+        //
+        // EXPRESSION...
+        ///
+        if (this.#node.expression && this.#node.expression !== "value") {
+            result.expression = {};
+            result.expression.language = "grel";
+            result.expression.code = this.#node.expression;
         }
 
         if (bGetLinks) {
-            if (this.#node.rdfTypes) {
+            if (this.#node.rdfTypes && this.#node.rdfTypes.length > 0) {
+                result.typeMappings = [];
                 for (const rdfType of this.#node.rdfTypes) {
-                    result.rdfTypes
-                    .push(
-                        {   "iri"   : rdfType.iri,
-                            "cirie" : rdfType.cirie
-                        }
-                    );
+                    result.typeMappings.push(rdfType.getJSON);
                 }
             }
 
-            for (const linkUI of this.#linkUIs) {
-                var link = linkUI.getJSON();
-                if (link !== null) {
-                    result.links.push(link);
+            if (this.#linkUIs && this.#linkUIs.length > 0) {
+                result.propertyMappings = [];
+                for (const linkUI of this.#linkUIs) {
+                    var link = linkUI.getJSON();
+                    if (link !== null) {
+                        result.propertyMappings.push(link);
+                    }
                 }
             }
         }

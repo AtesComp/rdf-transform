@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.model.Util;
@@ -33,7 +33,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 
 	private ApplicationContext applicationContext;
 	private final File workingDir;
-	private Map<String, Vocabulary> predefinedVocabulariesMap = new HashMap<String, Vocabulary>();
+	private VocabularyList predefinedVocabularies = new VocabularyList();
 
     public PredefinedVocabularyManager() {
     	this.workingDir = null;
@@ -44,7 +44,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 		this.workingDir = workingDir;
 
 		try {
-			reconstructVocabulariesFromFile();
+			this.reconstructVocabulariesFromFile();
 			return;
 		}
 		catch (FileNotFoundException ex) {
@@ -53,22 +53,22 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 		}
 
 		try {
-			addPredefinedVocabularies();
-			save();
+			this.addPredefinedVocabularies();
+			this.save();
 		}
 		catch (Exception ex) {
 			// Predefined vocabularies are not defined properly...
 			//   Ignore the exception, but log it...
 			if ( Util.isVerbose() ) {
-				logger.warn("Predefined Vocabulary failed: ", ex);
+				PredefinedVocabularyManager.logger.warn("Predefined Vocabulary failed: ", ex);
 				if ( Util.isVerbose(2) ) ex.printStackTrace();
 			}
 			throw ex;
 		}
 	}
 
-	public Map<String,Vocabulary> getPredefinedVocabulariesMap() {
-		return predefinedVocabulariesMap;
+	public VocabularyList getPredefinedVocabularies() {
+		return predefinedVocabularies;
 	}
 
 	/*
@@ -110,7 +110,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 				this.applicationContext.
 					getVocabularySearcher().
 						importAndIndexVocabulary(strPrefix, strNamespace, strFetchURL);
-				this.predefinedVocabulariesMap.put(strPrefix, new Vocabulary(strPrefix, strNamespace));
+				this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
 			}
 			catch (Exception ex) {
 				// Predefined vocabularies are not defined properly...
@@ -179,19 +179,19 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
     	ObjectMapper mapper = new ObjectMapper();
 		JsonNode vocabs = mapper.readTree(vocabsFile);
 		JsonNode prefixes = vocabs.get("prefixes");
-
-		for (JsonNode prefix : prefixes) {
-			String name = prefix.get("name").asText();
-			String strIRI = prefix.get("iri").asText();
-			this.predefinedVocabulariesMap.put(name, new Vocabulary(name, strIRI));
-		}
+		Iterator<Entry<String, JsonNode>> fields = prefixes.fields();
+		fields.forEachRemaining(prefix -> {
+			String strPrefix = prefix.getKey();
+			String strNamespace = prefix.getValue().asText();
+			this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
+		});
     }
 
     private void write(JsonGenerator writer) throws JsonGenerationException, IOException {
     	writer.writeStartObject();
     	writer.writeFieldName("prefixes");
     	writer.writeStartArray();
-    	for (Vocabulary vocab : this.predefinedVocabulariesMap.values()) {
+    	for (Vocabulary vocab : this.predefinedVocabularies) {
     		vocab.write(writer);
     	}
     	writer.writeEndArray();

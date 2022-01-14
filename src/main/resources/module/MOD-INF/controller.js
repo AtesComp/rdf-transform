@@ -132,7 +132,7 @@ function registerServerSide() {
     RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.RemovePrefixCommand(appContext) );
     RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.SavePrefixesCommand(appContext) );
     RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand(appContext) );
-    RefineServlet.registerCommand( module, "get-prefix-cc-iri",      new RDFTCmd.SuggestPrefixIRICommand(appContext) );
+    RefineServlet.registerCommand( module, "suggest-namespace",      new RDFTCmd.SuggestNamespaceCommand(appContext) );
 	// Others:
 	//   CodeResponse - Standard Response Class for Commands
 	//   RDFTransformCommand - Abstract RDF Command Class
