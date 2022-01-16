@@ -6,6 +6,9 @@
 class RDFTransform {
     // This Client-side KEY matches Server-side RDFTransform.KEY
     // NOTE: "get KEY()" set "KEY" for retrieval.
+    static strExtension = "RDFTransform";
+    static strVersion = "2.0.0";
+
     static get KEY() { return 'rdf_transform' };
 
     static strDefaultExpressionLanguage = 'grel'; // ...the default (and only) Expression Language
@@ -88,12 +91,12 @@ class RDFTransformDialog {
 
     static #createRootNode() {
         // Setup default Master Root Node...
-        // ...assume Cell As Resource with Index Expression and No Links...
+        // ...assume Cell As Resource with Index Expression and No Properties...
         const nodeMasterRoot =
-            {   "nodeType"   : RDFTransformCommon.g_strRDFT_CRESOURCE,
-                "expression" : RDFTransform.strExpressionIndex,
-                "isIndex"    : true,
-                "links"      : []
+            {   "nodeType"         : RDFTransformCommon.g_strRDFT_CRESOURCE,
+                "expression"       : RDFTransform.strExpressionIndex,
+                "isIndex"          : true,
+                "propertyMappings" : []
             };
 
         // Retrieve a copy of the Master Root Node...
@@ -104,26 +107,26 @@ class RDFTransformDialog {
      * Method #createInitialRootNode()
      *
      *   A Class method that produces the initial root node (source) used to display
-     *   itself, a Row / Record based index node, with a set of links to all the column
-     *   data.
-     *   The links serve as a (property, object) list for the (source) root node to
-     *   form an RDF triple set.  For each data column, a property is set to null (an
-     *   unset IRI name) and an object is set to the column data (by column name) and
-     *   declared constant literal data.
+     *   itself, a Row / Record based index node, with a set of properties to all the
+     *   column data.
+     *   The properties serve as a (property, object) list for the (source) root node
+     *   to form an RDF triple set.  For each data column, a property is set to null
+     *   (an unset IRI name) and an object is set to the column data (by column name)
+     *   and declared constant literal data.
      */
     static #createInitialRootNode() {
         // Get a new root node...
         var nodeRoot = RDFTransformDialog.#createRootNode();
 
         // Add default children...
-        var links = [];
+        var propertyMappings = [];
         for (const column of theProject.columnModel.columns) {
             if (column) {
                 var target = {
                     "nodeType"   : RDFTransformCommon.g_strRDFT_CLITERAL,
                     "columnName" : column.name
                 };
-                links.push(
+                propertyMappings.push(
                     {   "iri"    : null,
                         "cirie"  : null,
                         "target" : target
@@ -131,7 +134,7 @@ class RDFTransformDialog {
                 );
             }
         }
-        nodeRoot.links = links;
+        nodeRoot.propertyMappings = propertyMappings;
 
         return nodeRoot;
     }
@@ -424,7 +427,7 @@ class RDFTransformDialog {
                                         .replace(/>/g, "&gt;")
                                         .replace(/"/g, "&quot;");
                                     this.#panePreview.empty();
-                                    //this.#panePreview.html( RDFTransformCommon.toIRILink(strPreview) );
+                                    //this.#panePreview.html( RDFTransformCommon.toIRIProperty(strPreview) );
                                     this.#panePreview.html("<pre>" + strPreview + "</pre>");
                                 }
                             }
@@ -538,7 +541,7 @@ class RDFTransformDialog {
         var arraySubjectMappings = [];
         for (const nodeUI of this.#nodeUIs) {
             if (nodeUI) {
-                var node = nodeUI.getJSON();
+                var node = nodeUI.getJSON(true);
                 if (node !== null) {
                     arraySubjectMappings.push(node);
                 }
@@ -546,6 +549,8 @@ class RDFTransformDialog {
         }
 
         return {
+            "extension"       : RDFTransform.strExtension,
+            "version"         : RDFTransform.strVersion,
             "baseIRI"         : strBaseIRI,
             "namespaces"      : listNamespaces,
             "subjectMappings" : arraySubjectMappings

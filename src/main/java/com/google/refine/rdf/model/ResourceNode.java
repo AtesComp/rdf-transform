@@ -255,12 +255,12 @@ abstract public class ResourceNode extends Node {
     private void createTypeStatements()
             throws RepositoryException {
         if ( Util.isDebugMode() ) {
-            String strLinkCount = "DEBUG: Type Count: {}";
-            int iLinkCount = 0;
+            String strPropertyCount = "DEBUG: Type Count: {}";
+            int iPropertyCount = 0;
             if (this.listTypes != null) {
-                iLinkCount = listTypes.size();
+                iPropertyCount = listTypes.size();
             }
-            ResourceNode.logger.info(strLinkCount, iLinkCount);
+            ResourceNode.logger.info(strPropertyCount, iPropertyCount);
         }
         if (this.listTypes == null) {
             return;
@@ -327,7 +327,7 @@ abstract public class ResourceNode extends Node {
     }
 
     /*
-     *  Method createLinkStatements() for Resource Node types on OpenRefine Rows
+     *  Method createPropertyStatements() for Resource Node types on OpenRefine Rows
      * 
      *    Given a set of source resources, create the (source, property, object) triple statements
      *    for each of the sources.
@@ -335,12 +335,12 @@ abstract public class ResourceNode extends Node {
     private void createPropertyStatements()
             throws RepositoryException {
         if ( Util.isDebugMode() ) {
-            String strLinkCount = "DEBUG: Property Count: {}";
-            int iLinkCount = 0;
+            String strPropertyCount = "DEBUG: Property Count: {}";
+            int iPropertyCount = 0;
             if (this.listProperties != null) {
-                iLinkCount = listProperties.size();
+                iPropertyCount = listProperties.size();
             }
-            ResourceNode.logger.info(strLinkCount, iLinkCount);
+            ResourceNode.logger.info(strPropertyCount, iPropertyCount);
         }
         if (this.listProperties == null) {
             return;

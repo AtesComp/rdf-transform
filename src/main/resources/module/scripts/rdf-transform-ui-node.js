@@ -9,7 +9,7 @@ class RDFTransformUINode {
     #dialog;
     #node;
     #options;
-    #linkUIs;
+    #propertyUIs;
     #detailsRendered;
     #tdMain;
     #tdToggle;
@@ -21,7 +21,7 @@ class RDFTransformUINode {
 
     #collapsedDetailDiv;
     #expandedDetailDiv;
-    #tableLinks;
+    #tableProperties;
 
     #checkedTrue;
     #disabledTrue;
@@ -34,7 +34,7 @@ class RDFTransformUINode {
         this.#node = node;
         this.#options = options;
 
-        this.#linkUIs = [];
+        this.#propertyUIs = [];
         this.#detailsRendered = false;
 
         this.#checkedTrue = { "checked" : true };
@@ -281,17 +281,17 @@ class RDFTransformUINode {
     }
 
     #renderDetails() {
-        this.#tableLinks =
-            $('<table></table>').addClass("rdf-transform-links-table-layout")
+        this.#tableProperties =
+            $('<table></table>').addClass("rdf-transform-property-table-layout")
             .appendTo(this.#expandedDetailDiv)[0];
 
-        if ("links" in this.#node && this.#node.links !== null) {
-            for (const link of this.#node.links) {
-                this.#linkUIs.push(
-                    new RDFTransformUILink(
+        if ("propertyMappings" in this.#node && this.#node.propertyMappings !== null) {
+            for (const property of this.#node.propertyMappings) {
+                this.#propertyUIs.push(
+                    new RDFTransformUIProperty(
                         this.#dialog,
-                        link,
-                        this.#tableLinks,
+                        property,
+                        this.#tableProperties,
                         { expanded: true },
                         this
                     ));
@@ -306,21 +306,18 @@ class RDFTransformUINode {
         .appendTo(divFooter)
         .click(
             () => {
-                var newLink = { // ...defaults...
-                    property: null,
-                    target: {
-                        nodeType: RDFTransformCommon.g_strRDFT_CLITERAL
-                    }
-                };
-                this.#linkUIs.push(
-                    new RDFTransformUILink(
+                var newProperty = {}; // ...defaults...
+                newProperty.target = {};
+                newProperty.target.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
+                var options = {};
+                options.expanded = true;
+                options.mustBeCellTopic = false;
+                this.#propertyUIs.push(
+                    new RDFTransformUIProperty(
                         this.#dialog,
-                        newLink,
-                        this.#tableLinks,
-                        {
-                            expanded: true,
-                            mustBeCellTopic: false
-                        },
+                        newProperty,
+                        this.#tableProperties,
+                        options,
                         this
                     )
                 );
@@ -936,10 +933,10 @@ class RDFTransformUINode {
         }
     }
 
-    removeLink(linkUI) {
-        var iLinkIndex = this.#linkUIs.lastIndexOf(linkUI);
-        if (iLinkIndex >= 0) {
-            this.#linkUIs.splice(iLinkIndex, 1);
+    removeProperty(propertyUI) {
+        var iPropertyIndex = this.#propertyUIs.lastIndexOf(propertyUI);
+        if (iPropertyIndex >= 0) {
+            this.#propertyUIs.splice(iPropertyIndex, 1);
             this.#dialog.updatePreview();
         }
     }
@@ -953,19 +950,21 @@ class RDFTransformUINode {
         new RDFTransformResourceDialog(
             element, 'class', theProject.id, this.#dialog,
             (obj) => {
-                this.#addNodeRDFType(obj.iri, obj.cirie);
+                this.#addNodeRDFType(obj.prefix, obj.pathIRI);
             }
         );
     }
 
-    #addNodeRDFType(strIRI, strCIRIE) {
+    #addNodeRDFType(strPathIRI, strPathIRI) {
         if ( ! this.#node.rdfTypes ) {
             this.#node.rdfTypes = [];
         }
+        // IRI   = prefix namespace + strPathIRI
+        // CIRIE = strPrefix + ":" + strPathIRI
         this.#node.rdfTypes
         .push(
-            {   'iri'   : strIRI,
-                'cirie' : strCIRIE
+            {   "prefix"  : strPrefix,
+                'pathIRI' : strPathIRI
             }
         );
         this.#renderMain();
@@ -1028,23 +1027,27 @@ class RDFTransformUINode {
         elements.buttonOK.click( () => { MenuSystem.dismissAll(); } );
     }
 
-    #getTypeName(prefix) {
-        if (!prefix) {
+    #getTypeName(theType) {
+        if ( ! theType ) {
             return '';
         }
-        if (prefix.cirie !== undefined && prefix.cirie !== '') {
-            return prefix.cirie;
+        if ("prefix" in theType && theType.prefix !== null) {
+            return theType.prefix + ":" + theType.pathIRI;
         }
         else {
-            return prefix.iri;
+            return theType.pathIRI;
         }
     }
 
-    getJSON() {
+    getJSON(isRoot = false) {
+        const isNotRoot = ! isRoot;
+
         var result = {};
         result.valueSource = {};
-        result.valueType = {};
-        var bGetLinks = false;
+        if (isNotRoot) {
+            result.valueType = {};
+        }
+        var bGetProperties = false;
 
         if ("namespace" in this.#node) {
             result.namespace = this.#node.namespace;
@@ -1086,8 +1089,10 @@ class RDFTransformUINode {
         //
         if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE || 
             this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE ) {
-            result.valueType.type = "iri";
-            bGetLinks = true;
+            if (isNotRoot) {
+                result.valueType.type = "iri";
+            }
+            bGetProperties = true;
         }
         //
         // LITERAL Nodes...
@@ -1126,7 +1131,7 @@ class RDFTransformUINode {
             else {
                 result.valueType.type = "value_bnode";
             }
-            bGetLinks = true;
+            bGetProperties = true;
         }
 
         //
@@ -1138,20 +1143,29 @@ class RDFTransformUINode {
             result.expression.code = this.#node.expression;
         }
 
-        if (bGetLinks) {
+        if (bGetProperties) {
             if (this.#node.rdfTypes && this.#node.rdfTypes.length > 0) {
                 result.typeMappings = [];
+                var objType;
                 for (const rdfType of this.#node.rdfTypes) {
-                    result.typeMappings.push(rdfType.getJSON);
+                    objType = {};
+                    if ("prefix" in rdfType && rdfType.prefix != null) {
+                        objType.prefix = rdfType.prefix;
+                    }
+                    objType.valueSource = {
+                        "source"   : "constant",
+                        "constant" : rdfType.pathIRI
+                    };
+                    result.typeMappings.push(objType);
                 }
             }
 
-            if (this.#linkUIs && this.#linkUIs.length > 0) {
+            if (this.#propertyUIs && this.#propertyUIs.length > 0) {
                 result.propertyMappings = [];
-                for (const linkUI of this.#linkUIs) {
-                    var link = linkUI.getJSON();
-                    if (link !== null) {
-                        result.propertyMappings.push(link);
+                for (const propertyUI of this.#propertyUIs) {
+                    var property = propertyUI.getJSON();
+                    if (property !== null) {
+                        result.propertyMappings.push(property);
                     }
                 }
             }

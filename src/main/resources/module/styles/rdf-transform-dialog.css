@@ -181,7 +181,7 @@ span.rdf-value-expression {
 }
 
 /*
-table.rdf-transform-links-table-layout,
+table.rdf-transform-property-table-layout,
 table.rdf-transform-types-table,
 td.rdf-transform-node-main,
 td.rdf-transform-node-toggle,
@@ -195,10 +195,10 @@ td.rdf-transform-node-details {
 
 /*
 table.rdf-transform-details-table-layout,
-a.rdf-transform-link,
-td.rdf-transform-link-main,
-td.rdf-transform-link-toggle,
-td.rdf-transform-link-details {
+a.rdf-transform-property,
+td.rdf-transform-property-main,
+td.rdf-transform-property-toggle,
+td.rdf-transform-property-details {
 }
 */
 

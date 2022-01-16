@@ -1,11 +1,11 @@
 /*
- *  CLASS RDFTransformUILink
+ *  CLASS RDFTransformUIProperty
  *
- *  The UI link manager for the alignment dialog
+ *  The UI property manager for the alignment dialog
  */
-class RDFTransformUILink {
+class RDFTransformUIProperty {
     #dialog;
-    #link;
+    #property;
     #options;
     #parentUINode;
 
@@ -15,15 +15,16 @@ class RDFTransformUILink {
     #collapsedDetailDiv;
     #expandedDetailDiv;
 
-    constructor(dialog, link, table, options, parentUINode) {
+    constructor(dialog, property, table, options, parentUINode) {
         this.#dialog = dialog;
-        this.#link = link;
+        this.#property = property;
         this.#options = options;
         this.#parentUINode = parentUINode;
 
         // Make sure target node exists...
-        if (! this.#link.target) {
-            this.#link.target = { nodeType: RDFTransformCommon.g_strRDFT_CLITERAL };
+        if ( ! this.#property.target) {
+            this.#property.target = {};
+            this.#property.target.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
         }
 
         this.#tr = table.insertRow(table.rows.length);
@@ -32,15 +33,15 @@ class RDFTransformUILink {
         var tdDetails = this.#tr.insertCell(2);
 
         $(this.#tdMain)
-        .addClass("rdf-transform-link-main")
+        .addClass("rdf-transform-property-main")
         .attr("width", "250")
         .addClass("padded");
         $(tdToggle)
-        .addClass("rdf-transform-link-toggle")
+        .addClass("rdf-transform-property-toggle")
         .attr("width", "3%")
         .addClass("padded");
         $(tdDetails)
-        .addClass("rdf-transform-link-details");
+        .addClass("rdf-transform-property-details");
 
         this.#collapsedDetailDiv =
             $('<div></div>')
@@ -83,8 +84,8 @@ class RDFTransformUILink {
 
     #renderMain() {
         $(this.#tdMain).empty();
-        var linkIRI = this.getTypeName(this.#link);
-        var label = linkIRI || "property?";
+        var propertyIRI = this.#getTypeName(this.#property);
+        var label = propertyIRI || "property?";
 
         $('<img />')
         .attr("title", $.i18n('rdft-dialog/remove-property'))
@@ -95,7 +96,7 @@ class RDFTransformUILink {
             () => {
                 setTimeout(
                     () => {
-                        this.#parentUINode.removeLink(this);
+                        this.#parentUINode.removeProperty(this);
                         this.#tr.parentNode.removeChild(this.#tr);
                         this.#dialog.updatePreview();
                     },
@@ -104,14 +105,14 @@ class RDFTransformUILink {
             }
         );
 
-        var ahrefLink = $('<a href="javascript:{}"></a>')
-            .addClass("rdf-transform-link")
+        var ahrefProperty = $('<a href="javascript:{}"></a>')
+            .addClass("rdf-transform-property")
             .html(RDFTransformCommon.shortenResource(label))
             .click( (evt) => { this.#startEditProperty(evt); } );
-        $('<img />').attr("src", "images/arrow-start.png").prependTo(ahrefLink);
-        $('<img />').attr("src", "images/arrow-end.png").appendTo(ahrefLink);
+        $('<img />').attr("src", "images/arrow-start.png").prependTo(ahrefProperty);
+        $('<img />').attr("src", "images/arrow-end.png").appendTo(ahrefProperty);
 
-        this.#tdMain.append(ahrefLink);
+        this.#tdMain.append(ahrefProperty);
     }
 
     #renderDetails() {
@@ -126,47 +127,67 @@ class RDFTransformUILink {
             $('<table></table>')
             .addClass("rdf-transform-details-table-layout")
             .appendTo(this.#expandedDetailDiv);
-        this.targetUI = new RDFTransformUINode(
-            this.#dialog,
-            this.#link.target,
-            this.tableDetails[0],
-            { expanded: "links" in this.#link.target && this.#link.target.links.length > 0 });
+        this.targetUI =
+            new RDFTransformUINode(
+                this.#dialog,
+                this.#property.target,
+                this.tableDetails[0],
+                { expanded : // true or false...
+                    ( "propertyMappings" in this.#property.target &&
+                      this.#property.target.propertyMappings.length > 0 )
+                }
+            );
     }
 
     #startEditProperty(evt) {
         new RDFTransformResourceDialog(
             evt.target, 'property', theProject.id, this.#dialog,
             (obj) => {
-                this.#link.iri   = obj.iri;
-                this.#link.cirie = obj.cirie;
+                this.#property.prefix  = obj.prefix;
+                this.#property.pathIRI = obj.pathIRI;
                 this.#dialog.updatePreview();
                 this.#renderMain();
             }
         );
     }
 
-    getTypeName(prefix) {
-        if (!prefix) {
+    #getTypeName(theProperty) {
+        if (! theProperty ) {
             return '';
         }
-        if (prefix.cirie !== undefined && prefix.cirie !== '') {
-            return prefix.cirie;
+        if ("prefix" in theProperty && theProperty.prefix !== null) {
+            return theProperty.prefix + ":" + theProperty.pathIRI;
         }
         else {
-            return prefix.iri;
+            return theProperty.pathIRI;
         }
     }
 
     getJSON() {
-        if ("iri"    in this.#link && this.#link.iri    !== null &&
-            "target" in this.#link && this.#link.target !== null) {
-            var targetJSON = this.targetUI.getJSON();
-            if (targetJSON !== null) {
-                return { iri    : this.#link.iri,
-                         cirie  : this.#link.cirie,
-                         target : targetJSON };
+        var objProp = null;
+        if ("pathIRI" in this.#property && this.#property.pathIRI !== null)
+        {
+            objProp = {};
+
+            if ("prefix" in this.#property && this.#property.prefix !== null) {
+                objProp.prefix = this.#property.prefix;
+            }
+
+            objProp.valueType = {};
+            objProp.valueType.type = "iri";
+
+            objProp.valueSource = {};
+            objProp.valueSource.source = "constant";
+            objProp.valueSource.constant = this.#property.pathIRI;
+
+            if ("targetUI" in this && this.targetUI !== null) {
+                var targetJSON = this.targetUI.getJSON();
+                if (targetJSON !== null) {
+                    objProp.subjectMappings = [];
+                    objProp.subjectMappings.push(targetJSON);
+                }
             }
         }
-        return null;
+        return objProp;
     }
 }
