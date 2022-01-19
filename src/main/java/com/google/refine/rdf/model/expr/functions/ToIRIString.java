@@ -40,8 +40,10 @@ public class ToIRIString implements Function {
                 break;
             }
             catch (Exception ex) {
-                if (iTry > 7)
+                if (iTry > 7) {
+                    strConvert = null; // ...cannot convert to IRI
                     break;
+                }
                 // ...continue by narrowing the conversion string...
             }
             switch (iTry) {
@@ -78,7 +80,7 @@ public class ToIRIString implements Function {
                     break;
                 default:
                     // Replace all but Unreserved characters with underscores...
-                    strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~", "_");
+                    strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~]+", "_");
                     break;
             }
             // Condense underscores...

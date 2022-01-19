@@ -200,6 +200,71 @@ class RDFTransformCommon {
 		return strText.replace(RDFTransformCommon.#reIRI_EACH_igu, "<a href='$1'>$1</a>");
 	}
 
+	static async toIRIString(strText) {
+        if ( ! strText || strText === null) {
+            return null;
+        }
+        var strConvert = strText;
+        if ( strConvert === "" ) {
+            return null;
+        }
+
+        var iTry = 0;
+        do {
+            // Check if it's an acceptable IRI now (absolute or relative)...
+            if ( ! await RDFTransformCommon.validateIRI(strConvert) ) {
+                if (iTry > 7) {
+					strConvert = null;
+                    break;
+				}
+                // ...continue by narrowing the conversion string...
+            }
+            switch (iTry) {
+                case 0:
+                    // Replace whitespace and unallowed characters with underscores...
+                    strConvert =
+                        strConvert.
+                            replace("/\uC2A0/g", " ").replace("/\\h/g", " ").
+                            replace("/[\\p{Whitespace}<>\"{}|\\^`]+/g", "_");
+                    break;
+                case 1:
+                    // Replace any unsupported characters with underscores...
+                    strConvert = strConvert.replace("/[^-\\p{N}\\p{L}_\\.~:/\\?#\\[\\]@\\%!\\$&'\\(\\)\\*\\+,;=]+/g", "_");
+                    break;
+                case 2:
+                    // Replace (multiple) leading ":/+" or "/+" with underscores (first, not global)...
+                    strConvert = strConvert.replace("/^(:?\/+)+/", "_");
+                    break;
+                case 3:
+                    // Replace sub-delim characters with underscores...
+                    strConvert = strConvert.replace("/[!\\$&'\\(\\)\\*\\+,;=]+/g", "_");
+                    break;
+                case 4:
+                    // Replace gen-delim (but not ":" and "/") characters with underscores...
+                    strConvert = strConvert.replace("/[\\?#\\[\\]@]+/g", "_");
+                    break;
+                case 5:
+                    // Replace "/" characters with underscores...
+                    strConvert = strConvert.replace("/\/+/g", "_");
+                    break;
+                case 6:
+                    // Replace ":" characters with underscores...
+                    strConvert = strConvert.replace("/:+/g", "_");
+                    break;
+                default:
+                    // Replace all but Unreserved characters with underscores...
+                    strConvert = strConvert.replace("/[^-\\p{N}\\p{L}_\\.~]+/g", "_");
+                    break;
+            }
+            // Condense underscores...
+            strConvert = strConvert.replace("/__+/g", "_");
+            ++iTry;
+        } while (true);
+
+        return strConvert;
+
+	}
+
 	/*
 	 * Method validateIRI(strText)
 	 *

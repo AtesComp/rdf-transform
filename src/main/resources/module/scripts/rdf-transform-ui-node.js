@@ -285,12 +285,12 @@ class RDFTransformUINode {
             $('<table></table>').addClass("rdf-transform-property-table-layout")
             .appendTo(this.#expandedDetailDiv)[0];
 
-        if ("propertyMappings" in this.#node && this.#node.propertyMappings !== null) {
-            for (const property of this.#node.propertyMappings) {
+        if ("properties" in this.#node && this.#node.properties !== null) {
+            for (const theProperty of this.#node.properties) {
                 this.#propertyUIs.push(
                     new RDFTransformUIProperty(
                         this.#dialog,
-                        property,
+                        theProperty,
                         this.#tableProperties,
                         { expanded: true },
                         this
@@ -306,16 +306,18 @@ class RDFTransformUINode {
         .appendTo(divFooter)
         .click(
             () => {
-                var newProperty = {}; // ...defaults...
-                newProperty.target = {};
-                newProperty.target.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
+                var theNewProperty = {}; // ...defaults...
+                theNewProperty.prefix = null;
+                theNewProperty.pathIRI = null;
+                theNewProperty.nodeObject = {};
+                theNewProperty.nodeObject.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
                 var options = {};
                 options.expanded = true;
                 options.mustBeCellTopic = false;
                 this.#propertyUIs.push(
                     new RDFTransformUIProperty(
                         this.#dialog,
-                        newProperty,
+                        theNewProperty,
                         this.#tableProperties,
                         options,
                         this
@@ -591,12 +593,13 @@ class RDFTransformUINode {
     //
     //  Construct a node object from the dialog contents:
     //      node.nodeType           | All Nodes
-    //      node.lang               | All Literals
-    //      node.valueType          | All Literals
-    //      node.bIsIndex           | All Cell Resources
-    //      node.columnName         | Column Cell Resources
+    //      node.lang               | All Literal Nodes
+    //      node.valueType          | All Literal Nodes
+    //      node.bIsIndex           | All Cell Nodes
+    //      node.columnName         | Column Cell Nodes
     //      node.expression         | Non-Blank Cell Nodes
     //      node.value              | Non-Blank Constant Nodes
+    //      node.rdfTypes           | All Resource Nodes
     //
     //      node.nodeType   | Node Type    | MUST: All              | ("cell-as-" or "") + ("resource" or "literal" or "blank")
     //      node.language   | Language ID  |  OPT: All Literals     | append "@" + language ID
@@ -949,24 +952,19 @@ class RDFTransformUINode {
     #addRDFType(element) {
         new RDFTransformResourceDialog(
             element, 'class', theProject.id, this.#dialog,
-            (obj) => {
-                this.#addNodeRDFType(obj.prefix, obj.pathIRI);
+            (theType) => {
+                this.#addNodeRDFType(theType);
             }
         );
     }
 
-    #addNodeRDFType(strPathIRI, strPathIRI) {
+    #addNodeRDFType(theType) {
         if ( ! this.#node.rdfTypes ) {
             this.#node.rdfTypes = [];
         }
-        // IRI   = prefix namespace + strPathIRI
-        // CIRIE = strPrefix + ":" + strPathIRI
-        this.#node.rdfTypes
-        .push(
-            {   "prefix"  : strPrefix,
-                'pathIRI' : strPathIRI
-            }
-        );
+        // IRI   = prefix namespace + theType.pathIRI
+        // CIRIE = theType.prefix + ":" + theType.pathIRI
+        this.#node.rdfTypes.push(theType);
         this.#renderMain();
         this.#dialog.updatePreview();
     }
@@ -991,14 +989,14 @@ class RDFTransformUINode {
         MenuSystem.showMenu(menu, () => {});
         MenuSystem.positionMenuLeftRight(menu, target);
 
-        var strIRI = this.#node.rdfTypes[iIndex].iri;
-        var strCIRIE= this.#node.rdfTypes[iIndex].cirie;
-        var strText = strIRI; // ...display just the IRI
-        // If the IRI and the CIRIE differ, display both...
-        if (strIRI.localeCompare(strCIRIE) != 0 ) {
+        var strPrefix = this.#node.rdfTypes[iIndex].prefix;
+        var strPathIRI= this.#node.rdfTypes[iIndex].pathIRI;
+        var strText = strPathIRI; // ...display just the IRI
+        // If the prefix is present, display both...
+        if (strPrefix) {
             strText =
-                ' IRI : ' + strIRI + '\n' +
-                'CIRIE: ' + strCIRIE;
+                ' Prefix: ' + strPrefix + '\n' +
+                'PathIRI: ' + strPathIRI;
         }
 
         var elements = DOM.bind(menu);
@@ -1039,14 +1037,10 @@ class RDFTransformUINode {
         }
     }
 
-    getJSON(isRoot = false) {
-        const isNotRoot = ! isRoot;
-
+    getJSON() {
         var result = {};
         result.valueSource = {};
-        if (isNotRoot) {
-            result.valueType = {};
-        }
+        result.valueType = {};
         var bGetProperties = false;
 
         if ("namespace" in this.#node) {
@@ -1089,9 +1083,7 @@ class RDFTransformUINode {
         //
         if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE || 
             this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE ) {
-            if (isNotRoot) {
-                result.valueType.type = "iri";
-            }
+            result.valueType.type = "iri";
             bGetProperties = true;
         }
         //
@@ -1163,7 +1155,7 @@ class RDFTransformUINode {
             if (this.#propertyUIs && this.#propertyUIs.length > 0) {
                 result.propertyMappings = [];
                 for (const propertyUI of this.#propertyUIs) {
-                    var property = propertyUI.getJSON();
+                    const property = propertyUI.getJSON();
                     if (property !== null) {
                         result.propertyMappings.push(property);
                     }

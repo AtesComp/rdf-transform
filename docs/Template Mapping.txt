@@ -7,7 +7,7 @@ Template Mapping:
   },
   "subjectMappings": [
     {
-OPT   "namespace": "(prefix name: applied to valueSource)",
+OPT   "prefix": "(prefix name: applied to valueSource)",
       "valueSource": {
         "source": "(source)",
 OPT     "(source key)": "(value)"
@@ -18,7 +18,7 @@ OPT   "expression": {
   ""  },
       "propertyMappings": [
         {
-OPT       "namespace": "(prefix name: applied to valueSource)",
+OPT       "prefix": "(prefix name: applied to valueSource)",
           "valueSource": {
             "source": "(source)",
 OPT         "(source key)": "(value)"
@@ -29,11 +29,11 @@ OPT       "expression": {
   ""      },
           "objectMappings": [
             {
-OPT: IRI      "namespace": "(prefix name: applied to valueSource)",
+OPT: IRI      "prefix": "(prefix name: applied to valueSource)",
               "valueType": {
                 "type": "(type)",
 OPT: DT/L       "(value type key)": {
-OPT: DT    OPT    "namespace": "(prefix name: applied to valueSource)",
+OPT: DT    OPT    "prefix": "(prefix name: applied to valueSource)",
 OPT: DT/L         "valueSource": {
   ""                "source": "(source: column, constant, expression)",
   ""       OPT      "(source key)": "(value)"
@@ -62,7 +62,7 @@ OPT           "expression": {
       ],
 OPT   "typeMappings": [
   ""    {
-  ""  OPT "namespace": "(prefix name: applied to valueSource)",
+  ""  OPT "prefix": "(prefix name: applied to valueSource)",
   ""      "valueSource": {
   ""        "source": "(source)"
   ""        "(source key)": "(value)"
@@ -79,7 +79,7 @@ OPT   "typeMappings": [
   ]
 }
 
-[namespace]
+[prefix]
   when missing indicates <raw IRI>
 
 [typeMappings]
@@ -104,7 +104,7 @@ Source        Key
   record_id     N/A
   column        columnName
   constant      constant
-  expression    N/A (then, [expression] exists)
+  expression    N/A (or, [expression] exists)
 
 OPT: xxx is related to the (value type)
 
@@ -127,7 +127,7 @@ OPT: xxx is related to the (value type)
                     "valueSource": { "source": "column", "columnName": "(value)" }
       "rdfTypes" -> "typeMappings"
           "cirie" & "iri" ->
-                "namespace"
+                "prefix"
                 "valueSource": { "source": "constant", "constant": "(value)" }
                   expand to other source types
                 expand for "expression": { "language": "grel", "code": "(exp)" }
@@ -135,7 +135,7 @@ OPT: xxx is related to the (value type)
     "links" -> "propertyMappings : [ ... ]"
       "" -> "{ ... },"
         "cirie" & "iri" ->
-                  "namespace"
+                  "prefix"
                   "valueSource": { "source": "constant", "constant": "(value)" }
                     expand to other source types
                     expand for "expression": { "language": "grel", "code": "(exp)" }
@@ -154,7 +154,7 @@ OPT: xxx is related to the (value type)
                     "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
 
               "nodeType" : "cell-as-resource" ->
-                    "namespace"
+                    "prefix"
                     "valueType": { "type": "iri" }
                     "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
                     "isIndex": "false" && columnName": "(value)" ->
@@ -182,7 +182,7 @@ OPT: xxx is related to the (value type)
                     "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }
 
               "nodeType" : "resource" ->
-                    "namespace"
+                    "prefix"
                     "valueType": { "type": "iri" }
                     "valueSource": { "source": "constant"/"expression", "constant": "(value)" }
                     "expression": "(exp)" -> "expression": { "language": "grel", "code": "(exp)" }

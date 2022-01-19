@@ -15,19 +15,19 @@ class RDFTransformUIProperty {
     #collapsedDetailDiv;
     #expandedDetailDiv;
 
-    constructor(dialog, property, table, options, parentUINode) {
-        this.#dialog = dialog;
-        this.#property = property;
-        this.#options = options;
+    constructor(theDialog, theProperty, theTable, theOptions, parentUINode) {
+        this.#dialog = theDialog;
+        this.#property = theProperty;
+        this.#options = theOptions;
         this.#parentUINode = parentUINode;
 
-        // Make sure target node exists...
-        if ( ! this.#property.target) {
-            this.#property.target = {};
-            this.#property.target.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
+        // Make sure an Object node exists for the property...
+        if ( ! this.#property.nodeObject) {
+            this.#property.nodeObject = {};
+            this.#property.nodeObject.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
         }
 
-        this.#tr = table.insertRow(table.rows.length);
+        this.#tr = theTable.insertRow(theTable.rows.length);
         this.#tdMain  = this.#tr.insertCell(0);
         var tdToggle  = this.#tr.insertCell(1);
         var tdDetails = this.#tr.insertCell(2);
@@ -85,7 +85,7 @@ class RDFTransformUIProperty {
     #renderMain() {
         $(this.#tdMain).empty();
         var propertyIRI = this.#getTypeName(this.#property);
-        var label = propertyIRI || "property?";
+        var strLabel = propertyIRI || "property?";
 
         $('<img />')
         .attr("title", $.i18n('rdft-dialog/remove-property'))
@@ -107,7 +107,7 @@ class RDFTransformUIProperty {
 
         var ahrefProperty = $('<a href="javascript:{}"></a>')
             .addClass("rdf-transform-property")
-            .html(RDFTransformCommon.shortenResource(label))
+            .html(RDFTransformCommon.shortenResource(strLabel))
             .click( (evt) => { this.#startEditProperty(evt); } );
         $('<img />').attr("src", "images/arrow-start.png").prependTo(ahrefProperty);
         $('<img />').attr("src", "images/arrow-end.png").appendTo(ahrefProperty);
@@ -116,8 +116,8 @@ class RDFTransformUIProperty {
     }
 
     #renderDetails() {
-        if (this.targetUI) {
-            this.targetUI.dispose();
+        if (this.nodeObjectUI) {
+            this.nodeObjectUI.dispose();
         }
         if (this.tableDetails) {
             this.tableDetails.remove();
@@ -127,16 +127,20 @@ class RDFTransformUIProperty {
             $('<table></table>')
             .addClass("rdf-transform-details-table-layout")
             .appendTo(this.#expandedDetailDiv);
-        this.targetUI =
+        var optionsObject = {};
+        optionsObject.expanded = this.#isObjectExpandable();
+        this.nodeObjectUI =
             new RDFTransformUINode(
                 this.#dialog,
-                this.#property.target,
+                this.#property.nodeObject,
                 this.tableDetails[0],
-                { expanded : // true or false...
-                    ( "propertyMappings" in this.#property.target &&
-                      this.#property.target.propertyMappings.length > 0 )
-                }
+                optionsObject
             );
+    }
+
+    #isObjectExpandable() {
+        return ("properties" in this.#property.nodeObject &&
+                this.#property.nodeObject.properties.length > 0);
     }
 
     #startEditProperty(evt) {
@@ -153,41 +157,44 @@ class RDFTransformUIProperty {
 
     #getTypeName(theProperty) {
         if (! theProperty ) {
-            return '';
+            return "";
         }
         if ("prefix" in theProperty && theProperty.prefix !== null) {
             return theProperty.prefix + ":" + theProperty.pathIRI;
         }
-        else {
+        else if ("pathIRI" in theProperty && theProperty.pathIRI !== null) {
             return theProperty.pathIRI;
+        }
+        else {
+            return "";
         }
     }
 
     getJSON() {
-        var objProp = null;
+        var theProperty = null;
         if ("pathIRI" in this.#property && this.#property.pathIRI !== null)
         {
-            objProp = {};
+            theProperty = {};
 
             if ("prefix" in this.#property && this.#property.prefix !== null) {
-                objProp.prefix = this.#property.prefix;
+                theProperty.prefix = this.#property.prefix;
             }
 
-            objProp.valueType = {};
-            objProp.valueType.type = "iri";
+            theProperty.valueType = {};
+            theProperty.valueType.type = "iri";
 
-            objProp.valueSource = {};
-            objProp.valueSource.source = "constant";
-            objProp.valueSource.constant = this.#property.pathIRI;
+            theProperty.valueSource = {};
+            theProperty.valueSource.source = "constant";
+            theProperty.valueSource.constant = this.#property.pathIRI;
 
-            if ("targetUI" in this && this.targetUI !== null) {
-                var targetJSON = this.targetUI.getJSON();
-                if (targetJSON !== null) {
-                    objProp.subjectMappings = [];
-                    objProp.subjectMappings.push(targetJSON);
+            if ("nodeObjectUI" in this && this.nodeObjectUI !== null) {
+                var nodeObjectJSON = this.nodeObjectUI.getJSON();
+                if (nodeObjectJSON !== null) {
+                    theProperty.subjectMappings = [];
+                    theProperty.subjectMappings.push(nodeObjectJSON);
                 }
             }
         }
-        return objProp;
+        return theProperty;
     }
 }

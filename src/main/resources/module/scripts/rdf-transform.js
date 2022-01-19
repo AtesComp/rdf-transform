@@ -19,6 +19,9 @@ class RDFTransform {
     static strIndexTitle; // ...the column title for the index: "Row" or "Record"
     static bRowBased = true; // ...the type of indexing used: Row (true) or Record (false)
 
+    // Setup default Master Root Node...
+    static nodeMasterRoot = {};
+
     static setDefaults() {
         // NOTE: We can't set these variables as class statements since they depend on
         //       OpenRefine's "theProject".  The classes are loaded when the extension is
@@ -43,6 +46,13 @@ class RDFTransform {
 
         RDFTransform.strIndexTitle =
             ( RDFTransform.bRowBased ? $.i18n("rdft-dialog/title-row") : $.i18n("rdft-dialog/title-rec") );
+
+        // Setup default Master Root Node...
+        // ...assume Cell As Resource with Index Expression and No Properties...
+        RDFTransform.nodeMasterRoot.nodeType = RDFTransformCommon.g_strRDFT_CRESOURCE;
+        RDFTransform.nodeMasterRoot.expression = RDFTransform.strExpressionIndex;
+        RDFTransform.nodeMasterRoot.isIndex = true;
+        RDFTransform.nodeMasterRoot.properties = [];
     }
 
     static findColumn(columnName) {
@@ -90,15 +100,6 @@ class RDFTransformDialog {
     }
 
     static #createRootNode() {
-        // Setup default Master Root Node...
-        // ...assume Cell As Resource with Index Expression and No Properties...
-        const nodeMasterRoot =
-            {   "nodeType"         : RDFTransformCommon.g_strRDFT_CRESOURCE,
-                "expression"       : RDFTransform.strExpressionIndex,
-                "isIndex"          : true,
-                "propertyMappings" : []
-            };
-
         // Retrieve a copy of the Master Root Node...
         return cloneDeep(RDFTransform.nodeMasterRoot);
     }
@@ -118,23 +119,31 @@ class RDFTransformDialog {
         // Get a new root node...
         var nodeRoot = RDFTransformDialog.#createRootNode();
 
-        // Add default children...
-        var propertyMappings = [];
+        // Add default propeties to default root node...
+        var properties = [];
+        // Construct properties as "column name" IRIs connected to "column name" literal objects
         for (const column of theProject.columnModel.columns) {
             if (column) {
-                var target = {
-                    "nodeType"   : RDFTransformCommon.g_strRDFT_CLITERAL,
-                    "columnName" : column.name
-                };
-                propertyMappings.push(
-                    {   "iri"    : null,
-                        "cirie"  : null,
-                        "target" : target
-                    }
-                );
+                // Default object of the property...
+                var nodeObject = {};
+                nodeObject.nodeType =  RDFTransformCommon.g_strRDFT_CLITERAL;
+                nodeObject.columnName = column.name;
+
+                // Default property...
+                //var strIRI = RDFTransformCommon.toIRIString(column.name);
+                //if (strIRI != null && strIRI.length > 0 && strIRI.indexOf("://") === -1 && strIRI[0] != ":") {
+                //    // Use baseIRI...
+                //    strIRI = ":" + strIRI;
+                //}
+                var theProperty = {};
+                theProperty.prefix = null;
+                //theProperty.pathIRI = strIRI;
+                theProperty.pathIRI = null;
+                theProperty.nodeObject = nodeObject;
+                properties.push(theProperty);
             }
         }
-        nodeRoot.propertyMappings = propertyMappings;
+        nodeRoot.properties = properties;
 
         return nodeRoot;
     }
@@ -401,7 +410,7 @@ class RDFTransformDialog {
         //
         // Process Preview Tab
         //
-        var theTransform = this.getJSON();
+        const theTransform = this.getJSON();
         this.#panePreview.empty();
         $('<img />')
         .attr('src', 'images/large-spinner.gif')
@@ -420,7 +429,7 @@ class RDFTransformDialog {
             /* updateOps */ {},
             /* callbacks */ {   onDone: (data) => {
                                     //var strPreview = RDFTransformCommon.toHTMLBreaks( data.v.toString() );
-                                    var strPreview =
+                                    const strPreview =
                                         data.v.toString()
                                         .replace(/&/g, "&amp;")
                                         .replace(/</g, "&lt;")
@@ -541,7 +550,7 @@ class RDFTransformDialog {
         var arraySubjectMappings = [];
         for (const nodeUI of this.#nodeUIs) {
             if (nodeUI) {
-                var node = nodeUI.getJSON(true);
+                var node = nodeUI.getJSON();
                 if (node !== null) {
                     arraySubjectMappings.push(node);
                 }

@@ -35,7 +35,7 @@ public class ValidateIRICommand extends Command {
             String strIRI = request.getParameter("iri").strip();
             try {
             	new ParsedIRI(strIRI);
-                if ( Util.isDebugMode() ) logger.info("Validating IRI: Success");
+                //if ( Util.isDebugMode() ) logger.info("Validating IRI: Success");
             }
             catch (URISyntaxException ex) {
                 if ( Util.isDebugMode() ) logger.info("Validating IRI: Failure");

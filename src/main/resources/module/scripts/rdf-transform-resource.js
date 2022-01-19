@@ -32,7 +32,7 @@ class RDFTransformResourceDialog {
         );
 
         MenuSystem.showMenu(menu, () => {} );
-        MenuSystem.positionMenuLeftRight(menu, $(element));
+        MenuSystem.positionMenuLeftRight(menu, $(this.#element));
 
         var elements = DOM.bind(menu);
         elements.rdftNewResourceIRI

@@ -1,5 +1,6 @@
 package com.google.refine.rdf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import com.google.refine.rdf.model.ResourceNode;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.rdf.model.vocab.VocabularyList;
+import com.google.refine.util.ParsingUtilities;
 import com.google.refine.model.OverlayModel;
 import com.google.refine.model.Project;
 
@@ -255,7 +257,9 @@ public class RDFTransform implements OverlayModel {
             if ( jnodeSubjectMappings.isArray() ) {
                 for (JsonNode jnodeSubject : jnodeSubjectMappings) {
                     Node nodeRoot =
-                        Node.reconstructNode(theReconstructor, jnodeSubject, theTransform.getBaseIRI(), thePrefixes);
+                        Node.reconstructNode(
+                            RDFTransform.theReconstructor, jnodeSubject,
+                            theTransform.getBaseIRI(), thePrefixes);
                     if (nodeRoot != null && nodeRoot instanceof ResourceNode) {
                         theRootNodes.add( (ResourceNode) nodeRoot );
                     }
@@ -364,6 +368,28 @@ public class RDFTransform implements OverlayModel {
     /*
         Methods
     */
+    @JsonProperty(Util.gstrExtension)
+    public String getExtension() {
+        return RDFTransform.EXTENSION;
+    }
+
+    @JsonProperty(Util.gstrExtension)
+    public void setExtension(JsonNode jnodeExtension) {
+        // Ignore...
+        return;
+    }
+
+    @JsonProperty(Util.gstrVersion)
+    public String getVersion() {
+        return RDFTransform.VERSION;
+    }
+
+    @JsonProperty(Util.gstrVersion)
+    public void setVersion(JsonNode jnodeVersion) {
+        // Ignore...
+        return;
+    }
+
     @JsonIgnore // ...see getBaseIRIAsString()
     public ParsedIRI getBaseIRI() {
         return this.theBaseIRI;
@@ -464,6 +490,7 @@ public class RDFTransform implements OverlayModel {
         this.thePrefixes = mapPrefixes;
 	}
 
+    @JsonIgnore
     public void addPrefix(String strPrefix, String strNamespace) {
         if (this.thePrefixes == null) {
             this.thePrefixes = new VocabularyList();
@@ -471,53 +498,141 @@ public class RDFTransform implements OverlayModel {
         this.thePrefixes.add( new Vocabulary(strPrefix, strNamespace) );
     }
 
+    @JsonIgnore
     public void removePrefix(String strPrefix) {
         this.thePrefixes.removeByPrefix(strPrefix);
     }
 
-    @JsonProperty(Util.gstrNamespaces)
+    @JsonIgnore
     public VocabularyList getPrefixes() {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting prefixes...");
         return thePrefixes;
     }
 
     @JsonProperty(Util.gstrNamespaces)
-    public void setPrefixes(Vocabulary[] aVocabularies) {
+    public String getPrefixesAsString() {
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting prefixes as JSON string...");
+        ByteArrayOutputStream baostream = new ByteArrayOutputStream();
+        try {
+            JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(baostream);
+            if ( this.thePrefixes == null || this.thePrefixes.isEmpty() ) {
+                jsonWriter.writeNull();
+                return baostream.toString("UTF-8");
+            }
+            jsonWriter.writeStartObject();
+            for (Vocabulary thePrefix : this.thePrefixes) {
+                jsonWriter.writeObjectField( thePrefix.getPrefix(), thePrefix.getNamespace() );
+            }
+            jsonWriter.writeEndObject();
+            return baostream.toString("UTF-8");
+        }
+        catch (Exception ex) {
+            RDFTransform.logger.error("Error getting namespaces!", ex);
+            return "null";
+        }
+    }
+
+    @JsonProperty(Util.gstrNamespaces)
+    public void setPrefixes(JsonNode jnodePrefixes) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting prefixes...");
         if (this.thePrefixes == null) {
             this.thePrefixes = new VocabularyList();
         }
         synchronized(this.thePrefixes) {
+            if (jnodePrefixes == null) {
+                return;
+            }
             this.thePrefixes.clear();
-            for (Vocabulary vocab : aVocabularies) {
-                this.thePrefixes.add( vocab );
+            if ( jnodePrefixes.isObject() ) {
+                Iterator<Entry<String, JsonNode>> iterNodes = jnodePrefixes.fields();
+                Map.Entry<String, JsonNode> mePrefix;
+                while ( iterNodes.hasNext() ) {
+                    mePrefix = (Map.Entry<String, JsonNode>) iterNodes.next();
+                    String strPrefix = mePrefix.getKey();
+                    String strIRI    = mePrefix.getValue().asText();
+                    this.thePrefixes.add( new Vocabulary(strPrefix, strIRI) );
+                }
             }
         }
     }
 
-    @JsonProperty("subjectMappings")
+    @JsonIgnore
 	public List<ResourceNode> getRoots() {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting root nodes: size = " + this.theRootNodes.size());
         return this.theRootNodes;
     }
 
-    @JsonProperty("subjectMappings")
+    @JsonProperty(Util.gstrSubjectMappings)
+    public String getRootsAsString() {
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting roots as JSON string...");
+        ByteArrayOutputStream baostream = new ByteArrayOutputStream();
+        try {
+            JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(baostream);
+            if ( this.theRootNodes == null || this.theRootNodes.isEmpty() ) {
+                jsonWriter.writeNull();
+                return baostream.toString("UTF-8");
+            }
+            jsonWriter.writeStartArray();
+            for (Node nodeRoot : this.theRootNodes) {
+                nodeRoot.write(jsonWriter);
+            }
+            jsonWriter.writeEndArray();
+            return baostream.toString("UTF-8");
+        }
+        catch (Exception ex) {
+            RDFTransform.logger.error("Error getting root nodes!", ex);
+            return "null";
+        }
+    }
+
+    @JsonIgnore
 	public void setRoots(List<ResourceNode> listRootNodes) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting root nodes...");
         this.theRootNodes = listRootNodes;
     }
 
+    @JsonProperty(Util.gstrSubjectMappings)
+    public void setRoots(JsonNode jnodeSubjectMappings) {
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting root nodes...");
+        if (this.theRootNodes == null) {
+            this.theRootNodes = new ArrayList<ResourceNode>();
+        }
+        synchronized(this.theRootNodes) {
+            if (jnodeSubjectMappings == null) {
+                return;
+            }
+            List<ResourceNode> listRootNodes = new ArrayList<ResourceNode>();
+            if ( jnodeSubjectMappings.isArray() ) {
+                for (JsonNode jnodeSubject : jnodeSubjectMappings) {
+                    Node nodeRoot =
+                        Node.reconstructNode(
+                            RDFTransform.theReconstructor, jnodeSubject,
+                            this.getBaseIRI(), this.thePrefixes);
+                    if (nodeRoot != null && nodeRoot instanceof ResourceNode) {
+                        listRootNodes.add( (ResourceNode) nodeRoot );
+                    }
+                    // Otherwise, non-resource nodes (literals, generic nodes) cannot be root nodes.
+                    // So, skip them.  They should never have been in the root node list anyway.
+                }
+            }
+            this.theRootNodes = listRootNodes;
+        }
+    }
+
     @Override
+    @JsonIgnore
     public void onBeforeSave(Project theProject) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Saving...");
     }
 
     @Override
+    @JsonIgnore
     public void onAfterSave(Project theProject) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("...saved.");
     }
 
     @Override
+    @JsonIgnore
     public void dispose(Project theProject) {
 	   /*try {
 			ApplicationContext.instance().getVocabularySearcher().deleteProjectVocabularies(String.valueOf(theProject.id));
@@ -626,6 +741,7 @@ public class RDFTransform implements OverlayModel {
      *      "code": the code language expression
      * }
      */
+    @JsonIgnore
     public void write(JsonGenerator theWriter)
             throws IOException {
         theWriter.writeStartObject();
