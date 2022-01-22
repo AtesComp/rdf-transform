@@ -1,198 +1,3 @@
-<script type="text/javascript">
-/*
-TODO
-- Tons of content missing!
-- Migrate all Google Code wiki content to the site
-- Test in Internet Explorer
-- Layout for Showcase page
-- Better screenshot for homepage
-- Improve screenshot display on homepage
-- RDFa markup
-*/
-
-// ============= SITE STRUCTURE AND PAGES  ==========================================
-
-const listMainLinks = {
-    'Home' : '',
-    'Showcases' : 'showcases',
-    'Docs' : 'docs',
-    'Support & Devel' : 'support-dev'
-};
-
-const listSectionLinks = {
-    'docs' : {
-        'Overview' : 'docs',
-        'Installation guide' : 'installationDocs',
-		'RDF Transform' : 'rdfTransformDocs',
-        'Publications' : 'publications',
-		'FAQ' : 'faq'
-    },
-    'support-dev' : {
-        'Issue tracker' : 'issues',
-        'Source code' : 'source'
-    },
-    'showcases' : {
-		'Overview' : 'showcases',
-		'RDF Transform Example' : 'rdfTransformExample'
-    }
-};
-
-const listPages = {
-    '' : {
-        'head_title' : 'OpenRefine RDF Transform',
-        'title_content' : 'home-intro',
-        'content' : 'home-text',
-    },
-    'docs' : {
-        'title' : 'Documentation',
-        'text' : 'docs',
-    },
-    'support-dev' : {
-        'title' : 'Support and Development',
-        'text' : 'support-dev',
-        'sidebar' : 'team',
-    },
-    'showcases' : {
-        'title' : 'Showcases',
-        'text' : 'showcases',
-    },
-    'installationDocs' : {
-        'title' : 'Installation Guide',
-        'section' : 'docs',
-        'text' : 'installation',
-    },
-    'rdfTransformDocs' : {
-        'title' : 'RDF Export',
-        'section' : 'docs',
-        'text' : 'rdf-transform-docs',
-    },
-	'rdfTransformExample' : {
-        'title' : 'RDF Transform Example',
-        'section' : 'showcases',
-        'text' : 'rdf-transform-exmple',
-    },
-    'faq' : {
-        'title' : 'Frequently Asked Questions',
-        'section' : 'docs',
-        'text' : 'faq',
-    },
-    'publications' : {
-        'title' : 'Academic Publications',
-        'section' : 'docs',
-        'text' : 'publications',
-    },
-    'gpl' : {
-        'redirect' : 'http://www.gnu.org/licenses/gpl-3.0-standalone.html'
-    },
-    'download' : {
-        'redirect' : 'https://github.com/AtesComp/rdf-transform/downloads/list'
-    },
-    'download-latest' : {
-        'redirect' : 'https://github.com/AtesComp/rdf-transform/files/rdf-transform-3.6.3.zip'
-    },
-    'issues' : {
-        'redirect' : 'https://github.com/AtesComp/rdf-transform/issues'
-    },
-    'source' : {
-        'redirect' : 'https://github.com/AtesComp/rdf-transform'
-    },
-};
-
-// ============= BEHAVIOUR CODE ==========================================
-
-var strURI = window.location.href;
-var strPath = window.location.pathname;
-var strAbsBase = 'http://' + window.location.hostname + strPath;
-
-var strSection;
-var strTitle;
-var strTarget;
-var strContent;
-var strHtml;
-
-if ( strURI.substr(0, strPath.length) == strPath ) {
-    strURI = strURI.substr( strPath.length );
-}
-if ( ! strURI ) {
-    strURI = '';
-}
-
-if ( ! (strURI in listPages) ) {
-    strSection = 'none';
-    strTitle = '404 Not Found';
-    strContent = '404';
-    strHtml =
-'<html>' +
-  '<head>' +
-    '<title>Simple 404 Error Page Design</title>' +
-  '</head>' +
-  '<body>' +
-    '<div>' +
-      '<h1>404</h1>' +
-      '<h2>Page Not Found</h2>' +
-      '<p>The Page you are looking for doesn\'t exist or an other error occured. Go to <a href="">Home Page.</a></p>' +
-    '</div>' +
-  '</body>' +
-'</html>';
-    // TODO: Do some kind of "HTTP/1.0 404 Not Found" redirect
-} else if ( 'redirect' in listPages[strURI] ) {
-    strSection = 'none';
-    strTarget = listPages[strURI]['redirect'];
-    strTitle = 'Redirect';
-    strHtml =
-        '<p>The requested content is found at the following location: <a href="' +
-        strTarget + '">' + strTarget + '</a></p>';
-    // TODO: Do some kind of "HTTP/1.0 302" redirect
-    window.location.replace(strTarget);
-} else {
-    strSection = strURI;
-    listPage = listPages[strURI]
-    listPageLinks = listSectionLinks[strSection];
-}
-
-// ============= TEMPLATE FUNCTIONS ==========================================
-
-function e(strHtml) {
-    // TODO: Write out strHtml to document or as document
-};
-
-function content(strFile) {
-    // TODO: Read in the "content/" + strFile + ".html" file
-};
-
-// ============= BEGIN TEMPLATE ==============================================
-
-var elemHeadTitle = document.getElementById("head_title");
-if ( elemHeadTitle.value.length == 0 ) {
-    elemHeadTitle.html(strTitle + ' | RDF Transform');
-}
-
-var elemBaseIRI = document.getElementById("base_iri");
-elemBaseIRI.attr("href", strAbsBase);
-
-var elemHeader = document.getElementById("header");
-var strHeaderHtml = ' id="logo">RDF Extension for Google Refine';
-var strTag = 'div';
-if ( strURI.length == 0) {
-    strTag = 'h1';
-    elemHeader.html('<' + strTag + strHeaderHtml + '</' + strTag + '>');
-}
-
-var elemMainNav = document.getElementById("main-nav");
-var strNav = '';
-for ( const [strKey, strValue] of Object.entries(listMainLinks) ) {
-    if (strSection == strValue) {
-        strNav += '<li class="active"><span>' + strKey + '</span></li>';
-    }
-    else {
-        strNav += '<li><a href="' + strValue + '">' + strKey + '</a></li>';
-    }
-}
-strNav += '<li class="download"><a href="download">Download</a></li>';
-elemMainNav.html(strNav);
-
-</script>
-
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
     "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
@@ -203,66 +8,335 @@ elemMainNav.html(strNav);
     <base id="base_iri" href="" />
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="stylesheet" type="text/css" href="rdf-transform.css" />
-    <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
+    <link rel="shortcut icon" type="image/png" id="favicon" href="images/favicon.png" />
   </head>
   <body>
     <div id="header">
-      <ul id="main-nav">
-      </ul>
+      <ul id="main-nav"></ul>
     </div>
     <div id="title-stripe">
-      <div id="title">
-<?php
-if (@$title) {
-    ?><h1><?php e($title); ?></h1><?php
-} else if (@$title_content) {
-    content($title_content);
-} else {
-    echo "<h1>No title</h1>";
-}
-?>
-      </div>
+      <div id="title"></div>
     </div>
-
-    <div id="content">
-<?php if (@$page_links) { ?>
-      <ul id="section-nav">
-<?php
-foreach($page_links as $label => $link) {
-    if ($link == $uri) { ?>
-        <li><?php e($label); ?></li>
-<?php } else { ?>
-        <li><a href="<?php e($link); ?>"><?php e($label); ?></a></li>
-<?php
-    }
-}
-?>
-      </ul>
-<?php
-}
-if (@$sidebar) {
-    ?><div id="sidebar"><?php content($sidebar); ?></div><?php
-}
-if (@$content) {
-    content($content);
-} else if (@$text) {
-    ?><div id="main"<?php if (@$page_links) { ?> class="centrecol"<?php } ?>><?php content($text); ?></div><?php
-} else if (@$text_html) {
-    echo $text_html;
-} else {
-    echo "<p>No content or text configured for this page.</p>";
-}
-?>
-    </div>
-
+    <div id="content"></div>
     <div id="footer">
       <div id="footer-text">
         <ul id="footer-links">
-          <li><a href="about">About</a></li>
-          <li class="last"><a href="gpl">GPL</a></li>
+          <li><a href="#about">About</a></li>
+          <li class="last"><a href="#gpl">GPL</a></li>
         </ul>
-        <div id="tagline">Friendly Linked Data publishing</div>
+        <div id="tagline">Transform your life with another quality Linked Data project</div>
       </div>
     </div>
+
+    <script type="text/javascript">
+
+        function load_content(strFile, elemForHTML, strAbsBase) {
+            if (strFile) {
+                // Make an HTTP request using the file name...
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange =
+                    () => {
+                        if (xhr.readyState == XMLHttpRequest.DONE) {
+                            const iStatus = xhr.status;
+                            if (iStatus === 0 || iStatus === 200) {
+                                elemForHTML.innerHTML = xhr.responseText;
+                                getLinks( elemForHTML.getElementsByTagName('a') );
+                            }
+                        }
+                    };
+                xhr.open("GET", strAbsBase + 'content/' + strFile + '.html', true);
+                xhr.send();
+                /* Exit the function: */
+                return;
+            }
+        };
+
+        function getLinks(links) {
+            for (i = 0; i < links.length; i++) {
+                links[i].addEventListener('click', linkClick);
+            }
+        }
+
+        function linkClick(evt) {
+            window.location.href = evt.target.href;
+            window.location.reload();
+        }
+            
+        function theLoader() {
+            /*
+            TODO
+            - Tons of content missing!
+            - Migrate all Google Code wiki content to the site
+            - Test in Internet Explorer
+            - Layout for Showcase page
+            - Better screenshot for homepage
+            - Improve screenshot display on homepage
+            - RDFa markup
+            */
+            
+            // ============= SITE STRUCTURE AND PAGES  ==========================================
+            
+            const listMainLinks = {
+                'Home' : '',
+                'Showcases' : 'showcases',
+                'Docs' : 'docs',
+                'Support & Devel' : 'support-dev'
+            };
+            
+            const listSectionLinks = {
+                'docs' : {
+                    'Overview' : 'docs',
+                    'Installation guide' : 'installationDocs',
+                    'RDF Transform' : 'rdfTransformDocs',
+                    'Publications' : 'publications',
+                    'FAQ' : 'faq'
+                },
+                'support-dev' : {
+                    'Issue tracker' : 'issues',
+                    'Source code' : 'source'
+                },
+                'showcases' : {
+                    'Overview' : 'showcases',
+                    'RDF Transform Example' : 'rdfTransformExample'
+                }
+            };
+            
+            const listPages = {
+                '' : {
+                    'head_title' : 'OpenRefine',
+                    'title_content' : 'home-intro',
+                    'content' : 'home-text',
+                },
+                'docs' : {
+                    'title' : 'Documentation',
+                    'text' : 'docs',
+                },
+                'support-dev' : {
+                    'title' : 'Support and Development',
+                    'text' : 'support-dev',
+                    'sidebar' : 'team',
+                },
+                'showcases' : {
+                    'title' : 'Showcases',
+                    'text' : 'showcases',
+                },
+                'installationDocs' : {
+                    'title' : 'Installation Guide',
+                    'section' : 'docs',
+                    'text' : 'installation',
+                },
+                'rdfTransformDocs' : {
+                    'title' : 'RDF Export',
+                    'section' : 'docs',
+                    'text' : 'rdf-transform-docs',
+                },
+                'rdfTransformExample' : {
+                    'title' : 'RDF Transform Example',
+                    'section' : 'showcases',
+                    'text' : 'rdf-transform-example',
+                },
+                'faq' : {
+                    'title' : 'Frequently Asked Questions',
+                    'section' : 'docs',
+                    'text' : 'faq',
+                },
+                'publications' : {
+                    'title' : 'Academic Publications',
+                    'section' : 'docs',
+                    'text' : 'publications',
+                },
+                'gpl' : {
+                    'title' : 'GNU Public License',
+                    'redirect' : 'http://www.gnu.org/licenses/gpl-3.0-standalone.html'
+                },
+                'download' : {
+                    'title' : 'Downloads',
+                    'redirect' : 'https://github.com/AtesComp/rdf-transform/downloads/list'
+                },
+                'download-latest' : {
+                    'title' : 'Download Latest',
+                    'redirect' : 'https://github.com/AtesComp/rdf-transform/files/rdf-transform-2.0.0.zip'
+                },
+                'issues' : {
+                    'title' : 'Issues',
+                    'redirect' : 'https://github.com/AtesComp/rdf-transform/issues'
+                },
+                'source' : {
+                    'title' : 'Source Code',
+                    'redirect' : 'https://github.com/AtesComp/rdf-transform'
+                },
+            };
+            
+            // ============= BEHAVIOUR CODE ==========================================
+            
+            var strURI = window.location.href;
+            if (strURI.substring(strURI.length - 1) === '#') {
+                strURI = strURI.substring(0, strURI.length - 1);
+            }
+            var strHash = window.location.hash;
+            var strAbsBase = strURI.substring(0, strURI.length - strHash.length);
+
+            var strSection = null;
+            var strHeadTitle = null;
+            var strTarget = null;
+            var strTitle = null;
+            var strTitleContent = null;
+            var listPage = null;
+            var listPageLinks = null;
+            var strSidebar = null;
+            var strContent = null;
+            var strText = null;
+            var strTextHtml = null;
+            var strHtml = null;
+            
+            var strPage = '';
+            if ( strHash.length > 0 ) {
+                strPage = strHash.substr(1);
+            }
+            
+            if ( ! (strPage in listPages) ) {
+                strSection = 'none';
+                strHeadTitle = '404 Not Found';
+                strTitle = strHeadTitle;
+                strContent = '404';
+            }
+            else if ( 'redirect' in listPages[strPage] ) {
+                strSection = 'none';
+                listPage = listPages[strPage];
+                strTarget = listPage['redirect'];
+                strHeadTitle = 'Redirect';
+                strTextHtml =
+                    '<p>The requested content is found at the following location: <a href="' +
+                    strTarget + '">' + strTarget + '</a></p>';
+                    if ( 'title' in listPage) {
+                    strTitle = listPage.title;
+                }
+            }
+            else {
+                strSection = strPage;
+                listPage = listPages[strPage];
+                listPageLinks = listSectionLinks[strSection];
+                if ( 'head_title' in listPage) {
+                    strHeadTitle = listPage.head_title;
+                }
+                if ( 'title' in listPage) {
+                    strTitle = listPage.title;
+                }
+                if ( 'title_content' in listPage) {
+                    strTitleContent = listPage.title_content;
+                }
+                if ( 'sidebar' in listPage) {
+                    strSidebar = listPage.sidebar;
+                }
+                if ( 'content' in listPage) {
+                    strContent = listPage.content;
+                }
+                if ( 'text' in listPage) {
+                    strText = listPage.text;
+                }
+            }
+            
+            // ============= BEGIN TEMPLATE ==============================================
+            
+            const elemHeadTitle = document.getElementById("head_title");
+            if (strHeadTitle != null) {
+                elemHeadTitle.innerHTML = strHeadTitle + ' | RDF Transform';
+            }
+            
+            document.getElementById("base_iri").setAttribute("href", strAbsBase);
+
+            var strHeader = document.getElementById("header").innerHTML;
+            var strHeaderHtml = ' id="logo">RDF Transform for OpenRefine';
+            var strTag = 'div';
+            if ( strPage.length === 0) {
+                strTag = 'h1';
+            }
+            document.getElementById("header").innerHTML =
+                '<' + strTag + strHeaderHtml + '</' + strTag + '>' + strHeader;
+            
+            var strNav = '';
+            for (const [strKey, strValue] of Object.entries(listMainLinks)) {
+                if (strSection === strValue) {
+                    strNav += '<li class="active"><span>' + strKey + '</span></li>';
+                }
+                else {
+                    strNav += '<li><a href="#' + strValue + '">' + strKey + '</a></li>';
+                }
+            }
+            strNav += '<li class="download"><a href="#download">Download</a></li>';
+            document.getElementById("main-nav").innerHTML = strNav;
+            
+            const elemTitle = document.getElementById("title");
+            if (strTitle != null) {
+                elemTitle.innerHTML = "<h1>" + strTitle + "</h1>";
+            }
+            else if (strTitleContent != null) {
+                load_content(strTitleContent, elemTitle, strAbsBase);
+            }
+            else {
+                elemTitle.innerHTML = '<h1>No title</h1>';
+            }
+            
+            strHtml = '';
+            var bLoadSidebar = false;
+            var bLoadContent = false;
+            var bLoadText = false;
+            if (listPageLinks != null) {
+                strHtml = '<ul id="section-nav">';
+
+                for (const [strKey, strValue] of Object.entries(listPageLinks)) {
+                    strHtml += '<li>';
+                    if (strValue === strPage) {
+                        strHtml += strKey;
+                    }
+                    else {
+                        strHtml += '<a href="#' + strValue + '">' + strKey + '</a>';
+                    }
+                    strHtml += '</li>'
+                }
+                strHtml += '</ul>';
+            }
+            if (strSidebar != null) {
+                strHtml += '<div id="sidebar"></div>';
+                bLoadSidebar = true;
+            }
+            if (strContent != null) {
+                strHtml += '<span id="text-content"></span>';
+                bLoadContent = true;
+            }
+            else if (strText != null) {
+                strHtml += '<div id="main"';
+                if (listPageLinks != null) {
+                    strHtml += ' class="centercol"';
+                }
+                strHtml += '></div>';
+                bLoadText = true;
+            }
+            else if (strTextHtml != null) {
+                strHtml = strTextHtml;
+            }
+            else {
+                strHtml = '<p>No content or text configured for this page.</p>';
+            }
+            document.getElementById("content").innerHTML = strHtml;
+            if (bLoadSidebar) {
+                const elemSidebar = document.getElementById("sidebar");
+                load_content(strSidebar, elemSidebar, strAbsBase);
+            }
+            if (bLoadContent) {
+                const elemContent = document.getElementById("text-content");
+                load_content(strContent, elemContent, strAbsBase);
+            }
+            if (bLoadText) {
+                const elemMain = document.getElementById("main");
+                load_content(strText, elemMain, strAbsBase);
+            }
+
+            getLinks( document.getElementsByTagName('a') );
+        };
+
+        window.addEventListener( "load", theLoader );
+    </script>
+
   </body>
 </html>

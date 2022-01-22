@@ -178,5 +178,26 @@ Sometime you just have to do everything yourself.  If you want or need to compil
 ### Issues ###
 None, currently.
 
+### Developer Testing and Debugging ###
+Here are some tips on testing and debugging...
+
+#### Java ####
+Tinker with the "RFTransform.verbose" and "RFTransform.debug" configurations settings for RDT Transform to get plenty 'o feedback.  Generally, setting the debug configuration to "true" will do the trick.
+
+#### Javascript ####
+Use the built-in Developer Tools in your perferred browser.
+
+#### HTML Web Pages ####
+If you need to test or debug the HTML web pages, you'll need to set up a "server".
+
+Change directories to project's website source: 
+`cd rdf-transform/website`
+
+Start the simple python HTTP server:
+`python3 -m http.server`
+
+Load the "index.html" file in a browser. You may need to adjust your browser security setting to allow LocalHost access to local files.  That issues is beyond this documentation.
+`http://localhost:8000`
+
 ## Documentation ##
 * [Documentation Wiki](https://github.com/AtesComp/rdf-transform/wiki)

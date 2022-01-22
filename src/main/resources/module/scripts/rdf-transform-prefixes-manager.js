@@ -23,14 +23,17 @@ class RDFTransformPrefixesManager {
 		this.prefixes = this.#dialog.getPrefixes();
 
 		if ( ! this.prefixes ) {
-			var waitOnPrefixes =
-				async () => {
-					return await this.#getDefaultPrefixes();
-			}
-			var data = await waitOnPrefixes();
+			//var waitOnPrefixes =
+			//	async () => {
+			//		return await this.#getDefaultPrefixes();
+			//}
+			var data = await this.#getDefaultPrefixes();
 			if (data.prefixes) {
 				this.prefixes = data.prefixes;
 				this.showPrefixes(this.prefixes);
+			}
+			else {
+
 			}
 		}
 		else {
@@ -47,7 +50,7 @@ class RDFTransformPrefixesManager {
 		this.showPrefixes();
 	}
 
-	#getDefaultPrefixes() {
+	async #getDefaultPrefixes() {
 		return new Promise(
 			(resolve, reject) => {
 				$.get(
@@ -114,13 +117,13 @@ class RDFTransformPrefixesManager {
 		// TODO: Add refresh all button
 	}
 
-	#renderPrefix(prefix, namespace) {
+	#renderPrefix(strPrefix, strNamespace) {
 		this.#dialog.thePrefixes
 		.append(
 			$('<span/>')
 			.addClass('rdf-transform-prefix-box')
-			.attr('title', namespace)
-			.text(prefix)
+			.attr('title', strNamespace)
+			.text(strPrefix)
 		);
 	}
 

@@ -42,7 +42,7 @@ public class SavePrefixesCommand extends RDFTransformCommand {
 				String strNamespace = prefix.getValue().asText();
 				listVocabs.add( new Vocabulary( strPrefix, strNamespace ) );
 			});
-			this.getRDFTransform(request).setPrefixesMap(listVocabs);
+			this.getRDFTransform(request).setPrefixes(listVocabs);
 
 			// ...and the prefixes' vocabulary searcher...
 			String projectID = request.getParameter("project");

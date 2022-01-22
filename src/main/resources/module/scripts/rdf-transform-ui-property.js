@@ -27,47 +27,45 @@ class RDFTransformUIProperty {
             this.#property.nodeObject.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
         }
 
+        this.#collapsedDetailDiv = $('<div></div>')
+            .addClass("padded")
+            .html("...");
+        this.#expandedDetailDiv = $('<div></div>')
+            .addClass("rdf-transform-detail-container");
+
+        var imgExpand = $('<img />')
+            .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
+            .click(
+                (evt) => {
+                    this.#options.expanded = !this.#options.expanded;
+                    $(evt.currentTarget)
+                    .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png");
+                    this.show();
+                }
+            );
+
         this.#tr = theTable.insertRow(theTable.rows.length);
         this.#tdMain  = this.#tr.insertCell(0);
         var tdToggle  = this.#tr.insertCell(1);
         var tdDetails = this.#tr.insertCell(2);
 
         $(this.#tdMain)
-        .addClass("rdf-transform-property-main")
-        .attr("width", "250")
-        .addClass("padded");
-        $(tdToggle)
-        .addClass("rdf-transform-property-toggle")
-        .attr("width", "3%")
-        .addClass("padded");
-        $(tdDetails)
-        .addClass("rdf-transform-property-details");
-
-        this.#collapsedDetailDiv =
-            $('<div></div>')
-            .appendTo(tdDetails)
-            .addClass("padded")
-            .html("...");
-        this.#expandedDetailDiv =
-            $('<div></div>')
-            .appendTo(tdDetails)
-            .addClass("rdf-transform-detail-container");
-
-        this.show();
-
-        $('<img />')
-        .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
-        .appendTo(tdToggle)
-        .click(
-            (evt) => {
-                this.#options.expanded = !this.#options.expanded;
-                $(evt.currentTarget)
-                .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png");
-                this.show();
-            }
-        );
-
+            .addClass("rdf-transform-property-main")
+            .attr("width", "250")
+            .addClass("padded");
         this.#renderMain();
+
+        $(tdToggle)
+            .addClass("rdf-transform-property-toggle")
+            .attr("width", "3%")
+            .addClass("padded")
+            .append(imgExpand);
+
+        $(tdDetails)
+            .addClass("rdf-transform-property-details")
+            .append(this.#collapsedDetailDiv)
+            .append(this.#expandedDetailDiv);
+        this.show();
         this.#renderDetails();
     }
 
@@ -83,52 +81,57 @@ class RDFTransformUIProperty {
     }
 
     #renderMain() {
-        $(this.#tdMain).empty();
-        var propertyIRI = this.#getTypeName(this.#property);
-        var strLabel = propertyIRI || "property?";
-
-        $('<img />')
-        .attr("title", $.i18n('rdft-dialog/remove-property'))
-        .attr("src", "images/close.png")
-        .css("cursor", "pointer")
-        .prependTo(this.#tdMain)
-        .click(
-            () => {
-                setTimeout(
-                    () => {
-                        this.#parentUINode.removeProperty(this);
-                        this.#tr.parentNode.removeChild(this.#tr);
-                        this.#dialog.updatePreview();
-                    },
-                    100
-                );
-            }
-        );
-
+        var imgClose = $('<img />')
+            .attr("title", $.i18n('rdft-dialog/remove-property'))
+            .attr("src", "images/close.png")
+            .css("cursor", "pointer")
+            .click(
+                () => {
+                    setTimeout(
+                        () => {
+                            this.#parentUINode.removeProperty(this);
+                            this.#tr.parentNode.removeChild(this.#tr);
+                            this.#dialog.updatePreview();
+                        },
+                        100
+                    );
+                }
+            );
+        var imgArrowStart = $('<img />').attr("src", "images/arrow-start.png");
+        var imgArrowEnd = $('<img />').attr("src", "images/arrow-end.png");
         var ahrefProperty = $('<a href="javascript:{}"></a>')
             .addClass("rdf-transform-property")
-            .html(RDFTransformCommon.shortenResource(strLabel))
+            .html(
+                RDFTransformCommon.shortenResource(
+                    this.#getTypeName(this.#property)
+                )
+            )
             .click( (evt) => { this.#startEditProperty(evt); } );
-        $('<img />').attr("src", "images/arrow-start.png").prependTo(ahrefProperty);
-        $('<img />').attr("src", "images/arrow-end.png").appendTo(ahrefProperty);
 
-        this.#tdMain.append(ahrefProperty);
+
+        $(this.#tdMain)
+            .empty()
+            .append(imgClose)
+            .append(imgArrowStart)
+            .append(ahrefProperty)
+            .append(imgArrowEnd);
     }
 
     #renderDetails() {
-        if (this.nodeObjectUI) {
-            this.nodeObjectUI.dispose();
-        }
         if (this.tableDetails) {
             this.tableDetails.remove();
         }
-
         this.tableDetails =
             $('<table></table>')
-            .addClass("rdf-transform-details-table-layout")
-            .appendTo(this.#expandedDetailDiv);
+            .addClass("rdf-transform-details-table-layout");
+        this.#expandedDetailDiv.append(this.tableDetails);
+
         var optionsObject = {};
         optionsObject.expanded = this.#isObjectExpandable();
+
+        if (this.nodeObjectUI) {
+            this.nodeObjectUI.dispose();
+        }
         this.nodeObjectUI =
             new RDFTransformUINode(
                 this.#dialog,
@@ -157,7 +160,7 @@ class RDFTransformUIProperty {
 
     #getTypeName(theProperty) {
         if (! theProperty ) {
-            return "";
+            return "<ERROR: No Property!>";
         }
         if ("prefix" in theProperty && theProperty.prefix !== null) {
             return theProperty.prefix + ":" + theProperty.pathIRI;
@@ -166,7 +169,7 @@ class RDFTransformUIProperty {
             return theProperty.pathIRI;
         }
         else {
-            return "";
+            return "Property?";
         }
     }
 

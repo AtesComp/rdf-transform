@@ -240,7 +240,7 @@ public class RDFTransform implements OverlayModel {
                     String strIRI    = mePrefix.getValue().asText();
                     thePrefixes.add( new Vocabulary(strPrefix, strIRI) );
                 }
-                theTransform.setPrefixesMap(thePrefixes);
+                theTransform.setPrefixes(thePrefixes);
             }
         }
         else {
@@ -481,32 +481,9 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-    public VocabularyList getPrefixesMap() {
-		return this.thePrefixes;
-	}
-
-    @JsonIgnore
-    public void setPrefixesMap(VocabularyList mapPrefixes) {
-        this.thePrefixes = mapPrefixes;
-	}
-
-    @JsonIgnore
-    public void addPrefix(String strPrefix, String strNamespace) {
-        if (this.thePrefixes == null) {
-            this.thePrefixes = new VocabularyList();
-        }
-        this.thePrefixes.add( new Vocabulary(strPrefix, strNamespace) );
-    }
-
-    @JsonIgnore
-    public void removePrefix(String strPrefix) {
-        this.thePrefixes.removeByPrefix(strPrefix);
-    }
-
-    @JsonIgnore
     public VocabularyList getPrefixes() {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting prefixes...");
-        return thePrefixes;
+        return this.thePrefixes;
     }
 
     @JsonProperty(Util.gstrNamespaces)
@@ -532,6 +509,11 @@ public class RDFTransform implements OverlayModel {
         }
     }
 
+    @JsonIgnore
+    public void setPrefixes(VocabularyList listPrefixes) {
+        this.thePrefixes = listPrefixes;
+	}
+
     @JsonProperty(Util.gstrNamespaces)
     public void setPrefixes(JsonNode jnodePrefixes) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting prefixes...");
@@ -554,6 +536,19 @@ public class RDFTransform implements OverlayModel {
                 }
             }
         }
+    }
+
+    @JsonIgnore
+    public void addPrefix(String strPrefix, String strNamespace) {
+        if (this.thePrefixes == null) {
+            this.thePrefixes = new VocabularyList();
+        }
+        this.thePrefixes.add( new Vocabulary(strPrefix, strNamespace) );
+    }
+
+    @JsonIgnore
+    public void removePrefix(String strPrefix) {
+        this.thePrefixes.removeByPrefix(strPrefix);
     }
 
     @JsonIgnore

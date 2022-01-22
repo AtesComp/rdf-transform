@@ -143,11 +143,11 @@ class RDFExpressionPreviewDialog {
 		// Load OpenRefine's Expression Preview Dialog...
 		var html = DOM.loadHTML("core", "scripts/dialogs/expression-preview-dialog.html");
 
-		// ...and set it for GREL only...
+		// ...and set it for the current default expression language...
 		var languageOptions = [];
-		var info = theProject.scripting[RDFTransform.strDefaultExpressionLanguage];
+		var info = theProject.scripting[RDFTransform.g_strDefaultExpressionLanguage];
 		languageOptions.push(
-			'<option value="' + RDFTransform.strDefaultExpressionLanguage + '">' +
+			'<option value="' + RDFTransform.g_strDefaultExpressionLanguage + '">' +
 			info.name +
 			'</option>'
 		);
@@ -326,8 +326,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		this.#rowValues = rows.values;
 
 		this.expression = strExpression;
-		if (! strExpression ) {
-			this.expression = RDFTransform.strDefaultExpression; //'value';
+		if (strExpression === null || strExpression.length === 0 ) {
+			this.expression = RDFTransform.g_strDefaultExpression; // ...use default expression
 		}
 
 		this.#bIsIRI = bIsIRI;
@@ -456,7 +456,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		// Create table column headings...
 		var tr = table.insertRow(0);
 		var tdValue = (this.#bIsIndex ? "Index" : "Value");
-		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.strIndexTitle);
+		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.g_strIndexTitle);
 		$( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
 		$( tr.insertCell(2) ).addClass("expression-preview-heading").text("Expression");
 		if (this.#bIsIRI) { // ...for resources, add the IRI resolution column...
