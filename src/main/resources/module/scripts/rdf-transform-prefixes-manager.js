@@ -20,21 +20,21 @@ class RDFTransformPrefixesManager {
 
 	async initPrefixes() {
 		this.#dialog.thePrefixes.empty().html('<img src="images/small-spinner.gif" />');
-		this.prefixes = this.#dialog.getPrefixes();
+		this.prefixes = this.#dialog.getPrefixes(); // ...existing prefixes
 
 		if ( ! this.prefixes ) {
-			//var waitOnPrefixes =
-			//	async () => {
-			//		return await this.#getDefaultPrefixes();
-			//}
-			var data = await this.#getDefaultPrefixes();
-			if (data.prefixes) {
-				this.prefixes = data.prefixes;
-				this.showPrefixes(this.prefixes);
+			var data = null;
+			this.prefixes = []; // ...empty array, no prefixes
+			try {
+				data = await this.#getDefaultPrefixes();
 			}
-			else {
-
+			catch (evt) {
+				// ...ignore error, no prefixes...
 			}
+			if (data !== null && data.prefixes) {
+				this.prefixes = data.prefixes; // ...new defaults prefixes
+			}
+			this.showPrefixes(this.prefixes);
 		}
 		else {
 			this.#savePrefixes();
@@ -50,14 +50,26 @@ class RDFTransformPrefixesManager {
 		this.showPrefixes();
 	}
 
-	async #getDefaultPrefixes() {
+	/*
+	 * Method: getDefaultPrefixes()
+	 *
+	 * 	Get the Default Prefixes from the server.  As this method returns a Promise, it expects
+	 *  the caller is an "async" function "await"ing the results of the Promise.
+	 * 
+	 */
+	#getDefaultPrefixes() {
 		return new Promise(
 			(resolve, reject) => {
-				$.get(
-					"command/rdf-transform/get-default-prefixes",
-					{ "project" : theProject.id },
-					(data) => { resolve(data); },
-					"json"
+				// GET default prefixes in ajax
+				$.ajax(
+					{	url  : "command/rdf-transform/get-default-prefixes",
+						type : 'GET',
+						async: false, // ...wait on results
+						data : { "project" : theProject.id },
+						dataType : "json",
+						success : (result, strStatus, xhr) => { resolve(result); },
+						error   : (xhr, strStatus, error) => { resolve(null); }
+					}
 				);
 			}
 		);
@@ -66,19 +78,17 @@ class RDFTransformPrefixesManager {
 	#savePrefixes(onDoneSave) {
 		Refine.wrapCSRF(
 			(token) => {
-				$.post(
-					"command/rdf-transform/save-prefixes",
-					{
-						"project"    : theProject.id,
-						"csrf_token" : token,
-						"prefixes"   : JSON.stringify(this.prefixes)
-					},
-					(data) => {
-						if (onDoneSave) {
-							onDoneSave(data);
-						}
-					},
-					"json"
+				$.ajax(
+					{	url  : "command/rdf-transform/save-prefixes",
+						type : 'POST',
+						data : {
+							"project"    : theProject.id,
+							"csrf_token" : token,
+							"prefixes"   : JSON.stringify(this.prefixes)
+						},
+						dataType : "json",
+						success : (data) => { if (onDoneSave) { onDoneSave(data); } }
+					}
 				);
 			}
 		);

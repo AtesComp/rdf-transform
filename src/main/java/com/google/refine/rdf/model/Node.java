@@ -213,6 +213,10 @@ abstract public class Node {
             else if ( strType.equals(Util.gstrValueBNode) ) {
                 rnodeResource = new ConstantBlankNode(strValue);
             }
+            // Check Resource creation...
+            if (rnodeResource == null) {
+                Node.logger.error("ERROR: Bad Node: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
+            }
 
             if ( rnodeResource != null ) {
                 //

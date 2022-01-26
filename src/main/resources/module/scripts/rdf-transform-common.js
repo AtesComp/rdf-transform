@@ -212,52 +212,55 @@ class RDFTransformCommon {
         var iTry = 0;
         do {
             // Check if it's an acceptable IRI now (absolute or relative)...
-            if ( ! await RDFTransformCommon.validateIRI(strConvert) ) {
-                if (iTry > 7) {
-					strConvert = null;
-                    break;
-				}
-                // ...continue by narrowing the conversion string...
+            if ( await RDFTransformCommon.validateIRI(strConvert) ) {
+				break;
+			}
+			else if (iTry > 7) {
+				strConvert = null; // ...cannot use the text as an IRI
+                break;
             }
-            switch (iTry) {
+
+			//
+			// Continue by narrowing the conversion string...
+			//
+			var strReplace;
+			switch (iTry) {
                 case 0:
                     // Replace whitespace and unallowed characters with underscores...
-                    strConvert =
-                        strConvert.
-                            replace("/\uC2A0/g", " ").replace("/\\h/g", " ").
-                            replace("/[\\p{Whitespace}<>\"{}|\\^`]+/g", "_");
-                    break;
+                    var strTmp = strConvert.replace(/\u{C2A0}/gu, " ");
+					strReplace = strTmp.replace(/[\p{White_Space}<>"{}|\^`]+/gu, "_");
+					break;
                 case 1:
                     // Replace any unsupported characters with underscores...
-                    strConvert = strConvert.replace("/[^-\\p{N}\\p{L}_\\.~:/\\?#\\[\\]@\\%!\\$&'\\(\\)\\*\\+,;=]+/g", "_");
+					strReplace = strConvert.replace(/[^-\p{N}\p{L}_\.~:\/\?#\[\]@%!\$&'\(\)\*\+,;=]+/gu, "_");
                     break;
                 case 2:
-                    // Replace (multiple) leading ":/+" or "/+" with underscores (first, not global)...
-                    strConvert = strConvert.replace("/^(:?\/+)+/", "_");
+                    // Replace (multiple) leading ":/+" or "/+" with nothing (remove) (first occurrences, not global)...
+                    strReplace = strConvert.replace(/^(:?\/+)+/u, "");
                     break;
                 case 3:
                     // Replace sub-delim characters with underscores...
-                    strConvert = strConvert.replace("/[!\\$&'\\(\\)\\*\\+,;=]+/g", "_");
+                    strReplace = strConvert.replace(/[!\$&'\(\)\*\+,;=]+/gu, "_");
                     break;
                 case 4:
                     // Replace gen-delim (but not ":" and "/") characters with underscores...
-                    strConvert = strConvert.replace("/[\\?#\\[\\]@]+/g", "_");
+                    strReplace = strConvert.replace(/[\?#\[\]@]+/gu, "_");
                     break;
                 case 5:
                     // Replace "/" characters with underscores...
-                    strConvert = strConvert.replace("/\/+/g", "_");
+                    strReplace = strConvert.replace(/\/+/gu, "_");
                     break;
                 case 6:
                     // Replace ":" characters with underscores...
-                    strConvert = strConvert.replace("/:+/g", "_");
+                    strReplace = strConvert.replace(/:+/gu, "_");
                     break;
                 default:
                     // Replace all but Unreserved characters with underscores...
-                    strConvert = strConvert.replace("/[^-\\p{N}\\p{L}_\\.~]+/g", "_");
+                    strReplace = strConvert.replace(/[^-\\p{N}\\p{L}_\\.~]+/gu, "_");
                     break;
             }
             // Condense underscores...
-            strConvert = strConvert.replace("/__+/g", "_");
+            strConvert = strReplace.replace(/__+/gu, "_");
             ++iTry;
         } while (true);
 
@@ -275,18 +278,13 @@ class RDFTransformCommon {
 		//       server-side IRI parser.
 		//return RDFTransformCommon.#reIRI_COMPLETE_iu.test(strIRI);
 
-		//var waitOnValidIRI =
-		//	async () => {
-		//		return await RDFTransformCommon.#getValidIRI(strIRI);
-		//	}
 		var data = {};
-		data =
-			await RDFTransformCommon.#getValidIRI(strIRI)
-			.catch(
-				(error) => {
-					data = {};
-				}
-			);
+		try {
+			data = await RDFTransformCommon.#getValidIRI(strIRI);
+		}
+		catch (evt) {
+			data.good = "0"; // ...force bad result
+		}
 		var bGoodIRI = false;
 		if (data.good == "1") {
 			bGoodIRI = true;
@@ -297,28 +295,16 @@ class RDFTransformCommon {
 	static #getValidIRI(strIRI) {
 		return new Promise(
 			(resolve, reject) => {
-				var params = {
-					"iri"        : strIRI
-				};
+				var params = { "iri" : strIRI };
 		
-				$.get(
-					// URL:
-					"command/rdf-transform/validate-iri",
-					// Data:
-					params,
-					// Success:
-					//(data) => { resolve(data); },
-					// DataType:
-					"json"
-				)
-				.done(
-					(data, strStatus, xhr) => {
-						resolve(data);
-					}
-				)
-				.fail(
-					(xhr, strStatus, errorThrown) => {
-						resolve( { "good" : "0" } );
+				$.ajax(
+					{	url  : "command/rdf-transform/validate-iri",
+						type : 'GET',
+						async: false, // ...wait on results
+						data : params,
+						dataType : "json",
+						success : (data, strStatus, xhr) => { resolve(data); },
+						error   : (xhr, strStatus, error) => { resolve( { "good" : "0" } ) }
 					}
 				);
 			}

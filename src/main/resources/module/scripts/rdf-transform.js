@@ -1,7 +1,7 @@
 /*
  *  CLASS RDFTransform
  *
- *  A class holding the RDF Transform functionality
+ *  A class holding the RDF Transform baseline setting and functions
  */
 class RDFTransform {
     // This Client-side KEY matches Server-side RDFTransform.KEY
@@ -33,7 +33,7 @@ class RDFTransform {
         // don't know if this is the first time or project change...
         RDFTransform.g_strDefaultExpression =
             theProject
-            .scripting[RDFTransform.strDefaultExpressionLanguage]
+            .scripting[RDFTransform.g_strDefaultExpressionLanguage]
             .defaultExpression;
 
         // The Row / Record Expression Index setting must be reset each time the dialog is
@@ -93,75 +93,43 @@ class RDFTransformDialog {
     #iDiffFrameHeight;
     #iLastDiffFrameHeight;
 
-    constructor(theTransform) {
+    constructor() {
         // The transform defaults are set here since "theProject" is not completely
-        // populated until after the main OpenRefine display is active and a project is
-        // selected...
+        // populated until after the main OpenRefine display is active and a project
+        // is selected.  Since we only have one RDFTransformDialog per project. the
+        // defaults can be safely set during the one and only RDFTransform construction...
         RDFTransform.setDefaults();
 
-        this.#init(theTransform);
+        // The RDFTransform has not been initialized...
+		// Initialize after construction!
+    }
+
+    async initTransform(theTransform) {
+        await this.#init(theTransform);
         this.#buildBody();
+
+        // Initialize namespaces...
+        this.thePrefixes = this.#elements.rdftEditPrefixes; // ...used in RDFTransformPrefixesManager
+        this.prefixesManager = new RDFTransformPrefixesManager(this);
+        await this.prefixesManager.initPrefixes();
+
+        // Initialize baseIRI...
+        this.#replaceBaseIRI(this.#theTransform.baseIRI || location.origin + '/', false);
+
+        // Initialize transform view...
+        this.#processTransformTab();
+        this.#processPreviewTab();
     }
 
-    static #createRootNode() {
-        // Retrieve a copy of the Master Root Node...
-        return cloneDeep(RDFTransform.g_nodeMasterRoot);
-    }
-
-    /*
-     * Method #createInitialRootNode()
-     *
-     *   A Class method that produces the initial root node (source) used to display
-     *   itself, a Row / Record based index node, with a set of properties to all the
-     *   column data.
-     *   The properties serve as a (property, object) list for the (source) root node
-     *   to form an RDF triple set.  For each data column, a property is set to null
-     *   (an unset IRI name) and an object is set to the column data (by column name)
-     *   and declared constant literal data.
-     */
-    static async #createInitialRootNode() {
-        // Get a new root node...
-        var nodeRoot = RDFTransformDialog.#createRootNode();
-
-        // Add default properties to default root node...
-        var properties = [];
-        // Construct properties as "column name" IRIs connected to "column name" literal objects
-        for (const column of theProject.columnModel.columns) {
-            if (column) {
-                // Default object of the property...
-                var nodeObject = {};
-                nodeObject.nodeType =  RDFTransformCommon.g_strRDFT_CLITERAL;
-                nodeObject.columnName = column.name;
-
-                // Default property...
-                var strIRI = await RDFTransformCommon.toIRIString(nodeObject.columnName);
-                if (strIRI !== null && strIRI.length > 0 && strIRI.indexOf("://") === -1 && strIRI[0] !== ":") {
-                    // Use baseIRI...
-                    strIRI = ":" + strIRI;
-                }
-                var theProperty = {};
-                theProperty.prefix = null;
-                theProperty.pathIRI = strIRI;
-                console.log("Property IRI: " + strIRI);
-                theProperty.pathIRI = null;
-                theProperty.nodeObject = nodeObject;
-                properties.push(theProperty);
-            }
-        }
-        nodeRoot.properties = properties;
-
-        return nodeRoot;
-    }
-
-    #init(theTransform) {
+    async #init(theTransform) {
         //
         // theTransform has the base structure:
         //   { "baseIRI" : "", "namespaces" : [], "subjectMappings" : [] };
         //
-        var cloneTransform = theTransform;
+        var cloneTransform = {};
         // Is the transform valid?  No, then set a baseline...
-        if ( ! theTransform ) {
-            cloneTransform = {};
+        if ( typeof theTransform === 'object' && theTransform !== null ) {
+            cloneTransform = theTransform;
         }
         // Clone the transform for modification...
         this.#theTransform = cloneDeep(cloneTransform); // ...clone current transform
@@ -189,10 +157,60 @@ class RDFTransformDialog {
         }
         // Does the transform have any root nodes?  No, then set the initial root node...
         if ( this.#theTransform.subjectMappings.length === 0) {
-            this.#theTransform.subjectMappings.push( RDFTransformDialog.#createInitialRootNode() );
+            var nodeRoot = await this.#createInitialRootNode();
+            this.#theTransform.subjectMappings.push(nodeRoot);
         }
 
         this.#nodeUIs = []; // ...array of RDFTransformUINode
+    }
+
+    /*
+     * Method #createInitialRootNode()
+     *
+     *   A method that produces the initial root node (source) used to display a
+     *   transform, a Row / Record based index node, with a set of properties to all
+     *   the column data.
+     *   The properties serve as a (property, object) list for the (source) root node
+     *   to form an RDF triple set.  For each data column, a property is set to null
+     *   (an unset IRI name) and an object is set to the column data (by column name)
+     *   and declared constant literal data.
+     */
+    async #createInitialRootNode() {
+        // Get a new root node...
+        var nodeRoot = this.#createRootNode();
+
+        // Add default properties to default root node...
+        var properties = [];
+        // Construct properties as "column name" IRIs connected to "column name" literal objects
+        for (const column of theProject.columnModel.columns) {
+            if (column) {
+                // Default object of the property (new object each property)...
+                var nodeObject = {};
+                nodeObject.nodeType =  RDFTransformCommon.g_strRDFT_CLITERAL;
+                nodeObject.columnName = column.name;
+
+                // Default property...
+                var strIRI = await RDFTransformCommon.toIRIString(nodeObject.columnName);
+                if (strIRI !== null && strIRI.length > 0 && strIRI.indexOf("://") === -1 && strIRI[0] !== ":") {
+                    // Use baseIRI...
+                    strIRI = ":" + strIRI;
+                }
+                var theProperty = {};
+                theProperty.prefix = null;
+                theProperty.pathIRI = strIRI;
+                /* DEBUG */ console.log("Property IRI: " + strIRI);
+                theProperty.nodeObject = nodeObject;
+                properties.push(theProperty);
+            }
+        }
+        nodeRoot.properties = properties;
+
+        return nodeRoot;
+    }
+
+    #createRootNode() {
+        // Retrieve a copy of the Master Root Node...
+        return cloneDeep(RDFTransform.g_nodeMasterRoot);
     }
 
     #buildBody() {
@@ -261,7 +279,7 @@ class RDFTransformDialog {
         this.#elements.rdftAddRootNode
         .click( (evt) => {
                 evt.preventDefault();
-                var nodeRootNew = RDFTransformDialog.#createRootNode();
+                var nodeRootNew = this.#createRootNode();
                 this.#theTransform.subjectMappings.push(nodeRootNew);
                 this.#nodeUIs.push(
                     new RDFTransformUINode(
@@ -321,30 +339,11 @@ class RDFTransformDialog {
         );
     }
 
-    async initTransform() {
-        // Initialize namespaces...
-        this.thePrefixes = this.#elements.rdftEditPrefixes; // ...used in RDFTransformPrefixesManager
-        this.prefixesManager = new RDFTransformPrefixesManager(this);
-        await this.prefixesManager.initPrefixes();
-
-        // Initialize baseIRI...
-        this.#replaceBaseIRI(this.#theTransform.baseIRI || location.origin + '/', false);
-
-        // Initialize transform view...
-        this.#processTransformTab();
-        this.#processPreviewTab();
-    }
-
-    async #doImport() {
+    #doImport() {
         this.#doSave(); // ...for undo
 
         var theTransform = null;
-        theTransform =
-            await RDFImportTemplate.importTemplate()
-            .catch( (error) => {
-                theTransform = null;
-                // ...ignore...
-            });
+        theTransform = RDFImportTemplate.importTemplate()
         if ( theTransform == null ) {
             return;
         }

@@ -66,7 +66,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	public String getExpression() {
 		// TODO: Add prefix "\"_:\" + " here or elsewhere in the class?
 		//      ( see createRowResources() and normalizeBNodeResource() )
-		return this.strExpression.equals("value") ? null : this.strExpression;
+		return this.strExpression;
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 			//		or "false" (a null or empty string is evaluated).
 			//		When "true", a BNode is automatically generated.
 			results =
-				Util.evaluateExpression( this.theProject, this.getExpression(), this.strColumnName, this.theRec.row() );
+				Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
 		}
 		catch (ParsingException ex) {
             // An cell might result in a ParsingException when evaluating an IRI expression.

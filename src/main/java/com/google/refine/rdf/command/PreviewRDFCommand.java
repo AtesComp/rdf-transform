@@ -81,7 +81,12 @@ public class PreviewRDFCommand extends Command {
             // ...end writing
 
             this.strStatements = strwriterBase.getBuffer().toString();
-            if ( Util.isVerbose(4) ) logger.info("Preview Statements:\n" + strStatements);
+            if ( Util.isVerbose(4) ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
+
+            if ( Util.isDebugMode() ) {
+                PreviewRDFCommand.logger.info("Given Transform:\n" + strTransform);
+                // ...follow with additional output if needed...
+            }
 
             // Send back to client...
             PreviewRDFCommand.respondJSON( response, new PreviewResponse(strStatements) );

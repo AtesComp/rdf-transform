@@ -33,7 +33,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     {
     	this.strColumnName = strColumnName;
         this.strPrefix     = Util.toSpaceStrippedString(strPrefix);
-        this.strExpression = strExp;
+        this.strExpression = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
         this.eNodeType = eNodeType;
     }

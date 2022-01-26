@@ -45,7 +45,7 @@ class RDFTransformPrefixAdder {
 
 	}
 
-	async show(message, prefix, onDoneAdding) {
+	show(message, prefix, onDoneAdding) {
 		if (message) {
 			this.#elements.message.addClass('message').html(message);
 		}

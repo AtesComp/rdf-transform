@@ -275,6 +275,11 @@ public class Util {
 																	     "Col: [" + strColumnName + "] " +
 																	     "Row: [" + iRowIndex     + "]");
 
+		//
+		if ( strExpression == null ) {
+			return null;
+		}
+
 		// Select the column reference (er, cell index) by given name...
 		int theColumn = -1;
 		// If a regular column (not a row/record index column)...

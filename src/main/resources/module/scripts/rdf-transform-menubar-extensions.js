@@ -9,9 +9,10 @@ var dict = "";
 var lang =
         navigator.language.split("-")[0] || 
         navigator.userLanguage.split("-")[0];
-$.post(
+$.ajax(
     {   url: "command/core/load-language",
-        async: false,
+        type: 'POST',
+        async: false, // ...wait on results
         data: { module: "rdf-transform" },
         success: (data) => {
 		    dict = data['dictionary'];
@@ -279,8 +280,8 @@ $( function() { // ...load all DOM elements before executing the following...
 					"id"    : "rdf/edit-rdf-transform",
 					"label" : $.i18n('rdft-menu/edit') + "...",
 					"click" : () => {
-                        const theDialog = new RDFTransformDialog(theProject.overlayModels.RDFTransform);
-                        theDialog.initTransform();
+                        const theDialog = new RDFTransformDialog();
+                        theDialog.initTransform(theProject.overlayModels.RDFTransform);
                     }
 				},
 				{
