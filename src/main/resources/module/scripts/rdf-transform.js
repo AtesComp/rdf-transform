@@ -198,7 +198,6 @@ class RDFTransformDialog {
                 var theProperty = {};
                 theProperty.prefix = null;
                 theProperty.pathIRI = strIRI;
-                /* DEBUG */ console.log("Property IRI: " + strIRI);
                 theProperty.nodeObject = nodeObject;
                 properties.push(theProperty);
             }
@@ -415,6 +414,7 @@ class RDFTransformDialog {
         // Process Preview Tab
         //
         const theTransform = this.getJSON();
+        /*DEBUG*/ console.log(theTransform);
         this.#panePreview.empty();
         $('<img />')
         .attr('src', 'images/large-spinner.gif')

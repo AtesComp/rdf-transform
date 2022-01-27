@@ -38,7 +38,7 @@ public class ValidateIRICommand extends Command {
                 //if ( Util.isDebugMode() ) logger.info("Validating IRI: Success");
             }
             catch (URISyntaxException ex) {
-                if ( Util.isDebugMode() ) logger.info("Validating IRI: Failure");
+                if ( Util.isDebugMode() ) logger.info("Validating IRI: Failure [" + strIRI + "]");
             	ValidateIRICommand.respond(response, "{ \"good\" : \"0\" }");
                 return;
             }

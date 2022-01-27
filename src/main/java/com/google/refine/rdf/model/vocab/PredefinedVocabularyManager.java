@@ -31,7 +31,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 	private final static String PREDEFINED_VOCABS_FILE_NAME = "/files/predefined_vocabs";
 	private final static String SAVED_VOCABS_FILE_NAME = "vocabularies_meta.json";
 
-	private ApplicationContext applicationContext;
+	private ApplicationContext context;
 	private final File workingDir;
 	private VocabularyList predefinedVocabularies = new VocabularyList();
 
@@ -40,11 +40,13 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
     }
 
 	public PredefinedVocabularyManager(ApplicationContext context, File workingDir) throws IOException {
-		this.applicationContext = context;
+		this.context = context;
 		this.workingDir = workingDir;
 
 		try {
+			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Attempting existing reconstruct...");
 			this.reconstructVocabulariesFromFile();
+			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...reconstructed");
 			return;
 		}
 		catch (FileNotFoundException ex) {
@@ -53,6 +55,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 		}
 
 		try {
+			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Reconstruct failed.  Adding selected vocabularies.");
 			this.addPredefinedVocabularies();
 			this.save();
 		}
@@ -68,12 +71,22 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 	}
 
 	public VocabularyList getPredefinedVocabularies() {
-		return predefinedVocabularies;
+		return this.predefinedVocabularies;
 	}
 
 	/*
 	 * Private methods
 	 */
+	private void reconstructVocabulariesFromFile() throws IOException {
+		File vocabulariesFile =  new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
+		if (vocabulariesFile.exists() && vocabulariesFile.length() != 0) {
+			this.load();
+		}
+		else {
+			throw new FileNotFoundException();
+		}
+	}
+
 	private void addPredefinedVocabularies() throws IOException {
 		InputStream inStream = getPredefinedVocabularyFile();
 		if (inStream == null) {
@@ -107,7 +120,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 
 			// Import and Index the ontology...
 			try {
-				this.applicationContext.
+				this.context.
 					getVocabularySearcher().
 						importAndIndexVocabulary(strPrefix, strNamespace, strFetchURL);
 				this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
@@ -116,28 +129,18 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 				// Predefined vocabularies are not defined properly...
 				//   Ignore the exception, but log it...
 				if ( Util.isVerbose() ) {
-					logger.warn("Predefined vocabulary import failed: ", ex);
+					PredefinedVocabularyManager.logger.warn("Predefined vocabulary import failed: ", ex);
 					if ( Util.isVerbose(2) ) ex.printStackTrace();
 				}
 			}
 
 		}
 		buffReader.close();
-		applicationContext.getVocabularySearcher().update();
+		context.getVocabularySearcher().update();
 	}
 
 	protected InputStream getPredefinedVocabularyFile() {
 		return this.getClass().getResourceAsStream(PREDEFINED_VOCABS_FILE_NAME);
-	}
-
-	private void reconstructVocabulariesFromFile() throws IOException {
-		File vocabulariesFile =  new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
-		if (vocabulariesFile.exists() && vocabulariesFile.length() != 0) {
-			this.load();
-		}
-		else {
-			throw new FileNotFoundException();
-		}
 	}
 
 	private void save()	throws IOException {
@@ -146,7 +149,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             saveToFile(tempFile);
         }
 		catch (Exception ex) {
-            logger.error("ERROR: Project metadata save failed: ", ex);
+            PredefinedVocabularyManager.logger.error("ERROR: Project metadata save failed: ", ex);
 			if ( Util.isVerbose() ) ex.printStackTrace();
 			return;
         }

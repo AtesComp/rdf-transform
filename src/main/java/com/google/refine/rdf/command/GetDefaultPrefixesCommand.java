@@ -25,6 +25,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("Getting default prefixes...");
 		response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
         try{
@@ -39,7 +40,13 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 			throws ServletException, IOException {
 		String projectId = request.getParameter("project");
 		VocabularyList listVocabs = this.getRDFTransform(request).getPrefixes();
+		if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("Existing prefixes: size=" + listVocabs.size());
+		if ( listVocabs == null || listVocabs.isEmpty() ) {
+			listVocabs = this.getContext().getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
+			if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("Predefined prefixes: size=" + listVocabs.size());
+		}
 		for (Vocabulary vocab : listVocabs) {
+			if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("  Prefixes: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
 			Exception except = null;
 			boolean bError = false;
 			String strError = null;
@@ -65,11 +72,11 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 				// A Default Prefix vocabulary is not defined properly...
 				//   Ignore the exception, but log it...
 				if (bError) {// ...error...
-					logger.error("ERROR: " + strError + " vocabulary: ", except);
+					GetDefaultPrefixesCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
 					if ( Util.isVerbose() ) except.printStackTrace();
 				}
 				else { // ...warning...
-					if ( Util.isVerbose() ) logger.warn("Prefix exists: ", except);
+					if ( Util.isVerbose() ) GetDefaultPrefixesCommand.logger.warn("Prefix exists: ", except);
 				}
 				// ...continue processing the other vocabularies...
 			}

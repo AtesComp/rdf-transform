@@ -223,25 +223,14 @@ public class RDFTransform implements OverlayModel {
         }
 
         //
-        // Construct prefixesMap from "namespaces"...
+        // Construct thePrefixes from "namespaces"...
         //
         //  NOTE: The map "thePrefixes" is just a convenience map to store and look up vocabularies
         //      based on the prefix as a key.
-        VocabularyList thePrefixes = new VocabularyList();
         JsonNode jnodePrefixes = null;
         if ( jnodeRoot.has(Util.gstrNamespaces) ) {
             jnodePrefixes = jnodeRoot.get(Util.gstrNamespaces);
-            if ( jnodePrefixes.isObject() ) {
-                Iterator<Entry<String, JsonNode>> iterNodes = jnodePrefixes.fields();
-                Map.Entry<String, JsonNode> mePrefix;
-                while ( iterNodes.hasNext() ) {
-                    mePrefix = (Map.Entry<String, JsonNode>) iterNodes.next();
-                    String strPrefix = mePrefix.getKey();
-                    String strIRI    = mePrefix.getValue().asText();
-                    thePrefixes.add( new Vocabulary(strPrefix, strIRI) );
-                }
-                theTransform.setPrefixes(thePrefixes);
-            }
+            theTransform.setPrefixes(jnodePrefixes);
         }
         else {
             if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Namespaces!");
@@ -253,21 +242,7 @@ public class RDFTransform implements OverlayModel {
         JsonNode jnodeSubjectMappings = null;
         if ( jnodeRoot.has(Util.gstrSubjectMappings) ) {
             jnodeSubjectMappings = jnodeRoot.get(Util.gstrSubjectMappings);
-            List<ResourceNode> theRootNodes = new ArrayList<ResourceNode>();
-            if ( jnodeSubjectMappings.isArray() ) {
-                for (JsonNode jnodeSubject : jnodeSubjectMappings) {
-                    Node nodeRoot =
-                        Node.reconstructNode(
-                            RDFTransform.theReconstructor, jnodeSubject,
-                            theTransform.getBaseIRI(), thePrefixes);
-                    if (nodeRoot != null && nodeRoot instanceof ResourceNode) {
-                        theRootNodes.add( (ResourceNode) nodeRoot );
-                    }
-                    // Otherwise, non-resource nodes (literals, generic nodes) cannot be root nodes.
-                    // So, skip them.  They should never have been in the root node list anyway.
-                }
-            }
-            theTransform.setRoots(theRootNodes);
+            theTransform.setRoots(jnodeSubjectMappings);
         }
         else {
             if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Subjects!");
@@ -525,6 +500,7 @@ public class RDFTransform implements OverlayModel {
                 return;
             }
             this.thePrefixes.clear();
+
             if ( jnodePrefixes.isObject() ) {
                 Iterator<Entry<String, JsonNode>> iterNodes = jnodePrefixes.fields();
                 Map.Entry<String, JsonNode> mePrefix;

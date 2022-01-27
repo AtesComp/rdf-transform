@@ -5,14 +5,20 @@
  */
 class RDFTransformResourceDialog {
     #element;
+    #strLookForType;
+    #projectID;
     #dialog;
     #onDone;
 
     constructor(element, strLookForType, projectID, dialog, onDone) {
         this.#element = element;
+        this.#strLookForType = strLookForType;
+        this.#projectID = projectID;
         this.#dialog = dialog;
         this.#onDone = onDone;
+    }
 
+    show() {
         // Can we finish?  If not, there is no point in continuing...
         if ( ! this.#onDone ) {
             alert(
@@ -25,7 +31,7 @@ class RDFTransformResourceDialog {
         menu.html(
 '<div id="rdf-transform-menu-search" class="rdf-transform-menu-search">' +
   '<span>' +
-    $.i18n('rdft-dialog/search-for') + ' ' + strLookForType + ':' +
+    $.i18n('rdft-dialog/search-for') + ' ' + this.#strLookForType + ':' +
   '</span>' +
   '<input type="text" bind="rdftNewResourceIRI" >' +
 '</div>'
@@ -37,8 +43,8 @@ class RDFTransformResourceDialog {
         var elements = DOM.bind(menu);
         elements.rdftNewResourceIRI
         .suggestTerm(
-            {	"type"        : projectID.toString(),
-                "type_strict" : strLookForType,
+            {	"type"        : this.#projectID.toString(),
+                "type_strict" : this.#strLookForType,
                 "parent"      : '.rdf-transform-menu-search'
             }
         )

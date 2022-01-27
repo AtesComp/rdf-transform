@@ -43,6 +43,8 @@ public class PreviewRDFCommand extends Command {
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             RDFTransform theTransform = RDFTransform.reconstruct(jnodeRoot);
 
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("Given Transform:\n" + strTransform);
+
             //
             // Process Sample Limit...
             //
@@ -82,11 +84,6 @@ public class PreviewRDFCommand extends Command {
 
             this.strStatements = strwriterBase.getBuffer().toString();
             if ( Util.isVerbose(4) ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
-
-            if ( Util.isDebugMode() ) {
-                PreviewRDFCommand.logger.info("Given Transform:\n" + strTransform);
-                // ...follow with additional output if needed...
-            }
 
             // Send back to client...
             PreviewRDFCommand.respondJSON( response, new PreviewResponse(strStatements) );

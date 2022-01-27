@@ -5,7 +5,7 @@
  */
 class RDFTransformUIProperty {
     #dialog;
-    #property;
+    #property; // contains prefix, pathIRI, nodeObject
     #options;
     #parentUINode;
 
@@ -106,7 +106,7 @@ class RDFTransformUIProperty {
                     this.#getTypeName(this.#property)
                 )
             )
-            .click( (evt) => { this.#startEditProperty(evt); } );
+            .click( (evt) => { this.#editProperty(evt.target); } );
 
 
         $(this.#tdMain)
@@ -146,18 +146,6 @@ class RDFTransformUIProperty {
                 this.#property.nodeObject.properties.length > 0);
     }
 
-    #startEditProperty(evt) {
-        new RDFTransformResourceDialog(
-            evt.target, 'property', theProject.id, this.#dialog,
-            (obj) => {
-                this.#property.prefix  = obj.prefix;
-                this.#property.pathIRI = obj.pathIRI;
-                this.#dialog.updatePreview();
-                this.#renderMain();
-            }
-        );
-    }
-
     #getTypeName(theProperty) {
         if (! theProperty ) {
             return "<ERROR: No Property!>";
@@ -171,6 +159,22 @@ class RDFTransformUIProperty {
         else {
             return "Property?";
         }
+    }
+
+    #editProperty(element) {
+        var theDialog =
+            new RDFTransformResourceDialog(
+                element, 'property', theProject.id, this.#dialog,
+                (theProperty) => { this.#editPropertyInfo(theProperty); }
+            )
+        theDialog.show();
+    }
+
+    #editPropertyInfo(theProperty) {
+        this.#property.prefix  = theProperty.prefix;
+        this.#property.pathIRI = theProperty.pathIRI;
+        this.#renderMain();
+        this.#dialog.updatePreview();
     }
 
     getJSON() {

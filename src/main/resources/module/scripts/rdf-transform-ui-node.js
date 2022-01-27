@@ -948,12 +948,12 @@ class RDFTransformUINode {
     }
 
     #addRDFType(element) {
-        new RDFTransformResourceDialog(
-            element, 'class', theProject.id, this.#dialog,
-            (theType) => {
-                this.#addNodeRDFType(theType);
-            }
-        );
+        var theDialog =
+            new RDFTransformResourceDialog(
+                element, 'class', theProject.id, this.#dialog,
+                (theType) => { this.#addNodeRDFType(theType); }
+            );
+        theDialog.show();
     }
 
     #addNodeRDFType(theType) {
