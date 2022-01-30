@@ -187,9 +187,12 @@ class RDFTransformUIProperty {
                 theProperty.prefix = this.#property.prefix;
             }
 
-            theProperty.valueType = {};
-            theProperty.valueType.type = "iri";
+            // For properties, "iri" valueType is implied, so the following is not needed:
+            //theProperty.valueType = {};
+            //theProperty.valueType.type = "iri";
 
+            // TODO: Currently, all properties are "constant".  Change to allow
+            //      column with expression.
             theProperty.valueSource = {};
             theProperty.valueSource.source = "constant";
             theProperty.valueSource.constant = this.#property.pathIRI;
@@ -197,8 +200,8 @@ class RDFTransformUIProperty {
             if ("nodeObjectUI" in this && this.nodeObjectUI !== null) {
                 var nodeObjectJSON = this.nodeObjectUI.getJSON();
                 if (nodeObjectJSON !== null) {
-                    theProperty.subjectMappings = [];
-                    theProperty.subjectMappings.push(nodeObjectJSON);
+                    theProperty.objectMappings = [];
+                    theProperty.objectMappings.push(nodeObjectJSON);
                 }
             }
         }

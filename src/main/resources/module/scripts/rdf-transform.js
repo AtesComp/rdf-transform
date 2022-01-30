@@ -528,21 +528,26 @@ class RDFTransformDialog {
         return this.#theTransform.baseIRI;
     }
 
-    getPrefixes() {
-        return this.#theTransform.prefixes;
+    getNamespaces() {
+        return this.#theTransform.namespaces;
     }
 
     getJSON() {
+        var theTransform = {};
+        theTransform.extension = RDFTransform.g_strExtension;
+        theTransform.version   = RDFTransform.g_strVersion;
+
         // Get the current base IRI...
-        var strBaseIRI = this.#theTransform.baseIRI;
+        theTransform.baseIRI = this.#theTransform.baseIRI;
 
         // Get the current namespaces...
-        var listNamespaces = {};
+        theTransform.namespaces = {};
         if (this.prefixesManager.prefixes != null)
         {
             for (const strPrefix of this.prefixesManager.prefixes) {
                 if (strPrefix) {
-                    listNamespaces[strPrefix] = this.prefixesManager.prefixes[strPrefix];
+                    theTransform.namespaces[strPrefix] =
+                        this.prefixesManager.prefixes[strPrefix];
                 }
             }
         }
@@ -551,22 +556,16 @@ class RDFTransformDialog {
         //}
 
         // Get the current Subject Mapping nodes...
-        var arraySubjectMappings = [];
+        theTransform.subjectMappings = [];
         for (const nodeUI of this.#nodeUIs) {
             if (nodeUI) {
                 var node = nodeUI.getJSON();
                 if (node !== null) {
-                    arraySubjectMappings.push(node);
+                    theTransform.subjectMappings.push(node);
                 }
             }
         }
 
-        return {
-            "extension"       : RDFTransform.g_strExtension,
-            "version"         : RDFTransform.g_strVersion,
-            "baseIRI"         : strBaseIRI,
-            "namespaces"      : listNamespaces,
-            "subjectMappings" : arraySubjectMappings
-        };
+        return theTransform;
     }
 };

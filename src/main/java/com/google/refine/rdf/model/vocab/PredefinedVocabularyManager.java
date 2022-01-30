@@ -46,8 +46,10 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 		try {
 			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Attempting existing reconstruct...");
 			this.reconstructVocabulariesFromFile();
-			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...reconstructed");
-			return;
+			if ( ! predefinedVocabularies.isEmpty() ) {
+				if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...reconstructed");
+				return;
+			}
 		}
 		catch (FileNotFoundException ex) {
 			// Existing vocabularies are not found.
@@ -93,7 +95,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 			String strError = "Predefined Vocabulary resource not found!";
 			throw new IOException(strError);
 		}
-		BufferedReader buffReader = new BufferedReader(new InputStreamReader(inStream));
+		BufferedReader buffReader = new BufferedReader( new InputStreamReader(inStream) );
 		String strLine, strPrefix = null, strNamespace = null, strFetchURL = null;
 
 		//	Read ontology file lines...
@@ -109,7 +111,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 			// Are there enough entries?
 			if (astrTokens.length < 2)
 				continue;
-			
+
 			// Organize entries...
 			strPrefix    = astrTokens[0];
 			strNamespace = astrTokens[1];
@@ -142,6 +144,21 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 	protected InputStream getPredefinedVocabularyFile() {
 		return this.getClass().getResourceAsStream(PREDEFINED_VOCABS_FILE_NAME);
 	}
+
+    protected void load() throws IOException {
+    	File vocabsFile = new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
+    	ObjectMapper mapper = new ObjectMapper();
+		JsonNode jnodeVocabs = mapper.readTree(vocabsFile);
+		if ( jnodeVocabs.has(Util.gstrNamespaces) ) {
+			JsonNode jnodePrefixes = jnodeVocabs.get(Util.gstrNamespaces);
+			Iterator<Entry<String, JsonNode>> fields = jnodePrefixes.fields();
+			fields.forEachRemaining(prefix -> {
+				String strPrefix = prefix.getKey();
+				String strNamespace = prefix.getValue().asText();
+				this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
+			});
+		}
+    }
 
 	private void save()	throws IOException {
         File tempFile = new File(this.workingDir, "vocabs.temp.json");
@@ -177,27 +194,13 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         }
     }
 
-    protected void load() throws IOException {
-    	File vocabsFile = new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
-    	ObjectMapper mapper = new ObjectMapper();
-		JsonNode vocabs = mapper.readTree(vocabsFile);
-		JsonNode prefixes = vocabs.get("prefixes");
-		Iterator<Entry<String, JsonNode>> fields = prefixes.fields();
-		fields.forEachRemaining(prefix -> {
-			String strPrefix = prefix.getKey();
-			String strNamespace = prefix.getValue().asText();
-			this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
-		});
-    }
-
     private void write(JsonGenerator writer) throws JsonGenerationException, IOException {
     	writer.writeStartObject();
-    	writer.writeFieldName("prefixes");
-    	writer.writeStartArray();
-    	for (Vocabulary vocab : this.predefinedVocabularies) {
+		writer.writeObjectFieldStart(Util.gstrNamespaces);
+		for (Vocabulary vocab : this.predefinedVocabularies) {
     		vocab.write(writer);
     	}
-    	writer.writeEndArray();
+		writer.writeEndObject();
 		writer.writeEndObject();
 		writer.flush();
 	}

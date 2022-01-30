@@ -1,8 +1,9 @@
 package com.google.refine.rdf.command;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.rdf.model.vocab.VocabularyList;
 import com.google.refine.util.ParsingUtilities;
@@ -32,11 +33,11 @@ public class SavePrefixesCommand extends RDFTransformCommand {
         try {
 			// Update prefixes...
 			VocabularyList listVocabs = new VocabularyList();
-			ArrayNode arrayPrefixes =
-				ParsingUtilities.evaluateJsonStringToArrayNode( request.getParameter("prefixes") );
+			ObjectNode thePrefixes =
+				ParsingUtilities.evaluateJsonStringToObjectNode( request.getParameter(Util.gstrNamespaces) );
 
 
-			Iterator<Entry<String, JsonNode>> fields = arrayPrefixes.fields();
+			Iterator<Entry<String, JsonNode>> fields = thePrefixes.fields();
 			fields.forEachRemaining(prefix -> {
 				String strPrefix = prefix.getKey();
 				String strNamespace = prefix.getValue().asText();

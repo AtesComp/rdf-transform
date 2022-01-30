@@ -30,8 +30,8 @@ public abstract class RDFTransformCommand extends Command {
 		// as it may have changed since last call...
 		Util.setPreferencesByPreferenceStore();
 		try {
-            Project project = this.getProject(request);
-		    return RDFTransform.getRDFTransform(this.context, project);
+            Project theProject = this.getProject(request);
+		    return RDFTransform.getRDFTransform(this.context, theProject);
 		}
 		catch (ServletException ex) {
 			throw new ServletException("Unable to retrieve Project!", ex);

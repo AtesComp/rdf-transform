@@ -23,8 +23,8 @@ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,           
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY           
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -121,7 +121,7 @@ function registerServerSide() {
 	RefineServlet.registerCommand( module, "initialize",             new RDFTCmd.InitializationCommand(appContext) );
 	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTCmd.SaveRDFTransformCommand(appContext) );
     RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTCmd.SaveBaseIRICommand(appContext) );
-    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTCmd.PreviewRDFCommand() );
+    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTCmd.PreviewRDFCommand(appContext) );
     RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTCmd.PreviewRDFExpressionCommand() );
     RefineServlet.registerCommand( module, "validate-iri",           new RDFTCmd.ValidateIRICommand() );
 	// Vocabs commands
@@ -274,7 +274,7 @@ function init() {
  * Process Function for external command requests.
  */
 function process(path, request, response) {
-	
+
     var method = request.getMethod();
 
 	if ( RDFTransformPrefs.DebugMode ) {

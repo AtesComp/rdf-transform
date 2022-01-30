@@ -70,7 +70,7 @@ public class Property {
         }
 
         JsonNode jnodePropertyMappings = jnodeParent.get(Util.gstrPropertyMappings);
-        if ( jnodePropertyMappings.isArray() ) {
+        if ( ! jnodePropertyMappings.isArray() ) {
             return;
         }
 

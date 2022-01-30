@@ -20,19 +20,19 @@ class RDFTransformPrefixesManager {
 
 	async initPrefixes() {
 		this.#dialog.thePrefixes.empty().html('<img src="images/small-spinner.gif" />');
-		this.prefixes = this.#dialog.getPrefixes(); // ...existing prefixes
+		this.prefixes = this.#dialog.getNamespaces(); // ...existing prefixes
 
 		if ( ! this.prefixes ) {
 			var data = null;
-			this.prefixes = []; // ...empty array, no prefixes
+			this.prefixes = {} // ...empty object, no prefixes
 			try {
 				data = await this.#getDefaultPrefixes();
 			}
 			catch (evt) {
 				// ...ignore error, no prefixes...
 			}
-			if (data !== null && data.prefixes) {
-				this.prefixes = data.prefixes; // ...new defaults prefixes
+			if (data !== null && data.namespaces) {
+				this.prefixes = data.namespaces; // ...new defaults prefixes
 			}
 			this.showPrefixes(this.prefixes);
 		}
@@ -45,7 +45,7 @@ class RDFTransformPrefixesManager {
 
 	resetPrefixes() {
 		this.#dialog.thePrefixes.empty().html('<img src="images/small-spinner.gif" />');
-		this.prefixes = this.#dialog.getPrefixes();
+		this.prefixes = this.#dialog.getNamespaces();
 		this.#savePrefixes();
 		this.showPrefixes();
 	}
@@ -55,7 +55,7 @@ class RDFTransformPrefixesManager {
 	 *
 	 * 	Get the Default Prefixes from the server.  As this method returns a Promise, it expects
 	 *  the caller is an "async" function "await"ing the results of the Promise.
-	 * 
+	 *
 	 */
 	#getDefaultPrefixes() {
 		return new Promise(
@@ -84,7 +84,7 @@ class RDFTransformPrefixesManager {
 						data : {
 							"project"    : theProject.id,
 							"csrf_token" : token,
-							"prefixes"   : JSON.stringify(this.prefixes)
+							"namespaces" : JSON.stringify(this.prefixes)
 						},
 						dataType : "json",
 						success : (data) => { if (onDoneSave) { onDoneSave(data); } }
@@ -147,7 +147,7 @@ class RDFTransformPrefixesManager {
 			iIndex++;
 		}
 	}
-	
+
 	addPrefix(strMessage, strPrefixGiven, onDoneAdd) {
 		var widget = new RDFTransformPrefixAdder(this);
 		widget.show(
@@ -171,7 +171,7 @@ class RDFTransformPrefixesManager {
 			}
 		);
 	}
-	
+
 	hasPrefix(strPrefixFind) {
 		for (const prefix of this.prefixes) {
 			if (prefix === strPrefixFind) {

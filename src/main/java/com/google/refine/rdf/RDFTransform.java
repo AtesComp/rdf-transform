@@ -33,7 +33,7 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      *
      *  Class Classes
-     * 
+     *
      ****************************************************************************************************
      ****************************************************************************************************/
 
@@ -45,7 +45,7 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      *
      *  Class Variables
-     * 
+     *
      ****************************************************************************************************
      ****************************************************************************************************/
 
@@ -69,7 +69,7 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      *
      *  Class Methods
-     * 
+     *
      ****************************************************************************************************
      ****************************************************************************************************/
 
@@ -96,7 +96,7 @@ public class RDFTransform implements OverlayModel {
      * Method reconstruct()
      *
      *      Reconstruct an RDF Transform, it's Subject, Property, and Type Mappings.
-     * 
+     *
      *      RDF Transform Nodes are use to construct (Subject, Property, Object) tuples for a
      *      data transform to RDF.
      *      An RDFTransform contains the following:
@@ -104,7 +104,7 @@ public class RDFTransform implements OverlayModel {
      *        Namespaces - a mapping of short prefixes to namespace descriptors
      *        Subject Mappings - a list of Transform Nodes that serve as Subjects and contain
      *            Property Mappings and Type Mappings
-     *        
+     *
      *      Transform Nodes are column or constant descriptors that represent Subjects,
      *          Properties, and Objects.
      *      Subjects and Objects are column or constant descriptors that represent graph nodes.
@@ -112,7 +112,7 @@ public class RDFTransform implements OverlayModel {
      *          Objects, i.e. graph edges, and provide context.
      *      Types use the "rdf:type" property to describe Objects that define a Subject's
      *          type.
-     * 
+     *
      *      Nodes and Edges:
      *      --------------------
      *      Generally, there are two Transform Node categories - Resources and Literals.
@@ -144,19 +144,19 @@ public class RDFTransform implements OverlayModel {
      *          specialized, graph local, naming scheme of the form "_:somename" where
      *          "somename" may be user specified as a placeholder for queries or inserts and
      *          system specified for query results.
-     * 
+     *
      *      Subject Mappings:
      *      --------------------
      *      A Subject Mapping is a list of subject elements.  Each subject element is a
      *          composite of a single subject, a Property Mapping, and a Type Mapping.  The
      *          subjects of the Subject Mapping list are the root nodes of the RDF Transform.
-     * 
+     *
      *      Property Mapping:
      *      --------------------
      *      A Property Mapping is a a list of property elements.  Each property element is a
      *          composite of a single property and an Object Mapping.  A Property Mapping is
      *          held by each subject to describe its general tuples.
-     * 
+     *
      *      Type Mappings:
      *      --------------------
      *      A Type Mapping is a list of resource elements that describe the RDF types that
@@ -165,7 +165,7 @@ public class RDFTransform implements OverlayModel {
      *          holds resources that provide type information for a subject.  A Type Mapping is
      *          held by a subject to describe its type tuples.  This completes a type
      *          description (Subject, Property, Object) tuple.
-     * 
+     *
      *      Object Mappings:
      *      --------------------
      *      An Object Mapping is a list of object elements.  Objects may also serve as subjects
@@ -175,6 +175,11 @@ public class RDFTransform implements OverlayModel {
      *      description (Subject, Property, Object) tuple.
      */
     static public RDFTransform reconstruct(JsonNode jnodeRoot) {
+        RDFTransform theTransform = RDFTransform.reconstruct(null, jnodeRoot);
+        return theTransform;
+    }
+
+    static public RDFTransform reconstruct(ApplicationContext theContext, JsonNode jnodeRoot) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Reconstructing overlay...");
 
         if (jnodeRoot == null) {
@@ -182,23 +187,21 @@ public class RDFTransform implements OverlayModel {
             return null;
         }
 
-        RDFTransform theTransform = new RDFTransform();
+        RDFTransform theTransform = new RDFTransform(theContext);
 
         //
         // JSON Header...
         //
         String strExtension = null;
-        JsonNode jnodeExtension = jnodeRoot.get(Util.gstrExtension);
-        if (jnodeExtension != null) {
-            strExtension = jnodeExtension.asText();
+        if ( jnodeRoot.has(Util.gstrExtension) ) {
+            strExtension = jnodeRoot.get(Util.gstrExtension).asText();
             if (strExtension == null) {
                 strExtension = "";
             }
         }
         String strVersion = null;
-        JsonNode jnodeVersion = jnodeRoot.get(Util.gstrVersion);
-        if (jnodeVersion != null) {
-            strVersion = jnodeVersion.asText();
+        if ( jnodeRoot.has(Util.gstrVersion) ) {
+            strVersion = jnodeRoot.get(Util.gstrVersion).asText();
             if (strVersion == null) {
                 strVersion = "";
             }
@@ -213,10 +216,8 @@ public class RDFTransform implements OverlayModel {
         //
         // Construct Base IRI from "baseIRI"...
         //
-        JsonNode jnodeBaseIRI = null;
         if ( jnodeRoot.has(Util.gstrBaseIRI) ) {
-            jnodeBaseIRI = jnodeRoot.get(Util.gstrBaseIRI);
-            theTransform.setBaseIRI(jnodeBaseIRI);
+            theTransform.setBaseIRI( jnodeRoot.get(Util.gstrBaseIRI) );
         }
         else {
             if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Base IRI!");
@@ -225,12 +226,8 @@ public class RDFTransform implements OverlayModel {
         //
         // Construct thePrefixes from "namespaces"...
         //
-        //  NOTE: The map "thePrefixes" is just a convenience map to store and look up vocabularies
-        //      based on the prefix as a key.
-        JsonNode jnodePrefixes = null;
         if ( jnodeRoot.has(Util.gstrNamespaces) ) {
-            jnodePrefixes = jnodeRoot.get(Util.gstrNamespaces);
-            theTransform.setPrefixes(jnodePrefixes);
+            theTransform.setPrefixes( jnodeRoot.get(Util.gstrNamespaces) );
         }
         else {
             if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Namespaces!");
@@ -239,10 +236,8 @@ public class RDFTransform implements OverlayModel {
         //
         // Construct listRootNodes from "subjectMappings"...
         //
-        JsonNode jnodeSubjectMappings = null;
         if ( jnodeRoot.has(Util.gstrSubjectMappings) ) {
-            jnodeSubjectMappings = jnodeRoot.get(Util.gstrSubjectMappings);
-            theTransform.setRoots(jnodeSubjectMappings);
+            theTransform.setRoots( jnodeRoot.get(Util.gstrSubjectMappings) );
         }
         else {
             if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Subjects!");
@@ -256,9 +251,12 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      *
      *  Instance Variables
-     * 
+     *
      ****************************************************************************************************
      ****************************************************************************************************/
+
+    @JsonIgnore
+    private ApplicationContext theContext;
 
     /*
      * Base IRI for Document
@@ -277,7 +275,7 @@ public class RDFTransform implements OverlayModel {
 
     /*
      * Prefix Mapping to Namespace
-     * 
+     *
      *   A defined Prefix mapping consists of a:
      *       1) Prefix - a short name for a Namespace
      *       2) Namespace - a full IRI
@@ -285,7 +283,7 @@ public class RDFTransform implements OverlayModel {
      *   For this mapping:
      *       Keys:   the Namespace Prefix
      *       Values: the full IRI Namespace
-     * 
+     *
      *   Example:
      *       Prefix  Namespace
      *       (Key)   (Value)
@@ -297,14 +295,14 @@ public class RDFTransform implements OverlayModel {
      *       http://xmlns.com/foaf/0.1/knows
      *   a CIRIE using the above prefix is:
      *       foaf:knows
-     */ 
+     */
     @JsonIgnore
     private VocabularyList thePrefixes;
 
     /*
      * Root Nodes for Document
      *
-     *  A root node is any subject element  designated in the transform.
+     *  A root node is any subject element designated in the transform.
      */
     //@JsonProperty("rootNodes")
     @JsonIgnore
@@ -314,7 +312,7 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      *
      *  Instance Methods
-     * 
+     *
      ****************************************************************************************************
      ****************************************************************************************************/
 
@@ -322,19 +320,25 @@ public class RDFTransform implements OverlayModel {
         Constructors
     */
     @JsonCreator
-    public RDFTransform() {
+    public RDFTransform(ApplicationContext theContext) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Created empty overlay");
+
+        this.theContext = theContext;
     }
 
     public RDFTransform(ApplicationContext theContext, Project theProject)
             throws IOException {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Creating base overlay for project from context...");
 
+        this.theContext = theContext;
+
         this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
+
        	this.thePrefixes = theContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
        	// Copy the index of predefined vocabularies...
        	//   Each project will have its own copy of these predefined vocabs to enable, delete, update...
        	theContext.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
+
         this.theRootNodes = new ArrayList<ResourceNode>();
 
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Created overlay");
@@ -450,8 +454,12 @@ public class RDFTransform implements OverlayModel {
                 }
             }
         }
+
         if (iriBase != null) {
             this.theBaseIRI = iriBase;
+        }
+        else {
+            this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
         }
     }
 
@@ -510,6 +518,9 @@ public class RDFTransform implements OverlayModel {
                     String strIRI    = mePrefix.getValue().asText();
                     this.thePrefixes.add( new Vocabulary(strPrefix, strIRI) );
                 }
+            }
+            if ( this.thePrefixes.isEmpty() ) {
+                this.thePrefixes = theContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
             }
         }
     }
@@ -619,10 +630,10 @@ public class RDFTransform implements OverlayModel {
 
     /*
      * Method: write(JsonGenerator theWriter)
-     * 
+     *
      * This write() method produces the JSON object containing the entire RDF Transform template.
      * The template's format is:
-     * 
+     *
      * The Base IRI
      * The Namespaces ( "namespaces" ) containing each namespace keyed to its prefix
      * The Subject Mappings array of Subjects ( "subjectMappings" ) consisting of
@@ -642,7 +653,7 @@ public class RDFTransform implements OverlayModel {
      *              the Object's Source (valueSource)
      *              the Object's Type (valueType) [Datatype for literals]
      *              the Object's Expression (expression)
-     * 
+     *
      * "baseIRI" : an IRI
      * "namespaces" : {
      *      a prefix : a namespace IRI,
@@ -657,7 +668,7 @@ public class RDFTransform implements OverlayModel {
      *      },
      *      ...
      * ]
-     * 
+     *
      * "typeMappings" : [
      *      {   "prefix" : a prefix,
      *          "valueSource" : { },
@@ -681,9 +692,9 @@ public class RDFTransform implements OverlayModel {
      *      },
      *      ...
      * ]
-     * 
+     *
      * "prefix" : a prefix from "namespaces"
-     * 
+     *
      * "valueSource" : {
      *      "source": a source ["row_index", "record_id", "constant", "column", "expression"],
      *    for "constant":
@@ -691,7 +702,7 @@ public class RDFTransform implements OverlayModel {
      *    for "column":
      *      "columnName": a column name from the data store
      * }
-     * 
+     *
      * "valueType" : {
      *      "type": a type ["iri", "literal", "language_literal", "datatype_literal", "value_bnode", "bnode"],
      *    for "iri":
@@ -706,7 +717,7 @@ public class RDFTransform implements OverlayModel {
      *          "expression": { },
      *      }
      * }
-     *      
+     *
      * "expression": {
      *      "language": a code language such as "grel",
      *      "code": the code language expression

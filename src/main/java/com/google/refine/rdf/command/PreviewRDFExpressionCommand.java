@@ -35,7 +35,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
     private JsonNode theRowIndices = null;
     private String strColumnName = null;
     private ParsedIRI baseIRI = null;
-            
+
     private JsonGenerator theWriter = null;
 
 	@Override
@@ -52,7 +52,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             //
             // Process parameters...
             //
-            this.theProject = getProject(request);
+            this.theProject = this.getProject(request);
 
             this.strExpression = request.getParameter("expression");
 
@@ -207,7 +207,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                 }
             }
             this.theWriter.writeEndArray();
-            
+
             //
             // Write Index for Row / Record...
             //

@@ -44,7 +44,7 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             if (jnodeRoot == null) {
                 return;
             }
-            RDFTransform theTransform = RDFTransform.reconstruct(jnodeRoot);
+            RDFTransform theTransform = RDFTransform.reconstruct(this.getContext(), jnodeRoot);
 
             // Process the "save" operations...
             AbstractOperation opSave = new SaveRDFTransformOperation(theTransform);

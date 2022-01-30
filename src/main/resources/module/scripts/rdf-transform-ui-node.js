@@ -190,7 +190,7 @@ class RDFTransformUINode {
             else if ("columnName" in this.#node) {
                 strSPAN = this.#node.columnName + " " + strNodeLabel;
             }
- 
+
             var span =
                 $("<span></span>")
                 .addClass("rdf-transform-node-label")
@@ -517,7 +517,7 @@ class RDFTransformUINode {
         //
         // Click Events...
         //
-    
+
         // All Content radios except Language and Custom...
         elements.rdf_content_iri_radio
         .add(elements.rdf_content_txt_radio)
@@ -617,7 +617,7 @@ class RDFTransformUINode {
     //      node.value      | Const Value  | MUST: Non-Blank Consts |
     //
     //      All Nodes
-    //          node.nodeType = ("cell-as-" or "") + ("resource" or "literal" or "blank") 
+    //          node.nodeType = ("cell-as-" or "") + ("resource" or "literal" or "blank")
     //      Index Node -----------------------| Column Node ----------------------| Constant Node --------------------|
     //          node.isIndex == true          |     node.isIndex == false         |                                   |
     //                                        |     node.columnName               |                                   |
@@ -806,7 +806,7 @@ class RDFTransformUINode {
 
         // Add Row Number Radio Row...
         // NOTE: Always ResourceNode
-        this.#buildIndexChoice(tableColumns, isResource); 
+        this.#buildIndexChoice(tableColumns, isResource);
 
         //
         // Add Column Name Radio Rows...
@@ -850,7 +850,7 @@ class RDFTransformUINode {
          var footer =
             $('<div></div>')
             .addClass("dialog-footer");
-     
+
          var buttonOK =
             $('<button></button>')
             .addClass('button')
@@ -883,7 +883,7 @@ class RDFTransformUINode {
 
         footer.append(buttonOK);
         footer.append(buttonCancel);
-    
+
         /*--------------------------------------------------
          * Assemble Dialog
          *--------------------------------------------------
@@ -1039,13 +1039,13 @@ class RDFTransformUINode {
     }
 
     getJSON() {
-        var result = {};
-        result.valueSource = {};
-        result.valueType = {};
+        var theNode = {};
+        theNode.valueSource = {};
+        theNode.valueType = {};
         var bGetProperties = false;
 
         if ("namespace" in this.#node) {
-            result.namespace = this.#node.namespace;
+            theNode.namespace = this.#node.namespace;
         }
 
         //
@@ -1061,11 +1061,11 @@ class RDFTransformUINode {
             }
 
             if (bIsIndex) {
-                result.valueSource.source = RDFTransform.g_strExpressionSource;
+                theNode.valueSource.source = RDFTransform.g_strExpressionSource;
             }
             else {
-                result.valueSource.source = "column";
-                result.valueSource.columnName = this.#node.columnName;
+                theNode.valueSource.source = "column";
+                theNode.valueSource.columnName = this.#node.columnName;
             }
         }
         //
@@ -1076,16 +1076,16 @@ class RDFTransformUINode {
                 return null;
             }
 
-            result.valueSource.source = "constant";
-            result.valueSource.constant = this.#node.value;
+            theNode.valueSource.source = "constant";
+            theNode.valueSource.constant = this.#node.value;
         }
 
         //
         // RESOURCE Nodes...
         //
-        if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE || 
+        if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CRESOURCE ||
             this.#node.nodeType == RDFTransformCommon.g_strRDFT_RESOURCE ) {
-            result.valueType.type = "iri";
+            theNode.valueType.type = "iri";
             bGetProperties = true;
         }
         //
@@ -1094,24 +1094,24 @@ class RDFTransformUINode {
         else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CLITERAL ||
                  this.#node.nodeType == RDFTransformCommon.g_strRDFT_LITERAL ) {
             if ("dataType" in this.#node) {
-                result.valueType.type = "datatype_literal";
-                result.valueType.datatype = {};
-                result.valueType.datatype.namespace = this.#node.dataType.namespace;
-                result.valueType.datatype.valueSource = {};
-                result.valueType.datatype.valueSource.source = "constant";
-                result.valueType.datatype.valueSource.constant = this.#node.dataType.type;
+                theNode.valueType.type = "datatype_literal";
+                theNode.valueType.datatype = {};
+                theNode.valueType.datatype.namespace = this.#node.dataType.namespace;
+                theNode.valueType.datatype.valueSource = {};
+                theNode.valueType.datatype.valueSource.source = "constant";
+                theNode.valueType.datatype.valueSource.constant = this.#node.dataType.type;
                 if ("expression" in this.#node.dataType) {
-                    result.valueType.datatype.expression = {};
-                    result.valueType.datatype.expression.language = "grel";
-                    result.valueType.datatype.expression.code = this.#node.expression;
+                    theNode.valueType.datatype.expression = {};
+                    theNode.valueType.datatype.expression.language = "grel";
+                    theNode.valueType.datatype.expression.code = this.#node.expression;
                 }
             }
             else if ("language" in this.#node) {
-                result.valueType.type = "language_literal";
-                result.valueType.language = this.#node.language;
+                theNode.valueType.type = "language_literal";
+                theNode.valueType.language = this.#node.language;
             }
             else {
-                result.valueType.type = "literal";
+                theNode.valueType.type = "literal";
             }
         }
         //
@@ -1120,10 +1120,10 @@ class RDFTransformUINode {
         else if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK ||
                  this.#node.nodeType == RDFTransformCommon.g_strRDFT_BLANK) {
             if (this.#node.nodeType == RDFTransformCommon.g_strRDFT_CBLANK) {
-                result.valueType.type = "bnode";
+                theNode.valueType.type = "bnode";
             }
             else {
-                result.valueType.type = "value_bnode";
+                theNode.valueType.type = "value_bnode";
             }
             bGetProperties = true;
         }
@@ -1132,14 +1132,14 @@ class RDFTransformUINode {
         // EXPRESSION...
         ///
         if ("expression" in this.#node && this.#node.expression !== "value") {
-            result.expression = {};
-            result.expression.language = "grel";
-            result.expression.code = this.#node.expression;
+            theNode.expression = {};
+            theNode.expression.language = "grel";
+            theNode.expression.code = this.#node.expression;
         }
 
         if (bGetProperties) {
             if ("rdfTypes" in this.#node && this.#node.rdfTypes.length > 0) {
-                result.typeMappings = [];
+                theNode.typeMappings = [];
                 var objType;
                 for (const rdfType of this.#node.rdfTypes) {
                     objType = {};
@@ -1150,21 +1150,21 @@ class RDFTransformUINode {
                         "source"   : "constant",
                         "constant" : rdfType.pathIRI
                     };
-                    result.typeMappings.push(objType);
+                    theNode.typeMappings.push(objType);
                 }
             }
 
             if (this.#propertyUIs && this.#propertyUIs.length > 0) {
-                result.propertyMappings = [];
+                theNode.propertyMappings = [];
                 for (const propertyUI of this.#propertyUIs) {
                     const property = propertyUI.getJSON();
                     if (property !== null) {
-                        result.propertyMappings.push(property);
+                        theNode.propertyMappings.push(property);
                     }
                 }
             }
         }
 
-        return result;
+        return theNode;
     }
 }

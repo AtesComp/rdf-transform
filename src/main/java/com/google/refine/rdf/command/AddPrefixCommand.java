@@ -10,8 +10,8 @@ import com.google.refine.rdf.ApplicationContext;
 
 public class AddPrefixCommand extends RDFTransformCommand {
 
-	public AddPrefixCommand(ApplicationContext ctxt) {
-		super(ctxt);
+	public AddPrefixCommand(ApplicationContext context) {
+		super(context);
 	}
 
 	@Override

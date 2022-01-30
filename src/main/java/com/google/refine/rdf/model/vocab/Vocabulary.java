@@ -8,8 +8,13 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @JsonIgnoreType
 public class Vocabulary {
+	static private final Logger logger = LoggerFactory.getLogger("RDFT:Vocabulary");
+
 	private String strPrefix;		// Short name that represents the Namespace
 	private String strNamespace;	// The fully qualified Namespace
 
@@ -20,28 +25,28 @@ public class Vocabulary {
     }
 
 	public String getPrefix() {
-		return strPrefix;
+		return this.strPrefix;
 	}
 
 	public String getNamespace() {
-		return strNamespace;
+		return this.strNamespace;
 	}
 
 	@Override
 	public int hashCode() {
-		return strPrefix.hashCode();
+		return this.strPrefix.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object object) {
 		if ( object != null && object.getClass().equals( this.getClass() ) ) {
-			return strPrefix.equals( ( (Vocabulary) object).getPrefix());
+			return this.strPrefix.equals( ( (Vocabulary) object).getPrefix());
 		}
 		return false;
 	}
 
     public void write(JsonGenerator theWriter)
 			throws JsonGenerationException, IOException {
-        theWriter.writeStringField(strPrefix, strNamespace);
+        theWriter.writeStringField(this.strPrefix, this.strNamespace);
 	}
 }

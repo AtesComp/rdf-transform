@@ -1,5 +1,6 @@
 package com.google.refine.rdf.command;
 
+import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.operation.PreviewRDFRecordVisitor;
@@ -22,6 +23,7 @@ import java.io.StringWriter;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+//import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.slf4j.Logger;
@@ -29,8 +31,13 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewRDFCommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
+    private ApplicationContext theContext;
 
     public String strStatements;
+
+	public PreviewRDFCommand(ApplicationContext context) {
+		this.theContext = context;
+	}
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -41,9 +48,15 @@ public class PreviewRDFCommand extends Command {
 
             String strTransform = request.getParameter(RDFTransform.KEY);
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
-            RDFTransform theTransform = RDFTransform.reconstruct(jnodeRoot);
+            RDFTransform theTransform = RDFTransform.reconstruct(this.theContext, jnodeRoot);
 
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("Given Transform:\n" + strTransform);
+            //if ( Util.isDebugMode() ) {
+            //    PreviewRDFCommand.logger.info( "Given Transform:\n" + strTransform );
+            //    StringWriter theStringWriter = new StringWriter();
+            //    JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(theStringWriter);
+            //    theTransform.write(jsonWriter);
+            //    PreviewRDFCommand.logger.info( "Processed Transform:\n" + theStringWriter.getBuffer().toString() );
+            //}
 
             //
             // Process Sample Limit...
@@ -84,6 +97,7 @@ public class PreviewRDFCommand extends Command {
 
             this.strStatements = strwriterBase.getBuffer().toString();
             if ( Util.isVerbose(4) ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
+            else if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
 
             // Send back to client...
             PreviewRDFCommand.respondJSON( response, new PreviewResponse(strStatements) );

@@ -51,9 +51,9 @@ abstract public class Node {
      */
 
     static public Node reconstructNode(
-                            RDFTransform.Reconstructor theReconstructor,
+                            RDFTransform.Reconstructor theNodeReconstructor,
                             JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
-        Objects.requireNonNull(theReconstructor);
+        Objects.requireNonNull(theNodeReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, thePrefixes);
     }
@@ -194,7 +194,6 @@ abstract public class Node {
         LiteralNode lnodeLiteral = null;
 
         // Resource types...
-        // TODO: Adjust all resource node classes to take prefix reference
         if (bResource) {
             if ( strType.equals(Util.gstrIRI) ) {
                 if ( bValueNode ) {
@@ -213,12 +212,12 @@ abstract public class Node {
             else if ( strType.equals(Util.gstrValueBNode) ) {
                 rnodeResource = new ConstantBlankNode(strValue);
             }
+
             // Check Resource creation...
             if (rnodeResource == null) {
                 Node.logger.error("ERROR: Bad Node: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
             }
-
-            if ( rnodeResource != null ) {
+            else {
                 //
                 // Construct Types from "typeMappings"...
                 //
@@ -381,9 +380,9 @@ abstract public class Node {
 
     /*
      *  Method setObjectParameters()
-     * 
+     *
      *  Copy the parameters from the given Property resource to this Node object.
-     * 
+     *
      */
     @JsonIgnore
 	protected void setObjectParameters(ResourceNode nodeProperty) {
