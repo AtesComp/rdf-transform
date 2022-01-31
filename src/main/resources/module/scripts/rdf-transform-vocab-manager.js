@@ -45,27 +45,27 @@ class RDFTransformVocabManager {
 		);
 	}
 
-	#getDeleteHandler(name) {
+	#getDeleteHandler(strPrefix) {
 		return (evtHandler) => {
 			evtHandler.preventDefault();
-			var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + name);
+			var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
 
 			Refine.wrapCSRF(
 				(token) => {
 					$.post(
 						'command/rdf-transform/remove-prefix',
 						{
-							'name': name,
+							'prefix': strPrefix,
 							'project': theProject.id,
 							'csrf_token': token,
 						},
 						(data) => {
 							dismissBusy();
 							if (data.code === 'error') {
-								alert($.i18n('rdft-vocab/error-deleting') + ': ' + name);
+								alert($.i18n('rdft-vocab/error-deleting') + ': ' + strPrefix);
 							}
 							else {
-								this.#prefixesManager.removePrefix(name);
+								this.#prefixesManager.removePrefix(strPrefix);
 							}
 							this.#renderBody();
 						}
@@ -75,20 +75,20 @@ class RDFTransformVocabManager {
 		};
 	}
 
-	#getRefreshHandler(name, iri) {
+	#getRefreshHandler(strPrefix, strNamespace) {
 		return (evtHandler) => {
 			evtHandler.preventDefault();
 			if ( window.confirm(
-					$.i18n('rdft-vocab/desc-one') + ' "' + iri + '"\n' +
+					$.i18n('rdft-vocab/desc-one') + ' "' + strNamespace + '"\n' +
 					$.i18n('rdft-vocab/desc-two') ) )
 			{
 				var dismissBusy =
-					DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + name);
+					DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
 				Refine.wrapCSRF(
 					(token) => {
 						$.post('command/rdf-transform/refresh-prefix',
-							{	'name': name,
-								'iri': iri,
+							{	'prefix': strPrefix,
+								'namespace': strNamespace,
 								'project': theProject.id,
 								'csrf_token': token
 							},
@@ -117,22 +117,21 @@ class RDFTransformVocabManager {
 		);
 
 		var bEven = false;
-		for (const prefix of this.#prefixesManager.prefixes) {
-			var name = prefix.name;
-			var iri = prefix.iri;
+		for (const strPrefix in this.#prefixesManager.prefixes) {
+			var strNamespace = this.#prefixesManager.prefixes[strPrefix];
 			var delete_handle =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/delete') )
 				.attr('href', '#')
-				.click( this.#getDeleteHandler(name) );
+				.click( this.#getDeleteHandler(strPrefix) );
 			var refresh_handle =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/refresh') )
 				.attr('href', '#')
-				.click( this.#getRefreshHandler(name, iri) );
+				.click( this.#getRefreshHandler(strPrefix, strNamespace) );
 			var tr = $('<tr/>').addClass(bEven ? 'rdf-table-even' : 'rdf-table-odd')
-				.append($('<td>').text(prefix.name))
-				.append($('<td>').text(prefix.iri))
+				.append($('<td>').text(strPrefix))
+				.append($('<td>').text(strPrefix.iri))
 				.append($('<td>').html(delete_handle))
 				.append($('<td>').html(refresh_handle));
 			table.append(tr);

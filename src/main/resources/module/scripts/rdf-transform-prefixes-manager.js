@@ -84,7 +84,7 @@ class RDFTransformPrefixesManager {
 						data : {
 							"project"    : theProject.id,
 							"csrf_token" : token,
-							"namespaces" : JSON.stringify(this.prefixes)
+							"namespaces" : this.prefixes
 						},
 						dataType : "json",
 						success : (data) => { if (onDoneSave) { onDoneSave(data); } }
@@ -101,7 +101,7 @@ class RDFTransformPrefixesManager {
 
 	showPrefixes() {
 		this.#dialog.thePrefixes.empty();
-		for (const strPrefix of this.prefixes) {
+		for (const strPrefix in this.prefixes) {
 			this.#renderPrefix(strPrefix, this.prefixes[strPrefix]);
 		}
 		// Add button...
@@ -139,7 +139,7 @@ class RDFTransformPrefixesManager {
 
 	removePrefix(strPrefixFind) {
 		var iIndex = 0;
-		for (const strPrefix of this.prefixes) {
+		for (const strPrefix in this.prefixes) {
 			if (strPrefixFind === strPrefix) {
 				this.prefixes.splice(iIndex, 1);
 				iIndex--;
@@ -158,10 +158,7 @@ class RDFTransformPrefixesManager {
 				//		prefix information, so no checks are required here.
 
 				// Add the Prefix and its Namespace...
-				var obj = {
-					[strPrefix] : strNamespace
-				}
-				this.prefixes.push(obj);
+				this.prefixes[strPrefix] = strNamespace;
 				this.#savePrefixes();
 				this.showPrefixes();
 
@@ -173,8 +170,8 @@ class RDFTransformPrefixesManager {
 	}
 
 	hasPrefix(strPrefixFind) {
-		for (const prefix of this.prefixes) {
-			if (prefix === strPrefixFind) {
+		for (const strPrefix in this.prefixes) {
+			if (strPrefix === strPrefixFind) {
 				return true;
 			}
 		}
@@ -182,7 +179,7 @@ class RDFTransformPrefixesManager {
 	}
 
 	getNamespaceOfPrefix(strPrefixFind) {
-		for (const strPrefix of this.prefixes) {
+		for (const strPrefix in this.prefixes) {
 			if (strPrefix === strPrefixFind) {
 				return this.prefixes[strPrefix];
 			}
@@ -226,9 +223,9 @@ class RDFTransformPrefixesManager {
 		if ( !objIRI.prefix ) {
 			return null;
 		}
-		for (const prefix of RDFTransformPrefixesManager.globalPrefixes) {
-			if (prefix === objIRI.prefix) {
-				return RDFTransformPrefixesManager.globalPrefixes[prefix] + objIRI.localPart;
+		for (const strPrefix in RDFTransformPrefixesManager.globalPrefixes) {
+			if (strPrefix === objIRI.prefix) {
+				return RDFTransformPrefixesManager.globalPrefixes[strPrefix] + objIRI.localPart;
 			}
 		}
 		return null;

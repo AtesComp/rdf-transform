@@ -25,8 +25,8 @@ public class RefreshPrefixCommand extends RDFTransformCommand{
 			RefreshPrefixCommand.respondCSRFError(response);
 			return;
 		}
-		String strPrefix    = request.getParameter("name");
-		String strNamespace = request.getParameter("iri");
+		String strPrefix    = request.getParameter("prefix");
+		String strNamespace = request.getParameter("namespace");
 		String strProjectID = request.getParameter("project");
 		this.getRDFTransform(request).removePrefix(strPrefix);
 

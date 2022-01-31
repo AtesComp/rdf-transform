@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.Util;
 import com.google.refine.util.ParsingUtilities;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -22,7 +23,7 @@ public class SuggestNamespaceCommand extends RDFTransformCommand {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String strPrefix = request.getParameter("prefix");
+		String strPrefix = request.getParameter(Util.gstrPrefix);
 		String strNamespace = this.getContext().getPrefixManager().getNamespace(strPrefix);
 		try {
 			response.setCharacterEncoding("UTF-8");
@@ -31,14 +32,15 @@ public class SuggestNamespaceCommand extends RDFTransformCommand {
 	        JsonGenerator jgWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
             jgWriter.writeStartObject();
             jgWriter.writeStringField("code", "ok");
-            jgWriter.writeStringField("namespace", strNamespace);
+            jgWriter.writeStringField(Util.gstrNamespace, strNamespace);
             jgWriter.writeEndObject();
             jgWriter.flush();
             jgWriter.close();
             writer.flush();
             writer.close();
-		} catch(Exception e) {
-			respondException(response, e);
+		}
+		catch (Exception ex) {
+			respondException(response, ex);
 		}
 	}
 

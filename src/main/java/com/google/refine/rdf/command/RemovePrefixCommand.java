@@ -23,12 +23,12 @@ public class RemovePrefixCommand extends RDFTransformCommand{
 			RemovePrefixCommand.respondCSRFError(response);
 			return;
 		}
-		String name = request.getParameter("name");
-		String projectId = request.getParameter("project");
-		this.getRDFTransform(request).removePrefix(name);
+		String strPrefix = request.getParameter("prefix");
+		String strProjectID = request.getParameter("project");
+		this.getRDFTransform(request).removePrefix(strPrefix);
 
 		// NOTE: No try{} catch{}, let it fail...
-		this.getContext().getVocabularySearcher().deleteTermsOfVocab(name, projectId);
+		this.getContext().getVocabularySearcher().deleteTermsOfVocab(strPrefix, strProjectID);
 
 		RemovePrefixCommand.respondJSON(response, CodeResponse.ok);
 	}

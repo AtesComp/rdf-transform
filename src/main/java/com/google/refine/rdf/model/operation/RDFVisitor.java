@@ -26,42 +26,42 @@ import org.slf4j.LoggerFactory;
 public abstract class RDFVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFVisitor");
 
-    private final RDFTransform transform;
-    private final RDFWriter writer;
-    private final SailRepository model;
-    private final SailRepositoryConnection connection;
+    private final RDFTransform theTransform;
+    private final RDFWriter theWriter;
+    private final SailRepository theModel;
+    private final SailRepositoryConnection theConnection;
 
     public RDFVisitor(RDFTransform theTransform, RDFWriter theWriter) {
-        this.transform = theTransform;
-        this.writer = theWriter;
+        this.theTransform = theTransform;
+        this.theWriter = theWriter;
 
         // Initializing repository...
-        this.model = new SailRepository( new MemoryStore() );
-        this.model.init();
-        this.connection = this.model.getConnection();
+        this.theModel = new SailRepository( new MemoryStore() );
+        this.theModel.init();
+        this.theConnection = this.theModel.getConnection();
 
         //
         // Populate the namespaces in the repository...
         //
 
         // Set Base Namespace...
-        String strBaseIRI = this.transform.getBaseIRIAsString();
+        String strBaseIRI = this.theTransform.getBaseIRIAsString();
         if ( ! strBaseIRI.isEmpty() ) {
-            this.connection.setNamespace("", strBaseIRI);
+            this.theConnection.setNamespace("", strBaseIRI);
         }
         // Set Prefix Namespaces...
-        Collection<Vocabulary> collVocab = this.transform.getPrefixes();
+        Collection<Vocabulary> collVocab = this.theTransform.getPrefixes();
         for (Vocabulary vocab : collVocab) {
-            this.connection.setNamespace( vocab.getPrefix(), vocab.getNamespace() );
+            this.theConnection.setNamespace( vocab.getPrefix(), vocab.getNamespace() );
         }
     }
 
     public RDFTransform getRDFTransform() {
-        return this.transform;
+        return this.theTransform;
     }
 
     public Repository getModel() {
-        return this.model;
+        return this.theModel;
     }
 
     abstract public void buildModel(Project theProject, Engine theEngine);
@@ -71,11 +71,11 @@ public abstract class RDFVisitor {
 
         try {
             // Export namespace information previously populated in the repository...
-            RepositoryResult<Namespace> nsIter = this.connection.getNamespaces();
+            RepositoryResult<Namespace> nsIter = this.theConnection.getNamespaces();
             try {
                 while ( nsIter.hasNext() ) {
                     Namespace ns = nsIter.next();
-                    this.writer.handleNamespace( ns.getPrefix(), ns.getName() );
+                    this.theWriter.handleNamespace( ns.getPrefix(), ns.getName() );
                     if ( Util.isDebugMode() ) logger.info("DEBUG: Prefix: " + ns.getPrefix() + " : " + ns.getName());
                 }
             }
@@ -95,8 +95,8 @@ public abstract class RDFVisitor {
         if ( Util.isVerbose(3) ) logger.info("...Ending Visitation");
 
         try {
-            if (this.connection.isOpen()) {
-                this.connection.close();
+            if (this.theConnection.isOpen()) {
+                this.theConnection.close();
             }
         }
         catch (RepositoryException ex) {
@@ -115,11 +115,11 @@ public abstract class RDFVisitor {
         // Export statements...
         RepositoryResult<Statement> stmtIter =
             //this.connection.getStatements(null, null, null, false, resources);
-            this.connection.getStatements(null, null, null, false);
+            this.theConnection.getStatements(null, null, null, false);
 
         try {
             while ( stmtIter.hasNext() ) {
-                this.writer.handleStatement( stmtIter.next() );
+                this.theWriter.handleStatement( stmtIter.next() );
             }
         }
         finally {
@@ -127,6 +127,6 @@ public abstract class RDFVisitor {
         }
 
         // Empty the repository...
-        this.connection.clear();
+        this.theConnection.clear();
     }
 }

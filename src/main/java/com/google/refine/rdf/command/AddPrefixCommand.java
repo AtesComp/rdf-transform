@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.Util;
 
 public class AddPrefixCommand extends RDFTransformCommand {
 
@@ -21,8 +22,8 @@ public class AddPrefixCommand extends RDFTransformCommand {
 			AddPrefixCommand.respondCSRFError(response);
 			return;
 		}
-		String strPrefix       = request.getParameter("prefix").strip();
-        String strNamespace    = request.getParameter("namespace").strip();
+		String strPrefix       = request.getParameter(Util.gstrPrefix).strip();
+        String strNamespace    = request.getParameter(Util.gstrNamespace).strip();
         String strProjectID    = request.getParameter("project");
         String strFetchOption  = request.getParameter("fetch").strip();
 

@@ -4,6 +4,7 @@ package com.google.refine.rdf.model.vocab;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 //import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.refine.rdf.model.Util;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class Vocabulary {
 	{
     	this.strPrefix = strPrefix;
     	this.strNamespace = strNamespace;
+		if ( Util.isDebugMode() ) Vocabulary.logger.info("DEBUG: Prefix:[{}] Namespace:[{}]", strPrefix, strNamespace);
     }
 
 	public String getPrefix() {

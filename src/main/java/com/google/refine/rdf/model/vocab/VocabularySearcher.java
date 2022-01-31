@@ -51,15 +51,15 @@ public class VocabularySearcher implements IVocabularySearcher {
 
 	private static final String CLASS_TYPE = "class";
 	private static final String PROPERTY_TYPE = "property";
-	// "type":vocabulary AND "projectId":projectId AND "name":name
-	// ("type": (class OR property) ) AND "projectId":strProjectID AND "prefix":prefix
+	// "type": vocabulary AND "project": projectID AND "name": name
+	// ("type": (class OR property) ) AND "project": strProjectID AND "prefix": prefix
 	private static final BooleanQuery TYPE_QUERY =
 			new BooleanQuery.Builder().
-				add(new TermQuery(new Term("type", CLASS_TYPE)), Occur.SHOULD).
-				add(new TermQuery(new Term("type", PROPERTY_TYPE)), Occur.SHOULD).
+				add(new TermQuery(new Term(Util.gstrType, CLASS_TYPE)), Occur.SHOULD).
+				add(new TermQuery(new Term(Util.gstrType, PROPERTY_TYPE)), Occur.SHOULD).
 				build();
 
-	// The project ID is always a number. It is safe to use this placeholder...
+	// Since the Project ID is always a number, it is safe to use "g" as the global marker placeholder...
 	private static final String GLOBAL_VOCABULARY_PLACE_HOLDER = "g";
 
 	private Directory dirLucene;
@@ -99,7 +99,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 	@Override
 	public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strFetchURL)
 			throws VocabularyImportException, IOException {
-		// Since no Project ID was given, use a Global ID and pass to regular method... 
+		// Since no Project ID was given, use a Global ID and pass to regular method...
 		this.importAndIndexVocabulary(strPrefix, strNamespace, strFetchURL, GLOBAL_VOCABULARY_PLACE_HOLDER);
 	}
 
@@ -211,14 +211,14 @@ public class VocabularySearcher implements IVocabularySearcher {
 	private void deleteTerms(String strPrefix, String strProjectID)
 			throws IOException {
 		if ( strProjectID == null || strProjectID.isEmpty() ) {
-			throw new RuntimeException("projectId is null");
+			throw new RuntimeException("ProjectID is null");
 		}
 
 		BooleanQuery termsQuery =
 			new BooleanQuery.Builder().
 				add(TYPE_QUERY, Occur.MUST).
-				add(new TermQuery(new Term("projectId", strProjectID)), Occur.MUST).
-				add(new TermQuery(new Term("prefix", strPrefix)), Occur.MUST).
+				add(new TermQuery(new Term("project", strProjectID)), Occur.MUST).
+				add(new TermQuery(new Term(Util.gstrPrefix, strPrefix)), Occur.MUST).
 				build();
 
 		this.writer.deleteDocuments(termsQuery);
@@ -240,7 +240,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		/*
 		 * Create a new lucene document to store and index the related content
 		 * for an RDF Node.
-		 */ 
+		 */
 		Document doc = new Document();
 
 		// From Node...
@@ -271,16 +271,16 @@ public class VocabularySearcher implements IVocabularySearcher {
 		if (strLocalPart == null)
 			strLocalPart = "";
 
-		doc.add( new StoredField( "iri",         node.getIRI() ) );
-		doc.add( new TextField(   "label",       strLabel,     Field.Store.YES) );
-		doc.add( new TextField(   "description", strDesc,      Field.Store.YES) );
-		doc.add( new StringField( "prefix",      strPrefix,    Field.Store.YES) );
-		doc.add( new StoredField( "namespace",   strNamespace ) );
-		doc.add( new TextField(   "localPart",   strLocalPart, Field.Store.YES) );
+		doc.add( new StoredField( Util.gstrIRI,         node.getIRI() ) );
+		doc.add( new TextField(   Util.gstrLabel,       strLabel,     Field.Store.YES) );
+		doc.add( new TextField(   Util.gstrDescription, strDesc,      Field.Store.YES) );
+		doc.add( new StringField( Util.gstrPrefix,      strPrefix,    Field.Store.YES) );
+		doc.add( new StoredField( Util.gstrNamespace,   strNamespace ) );
+		doc.add( new TextField(   Util.gstrLocalPart,   strLocalPart, Field.Store.YES) );
 		// From Node Type (Class or Property)...
-		doc.add( new StringField( "type",        strNodeType,  Field.Store.YES ) );
+		doc.add( new StringField( Util.gstrType,        strNodeType,  Field.Store.YES ) );
 		// From Project ID...
-		doc.add( new StringField( "projectId",   strProjectID, Field.Store.NO ) );
+		doc.add( new StringField( "project",            strProjectID, Field.Store.NO ) );
 
         this.writer.addDocument(doc);
 	}
@@ -289,15 +289,15 @@ public class VocabularySearcher implements IVocabularySearcher {
 			throws IOException {
 		BooleanQuery.Builder qbuilderResult =
 			new BooleanQuery.Builder().
-                add(new TermQuery(new Term("projectId", strProjectID)), Occur.MUST).
-                add(new TermQuery(new Term("type", strType)), Occur.MUST);
+                add(new TermQuery(new Term("project", strProjectID)), Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrType, strType)), Occur.MUST);
 
 		if (strQueryVal != null && strQueryVal.strip().length() > 0) {
 			StandardAnalyzer analyzer = new StandardAnalyzer();
 			if (strQueryVal.indexOf(":") == -1) { // ...just a "prefix"...
 				// The Query:
 				// -----------------------------------------
-				// "projectId" : strProjectID AND            \ These two are above
+				// "project" : strProjectID AND              \ These two are above
 				// "type" : strType AND                      /
 				// ( "prefix" : strQueryVal* OR              \
 				//   "localPart" : OR 0..n termAttrib* OR    | These four are below
@@ -309,12 +309,12 @@ public class VocabularySearcher implements IVocabularySearcher {
 				//
 				BooleanQuery.Builder qbuilderPrefix =
 					new BooleanQuery.Builder().
-                        add(new WildcardQuery(new Term("prefix", strQueryVal + "*")), Occur.SHOULD);
+                        add(new WildcardQuery(new Term(Util.gstrPrefix, strQueryVal + "*")), Occur.SHOULD);
 
 				//
 				// Add "localPart" parts...
 				//
-				TokenStream stream = analyzer.tokenStream("localPart", new StringReader(strQueryVal));
+				TokenStream stream = analyzer.tokenStream(Util.gstrLocalPart, new StringReader(strQueryVal));
 				stream.reset();
 
 				// Get the TermAttribute from the TokenStream...
@@ -325,7 +325,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 				while ( stream.incrementToken() ) {
 					qbuilderPrefix.
 						add(new WildcardQuery(
-								new Term("localPart", termAttrib.toString() + "*")
+								new Term(Util.gstrLocalPart, termAttrib.toString() + "*")
 							),
 							Occur.SHOULD
 						);
@@ -336,7 +336,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 				//
 				// Add "description" parts...
 				//
-				stream = analyzer.tokenStream("description", new StringReader(strQueryVal));
+				stream = analyzer.tokenStream(Util.gstrDescription, new StringReader(strQueryVal));
 				stream.reset();
 
 				// Get the TermAttribute from the TokenStream...
@@ -347,7 +347,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 				while ( stream.incrementToken() ) {
 					qbuilderPrefix.
 						add(new WildcardQuery(
-								new Term("description", termAttrib.toString() + "*")
+								new Term(Util.gstrDescription, termAttrib.toString() + "*")
 							),
 							Occur.SHOULD
 						);
@@ -358,7 +358,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 				//
 				// Add "label" parts...
 				//
-				stream = analyzer.tokenStream("label", new StringReader(strQueryVal));
+				stream = analyzer.tokenStream(Util.gstrLabel, new StringReader(strQueryVal));
 				stream.reset();
 
 				// Get the TermAttribute from the TokenStream...
@@ -369,7 +369,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 				while ( stream.incrementToken() ) {
 					qbuilderPrefix.
 						add(new WildcardQuery(
-								new Term("label", termAttrib.toString() + "*")
+								new Term(Util.gstrLabel, termAttrib.toString() + "*")
 							),
 							Occur.SHOULD
 						);
@@ -382,7 +382,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 			else { // ..."prefix:localPart"...
 				// The Query:
 				// -----------------------------------
-				// "projectId" : strProjectID AND      \ These two are above
+				// "project" : strProjectID AND        \ These two are above
 				// "type" : type AND                   /
 				// "prefix" : strPrefix AND            \ These two are below
 				// ( localPart : OR 0..n termAttrib* ) /
@@ -391,7 +391,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 				// Add "Prefix" part...
 				//
 				String strPrefix = strQueryVal.substring(0, strQueryVal.indexOf(":"));
-				qbuilderResult.add(new TermQuery(new Term("prefix", strPrefix)), Occur.MUST);
+				qbuilderResult.add(new TermQuery(new Term(Util.gstrPrefix, strPrefix)), Occur.MUST);
 
 				//
 				// Add "localPart" parts...
@@ -401,7 +401,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 					BooleanQuery.Builder queryLocalPart = new BooleanQuery.Builder();
 
 					TokenStream stream =
-						analyzer.tokenStream("localPart", new StringReader(strLocalPart));
+						analyzer.tokenStream(Util.gstrLocalPart, new StringReader(strLocalPart));
 					stream.reset();
 
 					// Get the TermAttribute from the TokenStream...
@@ -413,7 +413,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 						// NOTE: On the stream increment, the associated termAttrib is updated...
 						queryLocalPart.
 							add(new WildcardQuery(
-									new Term("localPart", termAttrib.toString() + "*")
+									new Term(Util.gstrLocalPart, termAttrib.toString() + "*")
 								),
 								Occur.SHOULD
 							);
@@ -434,12 +434,12 @@ public class VocabularySearcher implements IVocabularySearcher {
 		List<SearchResultItem> results = new ArrayList<SearchResultItem>();
 		for (ScoreDoc sdoc : docs.scoreDocs) {
 			Document doc = this.searcher.doc(sdoc.doc);
-			String strIRI       = doc.get("iri");
-			String strLabel     = doc.get("label");
-			String strDesc      = doc.get("description");
-			String strPrefix    = doc.get("prefix");
-			String strNamespace = doc.get("namespace");
-			String strLocalPart = doc.get("localPart");
+			String strIRI       = doc.get(Util.gstrIRI);
+			String strLabel     = doc.get(Util.gstrLabel);
+			String strDesc      = doc.get(Util.gstrDescription);
+			String strPrefix    = doc.get(Util.gstrPrefix);
+			String strNamespace = doc.get(Util.gstrNamespace);
+			String strLocalPart = doc.get(Util.gstrLocalPart);
 
 			SearchResultItem item = new SearchResultItem(strIRI, strLabel, strDesc, strPrefix, strNamespace, strLocalPart);
 			results.add(item);
@@ -455,7 +455,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		// See the calling function: addPredefinedVocabulariesToProject()
 
 		// Set new Project ID for "copied" documents...
-		IndexableField fieldProjectID = new StoredField("projectId", strProjectID);
+		IndexableField fieldProjectID = new StoredField("project", strProjectID);
 
 		// Iterate through the Global documents...
 		for (ScoreDoc sdoc : docs.scoreDocs) {
@@ -472,7 +472,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 			}
 
 			// Change the Global Project ID field to the specified Project ID field...
-			docProject.removeField("projectId");
+			docProject.removeField("project");
 			docProject.add(fieldProjectID);
 
 			// Store and index the new project document...
@@ -482,20 +482,20 @@ public class VocabularySearcher implements IVocabularySearcher {
 
 	private TopDocs getDocumentsOfProjectID(String strProjectID)
 			throws IOException {
-		// Query for "projectId"...
-		Query query = new TermQuery(new Term("projectId", strProjectID));
+		// Query for Project ID...
+		Query query = new TermQuery(new Term("project", strProjectID));
 		return searcher.search( query, this.getMaxDoc() );
 	}
 
 	private Set<String> getPrefixesOfProjectID(String strProjectID)
 			throws IOException {
-		// Query for "projectId"...
+		// Query for Project ID...
 		Set<String> prefixes = new HashSet<String>();
-		Query query = new TermQuery(new Term("projectId", strProjectID));
+		Query query = new TermQuery(new Term("project", strProjectID));
 		TopDocs docs =  searcher.search( query, this.getMaxDoc() );
 		for (ScoreDoc sdoc : docs.scoreDocs) {
 			Document doc = searcher.doc(sdoc.doc);
-			prefixes.add( doc.get("prefix") );
+			prefixes.add( doc.get(Util.gstrPrefix) );
 		}
 		return prefixes;
 	}
@@ -509,13 +509,13 @@ public class VocabularySearcher implements IVocabularySearcher {
 		BooleanQuery.Builder qbuilderPrefixes = new BooleanQuery.Builder();
 		for (String strPrefix : toDelete) {
 			qbuilderPrefixes.
-				add( new TermQuery( new Term("prefix", strPrefix) ), Occur.SHOULD );
+				add( new TermQuery( new Term(Util.gstrPrefix, strPrefix) ), Occur.SHOULD );
 		}
 
 		BooleanQuery queryDelete =
 			new BooleanQuery.Builder().
 				add(TYPE_QUERY, Occur.MUST).
-				add( new TermQuery( new Term("projectId", strProjectID) ), Occur.MUST ).
+				add( new TermQuery( new Term("project", strProjectID) ), Occur.MUST ).
 				add(qbuilderPrefixes.build(), Occur.MUST).
 				build();
 

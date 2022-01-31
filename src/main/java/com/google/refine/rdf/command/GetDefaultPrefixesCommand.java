@@ -42,7 +42,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 
 	private void getDefaultPrefixes(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String projectId = request.getParameter("project");
+		String strProjectID = request.getParameter("project");
 
 		//
 		// Get vocabularies...
@@ -75,7 +75,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 				this.getContext().
 					getVocabularySearcher().
 						importAndIndexVocabulary(
-							vocab.getPrefix(), vocab.getNamespace(), vocab.getNamespace(), projectId);
+							vocab.getPrefix(), vocab.getNamespace(), vocab.getNamespace(), strProjectID);
 			}
 			catch (VocabularyImportException ex) {
 				bError = true;

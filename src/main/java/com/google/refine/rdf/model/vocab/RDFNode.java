@@ -1,6 +1,7 @@
 package com.google.refine.rdf.model.vocab;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.refine.rdf.model.Util;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import java.util.Properties;
@@ -177,13 +178,13 @@ public class RDFNode {
     public void write(JsonGenerator writer, Properties options)
             throws JsonGenerationException, IOException {
         writer.writeStartObject();
-        writer.writeStringField("type",        this.getType());
-        writer.writeStringField("iri",         this.strIRI);
-        writer.writeStringField("label",       this.strLabel);
-        writer.writeStringField("description", this.strDescription);
-        writer.writeStringField("prefix",      this.strPrefix);
-        writer.writeStringField("namespace",   this.strNamespace);
-        writer.writeStringField("localPart",   this.strLocalPart);
+        writer.writeStringField(Util.gstrType,        this.getType());
+        writer.writeStringField(Util.gstrIRI,         this.strIRI);
+        writer.writeStringField(Util.gstrLabel,       this.strLabel);
+        writer.writeStringField(Util.gstrDescription, this.strDescription);
+        writer.writeStringField(Util.gstrPrefix,      this.strPrefix);
+        writer.writeStringField(Util.gstrNamespace,   this.strNamespace);
+        writer.writeStringField(Util.gstrLocalPart,   this.strLocalPart);
         writer.writeEndObject();
     }
 

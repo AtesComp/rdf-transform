@@ -33,7 +33,7 @@
             $.suggest.suggest.prototype,
 			// object merged (overwrites same named prior objects)...
             {   // List of functions to merge...
-				// NOTE: Added as normal functions (not arrow =>) to preserve 
+				// NOTE: Added as normal functions (not arrow =>) to preserve
 				//		"this" in final object.
                 create_item(data, response) {
 					var li =
@@ -45,16 +45,16 @@
 						.append(
 							$("<div></div>")
 							.addClass(this.options.css.item_type)
-							.text(data.id)
+							.text(data.iri) // data.id
 						);
 					var nameText =
 						$("<label></label>")
 						.append(
 							$.suggest
-							.strongify(data.name, response.prefix)
+							.strongify(data.cirie, response.prefix) // data.name
 						);
 
-					data.name = nameText.text();
+					data.cirie = nameText.text(); // data.name
 					name.append(nameText);
 	                li.append(name);
 
@@ -141,7 +141,7 @@
 
 				flyout_request(data) {
 	                var dataSuggest = this.flyoutpane.data("data.suggest");
-	                if (dataSuggest && data.id === dataSuggest.id) {
+	                if (dataSuggest && data.iri === dataSuggest.iri) {
 	                    if ( ! this.flyoutpane.is(":visible") ) {
 	                        this.flyout_position( this.get_selected() );
 	                        this.flyoutpane.show();
@@ -151,7 +151,7 @@
 	                }
 
 	                // Check $.suggest.flyout.cache...
-	                var cached = $.suggest.flyout.cache[data.id];
+	                var cached = $.suggest.flyout.cache[data.iri];
 	                if (cached) {
 	                    this.flyout_response(cached);
 	                    return;
@@ -171,7 +171,7 @@
 	                var selection = this.get_selected() || [];
 	                if (this.pane.is(":visible") && selection.length) {
 	                    var dataSuggest = selection.data("data.suggest");
-	                    if (dataSuggest && data.id === dataSuggest.id) {
+	                    if (dataSuggest && data.iri === dataSuggest.iri) {
 	                        this.flyoutpane.html('<div class="fbs-flyout-content">' + data.description + '</div>');
 	                        this.flyout_position(selection);
 	                        this.flyoutpane.show().data("data.suggest", dataSuggest);

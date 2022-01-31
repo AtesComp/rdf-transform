@@ -47,14 +47,14 @@ public class SearchResultItem {
 		return this.strLocalPart;
 	}
 
-	public void writeAsSearchResult(JsonGenerator writer)
+	public void writeAsSearchResult(JsonGenerator theWriter)
 			throws IOException {
-		writer.writeStartObject();
-		// The "id" is the absolute IRI...
-		writer.writeStringField("id", this.strIRI);
-		// The "name" is the Condensed IRI Expression (CIRIE) using
+		theWriter.writeStartObject();
+		// The "iri" is the absolute IRI...
+		theWriter.writeStringField("iri", this.strIRI);
+		// The "cirie" is the Condensed IRI Expression (CIRIE) using
 		// the prefix and IRI's local part...
-		writer.writeStringField("name", this.strPrefix + ":" + this.strLocalPart);
+		theWriter.writeStringField("cirie", this.strPrefix + ":" + this.strLocalPart);
 		// The "description" contains everything:
 		//		the full IRI,
 		//		the Label,
@@ -62,7 +62,7 @@ public class SearchResultItem {
 		//		the Prefix,
 		//		the Namespace, and
 		//		the Local Part
-		writer.writeStringField(
+		theWriter.writeStringField(
 			"description",
 			this.strIRI + "<br/>" +
 			"<em>Label</em>: " + this.strLabel + "<br/>" +
@@ -71,7 +71,7 @@ public class SearchResultItem {
 			"<em>Namespace</em>: " + this.strNamespace + "<br/>" +
 			"<em>LocalPart</em>: " + this.strLocalPart
 		);
-		writer.writeEndObject();
+		theWriter.writeEndObject();
 	}
 
 }

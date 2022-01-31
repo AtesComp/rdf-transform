@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /*
  * CLASS Util
- * 
+ *
  * 	The Util class is a convenience class holding common values and functions used by others.
  */
 public class Util {
@@ -34,7 +34,7 @@ public class Util {
 		CONSTANT,
 		EXPRESSION
 	}
-	
+
     // RDF Transform JSON Strings
     // --------------------------------------------------------------------------------
     static public final String gstrExtension = "extension";
@@ -66,6 +66,11 @@ public class Util {
     static public final String gstrLanguage = "language";     // also type key
 	static public final String gstrGREL = "grel";
     static public final String gstrCode = "code";
+
+    static public final String gstrNamespace = "namespace";
+	static public final String gstrLabel = "label";
+	static public final String gstrDescription = "description";
+	static public final String gstrLocalPart = "localPart";
 
     // XML Schema Strings
     // --------------------------------------------------------------------------------
@@ -144,7 +149,7 @@ public class Util {
 			put("Verbosity", 0);
 			put("ExportLimit", 10737418);
 			put("DebugMode", false);
-	
+
 			put("SampleLimit", 10);
 		}};
 
@@ -153,7 +158,7 @@ public class Util {
 //
 //   See https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url
 
-	public static class IRIParsingException extends Exception { 
+	public static class IRIParsingException extends Exception {
 		public IRIParsingException(String strErrorMessage) {
 			super(strErrorMessage);
 		}

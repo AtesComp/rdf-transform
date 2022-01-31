@@ -190,10 +190,10 @@ class RDFTransformResourceDialog {
  */
 // class RDFTransformResourceResolveDialog {
 //     #onDone;
-// 
+//
 //     constructor(element, defaultVal, onDone) {
 //         this.#onDone = onDone;
-// 
+//
 //         var menu = MenuSystem.createMenu().width('400px'); // ...6:1 on input size
 //         menu.html(
 // '<div class="rdf-transform-menu-search">' +
@@ -211,16 +211,16 @@ class RDFTransformResourceDialog {
 //         );
 //         MenuSystem.showMenu(menu, () => {} );
 //         MenuSystem.positionMenuLeftRight(menu, $(element));
-// 
+//
 //         var elements = DOM.bind(menu);
 //         elements.rdftNewResourceIRI
 //         .val(defaultVal)
 //         .focus()
 //         .select();
-// 
+//
 //         elements.buttonCancel
 //         .click( () => { MenuSystem.dismissAll(); } );
-// 
+//
 //         elements.buttonApply
 //         .click(
 //             async () => {
@@ -242,11 +242,11 @@ class RDFTransformResourceDialog {
 //                 //    strIRI = strIRI.substring(1);
 //                 //}
 //                 var obj = {
-//                     "id"   : strIRI, // Full IRI
-//                     "name" : strIRI  // Prefixed IRI
+//                     "iri"   : strIRI, // Full IRI
+//                     "cirie" : strIRI  // Prefixed IRI
 //                 };
 //                 this.#onDone(obj);
 //             }
 //         );
-//     }    
-// } 
+//     }
+// }

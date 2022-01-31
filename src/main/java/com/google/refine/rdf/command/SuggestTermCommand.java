@@ -94,25 +94,25 @@ public class SuggestTermCommand extends RDFTransformCommand {
 	protected Project getProject(HttpServletRequest request)
 			throws ServletException {
         if (request == null) {
-            throw new ServletException("parameter 'request' should not be null");
+            throw new ServletException("Parameter 'request' should not be null");
         }
         String strProjectID = request.getParameter("type");
         if (strProjectID == null || "".equals(strProjectID)) {
-            throw new ServletException("Can't find type: missing ID parameter");
+            throw new ServletException("Can't find type: missing Project ID parameter");
         }
         Long liProjectID;
         try {
             liProjectID = Long.parseLong(strProjectID);
         }
 		catch (NumberFormatException ex) {
-            throw new ServletException("Can't find project: badly formatted id #", ex);
+            throw new ServletException("Can't find project: badly formatted Project ID #", ex);
         }
         Project theProject = ProjectManager.singleton.getProject(liProjectID);
         if (theProject != null) {
             return theProject;
         }
 		else {
-            throw new ServletException("Failed to find project id #" + strProjectID + " - may be corrupt");
+            throw new ServletException("Failed to find Project ID #" + strProjectID + " - may be corrupt");
         }
 	}
 
@@ -156,7 +156,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
 				// Is there is a possible path...
 				//    iIndex + 1 = the length of strQuery to the ':' inclusive
 				//    Is there anything after...
-				if (strQuery.length() > iIndex + 1) { 
+				if (strQuery.length() > iIndex + 1) {
 					try {
 						ParsedIRI tempIRI = new ParsedIRI(strQuery);
 						// ...it parsed as an IRI...
@@ -180,7 +180,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
 				}
 			}
 		}
-		return bIsPrefixed; 
+		return bIsPrefixed;
     }
 
     private List<SearchResultItem> search(RDFTransform theTransform, String strQuery) {

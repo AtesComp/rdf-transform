@@ -36,7 +36,6 @@ public class SavePrefixesCommand extends RDFTransformCommand {
 			ObjectNode thePrefixes =
 				ParsingUtilities.evaluateJsonStringToObjectNode( request.getParameter(Util.gstrNamespaces) );
 
-
 			Iterator<Entry<String, JsonNode>> fields = thePrefixes.fields();
 			fields.forEachRemaining(prefix -> {
 				String strPrefix = prefix.getKey();

@@ -544,12 +544,7 @@ class RDFTransformDialog {
         theTransform.namespaces = {};
         if (this.prefixesManager.prefixes != null)
         {
-            for (const strPrefix of this.prefixesManager.prefixes) {
-                if (strPrefix) {
-                    theTransform.namespaces[strPrefix] =
-                        this.prefixesManager.prefixes[strPrefix];
-                }
-            }
+            theTransform.namespaces = this.prefixesManager.prefixes;
         }
         //else {
         //    alert("No prefixes!");

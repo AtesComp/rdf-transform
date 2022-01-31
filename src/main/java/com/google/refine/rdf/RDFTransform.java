@@ -463,13 +463,16 @@ public class RDFTransform implements OverlayModel {
         }
     }
 
-    @JsonIgnore
+    //@JsonIgnore
+    @JsonProperty(Util.gstrNamespaces)
     public VocabularyList getPrefixes() {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting prefixes...");
         return this.thePrefixes;
     }
 
-    @JsonProperty(Util.gstrNamespaces)
+    /*
+    //@JsonProperty(Util.gstrNamespaces)
+    @JsonIgnore
     public String getPrefixesAsString() {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting prefixes as JSON string...");
         ByteArrayOutputStream baostream = new ByteArrayOutputStream();
@@ -491,6 +494,7 @@ public class RDFTransform implements OverlayModel {
             return "null";
         }
     }
+    */
 
     @JsonIgnore
     public void setPrefixes(VocabularyList listPrefixes) {
