@@ -17,18 +17,18 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
   * toStrippedLiteral() - end trims a string with all known Unicode whitespace and non-breaking space characters
 * Properly process an IRI's Condensed IRI Expression (CIRIE) for output / export
 * The RDF Transform templates are exportable / importable (like OntoRefine) between different (but similar data structure) projects
-* Reserve flushing of scaled statements buffers to speed exports (user definable, see "RFTransform.exportLimit" below)
+* Reserve flushing of scaled statements buffers to speed exports (user definable, see "RDFTransform.exportLimit" below)
 * The "prefixes" and "predefined_vocabs" support files are processed using general whitespace separation (not strictly tab delimited)
 * General code cleanup and commenting throughout
 * Preferences:
-  * Added "RFTransform.verbose" preference (see OpenRefine preferences) to aid checking and debugging
+  * Added "RDFTransform.verbose" preference (see OpenRefine preferences) to aid checking and debugging
     * Defaults to "verbose" preference (maybe OpenRefine will use it as a base preference) or 0
     * 0 (or missing preference) == no verbosity and unknown, uncaught errors (stack traces, of course)
     * 1 == basic functional information and all unknown, caught errors
     * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
     * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
     * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
-  * Added "RFTransform.exportLimit" preference (see OpenRefine preferences) to limit the statement buffer and optimize output
+  * Added "RDFTransform.exportLimit" preference (see OpenRefine preferences) to limit the statement buffer and optimize output
     * The statement buffer (i.e., an internal memory RDF repository) stores created statements from the data
     * The old system created one statement in the buffer, then flushed the buffer to disk--very inefficient
     * The new system holds many statement before before flushing to disk.
@@ -38,7 +38,7 @@ This project is based on the venerable "RDF Extension" ([grefine-rdf-extension](
       * Regardless, this keeps memory usage to about 1GiB or less and a user can set the preference to optimize for a given memory footprint and data size
     * Then, the buffered statements optimize the creation and flush processes to speed the disk write
     * A future enhancement may examine the project data size and system memory to determine an optimize buffer size and allocations
-  * Added "RFTransform.debug" preference (see OpenRefine preferences) to aid debugging
+  * Added "RDFTransform.debug" preference (see OpenRefine preferences) to aid debugging
     * Controls the output of specifically marked "DEBUG" messages
 
 NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project. 
@@ -182,7 +182,7 @@ None, currently.
 Here are some tips on testing and debugging...
 
 #### Java ####
-Tinker with the "RFTransform.verbose" and "RFTransform.debug" configurations settings for RDT Transform to get plenty 'o feedback.  Generally, setting the debug configuration to "true" will do the trick.
+Tinker with the "RDFTransform.verbose" and "RDFTransform.debug" configurations settings for RDT Transform to get plenty 'o feedback.  Generally, setting the debug configuration to "true" will do the trick.
 
 #### Javascript ####
 Use the built-in Developer Tools in your perferred browser.
