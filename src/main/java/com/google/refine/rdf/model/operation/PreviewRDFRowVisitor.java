@@ -35,7 +35,7 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
             return true; // ...stop visitation process
         }
         try {
-            if ( Util.isDebugMode() ) logger.info("DEBUG: Visiting Row: " + iRowIndex + " on count: " +  this.iCount);
+            if ( Util.isDebugMode() ) PreviewRDFRowVisitor.logger.info("DEBUG: Visiting Row: " + iRowIndex + " on count: " +  this.iCount);
             ParsedIRI baseIRI = this.getRDFTransform().getBaseIRI();
             RepositoryConnection theConnection = this.getModel().getConnection();
             ValueFactory theFactory = theConnection.getValueFactory();
@@ -44,7 +44,7 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
                 root.createStatements(baseIRI, theFactory, theConnection, theProject, iRowIndex );
 
                 if ( Util.isDebugMode() ) {
-                    logger.info("DEBUG:   " +
+                    PreviewRDFRowVisitor.logger.info("DEBUG:   " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
                         "Size: " + theConnection.size()
                     );
@@ -55,13 +55,13 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
             this.flushStatements();
         }
         catch (RepositoryException ex) {
-            logger.error("Connection Issue: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            PreviewRDFRowVisitor.logger.error("Connection Issue: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
         catch (RDFHandlerException ex) {
-            logger.error("Flush Issue: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            PreviewRDFRowVisitor.logger.error("Flush Issue: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
 

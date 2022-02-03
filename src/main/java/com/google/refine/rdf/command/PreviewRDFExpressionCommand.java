@@ -236,7 +236,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             this.theWriter.writeStringField("message", strMessageEx);
             if ( Util.isVerbose() ) {
                 PreviewRDFExpressionCommand.logger.warn(strMessageEx, ex);
-                if ( Util.isVerbose(2) ) ex.printStackTrace();
+                if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
             }
             bGood = false; // ...no good anymore
             iRows = iRow; // ...row error occurred--make it max
@@ -266,7 +266,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             }
             if ( Util.isVerbose() ) {
                 PreviewRDFExpressionCommand.logger.warn("WARNING: Writing absolute IRIs", ex);
-                if ( Util.isVerbose(2) ) ex.printStackTrace();
+                if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
             }
         }
 
@@ -390,7 +390,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             this.theWriter.writeStringField("message", strMessageEx);
             if ( Util.isVerbose() ) {
                 PreviewRDFExpressionCommand.logger.warn(strMessageEx, ex);
-                if ( Util.isVerbose(2) ) ex.printStackTrace();
+                if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
             }
             bGood = false; // ...no good anymore
         }

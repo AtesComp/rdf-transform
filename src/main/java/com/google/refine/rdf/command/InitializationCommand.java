@@ -48,8 +48,8 @@ public class InitializationCommand extends Command {
 			this.context.init(strHost, strIFace, strPort, fileWorkingDir);
 		}
 		catch (IOException ex) {
-			logger.error("ERROR: Initialize Context: ", ex);
-			if ( Util.isVerbose() ) ex.printStackTrace();
+			InitializationCommand.logger.error("ERROR: Initialize Context: ", ex);
+			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
 		}
 	}
 

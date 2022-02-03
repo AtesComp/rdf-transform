@@ -27,7 +27,7 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
     public PreviewRDFRecordVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
         this.iLimit = Util.getSampleLimit();
-        if ( Util.isDebugMode() ) logger.info("DEBUG: Created...");
+        if ( Util.isDebugMode() ) PreviewRDFRecordVisitor.logger.info("DEBUG: Created...");
     }
 
     public boolean visit(Project theProject, Record theRecord) {
@@ -36,7 +36,7 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
             return true; // ...stop visitation process
         }
         try {
-            if ( Util.isDebugMode() ) logger.info("DEBUG: Visiting Record: " + theRecord.recordIndex + " on count: " +  this.iCount);
+            if ( Util.isDebugMode() ) PreviewRDFRecordVisitor.logger.info("DEBUG: Visiting Record: " + theRecord.recordIndex + " on count: " +  this.iCount);
             ParsedIRI baseIRI = this.getRDFTransform().getBaseIRI();
             RepositoryConnection theConnection = this.getModel().getConnection();
             ValueFactory theFactory = theConnection.getValueFactory();
@@ -45,7 +45,7 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
                 root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
-                    logger.info("DEBUG:   " +
+                    PreviewRDFRecordVisitor.logger.info("DEBUG:   " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
                         "Size: " + theConnection.size()
                     );
@@ -57,13 +57,13 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
             this.flushStatements();
         }
         catch (RepositoryException ex) {
-            logger.error("Connection Issue: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            PreviewRDFRecordVisitor.logger.error("Connection Issue: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
         catch (RDFHandlerException ex) {
-            logger.error("Flush Issue: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            PreviewRDFRecordVisitor.logger.error("Flush Issue: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
 

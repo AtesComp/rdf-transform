@@ -80,8 +80,8 @@ public class RDFTransformChange implements Change {
             jsonWriter.close();
         }
         catch (IOException ex) {
-            logger.error("ERROR: Writing RDFTransform: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            RDFTransformChange.logger.error("ERROR: Writing change: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
         }
     }
 

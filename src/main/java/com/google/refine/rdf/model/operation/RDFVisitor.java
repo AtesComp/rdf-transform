@@ -87,7 +87,8 @@ public abstract class RDFVisitor {
             throw new RuntimeException("", ex);
         }
         catch (RDFHandlerException ex) {
-            ex.printStackTrace();
+            RDFVisitor.logger.error("ERROR: Visiting rows: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
         }
     }
 

@@ -67,7 +67,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 		// Load vocabularies for vocabulary searcher and respond each namespace...
 		//
 		for (Vocabulary vocab : listVocabs) {
-			if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("  Prefixes: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
+			if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("  Prefix: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
 			Exception except = null;
 			boolean bError = false;
 			String strError = null;
@@ -94,7 +94,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 				//   Ignore the exception, but log it...
 				if (bError) {// ...error...
 					GetDefaultPrefixesCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
-					if ( Util.isVerbose() ) except.printStackTrace();
+					if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
 				}
 				else { // ...warning...
 					if ( Util.isVerbose() ) GetDefaultPrefixesCommand.logger.warn("Prefix exists: ", except);

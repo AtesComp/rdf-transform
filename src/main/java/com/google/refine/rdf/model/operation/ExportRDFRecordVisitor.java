@@ -23,12 +23,12 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
 
     public ExportRDFRecordVisitor(RDFTransform theTransform, RDFWriter theWriter) {
         super(theTransform, theWriter);
-        if ( Util.isDebugMode() ) logger.info("DEBUG: Created...");
+        if ( Util.isDebugMode() ) ExportRDFRecordVisitor.logger.info("DEBUG: Created...");
     }
 
     public boolean visit(Project theProject, Record theRecord) {
         try {
-            if ( Util.isDebugMode() ) logger.info("DEBUG: Visiting Record: " + theRecord.recordIndex);
+            if ( Util.isDebugMode() ) ExportRDFRecordVisitor.logger.info("DEBUG: Visiting Record: " + theRecord.recordIndex);
             ParsedIRI baseIRI = this.getRDFTransform().getBaseIRI();
             RepositoryConnection theConnection = this.getModel().getConnection();
             ValueFactory theFactory = theConnection.getValueFactory();
@@ -37,7 +37,7 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
                 root.createStatements(baseIRI, theFactory, theConnection, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
-                    logger.info("DEBUG:   " +
+                    ExportRDFRecordVisitor.logger.info("DEBUG:   " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
                         "Size: " + theConnection.size()
                     );
@@ -58,13 +58,13 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
             this.flushStatements();
         }
         catch (RepositoryException ex) {
-            logger.error("Connection Issue: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            ExportRDFRecordVisitor.logger.error("Connection Issue: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
         catch (RDFHandlerException ex) {
-            logger.error("Flush Issue: ", ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
+            ExportRDFRecordVisitor.logger.error("Flush Issue: ", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
 

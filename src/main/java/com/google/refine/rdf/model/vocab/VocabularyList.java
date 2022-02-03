@@ -17,7 +17,7 @@ public class VocabularyList extends ArrayList<Vocabulary> {
 
     public Vocabulary findByPrefix(String strPrefix) {
         Iterator<Vocabulary> iterVocab = this.iterator();
-        while (iterVocab.hasNext()) {
+        while ( iterVocab.hasNext() ) {
             Vocabulary vocab = iterVocab.next();
             if (vocab.getPrefix().equals(strPrefix)) {
                 return vocab;

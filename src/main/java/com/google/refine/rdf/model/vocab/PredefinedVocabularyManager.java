@@ -43,33 +43,41 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 		this.context = context;
 		this.workingDir = workingDir;
 
+		if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Attempting vocabulary reconstruct...");
 		try {
-			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Attempting existing reconstruct...");
 			this.reconstructVocabulariesFromFile();
-			if ( ! predefinedVocabularies.isEmpty() ) {
-				if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...reconstructed");
-				return;
+			if ( predefinedVocabularies.isEmpty() ) {
+				throw new FileNotFoundException();
 			}
 		}
-		catch (FileNotFoundException ex) {
+		catch (FileNotFoundException ex1) {
 			// Existing vocabularies are not found.
 			// Try adding predefined vocabularies...
-		}
-
-		try {
-			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Reconstruct failed.  Adding selected vocabularies.");
-			this.addPredefinedVocabularies();
-			this.save();
-		}
-		catch (Exception ex) {
-			// Predefined vocabularies are not defined properly...
-			//   Ignore the exception, but log it...
-			if ( Util.isVerbose() ) {
-				PredefinedVocabularyManager.logger.warn("Predefined Vocabulary failed: ", ex);
-				if ( Util.isVerbose(2) ) ex.printStackTrace();
+			if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...missing local, adding remote...");
+			try {
+				this.addPredefinedVocabularies();
 			}
-			throw ex;
+			catch (Exception ex2) {
+				// Predefined vocabularies are not defined properly...
+				//   Ignore the exception, but log it...
+				if ( Util.isVerbose() ) {
+					PredefinedVocabularyManager.logger.warn("Loading predefined vocabularies failed: ", ex2);
+					if ( Util.isVerbose(2) || Util.isDebugMode() ) ex2.printStackTrace();
+				}
+			}
+			try {
+				this.save();
+			}
+			catch (Exception ex2) {
+				// Saving predefined vocabularies failed...
+				//   Ignore the exception, but log it...
+				if ( Util.isVerbose() ) {
+					PredefinedVocabularyManager.logger.warn("Saving local Vocabulary failed: ", ex2);
+					if ( Util.isVerbose(2) || Util.isDebugMode() ) ex2.printStackTrace();
+				}
+			}
 		}
+		if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...reconstructed");
 	}
 
 	public VocabularyList getPredefinedVocabularies() {
@@ -132,7 +140,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 				//   Ignore the exception, but log it...
 				if ( Util.isVerbose() ) {
 					PredefinedVocabularyManager.logger.warn("Predefined vocabulary import failed: ", ex);
-					if ( Util.isVerbose(2) ) ex.printStackTrace();
+					if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
 				}
 			}
 
@@ -161,13 +169,18 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
     }
 
 	private void save()	throws IOException {
+		if ( predefinedVocabularies.isEmpty() ) {
+			// Nothing to save...
+			return;
+		}
+
         File tempFile = new File(this.workingDir, "vocabs.temp.json");
         try {
             saveToFile(tempFile);
         }
 		catch (Exception ex) {
             PredefinedVocabularyManager.logger.error("ERROR: Project metadata save failed: ", ex);
-			if ( Util.isVerbose() ) ex.printStackTrace();
+			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
 			return;
         }
 

@@ -4,9 +4,9 @@
  *  A class holding the RDF Transform baseline setting and functions
  */
 class RDFTransform {
-    // This Client-side KEY matches Server-side RDFTransform.KEY
+    // This Client-side RDFTransform.KEY matches Server-side RDFTransform.KEY
     // NOTE: "get KEY()" sets "KEY" for retrieval.
-    static get KEY() { return "rdf_transform"; };
+    static get KEY() { return "rdf-transform"; };
 
     static get g_strExtension() { return "RDFTransform"; }
     static g_strVersion = "2.0.0";
@@ -14,11 +14,11 @@ class RDFTransform {
     // NOTE: Even though the expression is currently 'only GREL', we allow for future change
     //      by a setDefaults() modification.
     static g_strDefaultExpressionLanguage = 'grel'; // ...the default (and only) Expression Language
-    static g_strDefaultExpression; // ...the default Expression for the current (and only) language, GREL
-    static g_strExpressionIndex; // ...the Index Expression to use: Row or Record
-    static g_strExpressionSource; // ...the Source Expression to use: Row or Record
-    static g_strIndexTitle; // ...the column title for the index: "Row" or "Record"
-    static g_bRowBased = true; // ...the type of indexing used: Row (true) or Record (false)
+    static g_strDefaultExpression;                  // ...the default Expression for the current (and only) language, GREL
+    static g_strExpressionIndex;                    // ...the Index Expression to use: Row or Record
+    static g_strExpressionSource;                   // ...the Source Expression to use: Row or Record
+    static g_strIndexTitle;                         // ...the column title for the index: "Row" or "Record"
+    static g_bRowBased = true;                      // ...the type of indexing used: Row (true) or Record (false)
 
     // Setup default Master Root Node...
     static g_nodeMasterRoot = {};

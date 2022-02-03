@@ -46,14 +46,14 @@ public class RDFTransformBinder implements Binder {
     @Override
     public void initializeBindings(Properties bindings, Project project) {
 		this.theProject = project;
-		if ( Util.isVerbose(3) ) logger.info("Bind baseIRI...");
+		if ( Util.isVerbose(3) ) RDFTransformBinder.logger.info("Bind baseIRI...");
         try {
 			this.strLastBoundBaseIRI =
 				RDFTransform.getRDFTransform(this.theContext, this.theProject).getBaseIRIAsString();
 		}
 		catch (IOException ex) {
-			logger.error(this.strBindError, ex);
-			if ( Util.isVerbose() ) ex.printStackTrace();
+			RDFTransformBinder.logger.error(this.strBindError, ex);
+			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
 			return;
 		}
 		bindings.put("baseIRI", this.strLastBoundBaseIRI);
@@ -74,8 +74,8 @@ public class RDFTransformBinder implements Binder {
 				RDFTransform.getRDFTransform(this.theContext, this.theProject).getBaseIRIAsString();
 		}
 		catch (IOException ex) {
-			logger.error(strBindError, ex);
-			if ( Util.isVerbose() ) ex.printStackTrace();
+			RDFTransformBinder.logger.error(strBindError, ex);
+			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
 			return;
 		}
 		// If the current baseIRI is new...

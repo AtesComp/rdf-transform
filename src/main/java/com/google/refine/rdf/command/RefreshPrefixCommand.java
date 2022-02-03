@@ -10,7 +10,11 @@ import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.VocabularyImportException;
 
-public class RefreshPrefixCommand extends RDFTransformCommand{
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class RefreshPrefixCommand extends RDFTransformCommand {
+	private final static Logger logger = LoggerFactory.getLogger("RDFT:RefPrefixCmd");
 
 	public RefreshPrefixCommand(ApplicationContext context) {
 		super(context);
@@ -56,11 +60,11 @@ public class RefreshPrefixCommand extends RDFTransformCommand{
 		// Some problem occurred....
 		if (except != null) {
 			if (bError) {// ...error...
-				logger.error("ERROR: " + strError + " vocabulary: ", except);
-				if ( Util.isVerbose() ) except.printStackTrace();
+				RefreshPrefixCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
+				if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
 			}
 			else { // ...warning...
-				if ( Util.isVerbose() ) logger.warn("Prefix exists: ", except);
+				if ( Util.isVerbose() ) RefreshPrefixCommand.logger.warn("Prefix exists: ", except);
 			}
 
 			RefreshPrefixCommand.respondException(response, except);

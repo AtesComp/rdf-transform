@@ -51,7 +51,7 @@ public class ApplicationContext {
 		this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
 		InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
 		this.prefixManager = new PrefixManager(inStream);
-		if (Util.isVerbose(3)) logger.info("Init: Completed");
+		if (Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Init: Completed");
 	}
 
 	public void setPredefinedVocabularyManager(IPredefinedVocabularyManager predefinedVocabularyManager) {
