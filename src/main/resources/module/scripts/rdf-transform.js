@@ -369,14 +369,19 @@ class RDFTransformDialog {
     #doSave() {
         const theTransform = this.getJSON();
         Refine.postProcess(
-            /* module */    'rdf-transform',
-            /* command */   'save-rdf-transform',
-            /* params */    {},
-            /* body */      { [RDFTransform.KEY] : JSON.stringify( theTransform ) },
-            /* updateOps */ {},
-            /* callbacks */
-            {   onDone: () => {
+            RDFTransform.KEY,       // module
+            'save-rdf-transform',   // command
+            {},                     // params
+            { [RDFTransform.KEY] : JSON.stringify( theTransform ) },
+            {},                     // updateOps
+            {   onDone: (data) => { // callbacks
                     theProject.overlayModels.RDFTransform = theTransform;
+                    if (data.code === "error") {
+                        alert($.i18n('rdft-dialog/error') + ':' + "Save failed!");
+                    }
+                    else if (data.code === "pending") {
+                        alert( $.i18n("Save pending history queue processing.") );
+                    }
                 }
             }
         );
@@ -423,27 +428,32 @@ class RDFTransformDialog {
 
         // Consult the oracle on the RDF Preview...
         Refine.postProcess(
-            /* module */    "rdf-transform",
-            /* command */   'preview-rdf',
-            /* params */    {},
-            /* body */      {   [RDFTransform.KEY] : JSON.stringify( theTransform ),
-                                "engine"           : JSON.stringify( ui.browsingEngine.getJSON() ),
-                                "sampleLimit"      : this.iSampleLimit
-                            },
-            /* updateOps */ {},
-            /* callbacks */ {   onDone: (data) => {
-                                    //var strPreview = RDFTransformCommon.toHTMLBreaks( data.v.toString() );
-                                    const strPreview =
-                                        data.v.toString()
-                                        .replace(/&/g, "&amp;")
-                                        .replace(/</g, "&lt;")
-                                        .replace(/>/g, "&gt;")
-                                        .replace(/"/g, "&quot;");
-                                    this.#panePreview.empty();
-                                    //this.#panePreview.html( RDFTransformCommon.toIRIProperty(strPreview) );
-                                    this.#panePreview.html("<pre>" + strPreview + "</pre>");
-                                }
-                            }
+            "rdf-transform",        // module
+            "preview-rdf",          // command
+            {},                     // params 
+            {   [RDFTransform.KEY] : JSON.stringify( theTransform ),
+                "engine"           : JSON.stringify( ui.browsingEngine.getJSON() ),
+                "sampleLimit"      : this.iSampleLimit
+            },
+            {},                     // updateOps
+            {   onDone: (data) => { // callbacks
+                    //var strPreview = RDFTransformCommon.toHTMLBreaks( data.message.toString() );
+                    var strPreview = "ERROR: Could not process RDF preview!"
+                    if (data.code === "ok") {
+                        strPreview =
+                            data.message.toString()
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;");
+                    }
+                    // Otherwise, data.code === "error"
+
+                    this.#panePreview.empty();
+                    //this.#panePreview.html( RDFTransformCommon.toIRIProperty(strPreview) );
+                    this.#panePreview.html("<pre>" + strPreview + "</pre>");
+                }
+            }
         );
     }
 

@@ -7,16 +7,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.VocabularyImportException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RefreshPrefixCommand extends RDFTransformCommand {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:RefPrefixCmd");
+public class PrefixRefreshCommand extends RDFTransformCommand {
+	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRefreshCmd");
 
-	public RefreshPrefixCommand(ApplicationContext context) {
+	public PrefixRefreshCommand(ApplicationContext context) {
 		super(context);
 	}
 
@@ -25,23 +26,29 @@ public class RefreshPrefixCommand extends RDFTransformCommand {
 			throws ServletException, IOException {
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Content-Type", "application/json");
-		if (!this.hasValidCSRFToken(request)) {
-			RefreshPrefixCommand.respondCSRFError(response);
+		if ( ! this.hasValidCSRFToken(request) ) {
+			PrefixRefreshCommand.respondCSRFError(response);
 			return;
 		}
-		String strPrefix    = request.getParameter("prefix");
-		String strNamespace = request.getParameter("namespace");
-		String strProjectID = request.getParameter("project");
-		this.getRDFTransform(request).removePrefix(strPrefix);
+		String strPrefix    = request.getParameter(Util.gstrPrefix);
+		String strNamespace = request.getParameter(Util.gstrNamespace);
+		String strProjectID = request.getParameter(Util.gstrProject); // NOT this.getProject(request);
+
+		RDFTransform theTransform = this.getRDFTransform(request);
+
+		// Remove the namespace...
+		theTransform.removePrefix(strPrefix);
 
 		Exception except = null;
 		boolean bError = false;
 		String strError = null;
 		try{
+			// Remove related vocabulary...
 			this.getContext().
 				getVocabularySearcher().
 					deleteTermsOfVocab(strPrefix, strProjectID);
 
+			// Re-add related vocabulary...
 			this.getContext().
 				getVocabularySearcher().
 					importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
@@ -60,18 +67,22 @@ public class RefreshPrefixCommand extends RDFTransformCommand {
 		// Some problem occurred....
 		if (except != null) {
 			if (bError) {// ...error...
-				RefreshPrefixCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
+				PrefixRefreshCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
 				if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
 			}
 			else { // ...warning...
-				if ( Util.isVerbose() ) RefreshPrefixCommand.logger.warn("Prefix exists: ", except);
+				if ( Util.isVerbose() ) PrefixRefreshCommand.logger.warn("Prefix exists: ", except);
 			}
 
-			RefreshPrefixCommand.respondException(response, except);
+			PrefixRefreshCommand.respondJSON(response, CodeResponse.error);
 			return;
 		}
 
 		// Otherwise, all good...
-		RefreshPrefixCommand.respondJSON(response, CodeResponse.ok);
+
+		// Re-add the namespace...
+		theTransform.addPrefix(strPrefix, strNamespace);
+
+		PrefixRefreshCommand.respondJSON(response, CodeResponse.ok);
 	}
 }

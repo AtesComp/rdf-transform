@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-public class SavePrefixesCommand extends RDFTransformCommand {
+public class PrefixesSaveCommand extends RDFTransformCommand {
 
-	public SavePrefixesCommand(ApplicationContext context) {
+	public PrefixesSaveCommand(ApplicationContext context) {
 		super(context);
 	}
 
@@ -26,8 +26,8 @@ public class SavePrefixesCommand extends RDFTransformCommand {
 			throws ServletException, IOException {
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Content-Type", "application/json");
-		if ( !this.hasValidCSRFToken(request) ) {
-			SavePrefixesCommand.respondCSRFError(response);
+		if ( ! this.hasValidCSRFToken(request) ) {
+			PrefixesSaveCommand.respondCSRFError(response);
 			return;
 		}
         try {
@@ -36,7 +36,7 @@ public class SavePrefixesCommand extends RDFTransformCommand {
 			ObjectNode thePrefixes =
 				ParsingUtilities.evaluateJsonStringToObjectNode( request.getParameter(Util.gstrNamespaces) );
 
-			Iterator<Entry<String, JsonNode>> fields = thePrefixes.fields();
+			Iterator< Entry < String, JsonNode > > fields = thePrefixes.fields();
 			fields.forEachRemaining(prefix -> {
 				String strPrefix = prefix.getKey();
 				String strNamespace = prefix.getValue().asText();
@@ -45,15 +45,16 @@ public class SavePrefixesCommand extends RDFTransformCommand {
 			this.getRDFTransform(request).setPrefixes(listVocabs);
 
 			// ...and the prefixes' vocabulary searcher...
-			String projectID = request.getParameter("project");
+			String projectID = request.getParameter(Util.gstrProject);
 			this.getContext().
 				getVocabularySearcher().
 					synchronize( projectID, listVocabs.getPrefixSet() );
-
-			SavePrefixesCommand.respondJSON(response, CodeResponse.ok);
 		}
 		catch (Exception ex) {
-            SavePrefixesCommand.respondException(response, ex);
+            PrefixesSaveCommand.respondJSON(response, CodeResponse.error);
+			return;
         }
+
+		PrefixesSaveCommand.respondJSON(response, CodeResponse.ok);
 	}
 }

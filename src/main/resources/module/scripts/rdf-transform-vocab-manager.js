@@ -45,33 +45,28 @@ class RDFTransformVocabManager {
 		);
 	}
 
-	#getDeleteHandler(strPrefix) {
+	#getRemoveHandler(strPrefix) {
 		return (evtHandler) => {
 			evtHandler.preventDefault();
 			var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
 
-			Refine.wrapCSRF(
-				(token) => {
-					$.post(
-						'command/rdf-transform/remove-prefix',
-						{
-							'prefix': strPrefix,
-							'project': theProject.id,
-							'csrf_token': token,
-						},
-						(data) => {
-							dismissBusy();
-							if (data.code === 'error') {
-								alert($.i18n('rdft-vocab/error-deleting') + ': ' + strPrefix);
-							}
-							else {
-								this.#prefixesManager.removePrefix(strPrefix);
-							}
-							this.#renderBody();
-						}
-					);
-				}
-			);
+			Refine.postCSRF(
+                "command/rdf-transform/remove-prefix",
+                {   "project" : theProject.id,
+					"prefix": strPrefix
+                },
+                (data) => {
+                    if (data.code === "error") {
+                        alert($.i18n('rdft-vocab/error-deleting') + ': ' + strPrefix);
+					}
+					else {
+						this.#prefixesManager.removePrefix(strPrefix);
+					}
+					this.#renderBody();
+					dismissBusy();
+                },
+                "json"
+            );
 		};
 	}
 
@@ -84,22 +79,21 @@ class RDFTransformVocabManager {
 			{
 				var dismissBusy =
 					DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
-				Refine.wrapCSRF(
-					(token) => {
-						$.post('command/rdf-transform/refresh-prefix',
-							{	'prefix': strPrefix,
-								'namespace': strNamespace,
-								'project': theProject.id,
-								'csrf_token': token
-							},
-							(data) => {
-								dismissBusy();
-								if (data.code === 'error') {
-									alert($.i18n('rdft-vocab/alert-wrong') + ': ' + data.message);
-								}
-							}
-						);
-					}
+				
+				Refine.postCSRF(
+					"command/rdf-transform/refresh-prefix",
+					{   "project" : theProject.id,
+						"prefix": strPrefix,
+						'namespace': strNamespace,
+					},
+					(data) => {
+						if (data.code === "error") {
+							alert($.i18n('rdft-vocab/alert-wrong') + ': ' + data.message);
+						}
+						this.#renderBody();
+						dismissBusy();
+					},
+					"json"
 				);
 			}
 		};
@@ -118,22 +112,22 @@ class RDFTransformVocabManager {
 
 		var bEven = false;
 		for (const strPrefix in this.#prefixesManager.prefixes) {
-			var strNamespace = this.#prefixesManager.prefixes[strPrefix];
+			const strNamespace = this.#prefixesManager.prefixes[strPrefix];
 			var delete_handle =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/delete') )
 				.attr('href', '#')
-				.click( this.#getDeleteHandler(strPrefix) );
+				.click( this.#getRemoveHandler(strPrefix) );
 			var refresh_handle =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/refresh') )
 				.attr('href', '#')
 				.click( this.#getRefreshHandler(strPrefix, strNamespace) );
 			var tr = $('<tr/>').addClass(bEven ? 'rdf-table-even' : 'rdf-table-odd')
-				.append($('<td>').text(strPrefix))
-				.append($('<td>').text(strPrefix.iri))
-				.append($('<td>').html(delete_handle))
-				.append($('<td>').html(refresh_handle));
+				.append( $('<td>').text(strPrefix) )
+				.append( $('<td>').text(strNamespace) )
+				.append( $('<td>').html(delete_handle) )
+				.append( $('<td>').html(refresh_handle) );
 			table.append(tr);
 			bEven = !bEven;
 		}

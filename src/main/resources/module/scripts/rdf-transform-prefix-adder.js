@@ -57,94 +57,88 @@ class RDFTransformPrefixAdder {
 
 		this.#onDoneAdding = onDoneAdding;
 
-		Refine.wrapCSRF( (token) => {
-			this.#elements.file_upload_form
-			.submit( async (evt) => {
-				evt.preventDefault();
+		this.#elements.file_upload_form
+		.submit( async (evt) => {
+			evt.preventDefault();
 
-				var fetchOption =
-					this.#elements.fetching_options_table
-					.find('input[name="vocab_fetch_method"]:checked')
-					.val();
+			var strPrefix = this.#elements.prefix.val();
+			var strNamespace = this.#elements.namespace.val();
+			var strFetchOption =
+				this.#elements.fetching_options_table
+				.find('input[name="vocab_fetch_method"]:checked')
+				.val();
 
-				var strPrefix = this.#elements.prefix.val();
-				var strNamespace = this.#elements.namespace.val();
+			//
+			// Test the user supplied prefix and namespace...
+			//
+			var bUndefinedNamespace = (strNamespace == undefined || strNamespace == "");
+			if ( ! bUndefinedNamespace && ! await RDFTransformCommon.validatePrefix(strNamespace) ) {
+				// NOTE: The validatePrefix() call does its own alert dialog.
+				// Let the user try again...
+				return;
+			}
+			var bDefinedPrefix = this.#prefixesManager.hasPrefix(strPrefix);
+			if (bUndefinedNamespace || bDefinedPrefix) {
+				var strAlert =
+					$.i18n('rdft-prefix/prefix') +
+					' "' + strPrefix + '" ' +
+					( bUndefinedNamespace ?
+						$.i18n('rdft-prefix/must-define') :
+						$.i18n('rdft-prefix/already-defined')
+					);
+				alert(strAlert);
+				// Let the user try again...
+				return;
+			}
 
-				//
-				// Test the user supplied prefix and namespace...
-				//
-				var bUndefinedNamespace = (strNamespace == undefined || strNamespace == "");
-				if ( ! bUndefinedNamespace && ! await RDFTransformCommon.validatePrefix(strNamespace) ) {
-					// NOTE: The validatePrefix() call does its own alert dialog.
-					// Let the user try again...
-					return;
-				}
-				var bDefinedPrefix = this.#prefixesManager.hasPrefix(strPrefix);
-				if (bUndefinedNamespace || bDefinedPrefix) {
-					var strAlert =
-						$.i18n('rdft-prefix/prefix') +
-						' "' + strPrefix + '" ' +
-						( bUndefinedNamespace ?
-							$.i18n('rdft-prefix/must-define') :
-							$.i18n('rdft-prefix/defined')
-						);
-					alert(strAlert);
-					// Let the user try again...
-					return;
-				}
+			//
+			// All Good: Process the Prefix Info for addition on the server...
+			//
+			var dismissBusy = null;
+			var postCmd = "command/rdf-transform/add-prefix";
+			// Prepare the data values...
+			var postData = {
+				"project"    : theProject.id,
+				"prefix"     : strPrefix,
+				"namespace"  : strNamespace,
+				"fetch"      : strFetchOption,
+				"fetch-url"  : strNamespace
+			};
 
-				//
-				// All Good: Process the Prefix Info for addition on the server...
-				//
-				var dismissBusy = null;
-				var postCmd = "command/rdf-transform/add-prefix";
-				// Prepare the data values...
-				var postData = {
-					"csrf_token" : token,
-					"prefix"     : strPrefix,
-					"namespace"  : strNamespace,
-					"fetch-url"  : strNamespace,
-					"project"    : theProject.id,
-					"fetch"      : fetchOption
-				};
+			if (strFetchOption === 'file') {
+				// Prepare the form values by id attributes...
+				$('#vocab-project').val(theProject.id);
+				$('#vocab-prefix').val(strPrefix);
+				$('#vocab-namespace').val(strNamespace);
 
-				if (fetchOption === 'file') {
-					// Prepare the form values by id attributes...
-					$('#vocab-prefix').val(strPrefix);
-					$('#vocab-namespace').val(strNamespace);
-					$('#vocab-project').val(theProject.id);
+				postCmd = "command/rdf-transform/add-prefix-from-file";
+				postData = {};
+				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace);
+			}
+			else if (strFetchOption === 'web') {
+				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
+			}
+			else { // if (fetchOption === 'prefix') {
+				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
+			}
 
-					postCmd = "command/rdf-transform/add-prefix-from-file";
-					postData = {
-						"csrf_token" : token,
-						"dataType" : "json"
-					};
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace);
-				}
-				else if (fetchOption === 'web') {
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
-				}
-				else if (fetchOption === 'prefix') {
-					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
-				}
-
-				$.post(
-					postCmd,
-					postData,
-					(data) => {
-						dismissBusy();
-						if (data.code === 'error') {
-							alert("Error: " + data.message);
-						}
-						else if (this.#onDoneAdding) {
-							// Since we've successfully added the Prefix Info on the server,
-							// add it to the client for viewing...
-							this.#onDoneAdding(strPrefix, strNamespace);
-						}
-						this.#dismiss();
+			Refine.postCSRF(
+				postCmd,
+				postData,
+				(data) => {
+					if (data.code === "error") {
+						alert($.i18n('rdft-vocab/error-adding') + ': ' + strPrefix);
 					}
-				);
-			});
+					else if (this.#onDoneAdding) {
+						// Since we've successfully added the Prefix Info on the server,
+						// add it to the client for viewing...
+						this.#onDoneAdding(strPrefix, strNamespace);
+					}
+					dismissBusy();
+					this.#dismiss();
+				},
+				"json"
+			);
 		});
 
 		this.#elements.buttonOK

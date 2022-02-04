@@ -211,13 +211,13 @@ public class VocabularySearcher implements IVocabularySearcher {
 	private void deleteTerms(String strPrefix, String strProjectID)
 			throws IOException {
 		if ( strProjectID == null || strProjectID.isEmpty() ) {
-			throw new RuntimeException("ProjectID is null");
+			throw new RuntimeException("Project ID is null");
 		}
 
 		BooleanQuery termsQuery =
 			new BooleanQuery.Builder().
 				add(TYPE_QUERY, Occur.MUST).
-				add(new TermQuery(new Term("project", strProjectID)), Occur.MUST).
+				add(new TermQuery(new Term(Util.gstrProject, strProjectID)), Occur.MUST).
 				add(new TermQuery(new Term(Util.gstrPrefix, strPrefix)), Occur.MUST).
 				build();
 
@@ -280,7 +280,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		// From Node Type (Class or Property)...
 		doc.add( new StringField( Util.gstrType,        strNodeType,  Field.Store.YES ) );
 		// From Project ID...
-		doc.add( new StringField( "project",            strProjectID, Field.Store.NO ) );
+		doc.add( new StringField( Util.gstrProject,     strProjectID, Field.Store.NO ) );
 
         this.writer.addDocument(doc);
 	}
@@ -289,7 +289,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 			throws IOException {
 		BooleanQuery.Builder qbuilderResult =
 			new BooleanQuery.Builder().
-                add(new TermQuery(new Term("project", strProjectID)), Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrProject, strProjectID)), Occur.MUST).
                 add(new TermQuery(new Term(Util.gstrType, strType)), Occur.MUST);
 
 		if (strQueryVal != null && strQueryVal.strip().length() > 0) {
@@ -455,7 +455,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		// See the calling function: addPredefinedVocabulariesToProject()
 
 		// Set new Project ID for "copied" documents...
-		IndexableField fieldProjectID = new StoredField("project", strProjectID);
+		IndexableField fieldProjectID = new StoredField(Util.gstrProject, strProjectID);
 
 		// Iterate through the Global documents...
 		for (ScoreDoc sdoc : docs.scoreDocs) {
@@ -472,7 +472,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 			}
 
 			// Change the Global Project ID field to the specified Project ID field...
-			docProject.removeField("project");
+			docProject.removeField(Util.gstrProject);
 			docProject.add(fieldProjectID);
 
 			// Store and index the new project document...
@@ -483,7 +483,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 	private TopDocs getDocumentsOfProjectID(String strProjectID)
 			throws IOException {
 		// Query for Project ID...
-		Query query = new TermQuery(new Term("project", strProjectID));
+		Query query = new TermQuery(new Term(Util.gstrProject, strProjectID));
 		return searcher.search( query, this.getMaxDoc() );
 	}
 
@@ -491,7 +491,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 			throws IOException {
 		// Query for Project ID...
 		Set<String> prefixes = new HashSet<String>();
-		Query query = new TermQuery(new Term("project", strProjectID));
+		Query query = new TermQuery(new Term(Util.gstrProject, strProjectID));
 		TopDocs docs =  searcher.search( query, this.getMaxDoc() );
 		for (ScoreDoc sdoc : docs.scoreDocs) {
 			Document doc = searcher.doc(sdoc.doc);
@@ -503,7 +503,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 	private void deletePrefixesOfProjectID(String strProjectID, Set<String> toDelete)
 			throws IOException {
 		if ( strProjectID == null || strProjectID.isEmpty() ) {
-			throw new RuntimeException("ProjectID is null");
+			throw new RuntimeException("Project ID is null");
 		}
 
 		BooleanQuery.Builder qbuilderPrefixes = new BooleanQuery.Builder();
@@ -515,7 +515,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 		BooleanQuery queryDelete =
 			new BooleanQuery.Builder().
 				add(TYPE_QUERY, Occur.MUST).
-				add( new TermQuery( new Term("project", strProjectID) ), Occur.MUST ).
+				add( new TermQuery( new Term(Util.gstrProject, strProjectID) ), Occur.MUST ).
 				add(qbuilderPrefixes.build(), Occur.MUST).
 				build();
 

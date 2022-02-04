@@ -1,0 +1,50 @@
+package com.google.refine.rdf.command;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.model.Util;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class PrefixRemoveCommand extends RDFTransformCommand {
+	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRemoveCmd");
+
+	public PrefixRemoveCommand(ApplicationContext context) {
+		super(context);
+	}
+
+	@Override
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		if ( Util.isDebugMode() ) PrefixRemoveCommand.logger.info("Removing prefix...");
+		response.setCharacterEncoding("UTF-8");
+		response.setHeader("Content-Type", "application/json");
+		if ( ! this.hasValidCSRFToken(request) ) {
+			PrefixRemoveCommand.respondCSRFError(response);
+			return;
+		}
+		String strPrefix = request.getParameter(Util.gstrPrefix);
+		String strProjectID = request.getParameter(Util.gstrProject); // NOT this.getProject(request);
+		if ( ! this.getRDFTransform(request).removePrefix(strPrefix) ) {
+			if ( Util.isDebugMode() ) PrefixRemoveCommand.logger.info("...failed.");
+			PrefixRemoveCommand.respondJSON(response, CodeResponse.error);
+			return;
+		}
+
+		try {
+			this.getContext().getVocabularySearcher().deleteTermsOfVocab(strPrefix, strProjectID);
+		}
+		catch (Exception ex) {
+			if ( Util.isDebugMode() ) PrefixRemoveCommand.logger.info("...vocabulary removal problems...");
+		}
+
+		if ( Util.isDebugMode() ) PrefixRemoveCommand.logger.info("...removed.");
+		PrefixRemoveCommand.respondJSON(response, CodeResponse.ok);
+	}
+}

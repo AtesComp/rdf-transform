@@ -19,39 +19,39 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetDefaultPrefixesCommand extends RDFTransformCommand {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:GetDefPrefCmd");
+public class PrefixesGetDefaultCommand extends RDFTransformCommand {
+	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxsGetDefaultCmd");
 
-	public GetDefaultPrefixesCommand(ApplicationContext context) {
+	public PrefixesGetDefaultCommand(ApplicationContext context) {
 		super(context);
 	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("Getting default prefixes...");
+		if ( Util.isDebugMode() ) PrefixesGetDefaultCommand.logger.info("Getting default prefixes...");
 		response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
-        try{
+        try {
 			this.getDefaultPrefixes(request, response);
         }
 		catch (Exception ex) {
-            GetDefaultPrefixesCommand.respondException(response, ex);
+            PrefixesGetDefaultCommand.respondJSON(response, CodeResponse.error);
         }
 	}
 
 	private void getDefaultPrefixes(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String strProjectID = request.getParameter("project");
+		String strProjectID = request.getParameter(Util.gstrProject);
 
 		//
 		// Get vocabularies...
 		//
 		VocabularyList listVocabs = this.getRDFTransform(request).getPrefixes();
-		if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("Existing prefixes: size=" + listVocabs.size());
+		if ( Util.isDebugMode() ) PrefixesGetDefaultCommand.logger.info("Existing prefixes: size=" + listVocabs.size());
 		if ( listVocabs == null || listVocabs.isEmpty() ) {
 			listVocabs = this.getContext().getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
-			if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("Predefined prefixes: size=" + listVocabs.size());
+			if ( Util.isDebugMode() ) PrefixesGetDefaultCommand.logger.info("Predefined prefixes: size=" + listVocabs.size());
 		}
 
 		//
@@ -67,7 +67,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 		// Load vocabularies for vocabulary searcher and respond each namespace...
 		//
 		for (Vocabulary vocab : listVocabs) {
-			if ( Util.isDebugMode() ) GetDefaultPrefixesCommand.logger.info("  Prefix: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
+			if ( Util.isDebugMode() ) PrefixesGetDefaultCommand.logger.info("  Prefix: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
 			Exception except = null;
 			boolean bError = false;
 			String strError = null;
@@ -93,11 +93,11 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 				// A Default Prefix vocabulary is not defined properly...
 				//   Ignore the exception, but log it...
 				if (bError) {// ...error...
-					GetDefaultPrefixesCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
+					PrefixesGetDefaultCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
 					if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
 				}
 				else { // ...warning...
-					if ( Util.isVerbose() ) GetDefaultPrefixesCommand.logger.warn("Prefix exists: ", except);
+					if ( Util.isVerbose() ) PrefixesGetDefaultCommand.logger.warn("Prefix exists: ", except);
 				}
 				// ...continue processing the other vocabularies...
 			}
@@ -113,7 +113,7 @@ public class GetDefaultPrefixesCommand extends RDFTransformCommand {
 
         theWriter.flush();
         theWriter.close();
-        writerBase.flush();
+        writerBase.flush(); // ...commit response
         writerBase.close();
 	}
 }

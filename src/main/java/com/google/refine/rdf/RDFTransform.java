@@ -23,6 +23,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import org.slf4j.Logger;
@@ -353,6 +356,7 @@ public class RDFTransform implements OverlayModel {
     */
     @JsonProperty(Util.gstrExtension)
     public String getExtension() {
+        // Return "String" is ok for JSON since it's a single value.
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting extension...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
@@ -362,12 +366,13 @@ public class RDFTransform implements OverlayModel {
 
     @JsonProperty(Util.gstrExtension)
     public void setExtension(JsonNode jnodeExtension) {
-        // Ignore...
+        // Ignore since extension is constant...
         return;
     }
 
     @JsonProperty(Util.gstrVersion)
     public String getVersion() {
+        // Return "String" is ok for JSON since it's a single value.
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting version...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
@@ -377,7 +382,7 @@ public class RDFTransform implements OverlayModel {
 
     @JsonProperty(Util.gstrVersion)
     public void setVersion(JsonNode jnodeVersion) {
-        // Ignore...
+        // Ignore since version is constant...
         return;
     }
 
@@ -388,6 +393,7 @@ public class RDFTransform implements OverlayModel {
 
     @JsonProperty(Util.gstrBaseIRI)
     public String getBaseIRIAsString() {
+        // Return "String" is ok for JSON since it's a single value.
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting Base IRI...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
@@ -489,28 +495,22 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonProperty(Util.gstrNamespaces)
-    public String getPrefixesAsString() {
+    public JsonNode getPrefixesAsJSON() {
+        // Return must be "JsonNode" for JSON since it's an array!
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting prefixes as JSON...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
-        ByteArrayOutputStream baostream = new ByteArrayOutputStream();
-        try {
-            JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(baostream);
-            if ( this.thePrefixes == null || this.thePrefixes.isEmpty() ) {
-                return ""; // ...null context
-            }
-            jsonWriter.writeStartObject();
-            for (Vocabulary thePrefix : this.thePrefixes) {
-                jsonWriter.writeObjectField( thePrefix.getPrefix(), thePrefix.getNamespace() );
-            }
-            jsonWriter.writeEndObject();
-            return baostream.toString("UTF-8");
+        if ( this.thePrefixes == null || this.thePrefixes.isEmpty() ) {
+            return NullNode.instance; // ...null context
         }
-        catch (Exception ex) {
-            RDFTransform.logger.error("Error getting namespaces!", ex);
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode oNodeNamespaces = mapper.createObjectNode();
+        for (Vocabulary thePrefix : this.thePrefixes) {
+            oNodeNamespaces.put( thePrefix.getPrefix(), thePrefix.getNamespace() );
         }
-        return ""; // ...null context
+        return oNodeNamespaces;
     }
 
     @JsonIgnore
@@ -555,8 +555,8 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-    public void removePrefix(String strPrefix) {
-        this.thePrefixes.removeByPrefix(strPrefix);
+    public boolean removePrefix(String strPrefix) {
+        return this.thePrefixes.removeByPrefix(strPrefix);
     }
 
     @JsonIgnore
@@ -566,7 +566,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonProperty(Util.gstrSubjectMappings)
-    public String getRootsAsString() {
+    public JsonNode getRootsAsString() {
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting roots as JSON...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
@@ -575,19 +575,20 @@ public class RDFTransform implements OverlayModel {
         try {
             JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(baostream);
             if ( this.theRootNodes == null || this.theRootNodes.isEmpty() ) {
-                return ""; // ...null context
+                return NullNode.instance; // ...null context
             }
             jsonWriter.writeStartArray();
             for (Node nodeRoot : this.theRootNodes) {
                 nodeRoot.write(jsonWriter);
             }
             jsonWriter.writeEndArray();
-            return baostream.toString("UTF-8");
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readTree( baostream.toString("UTF-8") );
         }
         catch (Exception ex) {
             RDFTransform.logger.error("Error getting root nodes!", ex);
         }
-        return ""; // ...null context
+        return NullNode.instance; // ...null context
     }
 
     @JsonIgnore

@@ -21,8 +21,8 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
 	@Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( !hasValidCSRFToken(request) ) {
-            respondCSRFError(response);
+        if ( ! this.hasValidCSRFToken(request) ) {
+            SaveBaseIRICommand.respondCSRFError(response);
             return;
         }
         try {
@@ -33,17 +33,18 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
             	baseIRI = Util.buildIRI(strIRI);
             }
             catch (RuntimeException ex) {
-            	respondException(response, ex);
+            	SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
             	return;
             }
             RDFTransform.getRDFTransform( this.getContext(), theProject ).setBaseIRI(baseIRI);
 
             theProject.getMetadata().updateModified();
-
-            respond(response, "OK", "Base IRI saved");
         }
         catch (Exception ex) {
-            respondException(response, ex);
+            SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
+            return;
         }
+
+        SaveBaseIRICommand.respondJSON(response, CodeResponse.ok);
     }
 }

@@ -26,7 +26,11 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import com.google.refine.ProjectManager;
 import com.google.refine.model.Project;
 
-public class AddPrefixFromFileCommand extends RDFTransformCommand {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class PrefixAddFromFileCommand extends RDFTransformCommand {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxAddFromFileCmd");
 
     String strPrefix;
     String strNamespace;
@@ -35,13 +39,13 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
     String strFilename;
     InputStream instreamFile;
 
-    public AddPrefixFromFileCommand(ApplicationContext context) {
+    public PrefixAddFromFileCommand(ApplicationContext context) {
         super(context);
 
+        this.strProjectID = null;
         this.strPrefix = null;
         this.strNamespace = null;
         this.theRDFFormat = null;
-        this.strProjectID = null;
         this.strFilename = "";
         this.instreamFile = null;
     }
@@ -49,8 +53,8 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if( ! this.hasValidCSRFToken(request) ) {
-                AddPrefixFromFileCommand.respondCSRFError(response);
+        if ( ! this.hasValidCSRFToken(request) ) {
+            PrefixAddFromFileCommand.respondCSRFError(response);
             return;
         }
         FileItemFactory factory = new DiskFileItemFactory();
@@ -74,21 +78,24 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
             theRepoConnection.close();
         }
         catch (Exception ex) {
-            throw new ServletException("Can't upload file to repository", ex);
+            PrefixAddFromFileCommand.respondJSON(response, CodeResponse.error);
+            return;
         }
 
         try {
-            this.getTransform().addPrefix(strPrefix, strNamespace);
+            this.getTransform().addPrefix(this.strPrefix, this.strNamespace);
 
             this.getContext().
                 getVocabularySearcher().
-                    importAndIndexVocabulary(strPrefix, strNamespace, theRepository, strProjectID);
+                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, theRepository, this.strProjectID);
         }
         catch (Exception ex) {
-            AddPrefixFromFileCommand.respondException(response, ex);
+            PrefixAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
+            PrefixAddFromFileCommand.respondJSON(response, CodeResponse.error);
+            return;
         }
 
-        AddPrefixFromFileCommand.respondJSON(response, CodeResponse.ok);
+        PrefixAddFromFileCommand.respondJSON(response, CodeResponse.ok);
     }
 
     private void parseUploadItems(List<FileItem> items)
@@ -203,9 +210,9 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
     }
 
     private RDFTransform getTransform()
-            throws ServletException {
+            throws ServletException { // ...just because
         if (this.strProjectID == null || "".equals(this.strProjectID)) {
-            throw new ServletException("Can't find project: missing ID");
+            throw new ServletException("Missing Project ID!");
         }
 
         Long liProjectID;
@@ -213,12 +220,12 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
             liProjectID = Long.parseLong(this.strProjectID);
         }
         catch (NumberFormatException ex) {
-            throw new ServletException("Can't find project: badly formatted id #", ex);
+            throw new ServletException("Project ID not a long int!", ex);
         }
 
         Project theProject = ProjectManager.singleton.getProject(liProjectID);
         if (theProject == null) {
-            throw new ServletException("Failed to find project id #" + strProjectID + " - may be corrupt");
+            throw new ServletException("Project ID [" + strProjectID + "] not found! May be corrupt.");
         }
 
         RDFTransform transform = null;
@@ -228,7 +235,7 @@ public class AddPrefixFromFileCommand extends RDFTransformCommand {
             transform = null;
         }
         if (transform == null) {
-            throw new ServletException("Failed to find RDF Transform for project id #" + strProjectID);
+            throw new ServletException("RDF Transform for Project ID [" + strProjectID + "] not found!");
         }
         return transform;
     }

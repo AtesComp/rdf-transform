@@ -37,6 +37,7 @@ public class Util {
 
     // RDF Transform JSON Strings
     // --------------------------------------------------------------------------------
+    static public final String gstrProject = "project";
     static public final String gstrExtension = "extension";
     static public final String gstrVersion = "version";
     static public final String gstrBaseIRI = "baseIRI";

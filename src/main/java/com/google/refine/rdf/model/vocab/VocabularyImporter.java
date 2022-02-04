@@ -113,8 +113,8 @@ public class VocabularyImporter {
 
 			extractor.extract(source, reporter);
 		}
-		catch (Exception e) {
-			throw new VocabularyImportException("Error importing vocabulary " + strFetchURL, e);
+		catch (Exception ex) {
+			throw new VocabularyImportException("Error importing vocabulary " + strFetchURL, ex);
 		}
 	}
 

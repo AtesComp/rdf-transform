@@ -21,8 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 //import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -42,6 +40,8 @@ public class PreviewRDFCommand extends Command {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // No CSRF Token required for this command.
+
 		try {
             Project theProject = this.getProject(request);
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
@@ -96,25 +96,13 @@ public class PreviewRDFCommand extends Command {
             // ...end writing
 
             this.strStatements = strwriterBase.getBuffer().toString();
-            if ( Util.isVerbose(4) ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
-            else if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
+            if ( Util.isVerbose(4) || Util.isDebugMode() ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
 
             // Send back to client...
-            PreviewRDFCommand.respondJSON( response, new PreviewResponse(strStatements) );
+            PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );
         }
 		catch (Exception ex) {
-            PreviewRDFCommand.respondException(response, ex);
+            PreviewRDFCommand.respondJSON(response, CodeResponse.error);
         }
-    }
-
-    private class PreviewResponse {
-
-    	@JsonProperty("v")
-    	public String strValue;
-
-        @JsonCreator
-    	protected PreviewResponse(String strValue) {
-    		this.strValue = strValue;
-    	}
     }
 }

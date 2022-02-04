@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.model.Util;
 
-public class AddPrefixCommand extends RDFTransformCommand {
+public class PrefixAddCommand extends RDFTransformCommand {
 
-	public AddPrefixCommand(ApplicationContext context) {
+	public PrefixAddCommand(ApplicationContext context) {
 		super(context);
 	}
 
@@ -19,15 +19,14 @@ public class AddPrefixCommand extends RDFTransformCommand {
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		if ( ! this.hasValidCSRFToken(request) ) {
-			AddPrefixCommand.respondCSRFError(response);
+			PrefixAddCommand.respondCSRFError(response);
 			return;
 		}
 		String strPrefix       = request.getParameter(Util.gstrPrefix).strip();
         String strNamespace    = request.getParameter(Util.gstrNamespace).strip();
-        String strProjectID    = request.getParameter("project");
+        String strProjectID    = request.getParameter(Util.gstrProject);
         String strFetchOption  = request.getParameter("fetch").strip();
 
-        this.getRDFTransform(request).addPrefix(strPrefix, strNamespace);
 		if ( strFetchOption.equals("web") ) {
 			String strFetchURL = request.getParameter("fetch-url");
 			if (strFetchURL == null || strFetchOption.isEmpty()) {
@@ -40,11 +39,13 @@ public class AddPrefixCommand extends RDFTransformCommand {
 							strPrefix, strNamespace, strFetchURL, strProjectID);
 			}
 			catch (Exception ex) { // VocabularyImportException | IOException
-				this.getRDFTransform(request).removePrefix(strPrefix);
-				AddPrefixCommand.respondException(response, ex);
+				PrefixAddCommand.respondJSON(response, CodeResponse.error);
 				return;
         	}
 		}
-		AddPrefixCommand.respondJSON(response, CodeResponse.ok);
+
+        this.getRDFTransform(request).addPrefix(strPrefix, strNamespace);
+
+		PrefixAddCommand.respondJSON(response, CodeResponse.ok);
     }
 }

@@ -38,10 +38,12 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             // Get the RDF Transform...
             String strTransform = request.getParameter(RDFTransform.KEY);
             if (strTransform == null) {
+                SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             if (jnodeRoot == null) {
+                SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             RDFTransform theTransform = RDFTransform.reconstruct(this.getContext(), jnodeRoot);
@@ -52,7 +54,7 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             SaveRDFTransformCommand.performProcessAndRespond(request, response, theProject, procSave);
         }
         catch (Exception ex) {
-            SaveRDFTransformCommand.respondException(response, ex);
+            SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
         }
     }
 }

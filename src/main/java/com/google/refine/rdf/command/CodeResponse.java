@@ -3,22 +3,39 @@ package com.google.refine.rdf.command;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CodeResponse {
-	protected String code;
+	private String strCode;
+	private String strMessage;
 	
 	public CodeResponse() {
-		this.code = "ok";
+		this.strCode = "ok";
 	}
 	
-	public CodeResponse(String code) {
-		this.code = code;
+	public CodeResponse(String strMessage) {
+		setResponse(false, strMessage);
 	}
 
-	@JsonProperty
+	public CodeResponse(String strMessage, boolean bError) {
+		setResponse(bError, strMessage);
+	}
+
+	@JsonProperty("code")
 	public String getCode() {
-		return code;
+		return strCode;
 	}
 
-	protected void writeOtherFields() {};
+	@JsonProperty("message")
+	public String getMessage() {
+		return strMessage;
+	}
+
+	private void setResponse(boolean bError, String strMessage) {
+		this.strCode = "ok";
+		if (bError) {
+			this.strCode = "error";
+		}
+		this.strMessage = strMessage;
+	};
 	
 	public static final CodeResponse ok = new CodeResponse("ok");
+	public static final CodeResponse error = new CodeResponse("error");
 }

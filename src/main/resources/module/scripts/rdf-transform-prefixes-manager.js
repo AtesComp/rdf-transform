@@ -31,8 +31,16 @@ class RDFTransformPrefixesManager {
 			catch (evt) {
 				// ...ignore error, no prefixes...
 			}
-			if (data !== null && data.namespaces) {
+			var bError = false;
+			if (data !== null && "namespaces" in data) {
 				this.prefixes = data.namespaces; // ...new defaults prefixes
+			}
+			else { // (data === null || data.code === "error") 
+				bError = true;
+			}
+			// We might have changed data for errors...
+			if (bError) {
+				alert("ERROR: Could not retrieve default prefixes!");
 			}
 			this.showPrefixes(this.prefixes);
 		}
@@ -63,7 +71,7 @@ class RDFTransformPrefixesManager {
 				// GET default prefixes in ajax
 				$.ajax(
 					{	url  : "command/rdf-transform/get-default-prefixes",
-						type : 'GET',
+						type : "GET",
 						async: false, // ...wait on results
 						data : { "project" : theProject.id },
 						dataType : "json",
@@ -76,21 +84,13 @@ class RDFTransformPrefixesManager {
 	}
 
 	#savePrefixes(onDoneSave) {
-		Refine.wrapCSRF(
-			(token) => {
-				$.ajax(
-					{	url  : "command/rdf-transform/save-prefixes",
-						type : 'POST',
-						data : {
-							"project"    : theProject.id,
-							"csrf_token" : token,
-							"namespaces" : this.prefixes
-						},
-						dataType : "json",
-						success : (data) => { if (onDoneSave) { onDoneSave(data); } }
-					}
-				);
-			}
+		Refine.postCSRF(
+			"command/rdf-transform/save-prefixes",
+			{   "project" : theProject.id,
+				"namespaces" : this.prefixes
+			},
+			(data) => { if (onDoneSave) { onDoneSave(data); } },
+			"json"
 		);
 	}
 

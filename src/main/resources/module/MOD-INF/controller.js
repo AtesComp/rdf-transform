@@ -125,14 +125,14 @@ function registerServerSide() {
     RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTCmd.PreviewRDFExpressionCommand() );
     RefineServlet.registerCommand( module, "validate-iri",           new RDFTCmd.ValidateIRICommand() );
 	// Vocabs commands
-    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTCmd.GetDefaultPrefixesCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix",             new RDFTCmd.AddPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTCmd.AddPrefixFromFileCommand(appContext) );
-    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTCmd.RefreshPrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.RemovePrefixCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.SavePrefixesCommand(appContext) );
-    RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand(appContext) );
+    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTCmd.PrefixesGetDefaultCommand(appContext) );
+    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.PrefixesSaveCommand(appContext) );
+    RefineServlet.registerCommand( module, "add-prefix",             new RDFTCmd.PrefixAddCommand(appContext) );
+    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTCmd.PrefixAddFromFileCommand(appContext) );
+    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTCmd.PrefixRefreshCommand(appContext) );
+    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.PrefixRemoveCommand(appContext) );
     RefineServlet.registerCommand( module, "suggest-namespace",      new RDFTCmd.SuggestNamespaceCommand(appContext) );
+    RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand(appContext) );
 	// Others:
 	//   CodeResponse - Standard Response Class for Commands
 	//   RDFTransformCommand - Abstract RDF Command Class
