@@ -1,10 +1,8 @@
 package com.google.refine.rdf.model.expr;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import com.google.refine.rdf.model.Util;
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.expr.Binder;
 import com.google.refine.model.Cell;
@@ -32,14 +30,12 @@ import org.slf4j.LoggerFactory;
 public class RDFTransformBinder implements Binder {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFBinder");
 
-	private ApplicationContext theContext;
 	private Project theProject;
 	private String strLastBoundBaseIRI;
-	private final String strBindError = "Unable to bind baseIRI.";
+	//private final String strBindError = "Unable to bind baseIRI.";
 
-	public RDFTransformBinder(ApplicationContext context) {
+	public RDFTransformBinder() {
 		super();
-		this.theContext = context;
 		this.strLastBoundBaseIRI = null;
 	}
 
@@ -47,15 +43,7 @@ public class RDFTransformBinder implements Binder {
     public void initializeBindings(Properties bindings, Project project) {
 		this.theProject = project;
 		if ( Util.isVerbose(3) ) RDFTransformBinder.logger.info("Bind baseIRI...");
-        try {
-			this.strLastBoundBaseIRI =
-				RDFTransform.getRDFTransform(this.theContext, this.theProject).getBaseIRIAsString();
-		}
-		catch (IOException ex) {
-			RDFTransformBinder.logger.error(this.strBindError, ex);
-			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-			return;
-		}
+		this.strLastBoundBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
 		bindings.put("baseIRI", this.strLastBoundBaseIRI);
     }
 
@@ -68,16 +56,7 @@ public class RDFTransformBinder implements Binder {
 		// The put() call replaces it.
 	
 		// Get the current baseIRI...
-		String strCurrentBaseIRI = null;
-        try {
-			strCurrentBaseIRI =
-				RDFTransform.getRDFTransform(this.theContext, this.theProject).getBaseIRIAsString();
-		}
-		catch (IOException ex) {
-			RDFTransformBinder.logger.error(strBindError, ex);
-			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-			return;
-		}
+		String strCurrentBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
 		// If the current baseIRI is new...
 		if ( ! this.strLastBoundBaseIRI.equals(strCurrentBaseIRI) ) {
 			// Replace the bound baseIRI...

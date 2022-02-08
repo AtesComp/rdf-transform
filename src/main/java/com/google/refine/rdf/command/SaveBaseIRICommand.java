@@ -8,14 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.rdf.model.Util;
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.model.Project;
 
 public class SaveBaseIRICommand extends RDFTransformCommand {
 
-    public SaveBaseIRICommand(ApplicationContext context) {
-		super(context);
+    public SaveBaseIRICommand() {
+		super();
 	}
 
 	@Override
@@ -36,7 +35,7 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
             	SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
             	return;
             }
-            RDFTransform.getRDFTransform( this.getContext(), theProject ).setBaseIRI(baseIRI);
+            RDFTransform.getRDFTransform(theProject).setBaseIRI(baseIRI);
 
             theProject.getMetadata().updateModified();
         }

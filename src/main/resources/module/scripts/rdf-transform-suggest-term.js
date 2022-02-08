@@ -70,12 +70,12 @@
 
 	                clearTimeout(this.request.timeout);
 					// Parameters names are defined for Suggest Term Command (SuggestTermCommand.java) Java code.
-					// The "type" holds the Project ID of the project to search...
-                    data.type = theProject.id;
-					// The "type_strict" holds the value type to search (class, property)...
-					data.type_strict = this.options.type_strict;
+					// The "project" holds the Project ID of the project to search...
+                    data.project = theProject.id;
+					// The "type" holds the value type to search (class, property)...
+					data.type = this.options.type;
 					// "The prefix" holds the query search value...
-					data.prefix = query;
+					data.query = query;
 					// See Defaults below for other default parameters.
 
                     var url =
@@ -84,7 +84,7 @@
 						//$.param(data, true);
 
 					var ajax_options = {
-	                    "url"      : url, //this.options.service_url + this.options.service_path,
+	                    "url"      : url,
 	                    "data"     : data,
 	                    "dataType" : "json",
                         "cache"    : true
@@ -97,7 +97,7 @@
 								.done(
 									(data, strStatus, xhr) => {
 										$.suggest.cache[url] = data;
-										data.prefix = query;  // ...keep track of prefix to match response with query
+										data.query = query;  // ...keep track of query to match with response
 										this.response(data, cursor ? cursor : -1);
 										this.trackEvent(
 											this.name, "request", "tid",
@@ -203,7 +203,7 @@
         			"service_url"         : "",
         			"service_path"        : "command/rdf-transform/suggest-term",
         			"flyout_service_path" : "command/rdf-transform/suggest-term",
-        			"type_strict"         : "class",
+        			"type"                : "class",
         			"suggest_new"         : $.i18n('rdft-dialog/add-it'),
         			"cache"               : false,
         			//"soft                : true,

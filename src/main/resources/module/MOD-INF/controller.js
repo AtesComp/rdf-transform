@@ -109,7 +109,7 @@ function registerServerSide() {
 
 	/*
 	 *  Server-side Context Initialization...
-	 *    Tests a simple attempt to mimic dependency injection.
+	 *    The One and Only RDF Transform Application Context.
 	 */
 	var appContext = new RDFTBase.ApplicationContext();
 
@@ -119,20 +119,20 @@ function registerServerSide() {
      */
 	var strSaveRDFTransform = "save-rdf-transform";
 	RefineServlet.registerCommand( module, "initialize",             new RDFTCmd.InitializationCommand(appContext) );
-	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTCmd.SaveRDFTransformCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTCmd.SaveBaseIRICommand(appContext) );
-    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTCmd.PreviewRDFCommand(appContext) );
+	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTCmd.SaveRDFTransformCommand() );
+    RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTCmd.SaveBaseIRICommand() );
+    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTCmd.PreviewRDFCommand() );
     RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTCmd.PreviewRDFExpressionCommand() );
     RefineServlet.registerCommand( module, "validate-iri",           new RDFTCmd.ValidateIRICommand() );
 	// Vocabs commands
-    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTCmd.PrefixesGetDefaultCommand(appContext) );
-    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.PrefixesSaveCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix",             new RDFTCmd.PrefixAddCommand(appContext) );
-    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTCmd.PrefixAddFromFileCommand(appContext) );
-    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTCmd.PrefixRefreshCommand(appContext) );
-    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.PrefixRemoveCommand(appContext) );
-    RefineServlet.registerCommand( module, "suggest-namespace",      new RDFTCmd.SuggestNamespaceCommand(appContext) );
-    RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand(appContext) );
+    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTCmd.PrefixesGetDefaultCommand() );
+    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.PrefixesSaveCommand() );
+    RefineServlet.registerCommand( module, "add-prefix",             new RDFTCmd.PrefixAddCommand() );
+    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTCmd.PrefixAddFromFileCommand() );
+    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTCmd.PrefixRefreshCommand() );
+    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.PrefixRemoveCommand() );
+    RefineServlet.registerCommand( module, "suggest-namespace",      new RDFTCmd.SuggestNamespaceCommand() );
+    RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand() );
 	// Others:
 	//   CodeResponse - Standard Response Class for Commands
 	//   RDFTransformCommand - Abstract RDF Command Class

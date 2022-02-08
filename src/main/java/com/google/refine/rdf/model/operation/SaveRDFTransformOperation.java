@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import com.google.refine.history.Change;
 import com.google.refine.history.HistoryEntry;
 import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
@@ -28,11 +27,13 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     */
     @JsonProperty(RDFTransform.KEY)
     private RDFTransform theTransform;
+    private Project theProject;
 
     @JsonCreator
-    public SaveRDFTransformOperation( @JsonProperty(RDFTransform.KEY) RDFTransform theTransform ) {
+    public SaveRDFTransformOperation(Project theProject, @JsonProperty(RDFTransform.KEY) RDFTransform theTransform) {
+        this.theProject = theProject;
         this.theTransform = theTransform;
-        if ( Util.isVerbose(3) ) logger.info("Created");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Created save operation.");
     }
 
     @JsonProperty("description")
@@ -48,12 +49,12 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @JsonProperty(RDFTransform.KEY)
     public void setTransform(JsonNode jnodeTransform)
             throws Exception {
-        if ( Util.isVerbose(3) ) logger.info("Setting transform from JSON...");
-        if (jnodeTransform == null) {
-            logger.error("ERROR: No RDFTransform in JSON!");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Setting transform from JSON...");
+        if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
+            logger.info("No RDFTransform in JSON!");
             return;
         }
-        this.theTransform = RDFTransform.reconstruct(jnodeTransform);
+        this.theTransform = RDFTransform.reconstruct(this.theProject, jnodeTransform);
     }
 
     @Override
@@ -64,10 +65,11 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @Override
     protected HistoryEntry createHistoryEntry(Project theProject, long liHistoryEntryID)
             throws Exception {
+        if ( Util.isDebugMode() ) logger.info("Creating save operation's change history entry...");
         // Create a new Change object with the transform sent by the command...
         //   NOTE: The previous transform will be set later when the HistoryEntry
         //         causes the Change to apply()'s this transform as the current transform.
-        Change changeHistory = new RDFTransformChange(this.theTransform, null);
+        RDFTransformChange changeHistory = new RDFTransformChange(this.theTransform, null);
 
         // Create a new HistoryEntry to cause the Change to apply()...
         // NOTE: This will also cause the Change to save() after the apply()
@@ -78,12 +80,12 @@ public class SaveRDFTransformOperation extends AbstractOperation {
 
     static public AbstractOperation reconstruct(Project theProject, JsonNode jnodeElement)
             throws Exception {
-        if ( Util.isVerbose(3) ) logger.info("Reconstructing transform...");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Reconstructing transform for new save operation...");
         JsonNode jnodeTransform = jnodeElement.get(RDFTransform.KEY);
         if (jnodeTransform == null) {
             return null;
         }
-        RDFTransform theTransform = RDFTransform.reconstruct(jnodeTransform);
-        return new SaveRDFTransformOperation(theTransform);
+        RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
+        return new SaveRDFTransformOperation(theProject, theTransform);
     }
 }

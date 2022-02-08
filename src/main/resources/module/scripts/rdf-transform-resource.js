@@ -43,42 +43,40 @@ class RDFTransformResourceDialog {
         var elements = DOM.bind(menu);
         elements.rdftNewResourceIRI
         .suggestTerm(
-            {	"type"        : this.#projectID.toString(),
-                "type_strict" : this.#strLookForType,
-                "parent"      : '.rdf-transform-menu-search'
+            {	"project" : this.#projectID.toString(),
+                "type"    : this.#strLookForType,
+                "parent"  : '.rdf-transform-menu-search'
             }
         )
         .bind('fb-select', // ...select existing item...
             async (evt, data) => {
                 MenuSystem.dismissAll();
-                alert("DEBUG: Existing Item:\n" +
-                    data
-                );
+                alert("DEBUG: Existing Item:\n" + data);
                 //var obj = {
                 //    "iri"   : data,
                 //    "cirie" : data
                 //}
                 var obj = null;
                 var iPrefixedIRI = await this.#dialog.prefixesManager.isPrefixedQName(data);
-                if ( iPrefixedIRI == 1 ) {
+                if ( iPrefixedIRI == 1 ) { // ...Prefixed IRI
                     var strPrefix = this.#dialog.prefixesManager.getPrefixFromQName(data);
                     var strPathIRI = this.#dialog.prefixesManager.getSuffixFromQName(data);
                     // IRI   = Namespace of Prefix + strPathIRI
                     // CIRIE = strResPrefix + ":" + strPathIRI
                     obj = {};
                     obj.prefix = strPrefix;   // Given Prefix
-                    obj.pathIRI = strPathIRI; // Path portion of IRI
+                    obj.path_iri = strPathIRI; // Path portion of IRI
                     this.#onDone(obj);
                 }
-                else if ( iPrefixedIRI == 0 ) {
+                else if ( iPrefixedIRI == 0 ) { // ...Full IRI
                     // IRI   = Namespace of Prefix + strPathIRI
                     // CIRIE = strResPrefix + ":" + strPathIRI
                     obj = {};
                     obj.prefix = null;  // No Prefix
-                    obj.pathIRI = data; // Full IRI
+                    obj.path_iri = data; // Full IRI
                     this.#onDone(obj);
                 }
-                else { // iPrefixedIRI == -1
+                else { // iPrefixedIRI == -1 // ...Bad IRI
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
@@ -89,6 +87,8 @@ class RDFTransformResourceDialog {
         )
         .bind('fb-select-new', // ...add new item...
             async (evt, data) => {
+                alert("DEBUG: Add Item:\n" + data);
+
                 // Does the data look like a prefixed IRI?
                 var iPrefixedIRI = await this.#dialog.prefixesManager.isPrefixedQName(data);
                 // Is it a prefixed IRI?
@@ -106,7 +106,7 @@ class RDFTransformResourceDialog {
                         // CIRIE = strResPrefix + ":" + strPathIRI
                         var obj = {};
                         obj.prefix = strPrefix;   // Given Prefix
-                        obj.pathIRI = strPathIRI; // Path portion of IRI
+                        obj.path_iri = strPathIRI; // Path portion of IRI
                         this.#onDone(obj);
                     }
                     // No, then this prefix is not recorded...
@@ -131,7 +131,7 @@ class RDFTransformResourceDialog {
                                     // CIRIE = strResPrefix + ":" + strPathIRI
                                     obj = {};
                                     obj.prefix = strPrefix;   // Given Prefix
-                                    obj.pathIRI = strPathIRI; // Path portion of IRI
+                                    obj.path_iri = strPathIRI; // Path portion of IRI
                                 }
                                 // No, then adjust...
                                 else {
@@ -144,7 +144,7 @@ class RDFTransformResourceDialog {
                                         // CIRIE = strResPrefix + ":" + strPathIRI
                                         obj = {};
                                         obj.prefix = strResPrefix; // New Prefix
-                                        obj.pathIRI = strPathIRI;  // Path portion of IRI
+                                        obj.path_iri = strPathIRI;  // Path portion of IRI
                                     }
                                     // If not, abort the resource addition with a null obj...
                                 }
@@ -164,9 +164,9 @@ class RDFTransformResourceDialog {
 
                     //new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
                     // ...take it as is...
-                    obj = {};
+                    var obj = {};
                     obj.prefix = null;  // No Prefix
-                    obj.pathIRI = data; // Full IRI
+                    obj.path_iri = data; // Full IRI
                     this.#onDone(obj);
                 }
                 // Is it a BAD IRI?

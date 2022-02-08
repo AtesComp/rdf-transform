@@ -6,7 +6,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.VocabularyImportException;
@@ -17,8 +16,8 @@ import org.slf4j.LoggerFactory;
 public class PrefixRefreshCommand extends RDFTransformCommand {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRefreshCmd");
 
-	public PrefixRefreshCommand(ApplicationContext context) {
-		super(context);
+	public PrefixRefreshCommand() {
+		super();
 	}
 
 	@Override
@@ -44,12 +43,12 @@ public class PrefixRefreshCommand extends RDFTransformCommand {
 		String strError = null;
 		try{
 			// Remove related vocabulary...
-			this.getContext().
+			RDFTransform.getGlobalContext().
 				getVocabularySearcher().
 					deleteTermsOfVocab(strPrefix, strProjectID);
 
 			// Re-add related vocabulary...
-			this.getContext().
+			RDFTransform.getGlobalContext().
 				getVocabularySearcher().
 					importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
         }

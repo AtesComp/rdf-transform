@@ -3,10 +3,8 @@ package com.google.refine.rdf.command;
 import java.io.IOException;
 import java.util.Properties;
 
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.operation.SaveRDFTransformOperation;
-import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
 import com.google.refine.process.Process;
 import com.google.refine.util.ParsingUtilities;
@@ -19,8 +17,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class SaveRDFTransformCommand extends RDFTransformCommand {
 
-    public SaveRDFTransformCommand(ApplicationContext context) {
-		super(context);
+    public SaveRDFTransformCommand() {
+		super();
 	}
 
 	@Override
@@ -46,10 +44,10 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            RDFTransform theTransform = RDFTransform.reconstruct(this.getContext(), jnodeRoot);
+            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeRoot);
 
             // Process the "save" operations...
-            AbstractOperation opSave = new SaveRDFTransformOperation(theTransform);
+            SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theProject, theTransform);
             Process procSave = opSave.createProcess(theProject, new Properties());
             SaveRDFTransformCommand.performProcessAndRespond(request, response, theProject, procSave);
         }

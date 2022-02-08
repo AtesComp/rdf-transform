@@ -68,6 +68,8 @@ public class RDFTransform implements OverlayModel {
     // Reconstruction Validator
     static private final Reconstructor theReconstructor = new Reconstructor();
 
+    static private ApplicationContext theGlobalContext;
+
     /****************************************************************************************************
      ****************************************************************************************************
      *
@@ -76,12 +78,21 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      ****************************************************************************************************/
 
-    static public RDFTransform getRDFTransform(ApplicationContext theContext, Project theProject)
-			throws IOException {
+    static public void setGlobalContext(ApplicationContext theContext) {
+        RDFTransform.theGlobalContext = theContext;
+    }
+
+    static public ApplicationContext getGlobalContext() {
+        return RDFTransform.theGlobalContext;
+    }
+
+    static public RDFTransform getRDFTransform(Project theProject) {
 		synchronized(theProject) {
+            // Get the project's existing RDFTransform, if it exists...
 			RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
 			if (theTransform == null) {
-				theTransform = new RDFTransform(theContext, theProject);
+                // Create a new RDFTransform for the project...
+				theTransform = new RDFTransform(theProject);
 
 				theProject.overlayModels.put(RDFTransform.EXTENSION, theTransform);
 				theProject.getMetadata().updateModified();
@@ -91,7 +102,7 @@ public class RDFTransform implements OverlayModel {
 	}
 
     static public RDFTransform load(Project theProject, JsonNode jnodeElement) {
-        RDFTransform theTransform = RDFTransform.reconstruct(jnodeElement);
+        RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeElement);
         return theTransform;
     }
 
@@ -178,11 +189,10 @@ public class RDFTransform implements OverlayModel {
      *      description (Subject, Property, Object) tuple.
      */
     static public RDFTransform reconstruct(JsonNode jnodeRoot) {
-        RDFTransform theTransform = RDFTransform.reconstruct(null, jnodeRoot);
-        return theTransform;
+        return RDFTransform.reconstruct(null, jnodeRoot);
     }
 
-    static public RDFTransform reconstruct(ApplicationContext theContext, JsonNode jnodeRoot) {
+    static public RDFTransform reconstruct(Project theProject, JsonNode jnodeRoot) {
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("Reconstructing overlay...");
 
         if (jnodeRoot == null) {
@@ -190,7 +200,7 @@ public class RDFTransform implements OverlayModel {
             return null;
         }
 
-        RDFTransform theTransform = new RDFTransform(theContext);
+        RDFTransform theTransform = new RDFTransform(theProject);
 
         //
         // JSON Header...
@@ -209,7 +219,7 @@ public class RDFTransform implements OverlayModel {
                 strVersion = "";
             }
         }
-        if ( Util.isVerbose(3) ) {
+        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
             RDFTransform.logger.info("  Found Extension: [" + strExtension + "]  Version: [" + strVersion + "]");
             if ( ! strVersion.equals(VERSION) ) {
                 RDFTransform.logger.info("    Current Version: [" + VERSION + "] will update template on save.");
@@ -223,7 +233,7 @@ public class RDFTransform implements OverlayModel {
             theTransform.setBaseIRI( jnodeRoot.get(Util.gstrBaseIRI) );
         }
         else {
-            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Base IRI!");
+            if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Base IRI!  Set to default.");
         }
 
         //
@@ -233,7 +243,7 @@ public class RDFTransform implements OverlayModel {
             theTransform.setPrefixes( jnodeRoot.get(Util.gstrNamespaces) );
         }
         else {
-            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Namespaces!");
+            if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Namespaces!  Set to default.");
         }
 
         //
@@ -243,7 +253,7 @@ public class RDFTransform implements OverlayModel {
             theTransform.setRoots( jnodeRoot.get(Util.gstrSubjectMappings) );
         }
         else {
-            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Subjects!");
+            if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Subjects!");
         }
 
         if ( Util.isVerbose(2) ) RDFTransform.logger.info("...reconstructed overlay");
@@ -257,9 +267,6 @@ public class RDFTransform implements OverlayModel {
      *
      ****************************************************************************************************
      ****************************************************************************************************/
-
-    @JsonIgnore
-    private ApplicationContext theContext;
 
     /*
      * Base IRI for Document
@@ -323,28 +330,34 @@ public class RDFTransform implements OverlayModel {
         Constructors
     */
     @JsonCreator
-    public RDFTransform(ApplicationContext theContext) {
-        this.theContext = theContext;
+    public RDFTransform(Project theProject) {
+        // NOTE:
+        //  When the Project is given, we attempt to initialize all the RDFTransform elements.
+        //  When the Project is NOT given, we assume a reconstruction is occurring which should have
+        //      a complete portrait of a RDFTransform.
+        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+            if (theProject != null) { // For new transforms...
+                RDFTransform.logger.info("Creating base overlay for project from context...");
+            }
+            else { // For reconstruction...
+                RDFTransform.logger.info("  Creating base overlay...");
+            }
+        }
 
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Created empty overlay.");
-        // NOTE: This constructor is a problem child.  It is empty and the system will attempt to "get" all the 
-        //      @JsonProperty() elements after construction.  However, the "get" functions rely on non-empty
-        //      elements.
-        //      Therefore, ensure all @JsonProperty() getter methods properly handle a null context.
-    }
+        this.theBaseIRI = Util.buildIRI( RDFTransform.theGlobalContext.getDefaultBaseIRI() );
 
-    public RDFTransform(ApplicationContext theContext, Project theProject)
-            throws IOException {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Creating base overlay for project from context...");
+        this.thePrefixes = RDFTransform.theGlobalContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
 
-        this.theContext = theContext;
-
-        this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
-
-       	this.thePrefixes = theContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
-       	// Copy the index of predefined vocabularies...
-       	//   Each project will have its own copy of these predefined vocabs to enable, delete, update...
-       	theContext.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
+        if (theProject != null) {
+            // Copy the index of predefined vocabularies...
+            //   Each project will have its own copy of these predefined vocabs to enable, delete, update...
+            try {
+                RDFTransform.theGlobalContext.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
+            }
+            catch(IOException ex) {
+                RDFTransform.logger.error("IO Exception: Adding predefined vocabularies to transform!", ex);
+            }
+        }
 
         this.theRootNodes = new ArrayList<ResourceNode>();
 
@@ -401,7 +414,7 @@ public class RDFTransform implements OverlayModel {
         if (this.theBaseIRI != null) {
             return this.theBaseIRI.toString();
         }
-        return theContext.getDefaultBaseIRI(); // ...null context
+        return RDFTransform.theGlobalContext.getDefaultBaseIRI(); // ...null context
     }
 
     @JsonIgnore // ...see setBaseIRI(JsonNode)
@@ -484,7 +497,7 @@ public class RDFTransform implements OverlayModel {
             this.theBaseIRI = iriBase;
         }
         else {
-            this.theBaseIRI = Util.buildIRI( theContext.getDefaultBaseIRI() );
+            this.theBaseIRI = Util.buildIRI( RDFTransform.theGlobalContext.getDefaultBaseIRI() );
         }
     }
 
@@ -541,7 +554,10 @@ public class RDFTransform implements OverlayModel {
                 }
             }
             if ( this.thePrefixes.isEmpty() ) {
-                this.thePrefixes = theContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
+                this.thePrefixes =
+                    RDFTransform.theGlobalContext.
+                        getPredefinedVocabularyManager().
+                            getPredefinedVocabularies().clone();
             }
         }
     }

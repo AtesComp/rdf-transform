@@ -1,9 +1,8 @@
 package com.google.refine.rdf.command;
 
-import com.google.refine.ProjectManager;
-import com.google.refine.model.Project;
+//import com.google.refine.ProjectManager;
+//import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.vocab.SearchResultItem;
 import com.google.refine.rdf.model.vocab.Vocabulary;
@@ -26,8 +25,8 @@ import org.eclipse.rdf4j.common.net.ParsedIRI;
 public class SuggestTermCommand extends RDFTransformCommand {
 	//private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
 
-	public SuggestTermCommand(ApplicationContext context) {
-		super(context);
+	public SuggestTermCommand() {
+		super();
 	}
 
     @Override
@@ -35,37 +34,39 @@ public class SuggestTermCommand extends RDFTransformCommand {
             throws ServletException, IOException {
 
     	// Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
-    	// The "type" holds the project ID of the project to search...
-        String strProjectID = request.getParameter("type");
-    	// The "type_strict" holds the value type to search ("class" or "property")...
-        String strType = request.getParameter("type_strict");
-    	// The "prefix" holds the query search value...
-        String strQuery = request.getParameter("prefix");
+    	// The "project" holds the project ID of the project to search...
+        String strProjectID = request.getParameter("project");
+    	// The "type" holds the value type to search ("class" or "property")...
+        String strType = request.getParameter("type");
+    	// The "query" holds the query search value...
+        String strQuery = request.getParameter("query");
 
         response.setHeader("Content-Type", "application/json");
 		Writer writerBase = response.getWriter();
         JsonGenerator theWriter = ParsingUtilities.mapper.getFactory().createGenerator(writerBase);
 
         theWriter.writeStartObject();
-        theWriter.writeStringField("prefix", strQuery);
+        theWriter.writeStringField("query", strQuery);
 
-        List<SearchResultItem> listResults;
-        if (strType != null && strType.strip().equals("class")) {
-            listResults =
-				getContext().
-					getVocabularySearcher().
-						searchClasses(strQuery, strProjectID);
-        }
-		else { // "property"
-            listResults =
-				getContext().
-					getVocabularySearcher().
-						searchProperties(strQuery, strProjectID);
-        }
+        List<SearchResultItem> listResults = null;
+		if (strType != null) {
+			if ( strType.strip().equals("class") ) {
+				listResults =
+					RDFTransform.getGlobalContext().
+						getVocabularySearcher().
+							searchClasses(strQuery, strProjectID);
+			}
+			else if ( strType.strip().equals("property") ) {
+				listResults =
+					RDFTransform.getGlobalContext().
+						getVocabularySearcher().
+							searchProperties(strQuery, strProjectID);
+			}
+		}
 
-        if (listResults.size() == 0) {
+        if (listResults != null && listResults.size() == 0) {
             RDFTransform theTransform =
-				RDFTransform.getRDFTransform( this.getContext(), this.getProject(request) );
+				RDFTransform.getRDFTransform( this.getProject(request) );
 			listResults = search(theTransform, strQuery);
         }
 
@@ -90,13 +91,14 @@ public class SuggestTermCommand extends RDFTransformCommand {
 	 * 		Overridden from Command since the ProjectID is held in a "term" parameter
 	 * 		instead of the normal "project" parameter.
 	 */
+	/*
 	@Override
 	protected Project getProject(HttpServletRequest request)
 			throws ServletException {
         if (request == null) {
             throw new ServletException("Parameter 'request' should not be null");
         }
-        String strProjectID = request.getParameter("type");
+        String strProjectID = request.getParameter("term");
         if (strProjectID == null || "".equals(strProjectID)) {
             throw new ServletException("Can't find type: missing Project ID parameter");
         }
@@ -115,6 +117,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
             throw new ServletException("Failed to find Project ID #" + strProjectID + " - may be corrupt");
         }
 	}
+	*/
 
 	private boolean isPrefixedQuery(String strQuery) {
 		boolean bIsPrefixed = false;

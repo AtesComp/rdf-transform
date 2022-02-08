@@ -29,9 +29,8 @@ public class RDFExporter implements WriterExporter, StreamExporter {
     private RDFFormat format;
     private ApplicationContext context;
 
-	public RDFExporter(ApplicationContext context, RDFFormat format) {
+	public RDFExporter(RDFFormat format) {
         this.format = format;
-        this.context = context;
     }
 
 	public ApplicationContext getApplicationContext() {
@@ -54,7 +53,7 @@ public class RDFExporter implements WriterExporter, StreamExporter {
 					    RDFWriter theWriter)
             throws IOException {
     	RDFTransform theTransform;
-    	theTransform = RDFTransform.getRDFTransform(context, theProject);
+    	theTransform = RDFTransform.getRDFTransform(theProject);
         try {
 			theWriter.startRDF();
 

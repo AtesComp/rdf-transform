@@ -2,7 +2,7 @@ package com.google.refine.rdf.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.rdf.model.vocab.VocabularyList;
@@ -17,8 +17,8 @@ import java.util.Map.Entry;
 
 public class PrefixesSaveCommand extends RDFTransformCommand {
 
-	public PrefixesSaveCommand(ApplicationContext context) {
-		super(context);
+	public PrefixesSaveCommand() {
+		super();
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class PrefixesSaveCommand extends RDFTransformCommand {
 
 			// ...and the prefixes' vocabulary searcher...
 			String projectID = request.getParameter(Util.gstrProject);
-			this.getContext().
+			RDFTransform.getGlobalContext().
 				getVocabularySearcher().
 					synchronize( projectID, listVocabs.getPrefixSet() );
 		}

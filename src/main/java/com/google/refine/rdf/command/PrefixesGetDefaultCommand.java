@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.rdf.model.vocab.VocabularyImportException;
@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 public class PrefixesGetDefaultCommand extends RDFTransformCommand {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxsGetDefaultCmd");
 
-	public PrefixesGetDefaultCommand(ApplicationContext context) {
-		super(context);
+	public PrefixesGetDefaultCommand() {
+		super();
 	}
 
 	@Override
@@ -50,7 +50,10 @@ public class PrefixesGetDefaultCommand extends RDFTransformCommand {
 		VocabularyList listVocabs = this.getRDFTransform(request).getPrefixes();
 		if ( Util.isDebugMode() ) PrefixesGetDefaultCommand.logger.info("Existing prefixes: size=" + listVocabs.size());
 		if ( listVocabs == null || listVocabs.isEmpty() ) {
-			listVocabs = this.getContext().getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
+			listVocabs =
+				RDFTransform.getGlobalContext().
+					getPredefinedVocabularyManager().
+						getPredefinedVocabularies().clone();
 			if ( Util.isDebugMode() ) PrefixesGetDefaultCommand.logger.info("Predefined prefixes: size=" + listVocabs.size());
 		}
 
@@ -72,7 +75,7 @@ public class PrefixesGetDefaultCommand extends RDFTransformCommand {
 			boolean bError = false;
 			String strError = null;
 			try {
-				this.getContext().
+				RDFTransform.getGlobalContext().
 					getVocabularySearcher().
 						importAndIndexVocabulary(
 							vocab.getPrefix(), vocab.getNamespace(), vocab.getNamespace(), strProjectID);

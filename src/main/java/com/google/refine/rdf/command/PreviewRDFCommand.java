@@ -1,6 +1,5 @@
 package com.google.refine.rdf.command;
 
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.operation.PreviewRDFRecordVisitor;
@@ -29,12 +28,10 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewRDFCommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
-    private ApplicationContext theContext;
 
     public String strStatements;
 
-	public PreviewRDFCommand(ApplicationContext context) {
-		this.theContext = context;
+	public PreviewRDFCommand() {
 	}
 
     @Override
@@ -48,7 +45,7 @@ public class PreviewRDFCommand extends Command {
 
             String strTransform = request.getParameter(RDFTransform.KEY);
             JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
-            RDFTransform theTransform = RDFTransform.reconstruct(this.theContext, jnodeRoot);
+            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeRoot);
 
             //if ( Util.isDebugMode() ) {
             //    PreviewRDFCommand.logger.info( "Given Transform:\n" + strTransform );

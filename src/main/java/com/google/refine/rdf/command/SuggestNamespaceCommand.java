@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.util.ParsingUtilities;
 
@@ -17,14 +17,14 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 public class SuggestNamespaceCommand extends RDFTransformCommand {
 
-	public SuggestNamespaceCommand(ApplicationContext context) {
-		super(context);
+	public SuggestNamespaceCommand() {
+		super();
 	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String strPrefix = request.getParameter(Util.gstrPrefix);
-		String strNamespace = this.getContext().getPrefixManager().getNamespace(strPrefix);
+		String strNamespace = RDFTransform.getGlobalContext().getPrefixManager().getNamespace(strPrefix);
 		try {
 			response.setCharacterEncoding("UTF-8");
 	        response.setHeader("Content-Type", "application/json");

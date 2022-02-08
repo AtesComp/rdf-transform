@@ -1,11 +1,8 @@
 package com.google.refine.rdf.command;
 
-import java.io.IOException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.google.refine.commands.Command;
@@ -13,15 +10,8 @@ import com.google.refine.model.Project;
 
 public abstract class RDFTransformCommand extends Command {
 
-	private ApplicationContext context;
-
-	public RDFTransformCommand(ApplicationContext context) {
+	public RDFTransformCommand() {
 		super();
-		this.context = context;
-	}
-
-	public ApplicationContext getContext() {
-		return this.context;
 	}
 
 	public RDFTransform getRDFTransform(HttpServletRequest request)
@@ -31,13 +21,10 @@ public abstract class RDFTransformCommand extends Command {
 		Util.setPreferencesByPreferenceStore();
 		try {
             Project theProject = this.getProject(request);
-		    return RDFTransform.getRDFTransform(this.context, theProject);
+		    return RDFTransform.getRDFTransform(theProject);
 		}
 		catch (ServletException ex) {
 			throw new ServletException("Unable to retrieve Project!", ex);
-		}
-		catch (IOException ex) {
-            throw new ServletException("Unable to retrieve RDF Transform!", ex);
 		}
 		catch (Exception ex) {
 			throw new ServletException("Unable to retrieve Project or RDF Transform! (Other)", ex);

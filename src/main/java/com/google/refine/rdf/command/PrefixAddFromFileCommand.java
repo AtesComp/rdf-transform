@@ -13,7 +13,6 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 
 import org.eclipse.rdf4j.repository.Repository;
@@ -39,8 +38,8 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
     String strFilename;
     InputStream instreamFile;
 
-    public PrefixAddFromFileCommand(ApplicationContext context) {
-        super(context);
+    public PrefixAddFromFileCommand() {
+        super();
 
         this.strProjectID = null;
         this.strPrefix = null;
@@ -57,6 +56,7 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
             PrefixAddFromFileCommand.respondCSRFError(response);
             return;
         }
+        Project theProject = this.getProject(request);
         FileItemFactory factory = new DiskFileItemFactory();
 
         Repository theRepository = null;
@@ -83,9 +83,9 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
         }
 
         try {
-            this.getTransform().addPrefix(this.strPrefix, this.strNamespace);
+            this.getTransform(theProject).addPrefix(this.strPrefix, this.strNamespace);
 
-            this.getContext().
+            RDFTransform.getGlobalContext().
                 getVocabularySearcher().
                     importAndIndexVocabulary(this.strPrefix, this.strNamespace, theRepository, this.strProjectID);
         }
@@ -209,31 +209,27 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
         return RDFFormat.TURTLE;
     }
 
-    private RDFTransform getTransform()
+    private RDFTransform getTransform(Project theDefaultProject)
             throws ServletException { // ...just because
-        if (this.strProjectID == null || "".equals(this.strProjectID)) {
-            throw new ServletException("Missing Project ID!");
+        Project theProject = theDefaultProject;
+
+        if ( ! ( this.strProjectID == null || "".equals(this.strProjectID) ) ) {
+            Long liProjectID;
+            try {
+                liProjectID = Long.parseLong(this.strProjectID);
+            }
+            catch (NumberFormatException ex) {
+                throw new ServletException("Project ID not a long int!", ex);
+            }
+
+            theProject = ProjectManager.singleton.getProject(liProjectID);
         }
 
-        Long liProjectID;
-        try {
-            liProjectID = Long.parseLong(this.strProjectID);
-        }
-        catch (NumberFormatException ex) {
-            throw new ServletException("Project ID not a long int!", ex);
-        }
-
-        Project theProject = ProjectManager.singleton.getProject(liProjectID);
         if (theProject == null) {
             throw new ServletException("Project ID [" + strProjectID + "] not found! May be corrupt.");
         }
 
-        RDFTransform transform = null;
-        try {
-            transform = RDFTransform.getRDFTransform(this.getContext(), theProject);
-        } catch (IOException e) {
-            transform = null;
-        }
+        RDFTransform transform = RDFTransform.getRDFTransform(theProject);
         if (transform == null) {
             throw new ServletException("RDF Transform for Project ID [" + strProjectID + "] not found!");
         }

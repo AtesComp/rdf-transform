@@ -8,7 +8,6 @@ import java.util.Properties;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.fasterxml.jackson.core.JsonGenerator;
-
 import com.google.refine.history.Change;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
@@ -88,6 +87,9 @@ public class RDFTransformChange implements Change {
     //
     // Load a Change...
     //      Whenever a HistoryEntry does not have its Change in memory.
+    //
+    //  NOTE: OpenRefine's effing static load() functions do not expect to pass the
+    //      Project unlike just about every other function!
     //
     static public Change load(LineNumberReader theReader, Pool thePool)
             throws Exception {

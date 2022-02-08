@@ -19,10 +19,12 @@ import org.slf4j.LoggerFactory;
 public class InitializationCommand extends Command {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:AppContext");
 
-	private ApplicationContext context;
+	private ApplicationContext theContext;
 
-	public InitializationCommand(ApplicationContext context) {
-		this.context = context;
+	public InitializationCommand(ApplicationContext theContext) {
+		this.theContext = theContext;
+		RDFTransform.setGlobalContext(theContext);
+
 	}
 
 	@Override
@@ -45,7 +47,7 @@ public class InitializationCommand extends Command {
 		File fileWorkingDir = servlet.getCacheDir(RDFTransform.KEY);
 
 		try {
-			this.context.init(strHost, strIFace, strPort, fileWorkingDir);
+			this.theContext.init(strHost, strIFace, strPort, fileWorkingDir);
 		}
 		catch (IOException ex) {
 			InitializationCommand.logger.error("ERROR: Initialize Context: ", ex);

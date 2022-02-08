@@ -6,13 +6,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 
 public class PrefixAddCommand extends RDFTransformCommand {
 
-	public PrefixAddCommand(ApplicationContext context) {
-		super(context);
+	public PrefixAddCommand() {
+		super();
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class PrefixAddCommand extends RDFTransformCommand {
 				strFetchURL = strNamespace;
 			}
 			try {
-				this.getContext().
+				RDFTransform.getGlobalContext().
 					getVocabularySearcher().
 						importAndIndexVocabulary(
 							strPrefix, strNamespace, strFetchURL, strProjectID);

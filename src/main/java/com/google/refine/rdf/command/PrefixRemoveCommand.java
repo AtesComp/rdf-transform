@@ -6,7 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.refine.rdf.ApplicationContext;
+import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 
 import org.slf4j.Logger;
@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 public class PrefixRemoveCommand extends RDFTransformCommand {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRemoveCmd");
 
-	public PrefixRemoveCommand(ApplicationContext context) {
-		super(context);
+	public PrefixRemoveCommand() {
+		super();
 	}
 
 	@Override
@@ -38,7 +38,9 @@ public class PrefixRemoveCommand extends RDFTransformCommand {
 		}
 
 		try {
-			this.getContext().getVocabularySearcher().deleteTermsOfVocab(strPrefix, strProjectID);
+			RDFTransform.getGlobalContext().
+				getVocabularySearcher().
+					deleteTermsOfVocab(strPrefix, strProjectID);
 		}
 		catch (Exception ex) {
 			if ( Util.isDebugMode() ) PrefixRemoveCommand.logger.info("...vocabulary removal problems...");
