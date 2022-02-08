@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Properties;
 
-import com.google.refine.rdf.ApplicationContext;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.operation.ExportRDFRecordVisitor;
 import com.google.refine.rdf.model.operation.ExportRDFRowVisitor;
@@ -27,15 +26,10 @@ public class RDFExporter implements WriterExporter, StreamExporter {
     //private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFExporter");
 
     private RDFFormat format;
-    private ApplicationContext context;
 
 	public RDFExporter(RDFFormat format) {
         this.format = format;
     }
-
-	public ApplicationContext getApplicationContext() {
-		return context;
-	}
 
     public void export(Project theProject, Properties options, Engine theEngine,
                         OutputStream outputStream)

@@ -163,7 +163,7 @@ function registerServerSide() {
     RefineGrelFuncReg.registerFunction( "toStrippedLiteral", new RDFTModel.expr.functions.ToStrippedLiteral() );
 
 	RefineBase.expr.ExpressionUtils
-	.registerBinder( new RDFTModel.expr.RDFTransformBinder(appContext) );
+	.registerBinder( new RDFTModel.expr.RDFTransformBinder() );
 
     /*
      *  Server-side Exporters...
@@ -172,21 +172,21 @@ function registerServerSide() {
     var RDFTExp = RDFTModel.exporter.RDFExporter;
 	var RDFFormat = org.eclipse.rdf4j.rio.RDFFormat;
 
-    RefineExpReg.registerExporter( "RDF/XML",     new RDFTExp(appContext, RDFFormat.RDFXML) );
-    RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(appContext, RDFFormat.NTRIPLES) );
-    RefineExpReg.registerExporter( "Turtle",      new RDFTExp(appContext, RDFFormat.TURTLE) );
-    RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(appContext, RDFFormat.TURTLESTAR) );
-	RefineExpReg.registerExporter( "N3",          new RDFTExp(appContext, RDFFormat.N3) );
-	RefineExpReg.registerExporter( "TriX",        new RDFTExp(appContext, RDFFormat.TRIX) );
-	RefineExpReg.registerExporter( "TriG",        new RDFTExp(appContext, RDFFormat.TRIG) );
-	RefineExpReg.registerExporter( "TriG-star",   new RDFTExp(appContext, RDFFormat.TRIGSTAR) );
-	RefineExpReg.registerExporter( "BinaryRDF",   new RDFTExp(appContext, RDFFormat.BINARY) );
-	RefineExpReg.registerExporter( "N-Quads",     new RDFTExp(appContext, RDFFormat.NQUADS) );
-	RefineExpReg.registerExporter( "JSON-LD",     new RDFTExp(appContext, RDFFormat.JSONLD) );
-	RefineExpReg.registerExporter( "NDJSON-LD",   new RDFTExp(appContext, RDFFormat.NDJSONLD) );
-	RefineExpReg.registerExporter( "RDF/JSON",    new RDFTExp(appContext, RDFFormat.RDFJSON) );
-	RefineExpReg.registerExporter( "RDFa",        new RDFTExp(appContext, RDFFormat.RDFA) );
-	RefineExpReg.registerExporter( "HDT",         new RDFTExp(appContext, RDFFormat.HDT) );
+    RefineExpReg.registerExporter( "RDF/XML",     new RDFTExp(RDFFormat.RDFXML) );
+    RefineExpReg.registerExporter( "N-Triples",   new RDFTExp(RDFFormat.NTRIPLES) );
+    RefineExpReg.registerExporter( "Turtle",      new RDFTExp(RDFFormat.TURTLE) );
+    RefineExpReg.registerExporter( "Turtle-star", new RDFTExp(RDFFormat.TURTLESTAR) );
+	RefineExpReg.registerExporter( "N3",          new RDFTExp(RDFFormat.N3) );
+	RefineExpReg.registerExporter( "TriX",        new RDFTExp(RDFFormat.TRIX) );
+	RefineExpReg.registerExporter( "TriG",        new RDFTExp(RDFFormat.TRIG) );
+	RefineExpReg.registerExporter( "TriG-star",   new RDFTExp(RDFFormat.TRIGSTAR) );
+	RefineExpReg.registerExporter( "BinaryRDF",   new RDFTExp(RDFFormat.BINARY) );
+	RefineExpReg.registerExporter( "N-Quads",     new RDFTExp(RDFFormat.NQUADS) );
+	RefineExpReg.registerExporter( "JSON-LD",     new RDFTExp(RDFFormat.JSONLD) );
+	RefineExpReg.registerExporter( "NDJSON-LD",   new RDFTExp(RDFFormat.NDJSONLD) );
+	RefineExpReg.registerExporter( "RDF/JSON",    new RDFTExp(RDFFormat.RDFJSON) );
+	RefineExpReg.registerExporter( "RDFa",        new RDFTExp(RDFFormat.RDFA) );
+	RefineExpReg.registerExporter( "HDT",         new RDFTExp(RDFFormat.HDT) );
 
     /*
      *  Server-side Overlay Models - Attach an RDFTransform object to the project...
