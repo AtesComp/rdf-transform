@@ -114,7 +114,10 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
 			writer.writeObjectFieldStart(Util.gstrDatatype);
 
 			// Datatype: Prefix
-			writer.writeStringField( Util.gstrPrefix, this.nodeDatatype.getPrefix() );
+			String strPrefix = this.nodeDatatype.getPrefix();
+			if (strPrefix != null) {
+				writer.writeStringField( Util.gstrPrefix, strPrefix );
+			}
 
 			// Datatype: Source
 			writer.writeObjectFieldStart(Util.gstrValueSource);

@@ -223,6 +223,7 @@ public class Property {
     private final String strPathIRI;
 
 	// The Target: A source's target "node" connected via this Property
+    // TODO: Future multiple targets need adjustment on listNodeObject throughout this class
     private final Node nodeObject;
 
     public Property(String strPrefix, String strPathIRI, Node nodeObject) {
@@ -254,8 +255,11 @@ public class Property {
 			throws JsonGenerationException, IOException {
 		writer.writeStartObject();
 
-		writer.writeStringField(Util.gstrPrefix, this.strPrefix);
+        if (this.strPrefix != null) {
+		    writer.writeStringField(Util.gstrPrefix, this.strPrefix);
+        }
 
+        // TODO: Modify for Future Non-Constant Value Source...
 		writer.writeObjectFieldStart(Util.gstrValueSource);
         writer.writeStringField(Util.gstrSource, Util.gstrConstant);
         writer.writeStringField(Util.gstrConstant, this.strPathIRI);
@@ -270,7 +274,7 @@ public class Property {
 
 		if (this.nodeObject != null) {
 			writer.writeArrayFieldStart(Util.gstrObjectMappings);
-			this.nodeObject.write(writer);
+			this.nodeObject.write(writer, false);
 			writer.writeEndArray();
 		}
 

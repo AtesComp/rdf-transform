@@ -29,8 +29,11 @@ public class PrefixRemoveCommand extends RDFTransformCommand {
 			PrefixRemoveCommand.respondCSRFError(response);
 			return;
 		}
+		// For Project, DO NOT USE this.getProject(request) as we only need the string...
+		String strProjectID = request.getParameter(Util.gstrProject);
+
 		String strPrefix = request.getParameter(Util.gstrPrefix);
-		String strProjectID = request.getParameter(Util.gstrProject); // NOT this.getProject(request);
+
 		if ( ! this.getRDFTransform(request).removePrefix(strPrefix) ) {
 			if ( Util.isDebugMode() ) PrefixRemoveCommand.logger.info("...failed.");
 			PrefixRemoveCommand.respondJSON(response, CodeResponse.error);

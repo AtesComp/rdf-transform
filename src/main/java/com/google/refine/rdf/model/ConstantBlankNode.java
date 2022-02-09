@@ -104,7 +104,8 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
     }
 
 	@Override
-	protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
+	protected void writeNode(JsonGenerator writer, boolean isRoot)
+			throws JsonGenerationException, IOException {
 		// Prefix
 		//	N/A
 
@@ -123,8 +124,10 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
         }
 
 		// Value Type
-        writer.writeObjectFieldStart(Util.gstrValueType);
-		writer.writeStringField(Util.gstrType, Util.gstrBNode);
-		writer.writeEndObject();
+		if (! isRoot) {
+			writer.writeObjectFieldStart(Util.gstrValueType);
+			writer.writeStringField(Util.gstrType, Util.gstrBNode);
+			writer.writeEndObject();
+		}
 	}
 }

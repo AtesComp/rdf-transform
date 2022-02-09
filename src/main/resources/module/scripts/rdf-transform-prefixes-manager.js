@@ -143,6 +143,7 @@ class RDFTransformPrefixesManager {
 			if (strPrefixFind === strPrefix) {
 				this.prefixes.splice(iIndex, 1);
 				iIndex--;
+				this.#dialog.updatePreview();
 			}
 			iIndex++;
 		}
@@ -165,6 +166,7 @@ class RDFTransformPrefixesManager {
 				if (onDoneAdd) {
 					onDoneAdd(strPrefix);
 				}
+				this.#dialog.updatePreview();
 			}
 		);
 	}

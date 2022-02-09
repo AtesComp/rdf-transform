@@ -126,7 +126,9 @@ public class RDFType {
             throws JsonGenerationException, IOException {
         writer.writeStartObject();
 
-        writer.writeStringField(Util.gstrPrefix, this.strPrefix);
+        if (this.strPrefix != null) {
+            writer.writeStringField(Util.gstrPrefix, this.strPrefix);
+        }
 
         writer.writeObjectFieldStart(Util.gstrValueSource);
         writer.writeStringField(Util.gstrSource, Util.gstrConstant);

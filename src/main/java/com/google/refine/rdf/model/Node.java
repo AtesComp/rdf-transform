@@ -72,6 +72,9 @@ abstract public class Node {
             Node.logger.warn("WARNING: Missing Subject for Node");
             return null;
         }
+        if ( jnodeSubject.isNull() ) {
+            return null;
+        }
 
         //
         // Get Subject's Prefix...
@@ -190,117 +193,137 @@ abstract public class Node {
         //
         // Process Subject into a Node...
         //
-        ResourceNode rnodeResource = null;
-        LiteralNode lnodeLiteral = null;
 
         // Resource types...
         if (bResource) {
-            if ( strType.equals(Util.gstrIRI) ) {
-                if ( bValueNode ) {
-                    rnodeResource = new CellResourceNode(strValue, strPrefix, strExpCode, bIsIndex, eNodeType);
-                }
-                else if ( bConstNode ) {
-                    rnodeResource = new ConstantResourceNode(strValue, strPrefix);
-                }
-                else if ( eNodeType == Util.NodeType.EXPRESSION ) {
-                    // TODO: Currently unsupported
-                }
-            }
-            else if ( strType.equals(Util.gstrBNode) ) {
-                rnodeResource = new CellBlankNode(strValue, strExpCode, bIsIndex, eNodeType);
-            }
-            else if ( strType.equals(Util.gstrValueBNode) ) {
-                rnodeResource = new ConstantBlankNode(strValue);
-            }
-
-            // Check Resource creation...
-            if (rnodeResource == null) {
-                Node.logger.error("ERROR: Bad Node: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
-            }
-            else {
-                //
-                // Construct Types from "typeMappings"...
-                //
-                RDFType.reconstructTypes(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, thePrefixes);
-
-                //
-                // Construct Properties from "propertyMappings"...
-                //
-                Property.reconstructProperties(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, thePrefixes);
-            }
-
-            nodeElement = rnodeResource;
+            nodeElement =
+                reconstructResourceNode(jnodeSubject, baseIRI, thePrefixes,
+                    strType, bValueNode, bConstNode, strValue, strPrefix, strSource, strExpCode,
+                    bIsIndex, eNodeType);
         }
 
         // Literal types...
         else if (bLiteral) {
-            String strDatatypePrefix = null;
-            String strDatatypeValue = null;
-            String strDataType = null;
-            ConstantResourceNode nodeDatatype = null;
-            String strLanguageCode = null;
+            nodeElement =
+                reconstructLiteralNode(jnodeSubject, baseIRI, thePrefixes,
+                    strType, jnodeValueType, bValueNode, bConstNode, strValue, strExpCode,
+                    bIsIndex, eNodeType);
+        }
 
-            if ( strType.equals(Util.gstrLiteral) ) {
-                // Nothing to do...
+        return nodeElement;
+    }
+
+    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes,
+            String strType, boolean bValueNode, boolean bConstNode, String strValue, String strPrefix, String strSource, String strExpCode,
+            boolean bIsIndex, Util.NodeType eNodeType) {
+        ResourceNode rnodeResource = null;
+
+        if ( strType.equals(Util.gstrIRI) ) {
+            if ( bValueNode ) {
+                rnodeResource = new CellResourceNode(strValue, strPrefix, strExpCode, bIsIndex, eNodeType);
             }
-            else if ( strType.equals(Util.gstrDatatypeLiteral) ) {
-                // A Datatype Literal based node...
-                JsonNode jnodeDatatype = jnodeValueType.get(Util.gstrDatatype);
-                if (jnodeDatatype != null) {
-                    // ...get prefix, if exists...
-                    JsonNode jnodeDatatypePrefix = jnodeDatatype.get(Util.gstrPrefix);
-                    if (jnodeDatatypePrefix != null) {
-                        strDatatypePrefix = jnodeDatatypePrefix.asText();
-                    }
-                    // ...get IRI value, always a constant...
-                    JsonNode jnodeValueSource = jnodeDatatype.get(Util.gstrValueSource);
-                    if (jnodeValueSource != null) {
-                        JsonNode jnodeDatatypeConstant = jnodeValueSource.get(Util.gstrConstant);
-                        if (jnodeDatatypeConstant != null) {
-                            strDatatypeValue = jnodeDatatypeConstant.asText();
+            else if ( bConstNode ) {
+                rnodeResource = new ConstantResourceNode(strValue, strPrefix);
+            }
+            else if ( eNodeType == Util.NodeType.EXPRESSION ) {
+                // TODO: Currently unsupported
+            }
+        }
+        else if ( strType.equals(Util.gstrBNode) ) {
+            rnodeResource = new CellBlankNode(strValue, strExpCode, bIsIndex, eNodeType);
+        }
+        else if ( strType.equals(Util.gstrValueBNode) ) {
+            rnodeResource = new ConstantBlankNode(strValue);
+        }
 
-                            // Validate the full IRI (Namespace + Datatype)...
-                            ParsedIRI iriNamespace = baseIRI; // ...default
-                            if ( thePrefixes.containsPrefix(strDatatypePrefix) ) {
-                                String strDatatypeNamespace = thePrefixes.findByPrefix(strDatatypePrefix).getNamespace();
-                                if (strDatatypeNamespace != null) {
-                                    try {
-                                        iriNamespace = new ParsedIRI( strDatatypeNamespace );
-                                    }
-                                    catch (Exception ex) {
-                                        Node.logger.error("ERROR: Bad Namespace in Prefixes: " + strDatatypeNamespace, ex);
-                                        // ...given Namespace doesn't parse, so use baseIRI...
-                                    }
+        // Check Resource creation...
+        if (rnodeResource == null) {
+            Node.logger.error("ERROR: Bad Node: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
+        }
+        else {
+            //
+            // Construct Types from "typeMappings"...
+            //
+            RDFType.reconstructTypes(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, thePrefixes);
+
+            //
+            // Construct Properties from "propertyMappings"...
+            //
+            Property.reconstructProperties(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, thePrefixes);
+        }
+
+        return rnodeResource;
+    }
+
+    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes,
+            String strType, JsonNode jnodeValueType, boolean bValueNode, boolean bConstNode, String strValue, String strExpCode,
+            boolean bIsIndex, Util.NodeType eNodeType) {
+        LiteralNode lnodeLiteral = null;
+
+        String strDatatypePrefix = null;
+        String strDatatypeValue = null;
+        String strDataType = null;
+        ConstantResourceNode nodeDatatype = null;
+        String strLanguageCode = null;
+
+        if ( strType.equals(Util.gstrLiteral) ) {
+            // Nothing to do...
+        }
+        else if ( strType.equals(Util.gstrDatatypeLiteral) ) {
+            // A Datatype Literal based node...
+            JsonNode jnodeDatatype = jnodeValueType.get(Util.gstrDatatype);
+            if (jnodeDatatype != null) {
+                // ...get prefix, if exists...
+                JsonNode jnodeDatatypePrefix = jnodeDatatype.get(Util.gstrPrefix);
+                if  ( ! ( jnodeDatatypePrefix == null || jnodeDatatypePrefix.isNull() ) ) {
+                    strDatatypePrefix = jnodeDatatypePrefix.asText();
+                }
+                // ...get IRI value, always a constant...
+                JsonNode jnodeValueSource = jnodeDatatype.get(Util.gstrValueSource);
+                if ( ! ( jnodeValueSource == null || jnodeValueSource.isNull() ) ) {
+                    JsonNode jnodeDatatypeConstant = jnodeValueSource.get(Util.gstrConstant);
+                    if ( ! ( jnodeDatatypeConstant == null || jnodeDatatypeConstant.isNull() ) ) {
+                        strDatatypeValue = jnodeDatatypeConstant.asText();
+
+                        // Validate the full IRI (Namespace + Datatype)...
+                        ParsedIRI iriNamespace = baseIRI; // ...default
+                        if ( thePrefixes.containsPrefix(strDatatypePrefix) ) {
+                            String strDatatypeNamespace = thePrefixes.findByPrefix(strDatatypePrefix).getNamespace();
+                            if (strDatatypeNamespace != null) {
+                                try {
+                                    iriNamespace = new ParsedIRI( strDatatypeNamespace );
+                                }
+                                catch (Exception ex) {
+                                    Node.logger.error("ERROR: Bad Namespace in Prefixes: " + strDatatypeNamespace, ex);
+                                    // ...given Namespace doesn't parse, so use baseIRI...
                                 }
                             }
-                            strDataType = Util.getDataType(iriNamespace, strDatatypeValue);
-                            if ( ! ( strDataType == null || strDataType.isEmpty() ) ) {
-                                // Set the Datatype to the CIRIE (Prefix + Datatype)...
-                                //strDataType = strDatatypePrefix + ":" + strDatatypeValue;
-                                nodeDatatype = new ConstantResourceNode(strDatatypeValue, strDatatypePrefix);
-                            }
+                        }
+                        strDataType = Util.getDataType(iriNamespace, strDatatypeValue);
+                        if ( ! ( strDataType == null || strDataType.isEmpty() ) ) {
+                            // Set the Datatype to the CIRIE (Prefix + Datatype)...
+                            //strDataType = strDatatypePrefix + ":" + strDatatypeValue;
+                            nodeDatatype = new ConstantResourceNode(strDatatypeValue, strDatatypePrefix);
                         }
                     }
                 }
             }
-            else if ( strType.equals(Util.gstrLanguageLiteral) ) {
-                strLanguageCode = jnodeValueType.get(Util.gstrLanguage).asText();
-            }
-
-            if ( bValueNode ) {
-                lnodeLiteral = new CellLiteralNode(strValue, strExpCode, bIsIndex, nodeDatatype, strLanguageCode, eNodeType);
-            }
-            else if ( bConstNode ) {
-                lnodeLiteral = new ConstantLiteralNode(strValue, nodeDatatype, strLanguageCode);
-            }
-            else if ( eNodeType == Util.NodeType.EXPRESSION ) {
-                // TODO: Currently unsupported - what is an expression? Value or Constant?
-            }
-
-            nodeElement = lnodeLiteral;
+        }
+        else if ( strType.equals(Util.gstrLanguageLiteral) ) {
+            strLanguageCode = jnodeValueType.get(Util.gstrLanguage).asText();
         }
 
-        return nodeElement;
+        if ( bValueNode ) {
+            lnodeLiteral = new CellLiteralNode(strValue, strExpCode, bIsIndex, nodeDatatype, strLanguageCode, eNodeType);
+        }
+        else if ( bConstNode ) {
+            lnodeLiteral = new ConstantLiteralNode(strValue, nodeDatatype, strLanguageCode);
+        }
+        else if ( eNodeType == Util.NodeType.EXPRESSION ) {
+            // TODO: Currently unsupported - what is an expression? Value or Constant?
+        }
+
+        return lnodeLiteral;
     }
 
     @JsonIgnore
@@ -399,6 +422,6 @@ abstract public class Node {
      */
     abstract protected List<Value> createObjects(ResourceNode nodeProperty);
 
-    abstract public void write(JsonGenerator writer)
+    abstract public void write(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException;
 }

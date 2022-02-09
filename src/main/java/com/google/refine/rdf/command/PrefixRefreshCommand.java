@@ -29,9 +29,11 @@ public class PrefixRefreshCommand extends RDFTransformCommand {
 			PrefixRefreshCommand.respondCSRFError(response);
 			return;
 		}
+		// For Project, DO NOT USE this.getProject(request) as we only need the string...
+		String strProjectID = request.getParameter(Util.gstrProject);
+
 		String strPrefix    = request.getParameter(Util.gstrPrefix);
 		String strNamespace = request.getParameter(Util.gstrNamespace);
-		String strProjectID = request.getParameter(Util.gstrProject); // NOT this.getProject(request);
 
 		RDFTransform theTransform = this.getRDFTransform(request);
 

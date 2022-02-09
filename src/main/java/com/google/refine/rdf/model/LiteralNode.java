@@ -143,9 +143,11 @@ abstract public class LiteralNode extends Node {
         }
     }
 
-    abstract protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException;
+    abstract protected void writeNode(JsonGenerator writer)
+            throws JsonGenerationException, IOException;
 
-    public void write(JsonGenerator writer) throws JsonGenerationException, IOException {
+    public void write(JsonGenerator writer, /* unused */ boolean isRoot)
+            throws JsonGenerationException, IOException {
         writer.writeStartObject();
 
         // Write node...

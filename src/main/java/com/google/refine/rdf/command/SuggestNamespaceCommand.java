@@ -25,6 +25,7 @@ public class SuggestNamespaceCommand extends RDFTransformCommand {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String strPrefix = request.getParameter(Util.gstrPrefix);
 		String strNamespace = RDFTransform.getGlobalContext().getPrefixManager().getNamespace(strPrefix);
+
 		try {
 			response.setCharacterEncoding("UTF-8");
 	        response.setHeader("Content-Type", "application/json");

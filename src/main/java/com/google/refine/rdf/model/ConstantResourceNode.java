@@ -109,7 +109,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     }
 
 	@Override
-	protected void writeNode(JsonGenerator writer)
+	protected void writeNode(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException {
 		// Prefix
         if (this.strPrefix != null) {
@@ -131,8 +131,10 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         }
 
 		// Value Type
-        writer.writeObjectFieldStart(Util.gstrValueType);
-		writer.writeStringField(Util.gstrType, Util.gstrIRI);
-		writer.writeEndObject();
+		if (! isRoot) {
+            writer.writeObjectFieldStart(Util.gstrValueType);
+            writer.writeStringField(Util.gstrType, Util.gstrIRI);
+            writer.writeEndObject();
+        }
 	}
 }

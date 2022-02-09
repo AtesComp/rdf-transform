@@ -47,7 +47,7 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeRoot);
 
             // Process the "save" operations...
-            SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theProject, theTransform);
+            SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theTransform);
             Process procSave = opSave.createProcess(theProject, new Properties());
             SaveRDFTransformCommand.performProcessAndRespond(request, response, theProject, procSave);
         }

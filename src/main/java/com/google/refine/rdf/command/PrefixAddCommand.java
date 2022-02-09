@@ -22,9 +22,11 @@ public class PrefixAddCommand extends RDFTransformCommand {
 			PrefixAddCommand.respondCSRFError(response);
 			return;
 		}
+		// For Project, DO NOT USE this.getProject(request) as we only need the string...
+		String strProjectID = request.getParameter(Util.gstrProject);
+
 		String strPrefix       = request.getParameter(Util.gstrPrefix).strip();
         String strNamespace    = request.getParameter(Util.gstrNamespace).strip();
-        String strProjectID    = request.getParameter(Util.gstrProject);
         String strFetchOption  = request.getParameter("fetch").strip();
 
 		if ( strFetchOption.equals("web") ) {

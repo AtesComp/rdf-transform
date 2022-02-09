@@ -124,7 +124,8 @@ public class CellBlankNode extends ResourceNode implements CellNode {
 	}
 
     @Override
-    protected void writeNode(JsonGenerator writer) throws JsonGenerationException, IOException {
+    protected void writeNode(JsonGenerator writer, boolean isRoot)
+			throws JsonGenerationException, IOException {
 		// Prefix
 		//	N/A
 
@@ -146,8 +147,10 @@ public class CellBlankNode extends ResourceNode implements CellNode {
         }
 
 		// Value Type
-        writer.writeObjectFieldStart(Util.gstrValueType);
-		writer.writeStringField(Util.gstrType, Util.gstrValueBNode);
-		writer.writeEndObject();
+		if (! isRoot) {
+			writer.writeObjectFieldStart(Util.gstrValueType);
+			writer.writeStringField(Util.gstrType, Util.gstrValueBNode);
+			writer.writeEndObject();
+		}
     }
 }

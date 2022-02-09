@@ -2,7 +2,8 @@ package com.google.refine.rdf.model.operation;
 
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
-import com.fasterxml.jackson.annotation.JsonCreator;
+//import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -19,24 +20,25 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     /*
         Class Variables
     */
-    @JsonProperty("description")
+    //@JsonProperty("description")
+    @JsonIgnore
     private final static String strSaveRDFTransform = "Save RDF Transform";
 
     /*
         Instance Variables
     */
-    @JsonProperty(RDFTransform.KEY)
+    //@JsonProperty(RDFTransform.KEY)
+    @JsonIgnore
     private RDFTransform theTransform;
-    private Project theProject;
 
-    @JsonCreator
-    public SaveRDFTransformOperation(Project theProject, @JsonProperty(RDFTransform.KEY) RDFTransform theTransform) {
-        this.theProject = theProject;
+    public SaveRDFTransformOperation() {};
+
+    public SaveRDFTransformOperation(RDFTransform theTransform) {
         this.theTransform = theTransform;
         if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Created save operation.");
     }
 
-    @JsonProperty("description")
+    @JsonIgnore
     public String getDescription() {
     	return SaveRDFTransformOperation.strSaveRDFTransform;
     }
@@ -54,7 +56,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
             logger.info("No RDFTransform in JSON!");
             return;
         }
-        this.theTransform = RDFTransform.reconstruct(this.theProject, jnodeTransform);
+        this.theTransform = RDFTransform.reconstruct(jnodeTransform);
     }
 
     @Override
@@ -86,6 +88,6 @@ public class SaveRDFTransformOperation extends AbstractOperation {
             return null;
         }
         RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
-        return new SaveRDFTransformOperation(theProject, theTransform);
+        return new SaveRDFTransformOperation(theTransform);
     }
 }

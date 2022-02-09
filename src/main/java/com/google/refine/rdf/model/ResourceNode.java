@@ -30,10 +30,10 @@ abstract public class ResourceNode extends Node {
 
     static protected final String strBNodePrefix = "_:";
 
-    @JsonProperty("propertyMappings")
+    @JsonProperty(Util.gstrPropertyMappings)
     private List<Property> listProperties = new ArrayList<Property>();
 
-	@JsonProperty("typeMappings")
+	@JsonProperty(Util.gstrTypeMappings)
     private List<RDFType> listTypes = new ArrayList<RDFType>();
 
     @JsonIgnore
@@ -46,12 +46,12 @@ abstract public class ResourceNode extends Node {
         this.listProperties.add(propNew);
     }
 
-    @JsonProperty("typeMappings")
+    @JsonProperty(Util.gstrTypeMappings)
     public List<RDFType> getTypes() {
         return this.listTypes;
     }
 
-    @JsonProperty("propertyMappings")
+    @JsonProperty(Util.gstrPropertyMappings)
     public List<Property> getProperties() {
 		return this.listProperties;
 	}
@@ -485,15 +485,15 @@ abstract public class ResourceNode extends Node {
         return this.listValues;
     }
 
-    abstract protected void writeNode(JsonGenerator writer)
+    abstract protected void writeNode(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException;
 
-    public void write(JsonGenerator writer)
+    public void write(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException {
         writer.writeStartObject();
 
         // Write node...
-        this.writeNode(writer);
+        this.writeNode(writer, isRoot);
 
         // Write Type Mappings...
         if (this.listTypes != null) {
