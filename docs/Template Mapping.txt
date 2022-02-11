@@ -109,7 +109,7 @@ Source        Key
 OPT: xxx is related to the (value type)
 
 
-"prefixes" : [
+"namespaces" : [
       {
          "name" : "(prefix name)",
          "iri" : "(prefix iri)"
@@ -120,11 +120,19 @@ OPT: xxx is related to the (value type)
 
 "rootNodes" -> "subjectMappings : [ ... ]"
     "" -> "{ ... },"
-      "expression": "(value)" -> "expression" : { "language": "grel", "code", "(value)"
+      "expression": "(exp)" -> "expression" : { "language": "grel", "code": "(exp)" }
+
       "nodeType" : "cell-as-resource" ->
             "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
             "isIndex": "false" && "columnName": "(value)" ->
                     "valueSource": { "source": "column", "columnName": "(value)" }
+
+      "nodeType" : "cell-as-blank" ->
+            "valueType": { "type": "value_bnode" }
+            "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
+            "isIndex": "false" && "columnName": "(value)" ->
+                    "valueSource": { "source": "column", "columnName": "(value)" }
+
       "rdfTypes" -> "typeMappings"
           "cirie" & "iri" ->
                 "prefix"
@@ -132,7 +140,7 @@ OPT: xxx is related to the (value type)
                   expand to other source types
                 expand for "expression": { "language": "grel", "code": "(exp)" }
 
-    "links" -> "propertyMappings : [ ... ]"
+    "properties" -> "propertyMappings" : "[ ... ]"
       "" -> "{ ... },"
         "cirie" & "iri" ->
                   "prefix"

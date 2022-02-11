@@ -157,9 +157,9 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
     	File vocabsFile = new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
     	ObjectMapper mapper = new ObjectMapper();
 		JsonNode jnodeVocabs = mapper.readTree(vocabsFile);
-		if ( jnodeVocabs.has(Util.gstrNamespaces) ) {
-			JsonNode jnodePrefixes = jnodeVocabs.get(Util.gstrNamespaces);
-			Iterator<Entry<String, JsonNode>> fields = jnodePrefixes.fields();
+		if ( jnodeVocabs != null && jnodeVocabs.has(Util.gstrNamespaces) ) {
+			JsonNode jnodeNamespaces = jnodeVocabs.get(Util.gstrNamespaces);
+			Iterator<Entry<String, JsonNode>> fields = jnodeNamespaces.fields();
 			fields.forEachRemaining(prefix -> {
 				String strPrefix = prefix.getKey();
 				String strNamespace = prefix.getValue().asText();
@@ -174,30 +174,32 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
 			return;
 		}
 
-        File tempFile = new File(this.workingDir, "vocabs.temp.json");
-        try {
-            saveToFile(tempFile);
-        }
-		catch (Exception ex) {
-            PredefinedVocabularyManager.logger.error("ERROR: Project metadata save failed: ", ex);
-			if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-			return;
-        }
+		synchronized(SAVED_VOCABS_FILE_NAME) {
+			File fileTemp = new File(this.workingDir, "vocabs.temp.json");
+			try {
+				this.saveToFile(fileTemp);
+			}
+			catch (Exception ex) {
+				PredefinedVocabularyManager.logger.error("ERROR: Project metadata save failed: ", ex);
+				if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+				return;
+			}
 
-        File file = new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
-        File oldFile = new File(this.workingDir, "vocabs.old.json");
+			File fileNew = new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
+			File fileOld = new File(this.workingDir, "vocabs.old.json");
 
-        if (file.exists()) {
-            file.renameTo(oldFile);
-        }
-        tempFile.renameTo(file);
-        if (oldFile.exists()) {
-            oldFile.delete();
-        }
+			if ( fileNew.exists() ) {
+				fileNew.renameTo(fileOld);
+			}
+			fileTemp.renameTo(fileNew);
+			if ( fileOld.exists() ) {
+				fileOld.delete();
+			}
+		}
 	}
 
-	private void saveToFile(File metadataFile) throws Exception {
-        Writer writer = new OutputStreamWriter(new FileOutputStream(metadataFile));
+	private void saveToFile(File fileVocab) throws Exception {
+        Writer writer = new OutputStreamWriter(new FileOutputStream(fileVocab));
         try {
 			JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
             write(jsonWriter);

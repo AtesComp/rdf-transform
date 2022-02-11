@@ -8,7 +8,7 @@ import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.IPredefinedVocabularyManager;
 import com.google.refine.rdf.model.vocab.IVocabularySearcher;
 import com.google.refine.rdf.model.vocab.PredefinedVocabularyManager;
-import com.google.refine.rdf.model.vocab.PrefixManager;
+import com.google.refine.rdf.model.vocab.NamespaceManager;
 import com.google.refine.rdf.model.vocab.VocabularySearcher;
 
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationContext {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:AppContext");
 
-	private final static String CURATED_VOCABS_FILE_NAME = "/files/prefixes";
+	private final static String CURATED_VOCABS_FILE_NAME = "/files/namespaces";
 	private final static String DEFAULT_SITE = "http://localhost:3333/";
 
 	private String strPort;
@@ -26,7 +26,7 @@ public class ApplicationContext {
 	private File fileWorkingDir;
 	private IPredefinedVocabularyManager predefinedVocabularyManager;
 	private IVocabularySearcher vocabularySearcher;
-	private PrefixManager prefixManager;
+	private NamespaceManager prefixManager;
 
 	public IPredefinedVocabularyManager getPredefinedVocabularyManager() {
 		return predefinedVocabularyManager;
@@ -50,7 +50,7 @@ public class ApplicationContext {
 		this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
 		this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
 		InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
-		this.prefixManager = new PrefixManager(inStream);
+		this.prefixManager = new NamespaceManager(inStream);
 		if (Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Init: Completed");
 	}
 
@@ -62,7 +62,7 @@ public class ApplicationContext {
 		this.vocabularySearcher = vocabularySearcher;
 	}
 
-	public PrefixManager getPrefixManager() {
+	public NamespaceManager getPrefixManager() {
 		return prefixManager;
 	}
 

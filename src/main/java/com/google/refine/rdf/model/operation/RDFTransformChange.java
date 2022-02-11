@@ -8,6 +8,7 @@ import java.util.Properties;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.refine.history.Change;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
@@ -18,6 +19,8 @@ import org.slf4j.LoggerFactory;
 
 public class RDFTransformChange implements Change {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFTransChange");
+    private final static String strNew = "new";
+    private final static String strOld = "old";
 
     final private RDFTransform theCurrentTransform;
     private RDFTransform thePreviousTransform;
@@ -64,12 +67,12 @@ public class RDFTransformChange implements Change {
         try {
             JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(theWriter);
 
-            theWriter.write("new=");
+            theWriter.write(RDFTransformChange.strNew + "=");
             if (this.theCurrentTransform != null) {
                 this.theCurrentTransform.write(jsonWriter);
             }
             theWriter.write('\n');
-            theWriter.write("old=");
+            theWriter.write(RDFTransformChange.strOld + "=");
             if (this.thePreviousTransform != null) {
                 this.thePreviousTransform.write(jsonWriter);
             }
@@ -88,11 +91,12 @@ public class RDFTransformChange implements Change {
     // Load a Change...
     //      Whenever a HistoryEntry does not have its Change in memory.
     //
-    //  NOTE: OpenRefine's effing static load() functions do not expect to pass the
-    //      Project unlike just about every other function!
+    //  NOTE: OpenRefine's effing Change load() functions do not pass the Project
+    //      unlike just about every other function!
     //
     static public Change load(LineNumberReader theReader, Pool thePool)
             throws Exception {
+        if ( Util.isDebugMode() ) RDFTransformChange.logger.info("DEBUG: Reconstructing from Change...");
         RDFTransform transformPrevious = null;
         RDFTransform transformCurrent = null;
 
@@ -101,18 +105,19 @@ public class RDFTransformChange implements Change {
             int iEqualIndex = strLine.indexOf('=');
             String strField = strLine.substring(0, iEqualIndex);
             String strValue = strLine.substring(iEqualIndex + 1);
-
-            if ( strField.equals("new") && ! strValue.isEmpty() ) {
-                transformCurrent =
-                    RDFTransform.reconstruct(
-                        ParsingUtilities.evaluateJsonStringToObjectNode(strValue)
-                    );
+            JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strValue);
+            if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
+                continue;
             }
-            else if ( strField.equals("old") && ! strValue.isEmpty() ) {
-                transformPrevious =
-                    RDFTransform.reconstruct(
-                        ParsingUtilities.evaluateJsonStringToObjectNode(strValue)
-                    );
+            RDFTransform theTransform = RDFTransform.reconstruct(jnodeTransform);
+
+            if ( strField.equals(RDFTransformChange.strNew) && ! strValue.isEmpty() ) {
+                if ( Util.isDebugMode() ) RDFTransformChange.logger.info("DEBUG: NEW Change set.");
+                transformCurrent = theTransform;
+            }
+            else if ( strField.equals(RDFTransformChange.strOld) && ! strValue.isEmpty() ) {
+                if ( Util.isDebugMode() ) RDFTransformChange.logger.info("DEBUG: OLD Change set.");
+                transformPrevious = theTransform;
             }
         }
 

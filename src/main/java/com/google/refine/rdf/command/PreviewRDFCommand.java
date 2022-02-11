@@ -44,8 +44,17 @@ public class PreviewRDFCommand extends Command {
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
 
             String strTransform = request.getParameter(RDFTransform.KEY);
-            JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
-            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeRoot);
+            if (strTransform == null) {
+                PreviewRDFCommand.respondJSON(response, CodeResponse.error);
+                return;
+            }
+            JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
+            if (jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty()  ) {
+                PreviewRDFCommand.respondJSON(response, CodeResponse.error);
+                return;
+            }
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing for Preview...");
+            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
 
             //if ( Util.isDebugMode() ) {
             //    PreviewRDFCommand.logger.info( "Given Transform:\n" + strTransform );

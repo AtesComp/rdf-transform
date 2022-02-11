@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.refine.rdf.RDFTransform;
 import com.google.refine.rdf.model.Util;
 
-public class PrefixAddCommand extends RDFTransformCommand {
+public class NamespaceAddCommand extends RDFTransformCommand {
 
-	public PrefixAddCommand() {
+	public NamespaceAddCommand() {
 		super();
 	}
 
@@ -19,7 +19,7 @@ public class PrefixAddCommand extends RDFTransformCommand {
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		if ( ! this.hasValidCSRFToken(request) ) {
-			PrefixAddCommand.respondCSRFError(response);
+			NamespaceAddCommand.respondCSRFError(response);
 			return;
 		}
 		// For Project, DO NOT USE this.getProject(request) as we only need the string...
@@ -41,13 +41,13 @@ public class PrefixAddCommand extends RDFTransformCommand {
 							strPrefix, strNamespace, strFetchURL, strProjectID);
 			}
 			catch (Exception ex) { // VocabularyImportException | IOException
-				PrefixAddCommand.respondJSON(response, CodeResponse.error);
+				NamespaceAddCommand.respondJSON(response, CodeResponse.error);
 				return;
         	}
 		}
 
-        this.getRDFTransform(request).addPrefix(strPrefix, strNamespace);
+        this.getRDFTransform(request).addNamespace(strPrefix, strNamespace);
 
-		PrefixAddCommand.respondJSON(response, CodeResponse.ok);
+		NamespaceAddCommand.respondJSON(response, CodeResponse.ok);
     }
 }

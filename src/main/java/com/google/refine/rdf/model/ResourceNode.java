@@ -281,7 +281,7 @@ abstract public class ResourceNode extends Node {
         List<IRI> listTypesForStmts = new ArrayList<IRI>();
         for ( RDFType typeItem : this.listTypes ) {
             strPrefix = typeItem.getPrefix();
-            strType = typeItem.getPathIRI(); // ...assume FULL IRI
+            strType = typeItem.getLocalPart(); // ...assume FULL IRI
             strLocalName = null;
             strNamespace = null;
             bNamespace = false;

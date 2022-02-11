@@ -25,7 +25,7 @@ import java.util.Set;
 public class VocabularyImporter {
 	private static final String USER_AGENT = "OpenRefine.Extension.RDF-Transform";
 
-	private static final String PREFIXES = // Default Prefixes...
+	private static final String PREFIXES = // Default Namespaces...
 		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#> " +

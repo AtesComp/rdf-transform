@@ -1,18 +1,18 @@
 /*
- *  CLASS RDFTransformPrefixAdder
+ *  CLASS RDFTransformNamespaceAdder
  *
  *  A class for adding a new Prefix to the Prefix Manager list
  */
-class RDFTransformPrefixAdder {
-	#prefixesManager;
+class RDFTransformNamespaceAdder {
+	#namespacesManager;
 	#dialog;
 	#elements;
 	#level;
 
 	#onDoneAdding;
 
-	constructor(prefixesManager) {
-		this.#prefixesManager = prefixesManager;
+	constructor(namespacesManager) {
+		this.#namespacesManager = namespacesManager;
 
 		this.#dialog = $( DOM.loadHTML("rdf-transform", "scripts/dialogs/rdf-transform-prefix-add.html") );
 		this.#elements = DOM.bind(this.#dialog);
@@ -77,7 +77,7 @@ class RDFTransformPrefixAdder {
 				// Let the user try again...
 				return;
 			}
-			var bDefinedPrefix = this.#prefixesManager.hasPrefix(strPrefix);
+			var bDefinedPrefix = this.#namespacesManager.hasPrefix(strPrefix);
 			if (bUndefinedNamespace || bDefinedPrefix) {
 				var strAlert =
 					$.i18n('rdft-prefix/prefix') +
@@ -95,7 +95,7 @@ class RDFTransformPrefixAdder {
 			// All Good: Process the Prefix Info for addition on the server...
 			//
 			var dismissBusy = null;
-			var postCmd = "command/rdf-transform/add-prefix";
+			var postCmd = "command/rdf-transform/add-namespace";
 			// Prepare the data values...
 			var postData = {
 				"project"    : theProject.id,
@@ -111,7 +111,7 @@ class RDFTransformPrefixAdder {
 				$('#vocab-prefix').val(strPrefix);
 				$('#vocab-namespace').val(strNamespace);
 
-				postCmd = "command/rdf-transform/add-prefix-from-file";
+				postCmd = "command/rdf-transform/add-namespace-from-file";
 				postData = {};
 				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace);
 			}

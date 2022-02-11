@@ -25,7 +25,7 @@ public class RDFType {
     /*
      * Method reconstructTypes()
      *
-     *      Helper function for reconstruct()
+     *      Helper function for RDFTransform.reconstruct()
      *
      *      Reconstruct the Node Types.  Nodes are generic descriptors for a related
      *      transformation.  They are transformed into RDF Resource and Literal nodes to construct
@@ -36,15 +36,15 @@ public class RDFType {
     static public void reconstructTypes(
                             Node.NodeReconstructor theNodeReconstructor,
                             ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
-                            VocabularyList thePrefixes) {
+                            VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
-        RDFType.reconstructTypes(rnodeParent, jnodeParent, baseIRI, thePrefixes);
+        RDFType.reconstructTypes(rnodeParent, jnodeParent, baseIRI, theNamespaces);
     }
 
     static private void reconstructTypes(
                             ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
-                            VocabularyList thePrefixes) {
+                            VocabularyList theNamespaces) {
         if ( ! jnodeParent.has(Util.gstrTypeMappings) ) {
             return;
         }
@@ -88,38 +88,38 @@ public class RDFType {
         }
     }
 
-    private String strPathIRI;
+    private String strLocalPart;
 	private String strPrefix;
 
-    public RDFType(String strPrefix, String strPathIRI) {
+    public RDFType(String strPrefix, String strLocalPart) {
         this.strPrefix  = Util.toSpaceStrippedString(strPrefix);
-        this.strPathIRI = Util.toSpaceStrippedString(strPathIRI);
+        this.strLocalPart = Util.toSpaceStrippedString(strLocalPart);
     }
 
     public String getPrefix() {
     	return this.strPrefix;
     }
 
-    public String getPathIRI() {
-		return this.strPathIRI;
+    public String getLocalPart() {
+		return this.strLocalPart;
 	}
 
     public String getPrefixedIRI() {
         if (this.strPrefix != null) {
-		    return this.strPrefix + ":" + this.strPathIRI;
+		    return this.strPrefix + ":" + this.strLocalPart;
         }
-        return this.strPathIRI;
+        return this.strLocalPart;
 	}
 
-    public String getFullIRI(VocabularyList thePrefixes) {
+    public String getFullIRI(VocabularyList theNamespaces) {
         if (this.strPrefix != null) {
-            Vocabulary vocab = thePrefixes.findByPrefix(this.strPrefix);
+            Vocabulary vocab = theNamespaces.findByPrefix(this.strPrefix);
             if (vocab != null) {
-                return vocab.getNamespace() + this.strPathIRI;
+                return vocab.getNamespace() + this.strLocalPart;
             }
-            return this.strPrefix + ":" + this.strPathIRI;
+            return this.strPrefix + ":" + this.strLocalPart;
         }
-        return this.strPathIRI;
+        return this.strLocalPart;
 	}
 
     public void write(JsonGenerator writer)
@@ -132,7 +132,7 @@ public class RDFType {
 
         writer.writeObjectFieldStart(Util.gstrValueSource);
         writer.writeStringField(Util.gstrSource, Util.gstrConstant);
-        writer.writeStringField(Util.gstrConstant, this.strPathIRI);
+        writer.writeStringField(Util.gstrConstant, this.strLocalPart);
         writer.writeEndObject();
 
 		// TODO: Future Expression Store...

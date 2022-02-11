@@ -31,15 +31,18 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @JsonIgnore
     private RDFTransform theTransform;
 
-    public SaveRDFTransformOperation() {};
+    public SaveRDFTransformOperation() {
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("Created empty save operation.");
+    };
 
     public SaveRDFTransformOperation(RDFTransform theTransform) {
         this.theTransform = theTransform;
-        if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Created save operation.");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("Created save operation with transform.");
     }
 
+    @Override
     @JsonIgnore
-    public String getDescription() {
+    public String getJsonDescription() {
     	return SaveRDFTransformOperation.strSaveRDFTransform;
     }
 
@@ -51,12 +54,13 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @JsonProperty(RDFTransform.KEY)
     public void setTransform(JsonNode jnodeTransform)
             throws Exception {
-        if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Setting transform from JSON...");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("Reconstructing for Save Operation...");
         if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
-            logger.info("No RDFTransform in JSON!");
+            SaveRDFTransformOperation.logger.info("No RDFTransform in JSON!");
             return;
         }
         this.theTransform = RDFTransform.reconstruct(jnodeTransform);
+        if ( Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("...reconstructed for Save Operation.");
     }
 
     @Override
@@ -67,7 +71,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @Override
     protected HistoryEntry createHistoryEntry(Project theProject, long liHistoryEntryID)
             throws Exception {
-        if ( Util.isDebugMode() ) logger.info("Creating save operation's change history entry...");
+        if ( Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("Creating save operation's change history entry...");
         // Create a new Change object with the transform sent by the command...
         //   NOTE: The previous transform will be set later when the HistoryEntry
         //         causes the Change to apply()'s this transform as the current transform.
@@ -82,9 +86,9 @@ public class SaveRDFTransformOperation extends AbstractOperation {
 
     static public AbstractOperation reconstruct(Project theProject, JsonNode jnodeElement)
             throws Exception {
-        if ( Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Reconstructing transform for new save operation...");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("Reconstructing from Save Operation...");
         JsonNode jnodeTransform = jnodeElement.get(RDFTransform.KEY);
-        if (jnodeTransform == null) {
+        if (jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
             return null;
         }
         RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);

@@ -13,12 +13,16 @@ class RDFTransform {
 
     // NOTE: Even though the expression is currently 'only GREL', we allow for future change
     //      by a setDefaults() modification.
-    static g_strDefaultExpressionLanguage = 'grel'; // ...the default (and only) Expression Language
-    static g_strDefaultExpression;                  // ...the default Expression for the current (and only) language, GREL
-    static g_strExpressionIndex;                    // ...the Index Expression to use: Row or Record
-    static g_strExpressionSource;                   // ...the Source Expression to use: Row or Record
-    static g_strIndexTitle;                         // ...the column title for the index: "Row" or "Record"
-    static g_bRowBased = true;                      // ...the type of indexing used: Row (true) or Record (false)
+    static g_strDefaultExpLang = 'grel';                 // ...the default (and only) Expression Language
+    static g_strDefaultExpCode;                          // ...the default Expression for the current (and only) language, GREL
+    static g_strExpressionIndexRow = "row.index";        // ...the Index Expression for Rows
+    static g_strExpressionIndexRec = "row.record.index"; // ...the Index Expression for Records
+    static g_strExpressionIndex;                         // ...the Index Expression to use: Row or Record
+    static g_strValueSourceRow = "row_index";            // ...the Value Source for Rows
+    static g_strValueSourceRec = "record_id";            // ...the Value Source for Records
+    static g_strValueSource;                             // ...the Value Source to use: Row or Record
+    static g_strIndexTitle;                              // ...the column title for the index: "Row" or "Record"
+    static g_bRowBased = true;                           // ...the type of indexing used: Row (true) or Record (false)
 
     // Setup default Master Root Node...
     static g_nodeMasterRoot = {};
@@ -31,9 +35,9 @@ class RDFTransform {
 
         // The Default Expression setting is reset each time the dialog is opened since we
         // don't know if this is the first time or project change...
-        RDFTransform.g_strDefaultExpression =
+        RDFTransform.g_strDefaultExpCode =
             theProject
-            .scripting[RDFTransform.g_strDefaultExpressionLanguage]
+            .scripting[RDFTransform.g_strDefaultExpLang]
             .defaultExpression;
 
         // The Row / Record Expression Index setting must be reset each time the dialog is
@@ -41,23 +45,39 @@ class RDFTransform {
         RDFTransform.g_bRowBased = ( theProject.rowModel.mode === "row-based" );
 
         if (RDFTransform.g_bRowBased) {
-            RDFTransform.g_strExpressionIndex = "row.index";        // ...Row Index Expression
-            RDFTransform.g_strExpressionSource = "row_index";       // ...Row Source Expression
+            RDFTransform.g_strExpressionIndex = RDFTransform.g_strExpressionIndexRow;
+            RDFTransform.g_strValueSource = RDFTransform.g_strValueSourceRow;
             RDFTransform.g_strIndexTitle = $.i18n("rdft-dialog/title-row");
         }
-        else {
-            RDFTransform.g_strExpressionIndex = "row.record.index"; // ...Record Index Expression
-            RDFTransform.g_strExpressionSource = "record_id";       // ...Record Source Expression
+        else { // ...Record Based...
+            RDFTransform.g_strExpressionIndex = "row.record.index";
+            RDFTransform.g_strValueSource = RDFTransform.g_strValueSourceRec;
             RDFTransform.g_strIndexTitle = $.i18n("rdft-dialog/title-rec");
         }
 
         // Setup default Master Root Node...
         // ...assume Cell As Resource with Index Expression and No Properties...
-        RDFTransform.g_nodeMasterRoot.nodeType = RDFTransformCommon.g_strRDFT_CRESOURCE;
-        RDFTransform.g_nodeMasterRoot.expression = RDFTransform.g_strExpressionIndex;
-        RDFTransform.g_nodeMasterRoot.isIndex = true;
-        RDFTransform.g_nodeMasterRoot.properties = [];
-    }
+        // Root Nodes:
+        //
+        //  Default Value Type = IMPLIED "valueType": { "type": "iri" }
+        //RDFTransform.g_nodeMasterRoot.nodeType = RDFTransformCommon.g_strRDFT_CRESOURCE;
+
+        //  Default Expression = "expression" : { "language": "grel", "code": ("row.index" || "row.record.index") }
+        RDFTransform.g_nodeMasterRoot.expression = {};
+        RDFTransform.g_nodeMasterRoot.expression.language = "grel";
+        RDFTransform.g_nodeMasterRoot.expression.code = RDFTransform.g_strExpressionIndex;
+
+        //  Default Value Source = "valueSource" : { "source" : ("row_index" || "record_id") }
+        //      IMPIES bIsIndex = true
+        RDFTransform.g_nodeMasterRoot.valueSource = {};
+        RDFTransform.g_nodeMasterRoot.valueSource.source = RDFTransform.g_strValueSource;
+
+        //RDFTransform.g_nodeMasterRoot.bIsIndex = true;
+        //  Default Property Mappings = [], but will be filled with:
+        //      Property IRIs based on existing Column Names and
+        //          related Literal Objects base on Column Values
+        RDFTransform.g_nodeMasterRoot.propertyMappings = [];
+   }
 
     static findColumn(columnName) {
         for (const column of theProject.columnModel.columns) {
@@ -77,8 +97,8 @@ class RDFTransform {
 class RDFTransformDialog {
     iSampleLimit = 20; // TODO: Modify for user input
 
-    thePrefixes;
-    prefixesManager;
+    theNamespaces;
+    namespacesManager;
 
     #theTransform;
     #nodeUIs;
@@ -109,9 +129,9 @@ class RDFTransformDialog {
         this.#buildBody();
 
         // Initialize namespaces...
-        this.thePrefixes = this.#elements.rdftEditPrefixes; // ...used in RDFTransformPrefixesManager
-        this.prefixesManager = new RDFTransformPrefixesManager(this);
-        await this.prefixesManager.initPrefixes();
+        this.theNamespaces = this.#elements.rdftEditNamespaces; // ...used in RDFTransformNamespacesManager
+        this.namespacesManager = new RDFTransformNamespacesManager(this);
+        await this.namespacesManager.init();
 
         // Initialize baseIRI...
         this.#replaceBaseIRI(this.#theTransform.baseIRI || location.origin + '/', false);
@@ -160,7 +180,41 @@ class RDFTransformDialog {
             var nodeRoot = await this.#createInitialRootNode();
             this.#theTransform.subjectMappings.push(nodeRoot);
         }
+        // Otherwise, set the existing Root Nodes for current Row or Record settings when applicable...
+        else {
+            for (var nodeSubject of this.#theTransform.subjectMappings) {
+                // Find old cruft...
+                var strOldValSrc;
+                var bExpExists = ("expression" in nodeSubject);
+                var strOldExp;
+                if ( RDFTransform.g_bRowBased ) { // Now we are Row based...
+                    strOldValSrc = RDFTransform.g_strValueSourceRec;
+                    if (bExpExists) {
+                        strOldExp = RDFTransform.g_strExpressionIndexRec;
+                    }
+                }
+                else { // Now we are Record based...
+                    strOldValSrc = RDFTransform.g_strValueSourceRow;
+                    if (bExpExists) {
+                        strOldExp = RDFTransform.g_strExpressionIndexRow;
+                    }
+                }
+                var bValSrcHasOld = ( nodeSubject.valueSource.source == strOldValSrc );
+                var bExpHasOld = false;
+                if (bExpExists) {
+                    bExpHasOld = ( nodeSubject.expression.code.indexOf( strOldExp ) !== -1 );
+                }
 
+                // Replace with current cruft...
+                if (bValSrcHasOld) {
+                    nodeSubject.valueSource.source = RDFTransform.g_strValueSource;
+                    if (bExpHasOld) {
+                        nodeSubject.expression.code.replaceAll(strOldExp, RDFTransform.g_strExpressionIndex)
+                    }
+                }
+            }
+        }
+ 
         this.#nodeUIs = []; // ...array of RDFTransformUINode
     }
 
@@ -197,7 +251,7 @@ class RDFTransformDialog {
                 }
                 var theProperty = {};
                 theProperty.prefix = null;
-                theProperty.pathIRI = strIRI;
+                theProperty.localPart = strIRI;
                 theProperty.nodeObject = nodeObject;
                 properties.push(theProperty);
             }
@@ -225,7 +279,7 @@ class RDFTransformDialog {
         this.#elements.rdftBaseIRIValue.text(     this.#theTransform.baseIRI                   );
         this.#elements.rdftTabTransformText.text( $.i18n('rdft-dialog/tab-transform')          );
         this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview')            );
-        this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
+        this.#elements.rdftNamespacesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
         this.#elements.rdftAddRootNode.text(      $.i18n('rdft-buttons/add-root')              );
         this.#elements.rdftImpTemplate.text(      $.i18n('rdft-buttons/import-template')       );
         this.#elements.rdftExpTemplate.text(      $.i18n('rdft-buttons/export-template')       );
@@ -278,14 +332,15 @@ class RDFTransformDialog {
         this.#elements.rdftAddRootNode
         .click( (evt) => {
                 evt.preventDefault();
-                var nodeRootNew = this.#createRootNode();
-                this.#theTransform.subjectMappings.push(nodeRootNew);
+                var nodeNewRoot = this.#createRootNode();
+                this.#theTransform.subjectMappings.push(nodeNewRoot);
                 this.#nodeUIs.push(
                     new RDFTransformUINode(
-                        /* dialog */  this,
-                        /* node */    nodeRootNew,
-                        /* table */   this.#tableNodes,
-                        /* options */ { expanded: true }
+                        this,              // dialog
+                        nodeNewRoot,       // node
+                        true,              // bIsRoot
+                        this.#tableNodes,  // table
+                        { expanded: true } // options
                     )
                 );
             }
@@ -349,7 +404,7 @@ class RDFTransformDialog {
         this.#theTransform = cloneDeep(theTransform);
 
         // Initialize namespaces...
-        this.prefixesManager.resetPrefixes();
+        this.namespacesManager.reset();
 
         // Initialize baseIRI...
         this.#replaceBaseIRI( this.#theTransform.baseIRI );
@@ -362,12 +417,12 @@ class RDFTransformDialog {
     #doExport() {
         this.#doSave(); // ...for undo
 
-        const theTransform = this.getJSON();
+        const theTransform = this.getTransformExport();
         RDFExportTemplate.exportTemplate( theTransform );
     }
 
     #doSave() {
-        const theTransform = this.getJSON();
+        const theTransform = this.getTransformExport();
         Refine.postProcess(
             RDFTransform.KEY,       // module
             'save-rdf-transform',   // command
@@ -398,14 +453,15 @@ class RDFTransformDialog {
             .addClass("rdf-transform-table-layout");
         this.#tableNodes = table[0];
 
-        for (const nodeRoot of this.#theTransform.subjectMappings) {
-            if (nodeRoot) {
+        for (const nodeSubject of this.#theTransform.subjectMappings) {
+            if (nodeSubject) {
                 this.#nodeUIs.push(
                     new RDFTransformUINode(
-                        /* dialog */  this,
-                        /* node */    nodeRoot,
-                        /* table */   this.#tableNodes,
-                        /* options */ { expanded: true }
+                        this,              // dialog
+                        nodeSubject,       // node
+                        true,              // bIsRoot
+                        this.#tableNodes,  // table
+                        { expanded: true } // options
                     )
                 );
             }
@@ -418,7 +474,7 @@ class RDFTransformDialog {
         //
         // Process Preview Tab
         //
-        const theTransform = this.getJSON();
+        const theTransform = this.getTransformExport();
         /*DEBUG*/ console.log(theTransform);
         this.#panePreview.empty();
         $('<img />')
@@ -542,7 +598,7 @@ class RDFTransformDialog {
         return this.#theTransform.namespaces;
     }
 
-    getJSON() {
+    getTransformExport() {
         var theTransform = {};
         theTransform.extension = RDFTransform.g_strExtension;
         theTransform.version   = RDFTransform.g_strVersion;
@@ -552,19 +608,19 @@ class RDFTransformDialog {
 
         // Get the current namespaces...
         theTransform.namespaces = {};
-        if (this.prefixesManager.prefixes != null)
+        if (this.namespacesManager.namespaces != null)
         {
-            theTransform.namespaces = this.prefixesManager.prefixes;
+            theTransform.namespaces = this.namespacesManager.namespaces;
         }
         //else {
-        //    alert("No prefixes!");
+        //    alert("No namespaces!");
         //}
 
         // Get the current Subject Mapping nodes...
         theTransform.subjectMappings = [];
         for (const nodeUI of this.#nodeUIs) {
             if (nodeUI) {
-                var node = nodeUI.getJSON();
+                var node = nodeUI.getTransformExport();
                 if (node !== null) {
                     theTransform.subjectMappings.push(node);
                 }

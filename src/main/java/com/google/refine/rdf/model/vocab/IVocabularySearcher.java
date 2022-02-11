@@ -65,6 +65,6 @@ public interface IVocabularySearcher {
 	public void update()
 					throws IOException;
 
-	public void synchronize(String strProjectID, Set<String> setPrefixes)
+	public void synchronize(String strProjectID, Set<String> setNamespaces)
 					throws IOException;
 }

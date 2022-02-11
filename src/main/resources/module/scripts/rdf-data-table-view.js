@@ -145,9 +145,9 @@ class RDFExpressionPreviewDialog {
 
 		// ...and set it for the current default expression language...
 		var languageOptions = [];
-		var info = theProject.scripting[RDFTransform.g_strDefaultExpressionLanguage];
+		var info = theProject.scripting[RDFTransform.g_strDefaultExpLang];
 		languageOptions.push(
-			'<option value="' + RDFTransform.g_strDefaultExpressionLanguage + '">' +
+			'<option value="' + RDFTransform.g_strDefaultExpLang + '">' +
 			info.name +
 			'</option>'
 		);
@@ -327,7 +327,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 		this.expression = strExpression;
 		if (strExpression === null || strExpression.length === 0 ) {
-			this.expression = RDFTransform.g_strDefaultExpression; // ...use default expression
+			this.expression = RDFTransform.g_strDefaultExpCode; // ...use default expression
 		}
 
 		this.#bIsIRI = bIsIRI;

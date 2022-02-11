@@ -1,76 +1,76 @@
 /*
- * RDFTransformPrefixesManager
+ * RDFTransformNamespacesManager
  *
  *   The Prefix Manager for the RDF Transform dialog
  */
 
-class RDFTransformPrefixesManager {
-	static globalPrefixes = null;
+class RDFTransformNamespacesManager {
+	static globalNamespaces = null;
 
-	prefixes;
+	namespaces;
 
 	#dialog;
 
 	constructor(dialog) {
 		this.#dialog = dialog;
 
-		// Prefixes have not been initialized...
+		// Namespaces have not been initialized...
 		// Initialize after construction!
 	}
 
-	async initPrefixes() {
-		this.#dialog.thePrefixes.empty().html('<img src="images/small-spinner.gif" />');
-		this.prefixes = this.#dialog.getNamespaces(); // ...existing prefixes
+	async init() {
+		this.#dialog.theNamespaces.empty().html('<img src="images/small-spinner.gif" />');
+		this.namespaces = this.#dialog.getNamespaces(); // ...existing namespaces
 
-		if ( ! this.prefixes ) {
+		if ( ! this.namespaces ) {
 			var data = null;
-			this.prefixes = {} // ...empty object, no prefixes
+			this.namespaces = {} // ...empty object, no namespaces
 			try {
-				data = await this.#getDefaultPrefixes();
+				data = await this.#getDefaults();
 			}
 			catch (evt) {
-				// ...ignore error, no prefixes...
+				// ...ignore error, no namespaces...
 			}
 			var bError = false;
 			if (data !== null && "namespaces" in data) {
-				this.prefixes = data.namespaces; // ...new defaults prefixes
+				this.namespaces = data.namespaces; // ...new defaults namespaces
 			}
 			else { // (data === null || data.code === "error") 
 				bError = true;
 			}
 			// We might have changed data for errors...
 			if (bError) {
-				alert("ERROR: Could not retrieve default prefixes!");
+				alert("ERROR: Could not retrieve default namespaces!");
 			}
-			this.showPrefixes(this.prefixes);
+			this.show(this.namespaces);
 		}
 		else {
-			this.#savePrefixes();
-			this.showPrefixes();
+			this.#save();
+			this.show();
 		}
-		RDFTransformPrefixesManager.globalPrefixes = this.prefixes;
+		RDFTransformNamespacesManager.globalNamespaces = this.namespaces;
 	}
 
-	resetPrefixes() {
-		this.#dialog.thePrefixes.empty().html('<img src="images/small-spinner.gif" />');
-		this.prefixes = this.#dialog.getNamespaces();
-		this.#savePrefixes();
-		this.showPrefixes();
+	reset() {
+		this.#dialog.theNamespaces.empty().html('<img src="images/small-spinner.gif" />');
+		this.namespaces = this.#dialog.getNamespaces();
+		this.#save();
+		this.show();
 	}
 
 	/*
-	 * Method: getDefaultPrefixes()
+	 * Method: getDefaults()
 	 *
-	 * 	Get the Default Prefixes from the server.  As this method returns a Promise, it expects
+	 * 	Get the Default Namespaces from the server.  As this method returns a Promise, it expects
 	 *  the caller is an "async" function "await"ing the results of the Promise.
 	 *
 	 */
-	#getDefaultPrefixes() {
+	#getDefaults() {
 		return new Promise(
 			(resolve, reject) => {
-				// GET default prefixes in ajax
+				// GET default namespaces in ajax
 				$.ajax(
-					{	url  : "command/rdf-transform/get-default-prefixes",
+					{	url  : "command/rdf-transform/get-default-namespaces",
 						type : "GET",
 						async: false, // ...wait on results
 						data : { "project" : theProject.id },
@@ -83,52 +83,52 @@ class RDFTransformPrefixesManager {
 		);
 	}
 
-	#savePrefixes(onDoneSave) {
+	#save(onDoneSave) {
 		Refine.postCSRF(
-			"command/rdf-transform/save-prefixes",
+			"command/rdf-transform/save-namespaces",
 			{   "project" : theProject.id,
-				"namespaces" : this.prefixes
+				"namespaces" : this.namespaces
 			},
 			(data) => { if (onDoneSave) { onDoneSave(data); } },
 			"json"
 		);
 	}
 
-	#showManagePrefixesWidget() {
+	#showManageWidget() {
 		var vocabManager = new RDFTransformVocabManager(this);
 		vocabManager.show();
 	}
 
-	showPrefixes() {
-		this.#dialog.thePrefixes.empty();
-		for (const strPrefix in this.prefixes) {
-			this.#renderPrefix(strPrefix, this.prefixes[strPrefix]);
+	show() {
+		this.#dialog.theNamespaces.empty();
+		for (const strPrefix in this.namespaces) {
+			this.#render(strPrefix, this.namespaces[strPrefix]);
 		}
 		// Add button...
-		$('<a href="#" class="add-prefix-box">' + $.i18n('rdft-prefix/add') + '</a>')
+		$('<a href="#" class="add-namespace-box">' + $.i18n('rdft-prefix/add') + '</a>')
 		.click(
 			(evt) => {
 				evt.preventDefault();
-				this.addPrefix(false, false, false);
+				this.addNamespace(false, false, false);
 			}
 		)
-		.appendTo(this.#dialog.thePrefixes);
+		.appendTo(this.#dialog.theNamespaces);
 
 		// Manage button...
 		$('<a href="#" class="manage-vocabularies-box">' + $.i18n('rdft-prefix/manage') + '</a>')
 		.click(
 			(evt) => {
 				evt.preventDefault();
-				this.#showManagePrefixesWidget();
+				this.#showManageWidget();
 			}
 		)
-		.appendTo(this.#dialog.thePrefixes);
+		.appendTo(this.#dialog.theNamespaces);
 
 		// TODO: Add refresh all button
 	}
 
-	#renderPrefix(strPrefix, strNamespace) {
-		this.#dialog.thePrefixes
+	#render(strPrefix, strNamespace) {
+		this.#dialog.theNamespaces
 		.append(
 			$('<span/>')
 			.addClass('rdf-transform-prefix-box')
@@ -137,11 +137,11 @@ class RDFTransformPrefixesManager {
 		);
 	}
 
-	removePrefix(strPrefixFind) {
+	removeNamespace(strPrefixFind) {
 		var iIndex = 0;
-		for (const strPrefix in this.prefixes) {
+		for (const strPrefix in this.namespaces) {
 			if (strPrefixFind === strPrefix) {
-				this.prefixes.splice(iIndex, 1);
+				this.namespaces.splice(iIndex, 1);
 				iIndex--;
 				this.#dialog.updatePreview();
 			}
@@ -149,19 +149,19 @@ class RDFTransformPrefixesManager {
 		}
 	}
 
-	addPrefix(strMessage, strPrefixGiven, onDoneAdd) {
-		var widget = new RDFTransformPrefixAdder(this);
+	addNamespace(strMessage, strPrefixGiven, onDoneAdd) {
+		var widget = new RDFTransformNamespaceAdder(this);
 		widget.show(
 			strMessage,
 			strPrefixGiven,
 			(strPrefix, strNamespace) => {
-				// NOTE: The RDFTransformPrefixAdder should have validated the
+				// NOTE: The RDFTransformNamespaceAdder should have validated the
 				//		prefix information, so no checks are required here.
 
 				// Add the Prefix and its Namespace...
-				this.prefixes[strPrefix] = strNamespace;
-				this.#savePrefixes();
-				this.showPrefixes();
+				this.namespaces[strPrefix] = strNamespace;
+				this.#save();
+				this.show();
 
 				if (onDoneAdd) {
 					onDoneAdd(strPrefix);
@@ -172,7 +172,7 @@ class RDFTransformPrefixesManager {
 	}
 
 	hasPrefix(strPrefixFind) {
-		for (const strPrefix in this.prefixes) {
+		for (const strPrefix in this.namespaces) {
 			if (strPrefix === strPrefixFind) {
 				return true;
 			}
@@ -181,9 +181,9 @@ class RDFTransformPrefixesManager {
 	}
 
 	getNamespaceOfPrefix(strPrefixFind) {
-		for (const strPrefix in this.prefixes) {
+		for (const strPrefix in this.namespaces) {
 			if (strPrefix === strPrefixFind) {
-				return this.prefixes[strPrefix];
+				return this.namespaces[strPrefix];
 			}
 		}
 		return null;
@@ -221,13 +221,13 @@ class RDFTransformPrefixesManager {
 	}
 
 	getFullIRIFromQName(strPrefixedQName) {
-		var objIRI = this.#deAssembleQName(strPrefixedQName);
-		if ( !objIRI.prefix ) {
+		var objIRIParts = this.#deAssembleQName(strPrefixedQName);
+		if ( !objIRIParts.prefix ) {
 			return null;
 		}
-		for (const strPrefix in RDFTransformPrefixesManager.globalPrefixes) {
-			if (strPrefix === objIRI.prefix) {
-				return RDFTransformPrefixesManager.globalPrefixes[strPrefix] + objIRI.localPart;
+		for (const strPrefix in RDFTransformNamespacesManager.globalNamespaces) {
+			if (strPrefix === objIRIParts.prefix) {
+				return RDFTransformNamespacesManager.globalNamespaces[strPrefix] + objIRIParts.localPart;
 			}
 		}
 		return null;

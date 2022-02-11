@@ -57,23 +57,23 @@ class RDFTransformResourceDialog {
                 //    "cirie" : data
                 //}
                 var obj = null;
-                var iPrefixedIRI = await this.#dialog.prefixesManager.isPrefixedQName(data);
+                var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(data);
                 if ( iPrefixedIRI == 1 ) { // ...Prefixed IRI
-                    var strPrefix = this.#dialog.prefixesManager.getPrefixFromQName(data);
-                    var strPathIRI = this.#dialog.prefixesManager.getSuffixFromQName(data);
-                    // IRI   = Namespace of Prefix + strPathIRI
-                    // CIRIE = strResPrefix + ":" + strPathIRI
+                    var strPrefix = this.#dialog.namespacesManager.getPrefixFromQName(data);
+                    var strLocalPart = this.#dialog.namespacesManager.getSuffixFromQName(data);
+                    // IRI   = Namespace of Prefix + strLocalPart
+                    // CIRIE = strResPrefix + ":" + strLocalPart
                     obj = {};
                     obj.prefix = strPrefix;   // Given Prefix
-                    obj.path_iri = strPathIRI; // Path portion of IRI
+                    obj.localPart = strLocalPart; // Path portion of IRI
                     this.#onDone(obj);
                 }
                 else if ( iPrefixedIRI == 0 ) { // ...Full IRI
-                    // IRI   = Namespace of Prefix + strPathIRI
-                    // CIRIE = strResPrefix + ":" + strPathIRI
+                    // IRI   = Namespace of Prefix + strLocalPart
+                    // CIRIE = strResPrefix + ":" + strLocalPart
                     obj = {};
                     obj.prefix = null;  // No Prefix
-                    obj.path_iri = data; // Full IRI
+                    obj.localPart = data; // Full IRI
                     this.#onDone(obj);
                 }
                 else { // iPrefixedIRI == -1 // ...Bad IRI
@@ -90,61 +90,61 @@ class RDFTransformResourceDialog {
                 alert("DEBUG: Add Item:\n" + data);
 
                 // Does the data look like a prefixed IRI?
-                var iPrefixedIRI = await this.#dialog.prefixesManager.isPrefixedQName(data);
+                var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(data);
                 // Is it a prefixed IRI?
                 if ( iPrefixedIRI == 1 ) {
                     MenuSystem.dismissAll();
 
-                    // Divide the data into Prefix and PathIRI portions...
-                    var strPrefix = this.#dialog.prefixesManager.getPrefixFromQName(data);
-                    var strPathIRI = this.#dialog.prefixesManager.getSuffixFromQName(data);
+                    // Divide the data into Prefix and LocalPart portions...
+                    var strPrefix = this.#dialog.namespacesManager.getPrefixFromQName(data);
+                    var strLocalPart = this.#dialog.namespacesManager.getSuffixFromQName(data);
 
                     // Is there an existing prefix matching the given prefix?
-                    if ( this.#dialog.prefixesManager.hasPrefix(strPrefix) ) {
+                    if ( this.#dialog.namespacesManager.hasPrefix(strPrefix) ) {
                         // ...yes, add resource...
-                        // IRI   = Namespace of Prefix + strPathIRI
-                        // CIRIE = strResPrefix + ":" + strPathIRI
+                        // IRI   = Namespace of Prefix + strLocalPart
+                        // CIRIE = strResPrefix + ":" + strLocalPart
                         var obj = {};
                         obj.prefix = strPrefix;   // Given Prefix
-                        obj.path_iri = strPathIRI; // Path portion of IRI
+                        obj.localPart = strLocalPart; // Path portion of IRI
                         this.#onDone(obj);
                     }
                     // No, then this prefix is not recorded...
                     else {
                         // ...create prefix (which may change in here) and add (re-prefixed) resource...
                         //
-                        // NOTE: We are passing a function to RDFTransformPrefixesManager.addPrefix() which,
-                        //      in turn, passes it in an event function to RDFTransformPrefixAdder.show().
-                        this.#dialog.prefixesManager.addPrefix(
+                        // NOTE: We are passing a function to RDFTransformNamespacesManager.addNamespace() which,
+                        //      in turn, passes it in an event function to RDFTransformNamespaceAdder.show().
+                        this.#dialog.namespacesManager.addNamespace(
                             $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                             strPrefix,
                             (strResPrefix) => {
                                 // NOTE: Only the prefix (without the related IRI) is returned.  We don't need
-                                //      the IRI...addPrefix() added it.  We will get the IRI from the prefix
+                                //      the IRI...addNamespace() added it.  We will get the IRI from the prefix
                                 //      manager later to ensure the IRI is present.
                                 var obj = null;
-                                // Do the original and resulting prefixes match?
-                                // NOTE: It can change via edits in RDFTransformPrefixAdder.show()
+                                // Do the original and resulting prefix match?
+                                // NOTE: It can change via edits in RDFTransformNamespaceAdder.show()
                                 if ( strPrefix.normalize() == strResPrefix.normalize() ) {
                                     // ...yes, set as before...
-                                    // IRI   = Namespace of Prefix + strPathIRI
-                                    // CIRIE = strResPrefix + ":" + strPathIRI
+                                    // IRI   = Namespace of Prefix + strLocalPart
+                                    // CIRIE = strResPrefix + ":" + strLocalPart
                                     obj = {};
                                     obj.prefix = strPrefix;   // Given Prefix
-                                    obj.path_iri = strPathIRI; // Path portion of IRI
+                                    obj.localPart = strLocalPart; // Path portion of IRI
                                 }
                                 // No, then adjust...
                                 else {
                                     // ...get new Namespace of the Prefix to validate...
                                     var strResNamespace =
-                                        this.#dialog.prefixesManager.getNamespaceOfPrefix(strResPrefix);
+                                        this.#dialog.namespacesManager.getNamespaceOfPrefix(strResPrefix);
                                     // Ensure the prefix's IRI was added...
                                     if ( strResNamespace != null ) {
-                                        // IRI   = Namespace of Prefix + strPathIRI
-                                        // CIRIE = strResPrefix + ":" + strPathIRI
+                                        // IRI   = Namespace of Prefix + strLocalPart
+                                        // CIRIE = strResPrefix + ":" + strLocalPart
                                         obj = {};
                                         obj.prefix = strResPrefix; // New Prefix
-                                        obj.path_iri = strPathIRI;  // Path portion of IRI
+                                        obj.localPart = strLocalPart;  // Path portion of IRI
                                     }
                                     // If not, abort the resource addition with a null obj...
                                 }
@@ -166,7 +166,7 @@ class RDFTransformResourceDialog {
                     // ...take it as is...
                     var obj = {};
                     obj.prefix = null;  // No Prefix
-                    obj.path_iri = data; // Full IRI
+                    obj.localPart = data; // Full IRI
                     this.#onDone(obj);
                 }
                 // Is it a BAD IRI?

@@ -50,7 +50,7 @@ public abstract class RDFVisitor {
             this.theConnection.setNamespace("", strBaseIRI);
         }
         // Set Prefix Namespaces...
-        Collection<Vocabulary> collVocab = this.theTransform.getPrefixes();
+        Collection<Vocabulary> collVocab = this.theTransform.getNamespaces();
         for (Vocabulary vocab : collVocab) {
             this.theConnection.setNamespace( vocab.getPrefix(), vocab.getNamespace() );
         }

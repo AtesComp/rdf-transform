@@ -13,10 +13,10 @@ import com.google.refine.rdf.model.vocab.VocabularyImportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PrefixRefreshCommand extends RDFTransformCommand {
+public class NamespaceRefreshCommand extends RDFTransformCommand {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRefreshCmd");
 
-	public PrefixRefreshCommand() {
+	public NamespaceRefreshCommand() {
 		super();
 	}
 
@@ -26,7 +26,7 @@ public class PrefixRefreshCommand extends RDFTransformCommand {
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Content-Type", "application/json");
 		if ( ! this.hasValidCSRFToken(request) ) {
-			PrefixRefreshCommand.respondCSRFError(response);
+			NamespaceRefreshCommand.respondCSRFError(response);
 			return;
 		}
 		// For Project, DO NOT USE this.getProject(request) as we only need the string...
@@ -38,7 +38,7 @@ public class PrefixRefreshCommand extends RDFTransformCommand {
 		RDFTransform theTransform = this.getRDFTransform(request);
 
 		// Remove the namespace...
-		theTransform.removePrefix(strPrefix);
+		theTransform.removeNamespace(strPrefix);
 
 		Exception except = null;
 		boolean bError = false;
@@ -68,22 +68,22 @@ public class PrefixRefreshCommand extends RDFTransformCommand {
 		// Some problem occurred....
 		if (except != null) {
 			if (bError) {// ...error...
-				PrefixRefreshCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
+				NamespaceRefreshCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
 				if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
 			}
 			else { // ...warning...
-				if ( Util.isVerbose() ) PrefixRefreshCommand.logger.warn("Prefix exists: ", except);
+				if ( Util.isVerbose() ) NamespaceRefreshCommand.logger.warn("Prefix exists: ", except);
 			}
 
-			PrefixRefreshCommand.respondJSON(response, CodeResponse.error);
+			NamespaceRefreshCommand.respondJSON(response, CodeResponse.error);
 			return;
 		}
 
 		// Otherwise, all good...
 
 		// Re-add the namespace...
-		theTransform.addPrefix(strPrefix, strNamespace);
+		theTransform.addNamespace(strPrefix, strNamespace);
 
-		PrefixRefreshCommand.respondJSON(response, CodeResponse.ok);
+		NamespaceRefreshCommand.respondJSON(response, CodeResponse.ok);
 	}
 }

@@ -188,12 +188,12 @@ public class VocabularySearcher implements IVocabularySearcher {
 	}
 
 	@Override
-	public void synchronize(String strProjectID, Set<String> setPrefixes)
+	public void synchronize(String strProjectID, Set<String> setNamespaces)
 			throws IOException {
-		Set<String> setAllPrefixes = this.getPrefixesOfProjectID(strProjectID);
-		setAllPrefixes.removeAll(setPrefixes);
-		if ( ! setAllPrefixes.isEmpty() ) {
-			this.deletePrefixesOfProjectID(strProjectID, setAllPrefixes);
+		Set<String> setAllNamespaces = this.getNamespacesOfProjectID(strProjectID);
+		setAllNamespaces.removeAll(setNamespaces);
+		if ( ! setAllNamespaces.isEmpty() ) {
+			this.deleteNamespacesOfProjectID(strProjectID, setAllNamespaces);
 		}
 		this.update();
 	}
@@ -487,28 +487,28 @@ public class VocabularySearcher implements IVocabularySearcher {
 		return searcher.search( query, this.getMaxDoc() );
 	}
 
-	private Set<String> getPrefixesOfProjectID(String strProjectID)
+	private Set<String> getNamespacesOfProjectID(String strProjectID)
 			throws IOException {
 		// Query for Project ID...
-		Set<String> prefixes = new HashSet<String>();
+		Set<String> namespaces = new HashSet<String>();
 		Query query = new TermQuery(new Term(Util.gstrProject, strProjectID));
 		TopDocs docs =  searcher.search( query, this.getMaxDoc() );
 		for (ScoreDoc sdoc : docs.scoreDocs) {
 			Document doc = searcher.doc(sdoc.doc);
-			prefixes.add( doc.get(Util.gstrPrefix) );
+			namespaces.add( doc.get(Util.gstrPrefix) );
 		}
-		return prefixes;
+		return namespaces;
 	}
 
-	private void deletePrefixesOfProjectID(String strProjectID, Set<String> toDelete)
+	private void deleteNamespacesOfProjectID(String strProjectID, Set<String> toDelete)
 			throws IOException {
 		if ( strProjectID == null || strProjectID.isEmpty() ) {
 			throw new RuntimeException("Project ID is null");
 		}
 
-		BooleanQuery.Builder qbuilderPrefixes = new BooleanQuery.Builder();
+		BooleanQuery.Builder qbuilderNamespaces = new BooleanQuery.Builder();
 		for (String strPrefix : toDelete) {
-			qbuilderPrefixes.
+			qbuilderNamespaces.
 				add( new TermQuery( new Term(Util.gstrPrefix, strPrefix) ), Occur.SHOULD );
 		}
 
@@ -516,7 +516,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 			new BooleanQuery.Builder().
 				add(TYPE_QUERY, Occur.MUST).
 				add( new TermQuery( new Term(Util.gstrProject, strProjectID) ), Occur.MUST ).
-				add(qbuilderPrefixes.build(), Occur.MUST).
+				add(qbuilderNamespaces.build(), Occur.MUST).
 				build();
 
 		this.writer.deleteDocuments(queryDelete);

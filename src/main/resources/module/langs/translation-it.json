@@ -11,7 +11,7 @@
     "rdft-as/literal": "Letterale",
     "rdft-as/double": "Numero Doppio",
     "rdft-as/text": "Text",
-    "rdft-buttons/add-prefix": "Aggiungi prefisso",
+    "rdft-buttons/add-namespace": "Aggiungi prefisso",
     "rdft-buttons/add-root": "Aggiungi Nodo Radice",
     "rdft-buttons/advanced": "Avanzate",
     "rdft-buttons/apply": "Applica",

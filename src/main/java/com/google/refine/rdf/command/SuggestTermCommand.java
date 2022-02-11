@@ -198,7 +198,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
 			if (strQuery.length() > iIndex) { // ...if there is more...
 				strLocalPart = strQuery.substring(iIndex);
 			}
-    		for ( Vocabulary vocab : theTransform.getPrefixes() ) {
+    		for ( Vocabulary vocab : theTransform.getNamespaces() ) {
     			if ( vocab.getPrefix().equals(strPrefix) ) {
 					String strNamespace = vocab.getNamespace();
 					String strIRI = strNamespace + strLocalPart;
@@ -217,7 +217,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
     		}
     	}
 		else { // strQuery does not have a Prefix, so try Namespace...
-    		for ( Vocabulary vocab : theTransform.getPrefixes() ) {
+    		for ( Vocabulary vocab : theTransform.getNamespaces() ) {
     			String strVocabNamespace = vocab.getNamespace();
 				// Does the Namespace contain the Query...
     			if ( strVocabNamespace.startsWith(strQuery) ) {

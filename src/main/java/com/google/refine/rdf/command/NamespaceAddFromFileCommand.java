@@ -28,7 +28,7 @@ import com.google.refine.model.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PrefixAddFromFileCommand extends RDFTransformCommand {
+public class NamespaceAddFromFileCommand extends RDFTransformCommand {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxAddFromFileCmd");
 
     String strPrefix;
@@ -38,7 +38,7 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
     String strFilename;
     InputStream instreamFile;
 
-    public PrefixAddFromFileCommand() {
+    public NamespaceAddFromFileCommand() {
         super();
 
         this.strProjectID = null;
@@ -53,7 +53,7 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if ( ! this.hasValidCSRFToken(request) ) {
-            PrefixAddFromFileCommand.respondCSRFError(response);
+            NamespaceAddFromFileCommand.respondCSRFError(response);
             return;
         }
         Project theProject = this.getProject(request);
@@ -78,24 +78,24 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
             theRepoConnection.close();
         }
         catch (Exception ex) {
-            PrefixAddFromFileCommand.respondJSON(response, CodeResponse.error);
+            NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
             return;
         }
 
         try {
-            this.getTransform(theProject).addPrefix(this.strPrefix, this.strNamespace);
+            this.getTransform(theProject).addNamespace(this.strPrefix, this.strNamespace);
 
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
                     importAndIndexVocabulary(this.strPrefix, this.strNamespace, theRepository, this.strProjectID);
         }
         catch (Exception ex) {
-            PrefixAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
-            PrefixAddFromFileCommand.respondJSON(response, CodeResponse.error);
+            NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
+            NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
             return;
         }
 
-        PrefixAddFromFileCommand.respondJSON(response, CodeResponse.ok);
+        NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
     }
 
     private void parseUploadItems(List<FileItem> items)
@@ -213,7 +213,7 @@ public class PrefixAddFromFileCommand extends RDFTransformCommand {
             throws ServletException { // ...just because
         Project theProject = theDefaultProject;
 
-        if ( ! ( this.strProjectID == null || "".equals(this.strProjectID) ) ) {
+        if ( ! ( this.strProjectID == null || this.strProjectID.isEmpty() ) ) {
             Long liProjectID;
             try {
                 liProjectID = Long.parseLong(this.strProjectID);

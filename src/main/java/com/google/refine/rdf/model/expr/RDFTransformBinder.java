@@ -40,15 +40,15 @@ public class RDFTransformBinder implements Binder {
 	}
 
     @Override
-    public void initializeBindings(Properties bindings, Project project) {
-		this.theProject = project;
+    public void initializeBindings(Properties theBindings, Project theProject) {
+		this.theProject = theProject;
 		if ( Util.isVerbose(3) ) RDFTransformBinder.logger.info("Bind baseIRI...");
 		this.strLastBoundBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
-		bindings.put("baseIRI", this.strLastBoundBaseIRI);
+		theBindings.put("baseIRI", this.strLastBoundBaseIRI);
     }
 
 	@Override
-	public void bind(Properties bindings, Row row, int rowIndex, String columnName, Cell cell) {
+	public void bind(Properties theBindings, Row theRow, int iRowIndex, String strColumnName, Cell theCell) {
 		//
 		// Update the baseIRI
 		//
@@ -60,7 +60,7 @@ public class RDFTransformBinder implements Binder {
 		// If the current baseIRI is new...
 		if ( ! this.strLastBoundBaseIRI.equals(strCurrentBaseIRI) ) {
 			// Replace the bound baseIRI...
-			bindings.put("baseIRI", strCurrentBaseIRI);
+			theBindings.put("baseIRI", strCurrentBaseIRI);
 			strLastBoundBaseIRI = strCurrentBaseIRI;
 		}
 	}

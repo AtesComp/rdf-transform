@@ -52,21 +52,21 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             RDFTransform.Reconstructor theNodeReconstructor,
-                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
+                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
-        return Node.reconstructNode(jnodeSubject, baseIRI, thePrefixes);
+        return Node.reconstructNode(jnodeSubject, baseIRI, theNamespaces);
     }
 
     static public Node reconstructNode(
                             Property.PropertyReconstructor thePropReconstructor,
-                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
+                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces) {
         Objects.requireNonNull(thePropReconstructor);
 
-        return Node.reconstructNode(jnodeSubject, baseIRI, thePrefixes);
+        return Node.reconstructNode(jnodeSubject, baseIRI, theNamespaces);
     }
 
-    static private Node reconstructNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes) {
+    static private Node reconstructNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces) {
         Node nodeElement = null;
         if (jnodeSubject == null) {
             Node.logger.warn("WARNING: Missing Subject for Node");
@@ -197,7 +197,7 @@ abstract public class Node {
         // Resource types...
         if (bResource) {
             nodeElement =
-                reconstructResourceNode(jnodeSubject, baseIRI, thePrefixes,
+                reconstructResourceNode(jnodeSubject, baseIRI, theNamespaces,
                     strType, bValueNode, bConstNode, strValue, strPrefix, strSource, strExpCode,
                     bIsIndex, eNodeType);
         }
@@ -205,7 +205,7 @@ abstract public class Node {
         // Literal types...
         else if (bLiteral) {
             nodeElement =
-                reconstructLiteralNode(jnodeSubject, baseIRI, thePrefixes,
+                reconstructLiteralNode(jnodeSubject, baseIRI, theNamespaces,
                     strType, jnodeValueType, bValueNode, bConstNode, strValue, strExpCode,
                     bIsIndex, eNodeType);
         }
@@ -213,7 +213,7 @@ abstract public class Node {
         return nodeElement;
     }
 
-    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes,
+    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces,
             String strType, boolean bValueNode, boolean bConstNode, String strValue, String strPrefix, String strSource, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
         ResourceNode rnodeResource = null;
@@ -244,18 +244,18 @@ abstract public class Node {
             //
             // Construct Types from "typeMappings"...
             //
-            RDFType.reconstructTypes(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, thePrefixes);
+            RDFType.reconstructTypes(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, theNamespaces);
 
             //
             // Construct Properties from "propertyMappings"...
             //
-            Property.reconstructProperties(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, thePrefixes);
+            Property.reconstructProperties(Node.theNodeReconstructor, rnodeResource, jnodeSubject, baseIRI, theNamespaces);
         }
 
         return rnodeResource;
     }
 
-    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList thePrefixes,
+    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces,
             String strType, JsonNode jnodeValueType, boolean bValueNode, boolean bConstNode, String strValue, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
         LiteralNode lnodeLiteral = null;
@@ -287,14 +287,14 @@ abstract public class Node {
 
                         // Validate the full IRI (Namespace + Datatype)...
                         ParsedIRI iriNamespace = baseIRI; // ...default
-                        if ( thePrefixes.containsPrefix(strDatatypePrefix) ) {
-                            String strDatatypeNamespace = thePrefixes.findByPrefix(strDatatypePrefix).getNamespace();
+                        if ( theNamespaces.containsPrefix(strDatatypePrefix) ) {
+                            String strDatatypeNamespace = theNamespaces.findByPrefix(strDatatypePrefix).getNamespace();
                             if (strDatatypeNamespace != null) {
                                 try {
                                     iriNamespace = new ParsedIRI( strDatatypeNamespace );
                                 }
                                 catch (Exception ex) {
-                                    Node.logger.error("ERROR: Bad Namespace in Prefixes: " + strDatatypeNamespace, ex);
+                                    Node.logger.error("ERROR: Bad Namespace in Namespaces: " + strDatatypeNamespace, ex);
                                     // ...given Namespace doesn't parse, so use baseIRI...
                                 }
                             }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import com.google.refine.rdf.RDFTransform;
+import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.operation.SaveRDFTransformOperation;
 import com.google.refine.model.Project;
 import com.google.refine.process.Process;
@@ -15,7 +16,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SaveRDFTransformCommand extends RDFTransformCommand {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
 
     public SaveRDFTransformCommand() {
 		super();
@@ -39,12 +44,13 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            JsonNode jnodeRoot = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
-            if (jnodeRoot == null) {
+            JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
+            if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeRoot);
+            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing for Save...");
+            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
 
             // Process the "save" operations...
             SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theTransform);

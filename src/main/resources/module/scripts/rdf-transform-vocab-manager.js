@@ -1,11 +1,11 @@
 class RDFTransformVocabManager {
-	#prefixesManager;
+	#namespacesManager;
 
 	#level;
 	#elements;
 
-	constructor(prefixesManager) {
-		this.#prefixesManager = prefixesManager;
+	constructor(namespacesManager) {
+		this.#namespacesManager = namespacesManager;
 	}
 
 	show() {
@@ -14,18 +14,18 @@ class RDFTransformVocabManager {
 		this.#elements = DOM.bind(dialog);
 
 		this.#elements.dialogHeader.html($.i18n('rdft-vocab/header'));
-		this.#elements.buttonAddPrefix.html($.i18n('rdft-buttons/add-prefix'));
+		this.#elements.buttonAddNamespace.html($.i18n('rdft-buttons/add-namespace'));
 		this.#elements.buttonOK.html($.i18n('rdft-buttons/ok'));
 		this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
 
 		this.#elements.buttonCancel
 		.click( () => { this.#dismiss(); } );
 
-		this.#elements.buttonAddPrefix
+		this.#elements.buttonAddNamespace
 		.click(
 			(evt) => {
 				evt.preventDefault();
-				this.#prefixesManager.addPrefix(
+				this.#namespacesManager.addNamespace(
 					false, false,
 					() => {
 						this.#renderBody();
@@ -39,7 +39,7 @@ class RDFTransformVocabManager {
 		this.#elements.buttonOK
 		.click(
 			() => {
-				this.#prefixesManager.showPrefixes();
+				this.#namespacesManager.show();
 				this.#dismiss();
 			}
 		);
@@ -60,7 +60,7 @@ class RDFTransformVocabManager {
                         alert($.i18n('rdft-vocab/error-deleting') + ': ' + strPrefix);
 					}
 					else {
-						this.#prefixesManager.removePrefix(strPrefix);
+						this.#namespacesManager.removeNamespace(strPrefix);
 					}
 					this.#renderBody();
 					dismissBusy();
@@ -100,7 +100,7 @@ class RDFTransformVocabManager {
 	}
 
 	#renderBody() {
-		var table = this.#elements.prefixesTable;
+		var table = this.#elements.namespacesTable;
 		table.empty();
 		table.append(
 			$('<tr>').addClass('rdf-table-even')
@@ -111,14 +111,14 @@ class RDFTransformVocabManager {
 		);
 
 		var bEven = false;
-		for (const strPrefix in this.#prefixesManager.prefixes) {
-			const strNamespace = this.#prefixesManager.prefixes[strPrefix];
-			var delete_handle =
+		for (const strPrefix in this.#namespacesManager.namespaces) {
+			const strNamespace = this.#namespacesManager.namespaces[strPrefix];
+			var htmlRemoveNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/delete') )
 				.attr('href', '#')
 				.click( this.#getRemoveHandler(strPrefix) );
-			var refresh_handle =
+			var htmlRefreshNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/refresh') )
 				.attr('href', '#')
@@ -126,8 +126,8 @@ class RDFTransformVocabManager {
 			var tr = $('<tr/>').addClass(bEven ? 'rdf-table-even' : 'rdf-table-odd')
 				.append( $('<td>').text(strPrefix) )
 				.append( $('<td>').text(strNamespace) )
-				.append( $('<td>').html(delete_handle) )
-				.append( $('<td>').html(refresh_handle) );
+				.append( $('<td>').html(htmlRemoveNamespace) )
+				.append( $('<td>').html(htmlRefreshNamespace) );
 			table.append(tr);
 			bEven = !bEven;
 		}

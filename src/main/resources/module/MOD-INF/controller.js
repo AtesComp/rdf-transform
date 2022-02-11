@@ -72,7 +72,7 @@ function registerClientSide() {
 			"scripts/rdf-transform-ui-node.js",
 			"scripts/rdf-transform-ui-property.js",
 			"scripts/rdf-transform-vocab-manager.js",
-			"scripts/rdf-transform-prefixes-manager.js",
+			"scripts/rdf-transform-namespaces-manager.js",
 			"scripts/rdf-transform-prefix-adder.js",
 			"scripts/rdf-transform-suggest-term.js",
 			"scripts/rdf-transform-import-template.js",
@@ -118,21 +118,21 @@ function registerServerSide() {
 	 *    Each registration calls the class' init() method.
      */
 	var strSaveRDFTransform = "save-rdf-transform";
-	RefineServlet.registerCommand( module, "initialize",             new RDFTCmd.InitializationCommand(appContext) );
-	RefineServlet.registerCommand( module, strSaveRDFTransform,      new RDFTCmd.SaveRDFTransformCommand() );
-    RefineServlet.registerCommand( module, "save-baseIRI",           new RDFTCmd.SaveBaseIRICommand() );
-    RefineServlet.registerCommand( module, "preview-rdf",            new RDFTCmd.PreviewRDFCommand() );
-    RefineServlet.registerCommand( module, "preview-rdf-expression", new RDFTCmd.PreviewRDFExpressionCommand() );
-    RefineServlet.registerCommand( module, "validate-iri",           new RDFTCmd.ValidateIRICommand() );
+	RefineServlet.registerCommand( module, "initialize",              new RDFTCmd.InitializationCommand(appContext) );
+	RefineServlet.registerCommand( module, strSaveRDFTransform,       new RDFTCmd.SaveRDFTransformCommand() );
+    RefineServlet.registerCommand( module, "save-baseIRI",            new RDFTCmd.SaveBaseIRICommand() );
+    RefineServlet.registerCommand( module, "preview-rdf",             new RDFTCmd.PreviewRDFCommand() );
+    RefineServlet.registerCommand( module, "preview-rdf-expression",  new RDFTCmd.PreviewRDFExpressionCommand() );
+    RefineServlet.registerCommand( module, "validate-iri",            new RDFTCmd.ValidateIRICommand() );
 	// Vocabs commands
-    RefineServlet.registerCommand( module, "get-default-prefixes",   new RDFTCmd.PrefixesGetDefaultCommand() );
-    RefineServlet.registerCommand( module, "save-prefixes",          new RDFTCmd.PrefixesSaveCommand() );
-    RefineServlet.registerCommand( module, "add-prefix",             new RDFTCmd.PrefixAddCommand() );
-    RefineServlet.registerCommand( module, "add-prefix-from-file",   new RDFTCmd.PrefixAddFromFileCommand() );
-    RefineServlet.registerCommand( module, "refresh-prefix",         new RDFTCmd.PrefixRefreshCommand() );
-    RefineServlet.registerCommand( module, "remove-prefix",          new RDFTCmd.PrefixRemoveCommand() );
-    RefineServlet.registerCommand( module, "suggest-namespace",      new RDFTCmd.SuggestNamespaceCommand() );
-    RefineServlet.registerCommand( module, "suggest-term",           new RDFTCmd.SuggestTermCommand() );
+    RefineServlet.registerCommand( module, "get-default-namespaces",  new RDFTCmd.NamespacesGetDefaultCommand() );
+    RefineServlet.registerCommand( module, "save-namespaces",         new RDFTCmd.NamespacesSaveCommand() );
+    RefineServlet.registerCommand( module, "add-namespace",           new RDFTCmd.NamespaceAddCommand() );
+    RefineServlet.registerCommand( module, "add-namespace-from-file", new RDFTCmd.NamespaceAddFromFileCommand() );
+    RefineServlet.registerCommand( module, "refresh-prefix",          new RDFTCmd.NamespaceRefreshCommand() );
+    RefineServlet.registerCommand( module, "remove-prefix",           new RDFTCmd.NamespaceRemoveCommand() );
+    RefineServlet.registerCommand( module, "suggest-namespace",       new RDFTCmd.SuggestNamespaceCommand() );
+    RefineServlet.registerCommand( module, "suggest-term",            new RDFTCmd.SuggestTermCommand() );
 	// Others:
 	//   CodeResponse - Standard Response Class for Commands
 	//   RDFTransformCommand - Abstract RDF Command Class
@@ -192,7 +192,7 @@ function registerServerSide() {
      *  Server-side Overlay Models - Attach an RDFTransform object to the project...
      */
     RefineBase.model.Project
-	.registerOverlayModel(RDFTBase.RDFTransform.EXTENSION, RDFTBase.RDFTransform);
+	.registerOverlayModel("RDFTransform", RDFTBase.RDFTransform);
 }
 
 function processPreferences() {

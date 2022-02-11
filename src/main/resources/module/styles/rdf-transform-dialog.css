@@ -100,7 +100,7 @@ div.rdf-transform-data-preview pre {
     word-wrap: break-word;
 }
 
-div.rdf-transform-prefixes {
+div.rdf-transform-namespaces {
 	width: 100%;
 }
 
@@ -110,7 +110,7 @@ span.rdf-transform-prefix-box {
 	float: left;
 }
 
-a.add-prefix-box {
+a.add-namespace-box {
 	background-image: url(../images/add.png);
     background-repeat: no-repeat;
     background-position: 0px 0px;
@@ -243,9 +243,9 @@ div.vocabulary-manager-footer h2 {
 }
 
 
-a#add-prefix-link,
-a#add-prefix-link:HOVER,
-a#add-prefix-link:VISITED {
+a#add-namespace-link,
+a#add-namespace-link:HOVER,
+a#add-namespace-link:VISITED {
 	font-size: 120%;
 	color: #0000FF;
 }
@@ -258,12 +258,12 @@ table.rdf-indented-table {
 	margin: 0 1.5em;
 }
 
-table.rdf-prefixes-table {
+table.rdf-namespaces-table {
     width: 100%;
 }
 
-table.rdf-prefixes-table,
-table.rdf-prefixes-table td {
+table.rdf-namespaces-table,
+table.rdf-namespaces-table td {
 	border: 1px dotted #DDDDDD;
 	border-collapse: collapse;
 	margin: .2em;

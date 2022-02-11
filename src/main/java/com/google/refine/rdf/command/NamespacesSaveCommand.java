@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-public class PrefixesSaveCommand extends RDFTransformCommand {
+public class NamespacesSaveCommand extends RDFTransformCommand {
 
-	public PrefixesSaveCommand() {
+	public NamespacesSaveCommand() {
 		super();
 	}
 
@@ -27,34 +27,34 @@ public class PrefixesSaveCommand extends RDFTransformCommand {
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Content-Type", "application/json");
 		if ( ! this.hasValidCSRFToken(request) ) {
-			PrefixesSaveCommand.respondCSRFError(response);
+			NamespacesSaveCommand.respondCSRFError(response);
 			return;
 		}
         try {
-			// Update prefixes...
+			// Update namespaces...
 			VocabularyList listVocabs = new VocabularyList();
-			ObjectNode thePrefixes =
+			ObjectNode theNamespaces =
 				ParsingUtilities.evaluateJsonStringToObjectNode( request.getParameter(Util.gstrNamespaces) );
 
-			Iterator< Entry < String, JsonNode > > fields = thePrefixes.fields();
+			Iterator< Entry < String, JsonNode > > fields = theNamespaces.fields();
 			fields.forEachRemaining(prefix -> {
 				String strPrefix = prefix.getKey();
 				String strNamespace = prefix.getValue().asText();
 				listVocabs.add( new Vocabulary( strPrefix, strNamespace ) );
 			});
-			this.getRDFTransform(request).setPrefixes(listVocabs);
+			this.getRDFTransform(request).setNamespaces(listVocabs);
 
-			// ...and the prefixes' vocabulary searcher...
+			// ...and the namespaces' vocabulary searcher...
 			String projectID = request.getParameter(Util.gstrProject);
 			RDFTransform.getGlobalContext().
 				getVocabularySearcher().
 					synchronize( projectID, listVocabs.getPrefixSet() );
 		}
 		catch (Exception ex) {
-            PrefixesSaveCommand.respondJSON(response, CodeResponse.error);
+            NamespacesSaveCommand.respondJSON(response, CodeResponse.error);
 			return;
         }
 
-		PrefixesSaveCommand.respondJSON(response, CodeResponse.ok);
+		NamespacesSaveCommand.respondJSON(response, CodeResponse.ok);
 	}
 }

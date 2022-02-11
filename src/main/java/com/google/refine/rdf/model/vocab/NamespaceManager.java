@@ -10,10 +10,10 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 
 @JsonIgnoreType
-public class PrefixManager {
+public class NamespaceManager {
 	private Map<String, String> prefixMap = new HashMap<String, String>();
 
-	public PrefixManager(InputStream inStream) throws IOException {
+	public NamespaceManager(InputStream inStream) throws IOException {
 		BufferedReader buffReader = new BufferedReader( new InputStreamReader(inStream) );
 		String strLine, strPrefix = null, strNamespace = null;
 

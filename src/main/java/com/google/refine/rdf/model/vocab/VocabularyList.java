@@ -49,13 +49,13 @@ public class VocabularyList extends ArrayList<Vocabulary> {
     }
 
     public HashSet<String> getPrefixSet() {
-        HashSet<String> setPrefixes = new HashSet<String>();
+        HashSet<String> setNamespaces = new HashSet<String>();
         Iterator<Vocabulary> iterVocab = this.iterator();
         while (iterVocab.hasNext()) {
             Vocabulary vocab = iterVocab.next();
-            setPrefixes.add( vocab.getPrefix() );
+            setNamespaces.add( vocab.getPrefix() );
         }
-        return setPrefixes;
+        return setNamespaces;
     }
 
     @Override

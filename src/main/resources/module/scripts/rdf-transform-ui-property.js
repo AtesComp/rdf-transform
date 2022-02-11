@@ -5,7 +5,7 @@
  */
 class RDFTransformUIProperty {
     #dialog;
-    #property; // contains prefix, pathIRI, nodeObject
+    #property; // contains prefix, localPart, nodeObject
     #options;
     #parentUINode;
 
@@ -136,6 +136,7 @@ class RDFTransformUIProperty {
             new RDFTransformUINode(
                 this.#dialog,
                 this.#property.nodeObject,
+                false,
                 this.tableDetails[0],
                 optionsObject
             );
@@ -151,10 +152,10 @@ class RDFTransformUIProperty {
             return "<ERROR: No Property!>";
         }
         if ("prefix" in theProperty && theProperty.prefix !== null) {
-            return theProperty.prefix + ":" + theProperty.pathIRI;
+            return theProperty.prefix + ":" + theProperty.localPart;
         }
-        else if ("pathIRI" in theProperty && theProperty.pathIRI !== null) {
-            return theProperty.pathIRI;
+        else if ("localPart" in theProperty && theProperty.localPart !== null) {
+            return theProperty.localPart;
         }
         else {
             return "Property?";
@@ -172,14 +173,14 @@ class RDFTransformUIProperty {
 
     #editPropertyInfo(theProperty) {
         this.#property.prefix  = theProperty.prefix;
-        this.#property.pathIRI = theProperty.pathIRI;
+        this.#property.localPart = theProperty.localPart;
         this.#renderMain();
         this.#dialog.updatePreview();
     }
 
-    getJSON() {
+    getTransformExport() {
         var theProperty = null;
-        if ("pathIRI" in this.#property && this.#property.pathIRI !== null)
+        if ("localPart" in this.#property && this.#property.localPart !== null)
         {
             theProperty = {};
 
@@ -187,7 +188,7 @@ class RDFTransformUIProperty {
                 theProperty.prefix = this.#property.prefix;
             }
 
-            // For properties, "iri" valueType is implied, so the following is not needed:
+            // For properties, "iri" valueType is implied, so the following is NOT needed:
             //theProperty.valueType = {};
             //theProperty.valueType.type = "iri";
 
@@ -195,10 +196,10 @@ class RDFTransformUIProperty {
             //      column with expression.
             theProperty.valueSource = {};
             theProperty.valueSource.source = "constant";
-            theProperty.valueSource.constant = this.#property.pathIRI;
+            theProperty.valueSource.constant = this.#property.localPart;
 
             if ("nodeObjectUI" in this && this.nodeObjectUI !== null) {
-                var nodeObjectJSON = this.nodeObjectUI.getJSON();
+                var nodeObjectJSON = this.nodeObjectUI.getTransformExport();
                 if (nodeObjectJSON !== null) {
                     theProperty.objectMappings = [];
                     theProperty.objectMappings.push(nodeObjectJSON);

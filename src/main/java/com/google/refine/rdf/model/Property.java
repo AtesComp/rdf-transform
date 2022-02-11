@@ -56,15 +56,15 @@ public class Property {
     static public void reconstructProperties(
 							Node.NodeReconstructor theNodeReconstructor,
 							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
-                            VocabularyList thePrefixes) {
+                            VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
-		Property.reconstructProperties(rnodeParent, jnodeParent, baseIRI, thePrefixes);
+		Property.reconstructProperties(rnodeParent, jnodeParent, baseIRI, theNamespaces);
 	}
 
     static private void reconstructProperties(
 							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
-                            VocabularyList thePrefixes) {
+                            VocabularyList theNamespaces) {
 		if ( ! jnodeParent.has(Util.gstrPropertyMappings) ) {
             return;
         }
@@ -196,7 +196,7 @@ public class Property {
                 if ( jnodeObjectMappings.isArray() ) {
                     Node nodeObject = null;
                     for (JsonNode jnodeObject : jnodeObjectMappings) {
-                        nodeObject = Node.reconstructNode(thePropReconstructor, jnodeObject, baseIRI, thePrefixes);
+                        nodeObject = Node.reconstructNode(thePropReconstructor, jnodeObject, baseIRI, theNamespaces);
                         if (nodeObject != null) {
                             theObjectNodes.add(nodeObject);
                         }
@@ -215,20 +215,20 @@ public class Property {
         }
     }
 
-	// The Property: A Prefix for the PathIRI
+	// The Property: A Prefix for the LocalPart
 	//		(to create a CIRIE: Condensed IRI Expression)
     private final String strPrefix;
 
-	// The Property: An Path IRI or Full IRI (when Prefix is null)
-    private final String strPathIRI;
+	// The Property: The Local Part of the IRI (or a Full IRI when Prefix is null)
+    private final String strLocalPart;
 
 	// The Target: A source's target "node" connected via this Property
     // TODO: Future multiple targets need adjustment on listNodeObject throughout this class
     private final Node nodeObject;
 
-    public Property(String strPrefix, String strPathIRI, Node nodeObject) {
+    public Property(String strPrefix, String strLocalPart, Node nodeObject) {
         this.strPrefix  = Util.toSpaceStrippedString(strPrefix);
-        this.strPathIRI = Util.toSpaceStrippedString(strPathIRI);
+        this.strLocalPart = Util.toSpaceStrippedString(strLocalPart);
         this.nodeObject = nodeObject;
     }
 
@@ -237,14 +237,14 @@ public class Property {
 	}
 
 	public String getPathProperty() {
-		return this.strPathIRI;
+		return this.strLocalPart;
 	}
 
     public String getPrefixedProperty() {
         if (this.strPrefix != null) {
-		    return this.strPrefix + ":" + this.strPathIRI;
+		    return this.strPrefix + ":" + this.strLocalPart;
         }
-        return this.strPathIRI;
+        return this.strLocalPart;
 	}
 
 	public Node getObject() {
@@ -262,7 +262,7 @@ public class Property {
         // TODO: Modify for Future Non-Constant Value Source...
 		writer.writeObjectFieldStart(Util.gstrValueSource);
         writer.writeStringField(Util.gstrSource, Util.gstrConstant);
-        writer.writeStringField(Util.gstrConstant, this.strPathIRI);
+        writer.writeStringField(Util.gstrConstant, this.strLocalPart);
 		writer.writeEndObject();
 
 		// TODO: Future Expression Store...
