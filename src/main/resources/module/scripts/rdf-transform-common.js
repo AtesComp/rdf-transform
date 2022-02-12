@@ -6,14 +6,35 @@
 class RDFTransformCommon {
 	static bGoodIRI;
 
-	// Globals...
-	static g_strRDFT_BLANK     = "blank";
-	static g_strRDFT_LITERAL   = "literal";
-	static g_strRDFT_RESOURCE  = "resource";
-	static g_strRDFT_CELLAS    = "cell-as-";
-	static g_strRDFT_CBLANK    = RDFTransformCommon.g_strRDFT_CELLAS + RDFTransformCommon.g_strRDFT_BLANK;
-	static g_strRDFT_CLITERAL  = RDFTransformCommon.g_strRDFT_CELLAS + RDFTransformCommon.g_strRDFT_LITERAL;
-	static g_strRDFT_CRESOURCE = RDFTransformCommon.g_strRDFT_CELLAS + RDFTransformCommon.g_strRDFT_RESOURCE;
+	static NodeType = class {
+		static Resource = new NodeType("resource"); // same as html
+		static Blank    = new NodeType("blank");
+		static Literal  = new NodeType("literal");
+
+		#name;
+
+		constructor(name) {
+			this.#name = name;
+		}
+
+		getName() {
+			return this.#name;
+		}
+
+		getType(strType) {
+			var eType = null;
+			if ( strType === RDFTransformCommon.NodeType.Resource.getName() ) {
+				eType = RDFTransformCommon.NodeType.Resource;
+			}
+			else if ( strType === RDFTransformCommon.NodeType.Literal.getName() ) {
+				eType = RDFTransformCommon.NodeType.Literal;
+			}
+			else if ( strType === RDFTransformCommon.NodeType.Blank.getName() ) {
+				eType = RDFTransformCommon.NodeType.Blank;
+			}
+			return eType;
+		}
+	}
 
 	// Locals...
 	static #strRE_IPRIVATE = "\\u{E000}-\\u{F8FF}\\u{F0000}-\\u{FFFFD}\\u{100000}-\\u{10FFFD}";
@@ -296,7 +317,7 @@ class RDFTransformCommon {
 		return new Promise(
 			(resolve, reject) => {
 				var params = { "iri" : strIRI };
-		
+
 				$.ajax(
 					{	url  : "command/rdf-transform/validate-iri",
 						type : 'GET',
@@ -471,7 +492,7 @@ class RDFTransformCommon {
         // Create the blob object...
         var theBlob =
             new Blob( blobPart, { "type" : strType } );
-       
+
         // Get the File Handler...
         const fileHandle =
             await window.showSaveFilePicker(
@@ -485,7 +506,7 @@ class RDFTransformCommon {
 
         // Get the File Stream...
         const fileStream = await fileHandle.createWritable();
-       
+
         // Write the file...
         await fileStream.write(theBlob);
         await fileStream.close();

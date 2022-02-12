@@ -12,7 +12,7 @@
  *	RDF transform of a given element (subject, property, or object) selected in the RDF Transform
  *  editor.  However, it does harness the fundamental dialog display used by the
  *  ExpressionPreviewDialog.Widget.
- * 
+ *
  ****************************************************************************************************/
 
 /*
@@ -24,14 +24,16 @@
  */
 class RDFDataTableView {
 	#strBaseIRI;
-	#bIsIRI;
+	#bIsResource; // Resource OR Literal
 	#strTitle;
 
-	constructor(baseIRI, bIsIRI) {
+	constructor(baseIRI, bIsResource) {
 		this.#strBaseIRI = baseIRI;
-		this.#bIsIRI = bIsIRI;
-		this.#strTitle = ( bIsIRI ? $.i18n('rdft-dialog/preview-iri-val') :
-									$.i18n('rdft-dialog/preview-lit-val') );
+		this.#bIsResource = bIsResource;
+		this.#strTitle =
+			( bIsResource ?
+				$.i18n('rdft-dialog/preview-iri-val') :
+				$.i18n('rdft-dialog/preview-lit-val') );
 	}
 
 	getBaseIRI() {
@@ -42,8 +44,8 @@ class RDFDataTableView {
 		return this.#strTitle;
 	}
 
-	isIRI() {
-		return this.#bIsIRI;
+	isResource() {
+		return this.#bIsResource;
 	}
 
 	preview(objColumn, strExpression, bIsIndex, onDone) {
@@ -56,7 +58,7 @@ class RDFDataTableView {
 		if (objColumn !== null) {
 			strColumnName = objColumn.columnName
 		}
-	
+
 		const dlgRDFExpPreview = new RDFExpressionPreviewDialog(this, onDone);
 		dlgRDFExpPreview.preview(strColumnName, rows, strExpression, bIsIndex);
 	}
@@ -89,7 +91,7 @@ class RDFDataTableView {
  *         $.extend(ComboObj.prototype, OldObj.prototype, NewObj.prototype);
  *		 This creates a new ComboObj with proper overwrites, in order, with the OldObj and NewObj.
  *       The native "class" inheritance does this without the need for the 3rd object.
- * 
+ *
  *       The optional merge recursive (or "deep copy") boolean should be used to fully merge
  *       objects:
  *         $.extend(true, ComboObj.prototype, OldObj.prototype, NewObj.prototype);
@@ -97,7 +99,7 @@ class RDFDataTableView {
  * NOTE: As ExpressionPreviewDialog DOES NOT have any meaningful prototypes (except constructor
  *       which we don't need), ExpressionPreviewDialog is not required and
  *       RDFExpressionPreviewDialog is written as an independent class.
- * 
+ *
  * NOTE: OpenRefine's ExpressionPreviewDialog.Widget is extended by our RDFWidget as
  *       there are meaningful prototype functions from the parent object that should be maintained.
  *		 i.e., RDFWidget extends ExpressionPreviewDialog.Widget
@@ -110,12 +112,12 @@ class RDFDataTableView {
  *       $.extend(true, RDFCopyWidget.prototype,
  *                      ExpressionPreviewDialog.Widget.prototype),
  *                      RDFWidget.prototype);
- * 
+ *
  * MOVED: Moved code to global ExpressionPreviewDialog_WidgetCopy...
  *          See the ExpressionPreviewDialog_WidgetCopy object and RDFWidget class below.
  *          Changed $.extend() to Object.create() for copy.
  *          Use class 'extends".
- * 
+ *
  ****************************************************************************************************/
 
 /*
@@ -227,7 +229,7 @@ class RDFExpressionPreviewDialog {
 		this.#previewWidget =
 			new RDFWidget(
 				this.#dtvManager.getBaseIRI(), strColumnName, rows, strExpression,
-				this.#dtvManager.isIRI(), bIsIndex, this.#elements
+				this.#dtvManager.isResource(), bIsIndex, this.#elements
 			);
 		this.#previewWidget.preview();
 	}
@@ -237,10 +239,10 @@ class RDFExpressionPreviewDialog {
  * Object ExpressionPreviewDialog_WidgetCopy
  *
  * Copy ExpressionPreviewDialog.Widget for local modification.
- * 
+ *
  * ExpressionPreviewDialog.Widget DOES NOT have a constructor per se, so create an intermediate
  * object with a proper constructor to inherit and overwrite.
- * 
+ *
  * ExpressionPreviewDialog.Widget has the following prototype functions:
  *   getExpression = function(commit)
  *   _getLanguage = function()
@@ -295,7 +297,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 	// Private...
 	_elmts;
-	#bIsIRI;
+	#bIsResource; // Resource OR Literal
 	#bIsIndex;
 	#baseIRI;
 	#columnName;
@@ -316,7 +318,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	// Method constructor(): OVERRIDE Base
 	//
-	constructor(strBaseIRI, strColumnName, rows, strExpression,	bIsIRI, bIsIndex, elements)
+	constructor(strBaseIRI, strColumnName, rows, strExpression,	bIsResource, bIsIndex, elements)
 	{
 		super(); // ...empty constructor to get "this"
 
@@ -330,10 +332,10 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			this.expression = RDFTransform.g_strDefaultExpCode; // ...use default expression
 		}
 
-		this.#bIsIRI = bIsIRI;
+		this.#bIsResource = bIsResource;
 		this.#bIsIndex = bIsIndex;
 		this._elmts = elements;
-		
+
 		this._timerID = null; // ...used by _scheduleUpdate()
 
 		// NOT REQUIRED: GREL is currently the only language available for RDFTransform
@@ -380,7 +382,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			"project"    : theProject.id,
 			"expression" : this.expression,
 			"rowIndices" : JSON.stringify(this.#rowIndices),
-			"isIRI"      : this.#bIsIRI ? "1" : "0",
+			"isIRI"      : this.#bIsResource ? "1" : "0",
 			"columnName" : this.#bIsIndex ? "" : this.#columnName,
 			"baseIRI"    : this.#baseIRI
 		};
@@ -407,7 +409,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	_renderPreview(data) {
 		const bIndices = ( data.indicies != null );
 		const bResults = ( data.results != null );
-		const bAbsolutes = ( this.#bIsIRI && data.absolutes != null );
+		const bAbsolutes = ( this.#bIsResource && data.absolutes != null );
 
 		//
 		// Process status...
@@ -420,7 +422,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			// General error...
 			statusElem.addClass("error");
 			statusMessage = $.i18n('rdft-data/internal-error');
-			// Defined error... 
+			// Defined error...
 			if (data.message) {
 				// Parsing error...
 				if (data.type == "parser") {
@@ -459,7 +461,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.g_strIndexTitle);
 		$( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
 		$( tr.insertCell(2) ).addClass("expression-preview-heading").text("Expression");
-		if (this.#bIsIRI) { // ...for resources, add the IRI resolution column...
+		if (this.#bIsResource) { // ...for resources, add the IRI resolution column...
 			tdValue = $.i18n('rdft-data/table-resolved');
 			$( tr.insertCell(3) ).addClass("expression-preview-heading").text(tdValue);
 		}
@@ -487,7 +489,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 				// Populate row index...
 				tdValue = (iIndex + 1) + "?";
 				if (bIndices) {
-					tdValue = String( parseInt( data.indicies[iIndex] ) + 1 ) + "."; 
+					tdValue = String( parseInt( data.indicies[iIndex] ) + 1 ) + ".";
 				}
 				tdElem = $( tr.insertCell(0) ); //.attr("width", "1%");
 				tdElem.html( tdValue );

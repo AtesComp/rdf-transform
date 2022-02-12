@@ -60,17 +60,17 @@ class RDFTransform {
         // Root Nodes:
         //
         //  Default Value Type = IMPLIED "valueType": { "type": "iri" }
-        //RDFTransform.g_nodeMasterRoot.nodeType = RDFTransformCommon.g_strRDFT_CRESOURCE;
-
-        //  Default Expression = "expression" : { "language": "grel", "code": ("row.index" || "row.record.index") }
-        RDFTransform.g_nodeMasterRoot.expression = {};
-        RDFTransform.g_nodeMasterRoot.expression.language = "grel";
-        RDFTransform.g_nodeMasterRoot.expression.code = RDFTransform.g_strExpressionIndex;
+        //RDFTransform.g_nodeMasterRoot.valueType.type = "iri";
 
         //  Default Value Source = "valueSource" : { "source" : ("row_index" || "record_id") }
         //      IMPIES bIsIndex = true
         RDFTransform.g_nodeMasterRoot.valueSource = {};
         RDFTransform.g_nodeMasterRoot.valueSource.source = RDFTransform.g_strValueSource;
+
+        //  Default Expression = "expression" : { "language": "grel", "code": ("row.index" || "row.record.index") }
+        RDFTransform.g_nodeMasterRoot.expression = {};
+        RDFTransform.g_nodeMasterRoot.expression.language = "grel";
+        RDFTransform.g_nodeMasterRoot.expression.code = RDFTransform.g_strExpressionIndex;
 
         //RDFTransform.g_nodeMasterRoot.bIsIndex = true;
         //  Default Property Mappings = [], but will be filled with:
@@ -102,6 +102,7 @@ class RDFTransformDialog {
 
     #theTransform;
     #nodeUIs;
+    #properties;
 
     #dialog;
     #elements;
@@ -177,8 +178,9 @@ class RDFTransformDialog {
         }
         // Does the transform have any root nodes?  No, then set the initial root node...
         if ( this.#theTransform.subjectMappings.length === 0) {
-            var nodeRoot = await this.#createInitialRootNode();
-            this.#theTransform.subjectMappings.push(nodeRoot);
+            var nodeData = await this.#createInitialRootNodeData();
+            this.#theTransform.subjectMappings.push(nodeData.node);
+            this.#properties = nodeData.properties;
         }
         // Otherwise, set the existing Root Nodes for current Row or Record settings when applicable...
         else {
@@ -214,12 +216,12 @@ class RDFTransformDialog {
                 }
             }
         }
- 
+
         this.#nodeUIs = []; // ...array of RDFTransformUINode
     }
 
     /*
-     * Method #createInitialRootNode()
+     * Method #createInitialRootNodeData()
      *
      *   A method that produces the initial root node (source) used to display a
      *   transform, a Row / Record based index node, with a set of properties to all
@@ -229,7 +231,7 @@ class RDFTransformDialog {
      *   (an unset IRI name) and an object is set to the column data (by column name)
      *   and declared constant literal data.
      */
-    async #createInitialRootNode() {
+    async #createInitialRootNodeData() {
         // Get a new root node...
         var nodeRoot = this.#createRootNode();
 
@@ -240,11 +242,14 @@ class RDFTransformDialog {
             if (column) {
                 // Default object of the property (new object each property)...
                 var nodeObject = {};
-                nodeObject.nodeType =  RDFTransformCommon.g_strRDFT_CLITERAL;
-                nodeObject.columnName = column.name;
+                nodeObject.valueType = {};
+                nodeObject.valueType.type = "literal";
+                nodeObject.valueSource = {};
+                nodeObject.valueSource.source = "column";
+                nodeObject.valueSource.columnName = column.name;
 
                 // Default property...
-                var strIRI = await RDFTransformCommon.toIRIString(nodeObject.columnName);
+                var strIRI = await RDFTransformCommon.toIRIString(column.name);
                 if (strIRI !== null && strIRI.length > 0 && strIRI.indexOf("://") === -1 && strIRI[0] !== ":") {
                     // Use baseIRI...
                     strIRI = ":" + strIRI;
@@ -256,9 +261,12 @@ class RDFTransformDialog {
                 properties.push(theProperty);
             }
         }
-        nodeRoot.properties = properties;
 
-        return nodeRoot;
+        var nodeData = {};
+        nodeData.node = nodeRoot;
+        nodeData.properties = properties;
+
+        return nodeData;
     }
 
     #createRootNode() {
@@ -334,15 +342,15 @@ class RDFTransformDialog {
                 evt.preventDefault();
                 var nodeNewRoot = this.#createRootNode();
                 this.#theTransform.subjectMappings.push(nodeNewRoot);
-                this.#nodeUIs.push(
-                    new RDFTransformUINode(
-                        this,              // dialog
-                        nodeNewRoot,       // node
-                        true,              // bIsRoot
-                        this.#tableNodes,  // table
-                        { expanded: true } // options
-                    )
+                var nodeUI = new RDFTransformUINode(
+                    this,              // dialog
+                    nodeNewRoot,       // node
+                    true,              // bIsRoot
+                    null,
+                    this.#tableNodes,  // table
+                    { expanded: true } // options
                 );
+                this.#nodeUIs.push(nodeUI);
             }
         );
 
@@ -455,15 +463,15 @@ class RDFTransformDialog {
 
         for (const nodeSubject of this.#theTransform.subjectMappings) {
             if (nodeSubject) {
-                this.#nodeUIs.push(
-                    new RDFTransformUINode(
-                        this,              // dialog
-                        nodeSubject,       // node
-                        true,              // bIsRoot
-                        this.#tableNodes,  // table
-                        { expanded: true } // options
-                    )
+                var nodeUI = new RDFTransformUINode(
+                    this,              // dialog
+                    nodeSubject,       // node
+                    true,              // bIsRoot
+                    this.#properties,
+                    this.#tableNodes,  // table
+                    { expanded: true } // options
                 );
+                this.#nodeUIs.push(nodeUI);
             }
         }
         table.appendTo(this.#paneTransform);
@@ -486,7 +494,7 @@ class RDFTransformDialog {
         Refine.postProcess(
             "rdf-transform",        // module
             "preview-rdf",          // command
-            {},                     // params 
+            {},                     // params
             {   [RDFTransform.KEY] : JSON.stringify( theTransform ),
                 "engine"           : JSON.stringify( ui.browsingEngine.getJSON() ),
                 "sampleLimit"      : this.iSampleLimit

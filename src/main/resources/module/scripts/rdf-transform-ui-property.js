@@ -7,7 +7,7 @@ class RDFTransformUIProperty {
     #dialog;
     #property; // contains prefix, localPart, nodeObject
     #options;
-    #parentUINode;
+    #parentNodeUI;
 
     #tr;
     #tdMain;
@@ -15,16 +15,20 @@ class RDFTransformUIProperty {
     #collapsedDetailDiv;
     #expandedDetailDiv;
 
-    constructor(theDialog, theProperty, theTable, theOptions, parentUINode) {
+    constructor(theDialog, theProperty, theTable, theOptions, theParentNodeUI) {
         this.#dialog = theDialog;
         this.#property = theProperty;
         this.#options = theOptions;
-        this.#parentUINode = parentUINode;
+        this.#parentNodeUI = theParentNodeUI;
+        this.nodeObjectUI = null;
 
         // Make sure an Object node exists for the property...
-        if ( ! this.#property.nodeObject) {
+        if ( this.#property.nodeObject === null) {
             this.#property.nodeObject = {};
-            this.#property.nodeObject.nodeType = RDFTransformCommon.g_strRDFT_CLITERAL;
+            this.#property.nodeObject.valueType = {};
+            this.#property.nodeObject.valueType.type = "literal";
+            this.#property.nodeObject.valueSource = {};
+            this.#property.nodeObject.valueSource.source = RDFTransform.g_strValueSource;
         }
 
         this.#collapsedDetailDiv = $('<div></div>')
@@ -89,7 +93,7 @@ class RDFTransformUIProperty {
                 () => {
                     setTimeout(
                         () => {
-                            this.#parentUINode.removeProperty(this);
+                            this.#parentNodeUI.removeProperty(this);
                             this.#tr.parentNode.removeChild(this.#tr);
                             this.#dialog.updatePreview();
                         },
@@ -137,14 +141,15 @@ class RDFTransformUIProperty {
                 this.#dialog,
                 this.#property.nodeObject,
                 false,
+                null,
                 this.tableDetails[0],
                 optionsObject
             );
     }
 
     #isObjectExpandable() {
-        return ("properties" in this.#property.nodeObject &&
-                this.#property.nodeObject.properties.length > 0);
+        return (this.nodeObjectUI.getProperties() != null &&
+                this.nodeObjectUI.getProperties().length > 0);
     }
 
     #getTypeName(theProperty) {
@@ -198,7 +203,7 @@ class RDFTransformUIProperty {
             theProperty.valueSource.source = "constant";
             theProperty.valueSource.constant = this.#property.localPart;
 
-            if ("nodeObjectUI" in this && this.nodeObjectUI !== null) {
+            if (this.nodeObjectUI !== null) {
                 var nodeObjectJSON = this.nodeObjectUI.getTransformExport();
                 if (nodeObjectJSON !== null) {
                     theProperty.objectMappings = [];
