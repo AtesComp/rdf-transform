@@ -462,7 +462,7 @@ class RDFTransformDialog {
         //
         this.#paneTransform.empty()
 
-        table =
+        var table =
             $('<table></table>').addClass("rdf-transform-table-layout");
         this.#tableNodes = table[0];
 
