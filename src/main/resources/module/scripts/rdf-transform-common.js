@@ -7,9 +7,15 @@ class RDFTransformCommon {
 	static bGoodIRI;
 
 	static NodeType = class {
-		static Resource = new NodeType("resource"); // same as html
-		static Blank    = new NodeType("blank");
-		static Literal  = new NodeType("literal");
+		// NOTE: The following string names ("resource", "blank", "literal") are intentinally set
+		// 	to the values of the HTML Input group titled 'rdf-content-radio' in the file
+		//	rdf-transform-node-config.html.  The type (getType) is generally evaluated via the "checked"
+		//	'rdf-content-radio' value:
+		// 		$("input[name='rdf-content-radio']:checked").val() === a name of one of the below...
+		// 
+		static Resource = new this("resource");
+		static Blank    = new this("blank");
+		static Literal  = new this("literal");
 
 		#name;
 

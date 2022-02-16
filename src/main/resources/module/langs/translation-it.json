@@ -22,6 +22,7 @@
     "rdft-buttons/ok": "Ok",
     "rdft-buttons/register": "Registra",
     "rdft-buttons/save": "Salva",
+    "rdft-data/alert-RDF-type": "Un RDF Tipo di un nodo non può essere determinare!",
     "rdft-data/error": "Errore",
     "rdft-data/internal-error": "Errore interno",
     "rdft-data/no-syntax-error": "Nessun errore di sintassi.",

@@ -147,9 +147,9 @@ class RDFExpressionPreviewDialog {
 
 		// ...and set it for the current default expression language...
 		var languageOptions = [];
-		var info = theProject.scripting[RDFTransform.g_strDefaultExpLang];
+		var info = theProject.scripting[RDFTransform.gstrDefaultExpLang];
 		languageOptions.push(
-			'<option value="' + RDFTransform.g_strDefaultExpLang + '">' +
+			'<option value="' + RDFTransform.gstrDefaultExpLang + '">' +
 			info.name +
 			'</option>'
 		);
@@ -329,7 +329,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 		this.expression = strExpression;
 		if (strExpression === null || strExpression.length === 0 ) {
-			this.expression = RDFTransform.g_strDefaultExpCode; // ...use default expression
+			this.expression = RDFTransform.gstrDefaultExpCode; // ...use default expression
 		}
 
 		this.#bIsResource = bIsResource;
@@ -458,7 +458,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		// Create table column headings...
 		var tr = table.insertRow(0);
 		var tdValue = (this.#bIsIndex ? "Index" : "Value");
-		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.g_strIndexTitle);
+		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.gstrIndexTitle);
 		$( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
 		$( tr.insertCell(2) ).addClass("expression-preview-heading").text("Expression");
 		if (this.#bIsResource) { // ...for resources, add the IRI resolution column...

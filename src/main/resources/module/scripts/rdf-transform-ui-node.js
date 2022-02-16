@@ -9,23 +9,23 @@ class RDFTransformUINode {
     #dialog;
     #node;
     #bIsRoot;
-    #properties;
-    #bIsCellNode;
-    #eType;
-    #options;
     #propertyUIs;
-    #detailsRendered;
+    #options;
+
+    #bIsVarNode;
+    #eType;
+
+    #tableDetails;
+
     #tdMain;
     #tdToggle;
     #tdDetails;
-    #expanded;
 
     #theNodeLabel;
     #level;
 
     #collapsedDetailDiv;
     #expandedDetailDiv;
-    #tableProperties;
 
     #checkedTrue;
     #disabledTrue;
@@ -33,51 +33,108 @@ class RDFTransformUINode {
     #strLangInputID;
     #strTypeInputID;
 
-    constructor(theDialog, theNode, bIsRoot, theProperties, theTable, theOptions) {
+    constructor(theDialog, theNode, bIsRoot, theProperties, theOptions) {
         this.#dialog = theDialog;
         this.#node = theNode; // ...a Transform Node
         this.#bIsRoot = bIsRoot;
-        this.#properties = theProperties;
         this.#options = theOptions;
 
+        //
+        // Process any Properties for the Node...
+        //
+        //      Nodes optionally have Properties.
+        //
+
         this.#propertyUIs = [];
-        this.#detailsRendered = false;
+
+        if (theProperties !== null) {
+            for (const theProperty of theProperties) {
+                // Set up the Property UI...
+                var propertyUI = new RDFTransformUIProperty(
+                    this.#dialog,
+                    theProperty,
+                    { expanded: true },
+                    this
+                );
+                this.#propertyUIs.push(propertyUI);
+            }
+        }
 
         this.#checkedTrue = { "checked" : true };
         this.#disabledTrue = { "disabled" : true };
         this.#disabledFalse = { "disabled" : false };
         this.#strLangInputID = '#rdf-content-lang-input';
         this.#strTypeInputID = '#rdf-content-type-input';
+    }
 
+    getNode() {
+        return this.#node;
+    }
+
+    setPropertyUIs(propertyUIs) {
+        this.#propertyUIs = propertyUIs;
+    }
+
+    hasProperties() {
+        return (this.#propertyUIs.length > 0);
+    }
+
+    processView(theTable) {
         var tr = theTable.insertRow();
         this.#tdMain    = tr.insertCell();
         this.#tdToggle  = tr.insertCell();
         this.#tdDetails = tr.insertCell();
 
-        $(this.#tdMain)
-        .addClass("rdf-transform-node-main")
-        .attr("width", "250")
-        .addClass("padded");
-        $(this.#tdToggle)
-        .addClass("rdf-transform-node-toggle")
-        .attr("width", "1%")
-        .addClass("padded")
-        .hide();
-        $(this.#tdDetails)
-        .addClass("rdf-transform-node-details")
-        .attr("width", "62%")
-        .hide();
+        var imgExpand =
+            $('<img />')
+            .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
+            .click(
+                (evt) => {
+                    this.#options.expanded = !this.#options.expanded;
+                    $(evt.currentTarget)
+                    .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png");
+                    this.show();
+                }
+            );
 
+        this.#collapsedDetailDiv =
+            $('<div></div>')
+            .addClass("padded")
+            .html("...");
+        this.#expandedDetailDiv =
+            $('<div></div>')
+            .addClass("rdf-transform-detail-container");
+
+        $(this.#tdMain)
+            .addClass("rdf-transform-node-main")
+            .attr("width", "250")
+            .addClass("padded");
+        $(this.#tdToggle)
+            .addClass("rdf-transform-node-toggle")
+            .attr("width", "1%")
+            .addClass("padded")
+            .append(imgExpand);
+        $(this.#tdDetails)
+            .addClass("rdf-transform-node-details")
+            .attr("width", "62%")
+            .append(this.#collapsedDetailDiv)
+            .append(this.#expandedDetailDiv);
+
+        this.#render();
+
+        this.#renderDetails(); // ...one time only
+
+        this.show();
+    }
+
+    #render() {
         this.#renderMain();
-        //this.renderTypes();
-        this.#expanded = this.#options.expanded;
         if ( this.#isExpandable() ) {
             this.#showExpandable();
         }
-    }
-
-    getProperties() {
-        return this.#properties;
+        else {
+            this.#hideExpandable();
+        }
     }
 
     #renderMain() {
@@ -184,7 +241,7 @@ class RDFTransformUINode {
         //
         // CELL Nodes...
         //
-        if (this.#bIsCellNode) {
+        if (this.#bIsVarNode) {
             if (this.#eType !== RDFTransformCommon.NodeType.Blank) {
                 // NOTE: The Node is a:
                 //      "[Index] IRI", "ColName IRI",
@@ -245,75 +302,18 @@ class RDFTransformUINode {
         this.renderTypes();*/
     }
 
-    #isExpandable() {
-        return (this.#eType === RDFTransformCommon.NodeType.Resource ||
-                this.#eType === RDFTransformCommon.NodeType.Blank);
-    }
-
-    show() {
-        if (this.#expanded) {
-            this.#collapsedDetailDiv.hide();
-            this.#expandedDetailDiv.show();
-        }
-        else {
-            this.#collapsedDetailDiv.show();
-            this.#expandedDetailDiv.hide();
-        }
-    }
-
-    #showExpandable() {
-        $(this.#tdToggle).show();
-        $(this.#tdDetails).show();
-
-        if (this.#detailsRendered) {
-            return;
-        }
-        this.#detailsRendered = true;
-
-        this.#collapsedDetailDiv =
-            $('<div></div>')
-            .appendTo(this.#tdDetails)
-            .addClass("padded")
-            .html("...");
-        this.#expandedDetailDiv =
-            $('<div></div>')
-            .appendTo(this.#tdDetails)
-            .addClass("rdf-transform-detail-container");
-
-        this.#renderDetails();
-
-        this.show();
-
-        //$(this.tdToggle).html("&nbsp;");
-        $('<img />')
-        .attr("src", this.#expanded ? "images/expanded.png" : "images/collapsed.png")
-        .appendTo(this.#tdToggle)
-        .click(
-            (evt) => {
-                this.#expanded = !this.#expanded;
-                $(evt.currentTarget)
-                .attr("src", this.#expanded ? "images/expanded.png" : "images/collapsed.png");
-                this.show();
-            }
-        );
-    }
-
     #renderDetails() {
-        this.#tableProperties =
-            $('<table></table>').addClass("rdf-transform-property-table-layout")
-            .appendTo(this.#expandedDetailDiv)[0];
+        if (this.#tableDetails) {
+            this.#tableDetails.remove();
+        }
+        this.#tableDetails =
+            $('<table></table>')
+            .addClass("rdf-transform-property-table-layout");
+        this.#expandedDetailDiv.append(this.#tableDetails);
 
-        if (this.#properties !== null) {
-            for (const theProperty of this.#properties) {
-                this.#propertyUIs.push(
-                    new RDFTransformUIProperty(
-                        this.#dialog,
-                        theProperty,
-                        this.#tableProperties,
-                        { expanded: true },
-                        this
-                    )
-                );
+        if (this.#propertyUIs !== null) {
+            for (const propertyUI of this.#propertyUIs) {
+                propertyUI.processView(this.#tableDetails[0]);
             }
         }
 
@@ -329,28 +329,50 @@ class RDFTransformUINode {
                 nodeObject.valueType = {};
                 nodeObject.valueType.type = "literal";
                 nodeObject.valueSource = {};
-                nodeObject.valueSource.source = RDFTransform.g_strValueSource;
+                nodeObject.valueSource.source = RDFTransform.gstrValueSource;
 
-                var theNewProperty = {}; // ...defaults...
-                theNewProperty.prefix = null;
-                theNewProperty.localPart = null;
-                theNewProperty.nodeObject = nodeObject;
+                var theProperty = {}; // ...defaults...
+                theProperty.prefix = null;
+                theProperty.localPart = null;
+                theProperty.nodeObject = nodeObject;
 
-                var options = {};
-                options.expanded = true;
-                options.mustBeCellTopic = false;
-
-                this.#propertyUIs.push(
-                    new RDFTransformUIProperty(
-                        this.#dialog,
-                        theNewProperty,
-                        this.#tableProperties,
-                        options,
-                        this
-                    )
+                // Set up the Property UI...
+                var propertyUI = new RDFTransformUIProperty(
+                    this.#dialog,
+                    theProperty,
+                    { expanded: true },
+                    this
                 );
+                this.#propertyUIs.push(propertyUI);
+                propertyUI.processView(this.#tableDetails[0]);
             }
         );
+    }
+
+    show() {
+        if (this.#options.expanded) {
+            this.#collapsedDetailDiv.hide();
+            this.#expandedDetailDiv.show();
+        }
+        else {
+            this.#collapsedDetailDiv.show();
+            this.#expandedDetailDiv.hide();
+        }
+    }
+
+    #isExpandable() {
+        return (this.#eType === RDFTransformCommon.NodeType.Resource ||
+                this.#eType === RDFTransformCommon.NodeType.Blank);
+    }
+
+    #showExpandable() {
+        $(this.#tdToggle).show();
+        $(this.#tdDetails).show();
+    }
+
+    #hideExpandable() {
+        $(this.#tdToggle).hide();
+        $(this.#tdDetails).hide();
     }
 
     #buildIndexChoice(tableColumns, isChecked) {
@@ -531,7 +553,7 @@ class RDFTransformUINode {
 
         // Set cell expression...
         // TODO: Future code language.  It's all "grel" currently.
-        var strExpCode = RDFTransform.g_strDefaultExpCode; // ...default expression
+        var strExpCode = RDFTransform.gstrDefaultExpCode; // ...default expression
         if ("expression" in this.#node && "code" in this.#node.expression ) {
             strExpCode = this.#node.expression.code;
         }
@@ -579,13 +601,14 @@ class RDFTransformUINode {
         .click(
             (evt) => {
                 evt.preventDefault();
-                // Get the Node's Subtype: "resource", "literal", or "blank"...
-                const strType = $("input[name='rdf-content-radio']:checked").val();
-                this.#eType = RDFTransformCommon.NodeType.getType(strType);
 
-                this.#bIsCellNode = ! ( $("#rdf-constant-value-radio").is(':checked') );
+                // Validate the node type information...
+                if ( ! this.#validateNodeTypes() ) {
+                    return;
+                }
+
                 // For Index (Row / Record) or Cell based Node Types...
-                if (this.#bIsCellNode) {
+                if (this.#bIsVarNode) {
                     // Get the column name from the value of the checked column radio...
                     // NOTE: An empty column name == a Row / Record Index (Constant is eliminated)
                     const strColumnName = $("input[name='rdf-column-radio']:checked").val();
@@ -618,6 +641,212 @@ class RDFTransformUINode {
                 }
             }
         );
+    }
+
+    //
+    // Method #validateNodeTypes()
+    //
+    //
+    //  Get the Node Type information:
+    //      1. Node Value Type: Cell or Constant
+    //      2. Node RDF Type: "resource", "literal", or "blank"
+    //  When the Node's RDF Type annot be determined, return a failed indicator (false)
+    //
+    #validateNodeTypes() {
+        // Determine the Node's Value Type: Variable or Constant
+        //      by testing if Constant Radio button is checked...
+        this.#bIsVarNode = ! ( $("#rdf-constant-value-radio").is(':checked') );
+
+        // Determine the Node's RDF Type: "resource", "literal", or "blank"...
+        const strNodeType = $("input[name='rdf-content-radio']:checked").val();
+        this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
+
+        if ( this.#eType === null ) {
+            alert( $.i18n('rdft-data/alert-RDF-type') );
+            return false;
+        }
+        return true;
+    }
+
+    #preview(strColumnName, strExpression, bIsResource) {
+        // NOTE: The column (cell) index is a zero (0) based index.
+        //      When there is no "Row / Record Index column", we use -1 to represent it.
+        const iIndexColumn = -1;
+        const iColumnIndex =
+            ( strColumnName ? // A non-empty string or an empty string
+                // Look up the column index by column name...
+                RDFTransform.findColumn(strColumnName).cellIndex :
+                // No column name == Row / Record Index "column"...
+                iIndexColumn
+            );
+        const bIsIndex = (iColumnIndex === iIndexColumn);
+        var objColumn = null; // ...just get the rows
+        if ( ! bIsIndex ) {
+            objColumn = {}; // ...get the rows and the related column values
+            objColumn.cellIndex = iColumnIndex;
+            objColumn.columnName = strColumnName;
+        }
+        const onDone = (strExp) => {
+            if (strExp !== null) {
+                strExp = strExp.substring(5); // ...remove "grel:"
+            }
+            $("#rdf-cell-expr").empty().text(strExp);
+        };
+
+        // Data Preview: Resource or Literal...
+        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), bIsResource );
+        dialogDataTable.preview(objColumn, strExpression, bIsIndex, onDone);
+    }
+
+    showNodeConfigDialog() {
+        if (theProject.columnModel.columns.length < 1)
+            return;
+
+        var frame = DialogSystem.createDialog();
+
+        //frame.width("490px")
+        frame
+        .css({  minWidth: "490px",
+                width: "490px",
+                minHeight: "300px",
+            });
+
+        /*--------------------------------------------------
+         * Header
+         *--------------------------------------------------
+         */
+
+         var header =
+            $('<div></div>')
+            .addClass("dialog-header")
+            .text( $.i18n('rdft-dialog/rdf-node') );
+
+        /*--------------------------------------------------
+         * Body
+         *--------------------------------------------------
+         */
+
+        var body =
+            $('<div class="grid-layout layout-full"></div>')
+            .addClass("dialog-body rdf-transform");
+
+        var html = $(DOM.loadHTML('rdf-transform', 'scripts/dialogs/rdf-transform-node-config.html'));
+
+        var elements = DOM.bind(html);
+        elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
+        elements.contentUsed.text(    $.i18n('rdft-dialog/content-used') + '...' );
+
+        elements.asIRI.text(      $.i18n('rdft-as/iri')        );
+        elements.asText.text(     $.i18n('rdft-as/text')       );
+        elements.asLang.text(     $.i18n('rdft-as/lang') + ":" );
+        elements.asInt.text(      $.i18n('rdft-as/int')        );
+        elements.asDouble.text(   $.i18n('rdft-as/double')     );
+        elements.asDate.text(     $.i18n('rdft-as/date')       );
+        elements.asDateTime.text( $.i18n('rdft-as/datetime')   );
+        elements.asBool.text(     $.i18n('rdft-as/bool')       );
+        elements.asCustom.text(   $.i18n('rdft-as/custom')     );
+        elements.asBlank.text(    $.i18n('rdft-as/blank')      );
+
+        elements.useExpression.text(  $.i18n('rdft-dialog/use-exp') + '...'      );
+        elements.expEditPreview.text( $.i18n('rdft-dialog/edit-preview')         );
+
+        var tableColumns =
+            $('<table></table>').appendTo(elements.columnLeft)[0];
+            //.attr("cellspacing", "5")
+            //.attr("cellpadding", "0")
+
+        // Add Row/Record Radio Row...
+        // NOTE: Always ResourceNode
+        this.#buildIndexChoice(tableColumns, this.#bIsVarNode);
+
+        //
+        // Add Column Name Radio Rows...
+        //
+        // NOTE: A ResourceNode OR A LiteralNode
+        var columns = theProject.columnModel.columns;
+        if (columns.length === 1) {
+            // Process first and last column...
+            // NOTE: Pad top and bottom for SINGLE column
+            this.#buildColumnChoice(tableColumns, columns[0], 2);
+        }
+        else {
+            // Process first column...
+            // NOTE: Pad top of top row
+            this.#buildColumnChoice(tableColumns, columns[0], 1);
+            // Loop through all but first and last column...
+            const iLoopLast = columns.length - 1;
+            for (var iColumn = 1; iColumn < iLoopLast; iColumn++) {
+                // Process column...
+                // NOTE: No pad for middle rows
+                this.#buildColumnChoice(tableColumns, columns[iColumn]);
+            }
+            // Process last column...
+            // NOTE: Pad bottom of bottom row
+            this.#buildColumnChoice(tableColumns, columns[iLoopLast], -1);
+        }
+
+        // Add Constant Value Radio Row...
+        this.#buildConstantChoice(tableColumns, !(this.#bIsVarNode));
+
+        // Initilize inputs...
+        this.#initInputs(elements);
+
+        body.append(html);
+
+        /*--------------------------------------------------
+         * Footer
+         *--------------------------------------------------
+         */
+
+         var footer =
+            $('<div></div>')
+            .addClass("dialog-footer");
+
+         var buttonOK =
+            $('<button></button>')
+            .addClass('button')
+            .html( $.i18n('rdft-buttons/ok') )
+            .click(
+                () => {
+                    var node = this.#getResultJSON();
+                    if (node !== null) {
+                        // If Old Node has Type Mappings, move them to New Node
+                        if ("typeMappings" in this.#node) {
+                            // Copy existing types to new node...
+                            //node.typeMappings = cloneDeep(this.#node.typeMappings);
+                            node.typeMappings = this.#node.typeMappings;
+                        }
+                        // Property Mappings are reserved in #propertyUIs
+
+                        this.#node = node;
+                        DialogSystem.dismissUntil(this.#level - 1);
+                        this.#render();
+                        this.#dialog.updatePreview();
+                    }
+                }
+            );
+
+        var buttonCancel =
+            $('<button></button>')
+            .addClass('button')
+            .text( $.i18n('rdft-buttons/cancel') )
+            .click(
+                () => {
+                    DialogSystem.dismissUntil(this.#level - 1);
+                }
+            );
+
+        footer.append(buttonOK);
+        footer.append(buttonCancel);
+
+        /*--------------------------------------------------
+         * Assemble Dialog
+         *--------------------------------------------------
+         */
+
+        frame.append(header, body, footer)
+
+        this.#level = DialogSystem.showDialog(frame);
     }
 
     //
@@ -674,23 +903,12 @@ class RDFTransformUINode {
     //        value_bnode      |                    |                    |
     //
     #getResultJSON() {
-        //
-        // Get the Node Type information...
-        //
-
-        // Get the Node's Supertype: Cell or Constant...
-        //      by testing if Constant Radio button is checked...
-        this.#bIsCellNode = ! ( $("#rdf-constant-value-radio").is(':checked') );
-
-        // Get the Node's Subtype: "resource", "literal", or "blank"...
-        var strNodeType = $("input[name='rdf-content-radio']:checked").val();
-        this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
-        if ( this.#eType === null ) {
-            alert( $.i18n('rdft-data/internal-error') );
-            return null;
+        // Validate the node type information...
+        if ( ! this.#validateNodeTypes() ) {
+            return;
         }
 
-        // Prepare the node (return value)...
+        // Prepare the JSON node (the return value)...
         var theNode = {};
 
         //
@@ -711,7 +929,7 @@ class RDFTransformUINode {
 
         // All Blank Nodes...
         else if ( this.#eType === RDFTransformCommon.NodeType.Blank ) {
-            if (this.#bIsCellNode) {
+            if (this.#bIsVarNode) {
                 theNode.valueType.type = "bnode";
             }
             else { // ...Constant...
@@ -783,11 +1001,11 @@ class RDFTransformUINode {
         }
 
         // All Cell-based Nodes (NOT Constant)...
-        if (this.#bIsCellNode) {
+        if (this.#bIsVarNode) {
             // Prepare for Row/Record or Column...
             const strColumnName = $("input[name='rdf-column-radio']:checked").val();
             if (strColumnName.length === 0) { // ...Row or Record Index...
-                theNode.valueSource.source = RDFTransform.g_strValueSource;
+                theNode.valueSource.source = RDFTransform.gstrValueSource;
             }
             else { // ...Column...
                 theNode.valueSource.source = "column";
@@ -808,7 +1026,7 @@ class RDFTransformUINode {
                 //  Store all others...
                 if ( strExpCode !== "value" ) {
                     theNode.expression = {};
-                    theNode.expression.language = RDFTransform.g_strDefaultExpLang;
+                    theNode.expression.language = RDFTransform.gstrDefaultExpLang;
                     theNode.expression.code = strExpCode;
                 }
             }
@@ -831,208 +1049,14 @@ class RDFTransformUINode {
         return theNode;
     }
 
-    showNodeConfigDialog() {
-        if (theProject.columnModel.columns.length < 1)
-            return;
-
-        var frame = DialogSystem.createDialog();
-
-        //frame.width("490px")
-        frame
-        .css({  minWidth: "490px",
-                width: "490px",
-                minHeight: "300px",
-            });
-
-        /*--------------------------------------------------
-         * Header
-         *--------------------------------------------------
-         */
-
-         var header =
-            $('<div></div>')
-            .addClass("dialog-header")
-            .text( $.i18n('rdft-dialog/rdf-node') );
-
-        /*--------------------------------------------------
-         * Body
-         *--------------------------------------------------
-         */
-
-        var body =
-            $('<div class="grid-layout layout-full"></div>')
-            .addClass("dialog-body rdf-transform");
-
-        var html = $(DOM.loadHTML('rdf-transform', 'scripts/dialogs/rdf-transform-node-config.html'));
-
-        var elements = DOM.bind(html);
-        elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
-        elements.contentUsed.text(    $.i18n('rdft-dialog/content-used') + '...' );
-
-        elements.asIRI.text(      $.i18n('rdft-as/iri')        );
-        elements.asText.text(     $.i18n('rdft-as/text')       );
-        elements.asLang.text(     $.i18n('rdft-as/lang') + ":" );
-        elements.asInt.text(      $.i18n('rdft-as/int')        );
-        elements.asDouble.text(   $.i18n('rdft-as/double')     );
-        elements.asDate.text(     $.i18n('rdft-as/date')       );
-        elements.asDateTime.text( $.i18n('rdft-as/datetime')   );
-        elements.asBool.text(     $.i18n('rdft-as/bool')       );
-        elements.asCustom.text(   $.i18n('rdft-as/custom')     );
-        elements.asBlank.text(    $.i18n('rdft-as/blank')      );
-
-        elements.useExpression.text(  $.i18n('rdft-dialog/use-exp') + '...'      );
-        elements.expEditPreview.text( $.i18n('rdft-dialog/edit-preview')         );
-
-        var tableColumns =
-            $('<table></table>').appendTo(elements.columnLeft)[0];
-            //.attr("cellspacing", "5")
-            //.attr("cellpadding", "0")
-
-        // Add Row/Record Radio Row...
-        // NOTE: Always ResourceNode
-        this.#buildIndexChoice(tableColumns, this.#bIsCellNode);
-
-        //
-        // Add Column Name Radio Rows...
-        //
-        // NOTE: A ResourceNode OR A LiteralNode
-        var columns = theProject.columnModel.columns;
-        if (columns.length === 1) {
-            // Process first and last column...
-            // NOTE: Pad top and bottom for SINGLE column
-            this.#buildColumnChoice(tableColumns, columns[0], 2);
-        }
-        else {
-            // Process first column...
-            // NOTE: Pad top of top row
-            this.#buildColumnChoice(tableColumns, columns[0], 1);
-            // Loop through all but first and last column...
-            const iLoopLast = columns.length - 1;
-            for (var iColumn = 1; iColumn < iLoopLast; iColumn++) {
-                // Process column...
-                // NOTE: No pad for middle rows
-                this.#buildColumnChoice(tableColumns, columns[iColumn]);
-            }
-            // Process last column...
-            // NOTE: Pad bottom of bottom row
-            this.#buildColumnChoice(tableColumns, columns[iLoopLast], -1);
-        }
-
-        // Add Constant Value Radio Row...
-        this.#buildConstantChoice(tableColumns, !(this.#bIsCellNode));
-
-        // Initilize inputs...
-        this.#initInputs(elements);
-
-        body.append(html);
-
-        /*--------------------------------------------------
-         * Footer
-         *--------------------------------------------------
-         */
-
-         var footer =
-            $('<div></div>')
-            .addClass("dialog-footer");
-
-         var buttonOK =
-            $('<button></button>')
-            .addClass('button')
-            .html( $.i18n('rdft-buttons/ok') )
-            .click(
-                () => {
-                    var node = this.#getResultJSON();
-                    if (node !== null) {
-                        // If Old Node has Type Mappings, move them to New Node
-                        if ("typeMappings" in this.#node) {
-                            // Copy existing types to new node...
-                            //node.typeMappings = cloneDeep(this.#node.typeMappings);
-                            node.typeMappings = this.#node.typeMappings;
-                        }
-                        // Property Mappings are reserved in #propertyUIs
-
-                        this.#node = node;
-                        DialogSystem.dismissUntil(this.#level - 1);
-                        this.#render();
-                        this.#dialog.updatePreview();
-                    }
-                }
-            );
-
-        var buttonCancel =
-            $('<button></button>')
-            .addClass('button')
-            .text( $.i18n('rdft-buttons/cancel') )
-            .click(
-                () => {
-                    DialogSystem.dismissUntil(this.#level - 1);
-                }
-            );
-
-        footer.append(buttonOK);
-        footer.append(buttonCancel);
-
-        /*--------------------------------------------------
-         * Assemble Dialog
-         *--------------------------------------------------
-         */
-
-        frame.append(header, body, footer)
-
-        this.#level = DialogSystem.showDialog(frame);
-    }
-
-    #preview(strColumnName, strExpression, bIsResource) {
-        // NOTE: The column (cell) index is a zero (0) based index.
-        //      When there is no "Row / Record Index column", we use -1 to represent it.
-        const iIndexColumn = -1;
-        const iColumnIndex =
-            ( strColumnName ? // A non-empty string or an empty string
-                // Look up the column index by column name...
-                RDFTransform.findColumn(strColumnName).cellIndex :
-                // No column name == Row / Record Index "column"...
-                iIndexColumn
-            );
-        const bIsIndex = (iColumnIndex === iIndexColumn);
-        var objColumn = null; // ...just get the rows
-        if ( ! bIsIndex ) {
-            objColumn = {}; // ...get the rows and the related column values
-            objColumn.cellIndex = iColumnIndex;
-            objColumn.columnName = strColumnName;
-        }
-        const onDone = (strExp) => {
-            if (strExp !== null) {
-                strExp = strExp.substring(5); // ...remove "grel:"
-            }
-            $("#rdf-cell-expr").empty().text(strExp);
-        };
-
-        // Data Preview: Resource or Literal...
-        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), bIsResource );
-        dialogDataTable.preview(objColumn, strExpression, bIsIndex, onDone);
-    }
-
-    #render() {
-        this.#renderMain();
-        if ( this.#isExpandable() ) {
-            this.#showExpandable();
-        }
-        else {
-            this.#hideExpandable();
-        }
-    }
-
     removeProperty(propertyUI) {
         var iPropertyIndex = this.#propertyUIs.lastIndexOf(propertyUI);
         if (iPropertyIndex >= 0) {
             this.#propertyUIs.splice(iPropertyIndex, 1);
+
+            this.#render();
             this.#dialog.updatePreview();
         }
-    }
-
-    #hideExpandable() {
-        $(this.#tdToggle).hide();
-        $(this.#tdDetails).hide();
     }
 
     #addRDFType(element) {
@@ -1071,14 +1095,14 @@ class RDFTransformUINode {
         theType.valueSource.constant = theCIRIE.localPart;
         this.#node.typeMappings.push(theType);
 
-        this.#renderMain();
+        this.#render();
         this.#dialog.updatePreview();
     }
 
     #removeNodeRDFType(iIndex) {
         this.#node.typeMappings.splice(iIndex, 1);
 
-        this.#renderMain();
+        this.#render();
         this.#dialog.updatePreview();
     }
 
@@ -1185,9 +1209,10 @@ class RDFTransformUINode {
         //
         // Resource and Blank Nodes (NOT Literal)...
         //
-        if (theNode.valueSource.type !== "literal" &&
-            theNode.valueSource.type !== "language_literal" &&
-            theNode.valueSource.type !== "datatype_literal") {
+        if (this.#node.valueSource.type !== "literal" &&
+            this.#node.valueSource.type !== "language_literal" &&
+            this.#node.valueSource.type !== "datatype_literal")
+        {
             //
             // Type Mappings...
             //
@@ -1210,5 +1235,85 @@ class RDFTransformUINode {
         }
 
         return theNode;
+    }
+
+    static getTransformImport(theDialog, theNode) {
+        var node = {};
+
+        //
+        // Namespace...
+        //
+        if ("namespace" in theNode) {
+            node.namespace = theNode.namespace;
+        }
+
+        //
+        // Value Type...
+        //
+        if ("valueType" in theNode) {
+            node.valueType = theNode.valueType;
+        }
+
+        //
+        // Value Source...
+        //
+        if ("valueSource" in theNode) {
+            node.valueSource = theNode.valueSource;
+        }
+
+        //
+        // Expressions...
+        //
+        if ( "expression" in theNode ) {
+            node.expression = theNode.expression;
+        }
+
+        //
+        // Set up the NodeUI Store...
+        //
+        var nodeUI = new RDFTransformUINode(
+            theDialog, // dialog
+            node,
+            true, // bIsRoot
+            null, // ...process and set properties later
+            { expanded : true }
+        );
+
+        //
+        // Resource and Blank Nodes (NOT Literal)...
+        //
+        if (theNode.valueSource.type !== "literal" &&
+            theNode.valueSource.type !== "language_literal" &&
+            theNode.valueSource.type !== "datatype_literal")
+        {
+            //
+            // Type Mappings...
+            //
+            if ("typeMappings" in theNode && theNode.typeMappings.length > 0) {
+                //theNode.typeMappings = cloneDeep(this.#node.typeMappings);
+                node.typeMappings = theNode.typeMappings;
+            }
+
+            //
+            // Property Mappings...
+            //
+            var propertyUIs = null;
+            if ("propertyMappings" in theNode &&
+                theNode.propertyMappings !== null &&
+                theNode.propertyMappings.length > 0)
+            {
+                propertyUIs = [];
+                for (const theProperty of theNode.propertyMappings) {
+                    // Process the property for display...
+                    var propertyUI = RDFTransformUIProperty.getTransformImport(theDialog, theProperty, nodeUI);
+                    if (propertyUI !== null) {
+                        propertyUIs.push(propertyUI);
+                    }
+                }
+                nodeUI.setPropertyUIs(propertyUIs);
+            }
+        }
+
+        return nodeUI;
     }
 }
