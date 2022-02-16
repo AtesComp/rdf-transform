@@ -299,17 +299,28 @@ class RDFTransformUIProperty {
         // TODO: Currently, all properties are "constant".  Change to allow
         //      column with expression.
         property.localPart = theProperty.valueSource.constant;
-        property.nodeObject = null; // ...process and set Object node later
+        property.nodeObject = null; // ...default: no Object node
+        // NOTE: A null Object node is also a hint in the process to set it later if
+        //      an Object Mapping exists.
 
-        var theObjectNodeUI = null;
+        var theObjectNodeUI = null; // ...default: no Object Node UI
         if ("objectMappings" in theProperty &&
             theProperty.objectMappings !== null &&
             theProperty.objectMappings.length > 0)
         {
-            // Process the node for display...
             // TODO: Currently, a property contains at most one Object node.  Change to allow
-            //      multiple Objects.
-            theObjectNodeUI = RDFTransformUINode.getTransformImport(theDialog, theProperty.objectMappings[0]);
+            //      multiple Object nodes.
+            var nodeObject = theProperty.objectMappings[0];
+
+            // Process the Object node for display...
+            theObjectNodeUI = RDFTransformUINode.getTransformImport(theDialog, nodeObject);
+            // NOTE: A null Object node and valid Object Node UI kicks off a process in the
+            //      RDFTransformUIProperty constructor to set an Object node generated in the
+            //      import for the Object Node UI above.
+            // NOTE: A valid Object node and null Object Node UI kicks off a process in the
+            //      RDFTransformUIProperty constructor to create an Object Node UI from the
+            //      Object node.  A null Object node is set to the default Object node and
+            //      the Object Node UI is created from that default.
         }
 
         //

@@ -153,7 +153,7 @@ OPT: xxx is related to the (value type)
               "nodeType" : "cell-as-literal" ->
                     "valueType": { "type": "literal" },
                     "isIndex": "true" -> "valueSource": { "source": "record_id"/"row_index" }
-                    "isIndex": "false" && columnName": "(value)" ->
+                    "isIndex": "false" && "columnName": "(value)" ->
                             "valueSource": { "source": "column", "columnName": "(value)" }
                 OPT "datatype" / "language": {
                       "valueSource": { "source": "(source: column, constant, expression)", "(source key)": "(value)" },

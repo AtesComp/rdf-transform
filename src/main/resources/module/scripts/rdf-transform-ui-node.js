@@ -65,6 +65,11 @@ class RDFTransformUINode {
         this.#disabledFalse = { "disabled" : false };
         this.#strLangInputID = '#rdf-content-lang-input';
         this.#strTypeInputID = '#rdf-content-type-input';
+
+        // Based on the node,
+        //  1. Set the Variable vs Constant boolean
+        //  2. Set the Node Enumeration Type: Resource, Blank, or Literal
+        this.#initilizeNodeTypes();
     }
 
     getNode() {
@@ -228,6 +233,7 @@ class RDFTransformUINode {
                 }
             );
         }
+
         var ahref =
             $('<a href="javascript:{}"></a>')
             .addClass("rdf-transform-node-tag")
@@ -237,6 +243,8 @@ class RDFTransformUINode {
                     this.showNodeConfigDialog();
                 }
             );
+        var strReference = null;
+        var bHTML = true; // Use HTML or APPEND Span?
 
         //
         // CELL Nodes...
@@ -253,46 +261,54 @@ class RDFTransformUINode {
                     strNodeLabel = $.i18n('rdft-as/literal');
                 }
 
-                var strSPAN = "Configure?"; // TODO: Make $.i18n('rdft-dialog/configure')
+                var strSpanText = "Configure?"; // TODO: Make $.i18n('rdft-dialog/configure')
                 if (this.#node.valueSource.source = "column") {
-                    strSPAN = this.#node.columnName + " " + strNodeLabel;
+                    strSpanText = this.#node.valueSource.columnName + " " + strNodeLabel;
                 }
                 else {
-                    strSPAN = "[" + $.i18n("rdft-dialog/index") + "] " + strNodeLabel;
+                    strSpanText = "[" + $.i18n("rdft-dialog/index") + "] " + strNodeLabel;
                 }
 
-                var span =
+                strReference =
                     $("<span></span>")
                     .addClass("rdf-transform-node-label")
-                    .text(strSPAN);
-
-                ahref.append(span);
+                    .text(strSpanText);
+                bHTML = false;
             }
             else { // this.#eType === RDFTransformCommon.NodeType.Blank
-                ahref.html( "[" + $.i18n('rdft-as/blank') + "] " + $.i18n('rdft-dialog/cell') );
+                strReference = "[" + $.i18n('rdft-as/blank') + "] " + $.i18n('rdft-dialog/cell');
             }
         }
         //
         // CONSTANT Nodes...
         //
         else {
+            var strConst = null;
+            if ("constant" in this.#node.valueSource) {
+                strConst = RDFTransformCommon.shortenResource(this.#node.valueSource.constant);
+            }
             if (this.#eType === RDFTransformCommon.NodeType.Resource) {
-                var strResource = $.i18n('rdft-dialog/which-res');
-                if ("value" in this.#node) {
-                    strResource = RDFTransformCommon.shortenResource(this.#node.value);
+                strReference = $.i18n('rdft-dialog/which-res');
+                if (strConst !== null) {
+                    strReference = strConst;
                 }
-                ahref.html(strResource);
             }
             else if (this.#eType === RDFTransformCommon.NodeType.Literal) {
-                var strLiteral = $.i18n('rdft-dialog/what-val');
-                if ("value" in this.#node) {
-                    strLiteral = RDFTransformCommon.shortenLiteral(this.#node.value);
+                strReference = $.i18n('rdft-dialog/what-val');
+                if (strConst !== null) {
+                    strReference = strConst;
                 }
-                ahref.html(strLiteral);
             }
             else if (this.#eType === RDFTransformCommon.NodeType.Blank) {
-                ahref.html( "[" + $.i18n('rdft-as/blank') + "] " + $.i18n('rdft-dialog/constant-val') );
+                strReference = "[" + $.i18n('rdft-as/blank') + "] " + $.i18n('rdft-dialog/constant-val');
             }
+        }
+
+        if (bHTML) { // ...add as HTML reference...
+            ahref.html(strReference);
+        }
+        else { // ...add as appended Span reference...
+            ahref.append(strReference);
         }
 
         //Types
@@ -430,7 +446,7 @@ class RDFTransformUINode {
                     $("#rdf-constant-value-input").prop(this.#disabledTrue);
                 }
             );
-        if (column.name == this.#node.columnName) {
+        if ("columnName" in this.#node.valueSource && column.name === this.#node.valueSource.columnName) {
             radio.prop(this.#checkedTrue);
         }
         $(td).append(radio);
@@ -486,7 +502,9 @@ class RDFTransformUINode {
         tr.insertCell(); // ...spacer
         td = tr.insertCell(); // ...align Textbox with Label
         $(td).attr("colspan", "2");
-        const strConstVal = (this.#node.value == null ? '' : this.#node.value);
+        const strConstVal =
+            ( ("constant" in this.#node.valueSource &&
+               this.#node.valueSource.constant !== null) ? this.#node.valueSource.constant : '');
         var tdInput = $('<input />')
             .attr("id", "rdf-constant-value-input")
             .attr("type", "text").val(strConstVal)
@@ -513,32 +531,36 @@ class RDFTransformUINode {
             //
             // Literal node...
             //
-            if ("dataType" in this.#node) { // ...with Datatype tag... http://www.w3.org/2001/XMLSchema#
+            if ("datatype" in this.#node.valueType) { // ...with Datatype tag... http://www.w3.org/2001/XMLSchema#
+                var strType = null;
+                if ("constant" in this.#node.valueType.datatype.valueSource) {
+                    strType = this.#node.valueType.datatype.valueSource.constant;
+                }
                 // Standard Datatype tags...
-                if (this.#node.dataType === 'int') {
+                if (strType === 'int') {
                     elements.rdf_content_int_radio.prop(this.#checkedTrue);
                 }
-                else if (this.#node.dataType === 'double') {
+                else if (strType === 'double') {
                     elements.rdf_content_double_radio.prop(this.#checkedTrue);
                 }
-                else if (this.#node.dataType === 'date') {
+                else if (strType === 'date') {
                     elements.rdf_content_date_radio.prop(this.#checkedTrue);
                 }
-                else if (this.#node.dataType === 'dateTime') {
+                else if (strType === 'dateTime') {
                     elements.rdf_content_date_time_radio.prop(this.#checkedTrue);
                 }
-                else if (this.#node.dataType === 'boolean') {
+                else if (strType === 'boolean') {
                     elements.rdf_content_boolean_radio.prop(this.#checkedTrue);
                 }
                 else {
                     // Custom Datatype tag...
                     elements.rdf_content_type_radio.prop(this.#checkedTrue);
-                    elements.rdf_content_type_input.prop(this.#disabledFalse).val(this.#node.dataType);
+                    elements.rdf_content_type_input.prop(this.#disabledFalse).val(strType);
                 }
             }
-            else if ("language" in this.#node) { // ...with Language tag...
+            else if ("language" in this.#node.valueType) { // ...with Language tag...
                 elements.rdf_content_lang_radio.prop(this.#checkedTrue);
-                elements.rdf_content_lang_input.prop(this.#disabledFalse).val(this.#node.language);
+                elements.rdf_content_lang_input.prop(this.#disabledFalse).val(this.#node.valueType.language);
             }
             else { // No tag, simple string...
                 elements.rdf_content_txt_radio.prop(this.#checkedTrue);
@@ -646,11 +668,12 @@ class RDFTransformUINode {
     //
     // Method #validateNodeTypes()
     //
+    //  From dialog changes.
     //
     //  Get the Node Type information:
-    //      1. Node Value Type: Cell or Constant
+    //      1. Node Value Type: Variable or Constant
     //      2. Node RDF Type: "resource", "literal", or "blank"
-    //  When the Node's RDF Type annot be determined, return a failed indicator (false)
+    //  When the Node's RDF Type cannot be determined, return a failed indicator (false)
     //
     #validateNodeTypes() {
         // Determine the Node's Value Type: Variable or Constant
@@ -659,6 +682,39 @@ class RDFTransformUINode {
 
         // Determine the Node's RDF Type: "resource", "literal", or "blank"...
         const strNodeType = $("input[name='rdf-content-radio']:checked").val();
+        this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
+
+        if ( this.#eType === null ) {
+            alert( $.i18n('rdft-data/alert-RDF-type') );
+            return false;
+        }
+        return true;
+    }
+
+    //
+    // Method #initilizeNodeTypes()
+    //
+    //  From existing node on construction.  See #getResultJSON()
+    //
+    //  Get the Node Type information:
+    //      1. Node Value Type: Variable or Constant
+    //      2. Node RDF Type: "resource", "literal", or "blank"
+    //  When the Node's RDF Type cannot be determined, return a failed indicator (false)
+    //
+    #initilizeNodeTypes() {
+        // Determine the Node's Value Type: Variable or Constant
+        //      by testing if Constant Radio button is checked...
+        this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
+
+        // Determine the Node's RDF Type: "resource", "literal", or "blank"...
+        var strNodeType = "literal";
+        if (this.#node.valueType.type === "iri") {
+            strNodeType = "resource";
+        }
+        else if (   this.#node.valueType.type === "bnode" ||
+                    this.#node.valueType.type === "value_bnode" ) {
+            strNodeType = "blank";
+        }
         this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
 
         if ( this.#eType === null ) {
@@ -1181,8 +1237,8 @@ class RDFTransformUINode {
         //
         // Namespace...
         //
-        if ("namespace" in this.#node) {
-            theNode.namespace = this.#node.namespace;
+        if ("prefix" in this.#node) {
+            theNode.prefix = this.#node.prefix;
         }
 
         //
@@ -1243,8 +1299,8 @@ class RDFTransformUINode {
         //
         // Namespace...
         //
-        if ("namespace" in theNode) {
-            node.namespace = theNode.namespace;
+        if ("prefix" in theNode) {
+            node.prefix = theNode.prefix;
         }
 
         //
@@ -1290,7 +1346,7 @@ class RDFTransformUINode {
             // Type Mappings...
             //
             if ("typeMappings" in theNode && theNode.typeMappings.length > 0) {
-                //theNode.typeMappings = cloneDeep(this.#node.typeMappings);
+                //theNode.typeMappings = cloneDeep(theNode.typeMappings);
                 node.typeMappings = theNode.typeMappings;
             }
 
