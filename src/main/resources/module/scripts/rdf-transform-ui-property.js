@@ -294,7 +294,7 @@ class RDFTransformUIProperty {
     }
 
     static getTransformImport(theDialog, theProperty, theSubjectNodeUI) {
-        property = {};
+        var property = {};
         property.prefix = theProperty.prefix;
         // TODO: Currently, all properties are "constant".  Change to allow
         //      column with expression.
