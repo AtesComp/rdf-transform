@@ -466,7 +466,7 @@ class RDFTransformDialog {
             $('<table></table>').addClass("rdf-transform-table-layout");
         this.#tableNodes = table[0];
 
-        for (nodeUI of this.#nodeUIs) {
+        for (const nodeUI of this.#nodeUIs) {
             nodeUI.processView(this.#tableNodes);
         }
 
