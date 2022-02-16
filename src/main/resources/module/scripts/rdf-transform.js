@@ -15,22 +15,22 @@ class RDFTransform {
     //      by a setDefaults() modification.
     static gstrDefaultExpLang = 'grel';                 // ...the default (and only) Expression Language
     static gstrDefaultExpCode;                          // ...the default Expression for the current (and only) language, GREL
-    static #strExpressionIndexRow = "row.index";        // ...the Index Expression for Rows
-    static #strExpressionIndexRec = "row.record.index"; // ...the Index Expression for Records
+    static gstrExpressionIndexRow = "row.index";        // ...the Index Expression for Rows
+    static gstrExpressionIndexRec = "row.record.index"; // ...the Index Expression for Records
     static gstrExpressionIndex;                         // ...the Index Expression to use: Row or Record
-    static #strValueSourceRow = "row_index";            // ...the Value Source for Rows
-    static #strValueSourceRec = "record_id";            // ...the Value Source for Records
+    static gstrValueSourceRow = "row_index";            // ...the Value Source for Rows
+    static gstrValueSourceRec = "record_id";            // ...the Value Source for Records
     static gstrValueSource;                             // ...the Value Source to use: Row or Record
     static gstrIndexTitle;                              // ...the column title for the index: "Row" or "Record"
     static gbRowBased = true;                           // ...the type of indexing used: Row (true) or Record (false)
 
     // Setup default Master Root Node...
-    static #nodeMasterRoot = {};
+    static gnodeMasterRoot = {};
     static {
-        this.#nodeMasterRoot.valueSource = {};
-        this.#nodeMasterRoot.expression = {};
-        this.#nodeMasterRoot.expression.language = "grel";
-        this.#nodeMasterRoot.propertyMappings = [];
+        this.gnodeMasterRoot.valueSource = {};
+        this.gnodeMasterRoot.expression = {};
+        this.gnodeMasterRoot.expression.language = "grel";
+        this.gnodeMasterRoot.propertyMappings = [];
     };
 
     static setDefaults() {
@@ -51,13 +51,13 @@ class RDFTransform {
         RDFTransform.gbRowBased = ( theProject.rowModel.mode === "row-based" );
 
         if (RDFTransform.gbRowBased) {
-            RDFTransform.gstrExpressionIndex = RDFTransform.#strExpressionIndexRow;
-            RDFTransform.gstrValueSource = RDFTransform.#strValueSourceRow;
+            RDFTransform.gstrExpressionIndex = RDFTransform.gstrExpressionIndexRow;
+            RDFTransform.gstrValueSource = RDFTransform.gstrValueSourceRow;
             RDFTransform.gstrIndexTitle = $.i18n("rdft-dialog/title-row");
         }
         else { // ...Record Based...
-            RDFTransform.gstrExpressionIndex = RDFTransform.#strExpressionIndexRec;
-            RDFTransform.gstrValueSource = RDFTransform.#strValueSourceRec;
+            RDFTransform.gstrExpressionIndex = RDFTransform.gstrExpressionIndexRec;
+            RDFTransform.gstrValueSource = RDFTransform.gstrValueSourceRec;
             RDFTransform.gstrIndexTitle = $.i18n("rdft-dialog/title-rec");
         }
 
@@ -66,14 +66,14 @@ class RDFTransform {
         // Root Nodes:
         //
         //  Default Value Type = IMPLIED "valueType": { "type": "iri" }
-        //RDFTransform.g_nodeMasterRoot.valueType.type = "iri";
+        //RDFTransform.gnodeMasterRoot.valueType.type = "iri";
 
         //  Default Value Source = "valueSource" : { "source" : ("row_index" || "record_id") }
         //      IMPIES bIsIndex = true
-        RDFTransform.#nodeMasterRoot.valueSource.source = RDFTransform.gstrValueSource;
+        RDFTransform.gnodeMasterRoot.valueSource.source = RDFTransform.gstrValueSource;
 
         //  Default Expression = "expression" : { "language": "grel", "code": ("row.index" || "row.record.index") }
-        RDFTransform.#nodeMasterRoot.expression.code = RDFTransform.gstrExpressionIndex;
+        RDFTransform.gnodeMasterRoot.expression.code = RDFTransform.gstrExpressionIndex;
 
         //  Default Property Mappings = [], but will be filled with:
         //      Property IRIs based on existing Column Names and
@@ -197,15 +197,15 @@ class RDFTransformDialog {
                 var bExpExists = ("expression" in nodeSubject);
                 var strOldExp;
                 if ( RDFTransform.gbRowBased ) { // Now we are Row based...
-                    strOldValSrc = RDFTransform.#strValueSourceRec;
+                    strOldValSrc = RDFTransform.gstrValueSourceRec;
                     if (bExpExists) {
-                        strOldExp = RDFTransform.#strExpressionIndexRec;
+                        strOldExp = RDFTransform.gstrExpressionIndexRec;
                     }
                 }
                 else { // Now we are Record based...
-                    strOldValSrc = RDFTransform.#strValueSourceRow;
+                    strOldValSrc = RDFTransform.gstrValueSourceRow;
                     if (bExpExists) {
-                        strOldExp = RDFTransform.#strExpressionIndexRow;
+                        strOldExp = RDFTransform.gstrExpressionIndexRow;
                     }
                 }
                 var bValSrcHasOld = ( nodeSubject.valueSource.source == strOldValSrc );
@@ -281,7 +281,7 @@ class RDFTransformDialog {
 
     #createRootNode() {
         // Retrieve a copy of the Master Root Node...
-        return cloneDeep(RDFTransform.#nodeMasterRoot);
+        return cloneDeep(RDFTransform.gnodeMasterRoot);
     }
 
     #createNewNodeIU(node, properties) {
