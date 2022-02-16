@@ -703,12 +703,14 @@ class RDFTransformUINode {
     //
     #initilizeNodeTypes() {
         // Determine the Node's Value Type: Variable or Constant
-        //      by testing if Constant Radio button is checked...
+        //      by testing the node's value source type:
+        //      Variable == "row_index", "record_id", "column"
+        //      Constant == "constant"
         this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
 
         // Determine the Node's RDF Type: "resource", "literal", or "blank"...
         var strNodeType = "literal";
-        if (this.#node.valueType.type === "iri") {
+        if ( ! ("valueType" in this.#node) || this.#node.valueType.type === "iri") {
             strNodeType = "resource";
         }
         else if (   this.#node.valueType.type === "bnode" ||
