@@ -196,7 +196,7 @@ class RDFTransformDialog {
                 var strOldValSrc;
                 var bExpExists = ("expression" in nodeSubject);
                 var strOldExp;
-                if ( RDFTransform.#bRowBased ) { // Now we are Row based...
+                if ( RDFTransform.gbRowBased ) { // Now we are Row based...
                     strOldValSrc = RDFTransform.#strValueSourceRec;
                     if (bExpExists) {
                         strOldExp = RDFTransform.#strExpressionIndexRec;
@@ -320,7 +320,7 @@ class RDFTransformDialog {
 
         const strSample =
             $.i18n('rdft-dialog/sample-turtle', this.iSampleLimit) +
-            ( RDFTransform.#bRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );;
+            ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );;
         this.#elements.rdftSampleTurtleText.html( strSample );
 
         this.#elements.buttonOK
