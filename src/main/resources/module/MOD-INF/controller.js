@@ -73,7 +73,7 @@ function registerClientSide() {
 			"scripts/rdf-transform-ui-property.js",
 			"scripts/rdf-transform-vocab-manager.js",
 			"scripts/rdf-transform-namespaces-manager.js",
-			"scripts/rdf-transform-prefix-adder.js",
+			"scripts/rdf-transform-namespace-adder.js",
 			"scripts/rdf-transform-suggest-term.js",
 			"scripts/rdf-transform-import-template.js",
 			"scripts/rdf-transform-export-template.js",
