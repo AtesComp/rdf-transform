@@ -35,7 +35,7 @@ class RDFTransformNamespacesManager {
 			if (data !== null && "namespaces" in data) {
 				this.namespaces = data.namespaces; // ...new defaults namespaces
 			}
-			else { // (data === null || data.code === "error") 
+			else { // (data === null || data.code === "error")
 				bError = true;
 			}
 			// We might have changed data for errors...
@@ -195,7 +195,7 @@ class RDFTransformNamespacesManager {
 
 	async isPrefixedQName(strQName) {
 		if ( await RDFTransformCommon.validateIRI(strQName) ) {
-			var iIndex = strQName.indexOf(':');
+			var iIndex = strQName.indexOf(':'); // ...first ':'
 			if ( strQName.substring(iIndex, iIndex + 3) != "://" ) {
 				return 1; // ...prefixed
 			}
@@ -209,6 +209,7 @@ class RDFTransformNamespacesManager {
 		if (iIndex === -1) {
 			return null;
 		}
+		// NOTE: Same start and end == "" (baseIRI)
 		return strQName.substring(0, iIndex);
 	}
 
@@ -220,17 +221,19 @@ class RDFTransformNamespacesManager {
 		return strQName.substring(iIndex + 1);
 	}
 
-	getFullIRIFromQName(strPrefixedQName) {
+	getFullIRIFromQName(strPrefixedQName, strBaseIRI) {
 		var objIRIParts = this.#deAssembleQName(strPrefixedQName);
-		if ( !objIRIParts.prefix ) {
-			return null;
+		if ( objIRIParts.prefix === null ) {
+			return objIRIParts.localPart;
 		}
-		for (const strPrefix in RDFTransformNamespacesManager.globalNamespaces) {
-			if (strPrefix === objIRIParts.prefix) {
-				return RDFTransformNamespacesManager.globalNamespaces[strPrefix] + objIRIParts.localPart;
-			}
+		if (objIRIParts.prefix in RDFTransformNamespacesManager.globalNamespaces) {
+			return RDFTransformNamespacesManager.
+					globalNamespaces[objIRIParts.prefix] + objIRIParts.localPart;
 		}
-		return null;
+		if ( objIRIParts.prefix === "" ) {
+			return strBaseIRI + objIRIParts.localPart;
+		}
+		return objIRIParts.prefix + ':' + objIRIParts.localPart;
 	}
 
 	#deAssembleQName(strQName) {

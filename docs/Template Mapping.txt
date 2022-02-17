@@ -80,7 +80,8 @@ OPT   "typeMappings": [
 }
 
 [prefix]
-  when missing indicates <raw IRI>
+  when null indicates <raw IRI>
+  when empty string indicates <baseIRI:localPart>
 
 [typeMappings]
   are "a" [propertyMappings] to an IRI and look like [objectMappings] to IRIs (no valueType)

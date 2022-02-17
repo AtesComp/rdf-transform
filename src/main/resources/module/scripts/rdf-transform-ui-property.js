@@ -43,7 +43,7 @@ class RDFTransformUIProperty {
         if (this.#nodeuiObject === null) {
             // If the property's Object node is missing...
             if ( this.#property.nodeObject === null) {
-                // ...set to the default.  This will skip the Object node Property Mappings processing... 
+                // ...set to the default.  This will skip the Object node Property Mappings processing...
                 this.#property.nodeObject = cloneDeep(RDFTransformUIProperty.#nodeObjectDefault);
             }
 
@@ -74,7 +74,9 @@ class RDFTransformUIProperty {
                 var theProperties = [];
                 for (const thePropertyBase of this.#property.nodeObject.propertyMappings) {
                     // Process the property for display...
-                    var propertyUI = RDFTransformUIProperty.getTransformImport(theDialog, thePropertyBase, this.#nodeuiObject)
+                    var propertyUI =
+                        RDFTransformUIProperty
+                        .getTransformImport(theDialog, thePropertyBase, this.#nodeuiObject);
                     if (propertyUI !== null) {
                         theProperties.push(propertyUI);
                     }
@@ -227,7 +229,7 @@ class RDFTransformUIProperty {
 
     #hideExpandable() {
         $(this.#tdToggle).hide();
-        $(this.#tdDetails).hide();
+        $(this.#tdDetails).show();
     }
 
     #getTypeName(theProperty) {

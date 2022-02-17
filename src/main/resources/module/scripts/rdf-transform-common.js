@@ -12,7 +12,7 @@ class RDFTransformCommon {
 		//	rdf-transform-node-config.html.  The type (getType) is generally evaluated via the "checked"
 		//	'rdf-content-radio' value:
 		// 		$("input[name='rdf-content-radio']:checked").val() === a name of one of the below...
-		// 
+		//
 		static Resource = new this("resource");
 		static Blank    = new this("blank");
 		static Literal  = new this("literal");
@@ -27,7 +27,7 @@ class RDFTransformCommon {
 			return this.#name;
 		}
 
-		getType(strType) {
+		static getType(strType) {
 			var eType = null;
 			if ( strType === RDFTransformCommon.NodeType.Resource.getName() ) {
 				eType = RDFTransformCommon.NodeType.Resource;

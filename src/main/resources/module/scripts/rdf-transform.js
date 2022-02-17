@@ -13,24 +13,36 @@ class RDFTransform {
 
     // NOTE: Even though the expression is currently 'only GREL', we allow for future change
     //      by a setDefaults() modification.
-    static gstrDefaultExpLang = 'grel';                 // ...the default (and only) Expression Language
+    static gstrValueSourceRow = "row_index";            // ...the Value Source for Rows
+    static gstrValueSourceRec = "record_id";            // ...the Value Source for Records
+    static gstrValueSource;                             // ...the Value Source to use: Row or Record
+    static gstrDefaultExpLang = "grel";                 // ...the default (and only) Expression Language
     static gstrDefaultExpCode;                          // ...the default Expression for the current (and only) language, GREL
     static gstrExpressionIndexRow = "row.index";        // ...the Index Expression for Rows
     static gstrExpressionIndexRec = "row.record.index"; // ...the Index Expression for Records
     static gstrExpressionIndex;                         // ...the Index Expression to use: Row or Record
-    static gstrValueSourceRow = "row_index";            // ...the Value Source for Rows
-    static gstrValueSourceRec = "record_id";            // ...the Value Source for Records
-    static gstrValueSource;                             // ...the Value Source to use: Row or Record
     static gstrIndexTitle;                              // ...the column title for the index: "Row" or "Record"
     static gbRowBased = true;                           // ...the type of indexing used: Row (true) or Record (false)
 
-    // Setup default Master Root Node...
+    // Setup default Master Root Node (cloneDeep() as needed)...
     static gnodeMasterRoot = {};
     static {
         this.gnodeMasterRoot.valueSource = {};
+        this.gnodeMasterRoot.valueSource.source = null; // ...to be replaced with row / record index
         this.gnodeMasterRoot.expression = {};
-        this.gnodeMasterRoot.expression.language = "grel";
+        this.gnodeMasterRoot.expression.language = RDFTransform.gstrDefaultExpLang;
+        this.gnodeMasterRoot.expression.code = null; // ...to be replaced with default language expression
         this.gnodeMasterRoot.propertyMappings = [];
+    };
+
+    // Setup default Master Object Node (cloneDeep() as needed)...
+    static gnodeMasterObject = {};
+    static {
+        this.gnodeMasterObject.valueType = {};
+        this.gnodeMasterObject.valueType.type = "literal";
+        this.gnodeMasterObject.valueSource = {};
+        this.gnodeMasterObject.valueSource.source = "column";
+        this.gnodeMasterObject.valueSource.columnName = null; // ...to be replaced with column.name
     };
 
     static setDefaults() {
@@ -38,9 +50,12 @@ class RDFTransform {
         //       OpenRefine's "theProject".  The classes are loaded when the extension is
         //       loaded and before a project is selected.  Therefore, "theProject" is
         //       incomplete until project selection.
+        //      Then, these values are "locked in" for each RDFTransform session (when the
+        //       dialog is displayed).  They may change between session, such as the index
+        //       method changing from row to record or record to row.
 
         // The Default Expression setting is reset each time the dialog is opened since we
-        // don't know if this is the first time or project change...
+        // don't know if this is the first time, project changed, or system values changed...
         RDFTransform.gstrDefaultExpCode =
             theProject
             .scripting[RDFTransform.gstrDefaultExpLang]
@@ -50,7 +65,7 @@ class RDFTransform {
         // opened in case it changed in the OpenRefine UI...
         RDFTransform.gbRowBased = ( theProject.rowModel.mode === "row-based" );
 
-        if (RDFTransform.gbRowBased) {
+        if (RDFTransform.gbRowBased) { // ...Row Based...
             RDFTransform.gstrExpressionIndex = RDFTransform.gstrExpressionIndexRow;
             RDFTransform.gstrValueSource = RDFTransform.gstrValueSourceRow;
             RDFTransform.gstrIndexTitle = $.i18n("rdft-dialog/title-row");
@@ -64,12 +79,14 @@ class RDFTransform {
         // Setup default Master Root Node...
         // ...assume Cell As Resource with Index Expression and No Properties...
         // Root Nodes:
+        //  Defaults to "iri" but can be "bnode" and "value_bnode"
         //
         //  Default Value Type = IMPLIED "valueType": { "type": "iri" }
+        //      as most Root Nodes are expected to be IRIs
         //RDFTransform.gnodeMasterRoot.valueType.type = "iri";
 
         //  Default Value Source = "valueSource" : { "source" : ("row_index" || "record_id") }
-        //      IMPIES bIsIndex = true
+        //      IMPLIES bIsIndex = true
         RDFTransform.gnodeMasterRoot.valueSource.source = RDFTransform.gstrValueSource;
 
         //  Default Expression = "expression" : { "language": "grel", "code": ("row.index" || "row.record.index") }
@@ -147,7 +164,7 @@ class RDFTransformDialog {
     async #init(theTransform) {
         //
         // theTransform has the base structure:
-        //   { "baseIRI" : "", "namespaces" : [], "subjectMappings" : [] };
+        //   { "baseIRI" : "", "namespaces" : {}, "subjectMappings" : [] };
         //
         var localTransform = {};
         // Is the transform valid?  Yes, then use it...
@@ -175,7 +192,8 @@ class RDFTransformDialog {
         // --------------------------------------------------------------------------------
 
         // Does the transform have a Subject Mappings array?  No, then set an array...
-        if ( ! ( "subjectMappings" in this.#theTransform && this.#theTransform.subjectMappings ) ) {
+        if ( ! (    "subjectMappings" in this.#theTransform &&
+                    Array.isArray(this.#theTransform.subjectMappings) ) ) {
             this.#theTransform.subjectMappings = [];
         }
         // Does the transform have any root nodes?  No, then set the initial root node...
@@ -208,7 +226,7 @@ class RDFTransformDialog {
                         strOldExp = RDFTransform.gstrExpressionIndexRow;
                     }
                 }
-                var bValSrcHasOld = ( nodeSubject.valueSource.source == strOldValSrc );
+                var bValSrcHasOld = ( nodeSubject.valueSource.source === strOldValSrc );
                 var bExpHasOld = false;
                 if (bExpExists) {
                     bExpHasOld = ( nodeSubject.expression.code.indexOf( strOldExp ) !== -1 );
@@ -252,24 +270,36 @@ class RDFTransformDialog {
         // Add default properties to default root node...
         var properties = [];
         // Construct properties as "column name" IRIs connected to "column name" literal objects
+        var iColumnCount = 0;
         for (const column of theProject.columnModel.columns) {
             if (column) {
-                // Default object of the property (new object each property)...
-                var nodeObject = {};
-                nodeObject.valueType = {};
-                nodeObject.valueType.type = "literal";
-                nodeObject.valueSource = {};
-                nodeObject.valueSource.source = "column";
+                iColumnCount++;
+                // Default Object of the Property (new Object for each Property)...
+                var nodeObject = cloneDeep(RDFTransform.gnodeMasterObject);
                 nodeObject.valueSource.columnName = column.name;
 
                 // Default property...
+                var strPrefix = ""; // ...use BaseIRI prefix
                 var strIRI = await RDFTransformCommon.toIRIString(column.name);
-                if (strIRI !== null && strIRI.length > 0 && strIRI.indexOf("://") === -1 && strIRI[0] !== ":") {
-                    // Use baseIRI...
-                    strIRI = ":" + strIRI;
+                if (strIRI === null || strIRI.length === 0) {
+                    // Use baseIRI prefix and set Local Part to default column name...
+                    strIRI = "column_" + iColumnCount.toString();
+                }
+                var iProtoIndex = strIRI.indexOf("://");
+                if (iProtoIndex === -1 && strIRI[0] === ":") {
+                    // Use baseIRI prefix and set Local Part...
+                    strIRI = strIRI.substring(1);
+                }
+                if (iProtoIndex === 0) { // ...should never occur
+                    // Use baseIRI prefix and set Local Part...
+                    strIRI = strIRI.substring(3);
+                }
+                else { // ...a good protocol exists, so it's a Full IRI
+                    // Use no prefix and Full IRI...
+                    strPrefix = null;
                 }
                 var theProperty = {};
-                theProperty.prefix = null;
+                theProperty.prefix = strPrefix;
                 theProperty.localPart = strIRI;
                 theProperty.nodeObject = nodeObject;
                 properties.push(theProperty);

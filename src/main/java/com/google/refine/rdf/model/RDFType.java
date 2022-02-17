@@ -31,7 +31,7 @@ public class RDFType {
      *      transformation.  They are transformed into RDF Resource and Literal nodes to construct
      *      (Subject, Property, Object) tuples for an RDF graph.  This method constructs the Types
      *      for type statements (Subject, a, TypeObject).
-     * 
+     *
      */
     static public void reconstructTypes(
                             Node.NodeReconstructor theNodeReconstructor,
@@ -111,15 +111,18 @@ public class RDFType {
         return this.strLocalPart;
 	}
 
-    public String getFullIRI(VocabularyList theNamespaces) {
-        if (this.strPrefix != null) {
-            Vocabulary vocab = theNamespaces.findByPrefix(this.strPrefix);
-            if (vocab != null) {
-                return vocab.getNamespace() + this.strLocalPart;
-            }
-            return this.strPrefix + ":" + this.strLocalPart;
+    public String getFullIRI(VocabularyList theNamespaces, String strBaseIRI) {
+        if (this.strPrefix == null) {
+            return this.strLocalPart;
         }
-        return this.strLocalPart;
+        Vocabulary vocab = theNamespaces.findByPrefix(this.strPrefix);
+        if (vocab != null) {
+            return vocab.getNamespace() + this.strLocalPart;
+        }
+        if ( this.strPrefix.isEmpty() ) {
+            return strBaseIRI + this.strLocalPart;
+        }
+        return this.strPrefix + ":" + this.strLocalPart;
 	}
 
     public void write(JsonGenerator writer)

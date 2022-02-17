@@ -131,7 +131,7 @@ abstract public class ResourceNode extends Node {
      *  Method createStatementsWorker() for Resource Node types
      *
      *  Return: void
-     * 
+     *
      *  Stores the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
@@ -231,7 +231,7 @@ abstract public class ResourceNode extends Node {
 
     /*
      *  Method createStatements() for Resource Node types
-     * 
+     *
      *    Given a set of source resources, create the (source, rdf:type, object) triple statements
      *    for each of the sources.
      */
@@ -248,7 +248,7 @@ abstract public class ResourceNode extends Node {
 
     /*
      *  Method createTypeStatements() for Resource Node types
-     * 
+     *
      *    Given a set of source resources, create the (source, rdf:type, object) triple statements
      *    for each of the sources.
      */
@@ -271,7 +271,6 @@ abstract public class ResourceNode extends Node {
 
         String strNamespace;
         String strLocalName;
-        boolean bNamespace;
         String strFullType;
         IRI iriType;
 
@@ -284,12 +283,10 @@ abstract public class ResourceNode extends Node {
             strType = typeItem.getLocalPart(); // ...assume FULL IRI
             strLocalName = null;
             strNamespace = null;
-            bNamespace = false;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strType;
+                strType = strPrefix + ":" + strLocalName; // ...CIRIE (or FULL if missing namespace)
                 strNamespace = this.theConnection.getNamespace(strPrefix);
-                strType = strPrefix + ":" + strLocalName; // ...CIRIE
-                bNamespace = true;
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: " + strType);
             if ( ! (strType == null || strType.isEmpty() ) ) {
@@ -297,10 +294,10 @@ abstract public class ResourceNode extends Node {
                     strFullType = Util.resolveIRI(this.baseIRI, strType);
                     if (strFullType != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: " + strFullType);
-                        if (bNamespace) {
+                        if (strNamespace != null) {
                             iriType = this.theFactory.createIRI(strNamespace, strLocalName);
                         }
-                        else {
+                        else { // ...on no prefix or missing namespace, treat as Full...
                             iriType = this.theFactory.createIRI(strFullType);
                         }
                         listTypesForStmts.add(iriType);
@@ -328,7 +325,7 @@ abstract public class ResourceNode extends Node {
 
     /*
      *  Method createPropertyStatements() for Resource Node types on OpenRefine Rows
-     * 
+     *
      *    Given a set of source resources, create the (source, property, object) triple statements
      *    for each of the sources.
      */
@@ -386,12 +383,10 @@ abstract public class ResourceNode extends Node {
             strProperty = propItem.getPathProperty(); // ...assume FULL IRI
             strLocalName = null;
             strNamespace = null;
-            bNamespace = false;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
+                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE (or FULL if missing namespace)
                 strNamespace = this.theConnection.getNamespace(strPrefix);
-                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
-                bNamespace = true;
             }
 
             //
@@ -412,10 +407,10 @@ abstract public class ResourceNode extends Node {
                     strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
                     if (strFullProperty != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: " + strFullProperty);
-                        if (bNamespace) {
+                        if (strNamespace != null) {
                             iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
                         }
-                        else {
+                        else { // ...on no prefix or missing namespace, treat as Full...
                             iriProperty = this.theFactory.createIRI(strProperty);
                         }
                         listPropsForStmts.add( new PropertyObjectList(iriProperty, listObjects) );

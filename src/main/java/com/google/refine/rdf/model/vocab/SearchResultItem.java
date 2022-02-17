@@ -54,7 +54,9 @@ public class SearchResultItem {
 		theWriter.writeStringField("iri", this.strIRI);
 		// The "cirie" is the Condensed IRI Expression (CIRIE) using
 		// the prefix and IRI's local part...
-		theWriter.writeStringField("cirie", this.strPrefix + ":" + this.strLocalPart);
+		if (this.strPrefix != null) {
+			theWriter.writeStringField("cirie", this.strPrefix + ":" + this.strLocalPart);
+		}
 		// The "description" contains everything:
 		//		the full IRI,
 		//		the Label,
@@ -67,9 +69,12 @@ public class SearchResultItem {
 			this.strIRI + "<br/>" +
 			"<em>Label</em>: " + this.strLabel + "<br/>" +
 			"<em>Description</em>: " + this.strDescription + "<br/>" +
-			"<em>Prefix</em>: " + this.strPrefix + "<br/>" +
-			"<em>Namespace</em>: " + this.strNamespace + "<br/>" +
-			"<em>LocalPart</em>: " + this.strLocalPart
+			((this.strPrefix != null) ?
+				("<em>Prefix</em>: " + this.strPrefix + "<br/>") : "") +
+			((this.strNamespace != null) ?
+				("<em>Namespace</em>: " + this.strNamespace + "<br/>") : "") +
+			((this.strLocalPart != null) ?
+				("<em>LocalPart</em>: " + this.strLocalPart) : "")
 		);
 		theWriter.writeEndObject();
 	}

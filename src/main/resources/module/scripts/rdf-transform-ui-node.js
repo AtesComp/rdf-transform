@@ -33,6 +33,23 @@ class RDFTransformUINode {
     #strLangInputID;
     #strTypeInputID;
 
+    // Setup default Master Object Node (cloneDeep() as needed)...
+    static gnodeMasterObject = {};
+    static {
+        this.gnodeMasterObject.valueType = {};
+        this.gnodeMasterObject.valueType.type = "literal";
+        this.gnodeMasterObject.valueSource = {};
+        this.gnodeMasterObject.valueSource.source = null; // ...to be replaced with row / record index
+    };
+
+    // Setup default Master Property Edge (cloneDeep() as needed)...
+    static gpropMasterProperty = {};
+    static {
+        this.gpropMasterProperty.prefix = null;
+        this.gpropMasterProperty.localPart = null;
+        this.gpropMasterProperty.nodeObject = null; // ...to be replaced with Object Node
+    }
+
     constructor(theDialog, theNode, bIsRoot, theProperties, theOptions) {
         this.#dialog = theDialog;
         this.#node = theNode; // ...a Transform Node
@@ -95,7 +112,7 @@ class RDFTransformUINode {
             .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
             .click(
                 (evt) => {
-                    this.#options.expanded = !this.#options.expanded;
+                    this.#options.expanded = ! this.#options.expanded;
                     $(evt.currentTarget)
                     .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png");
                     this.show();
@@ -262,7 +279,7 @@ class RDFTransformUINode {
                 }
 
                 var strSpanText = "Configure?"; // TODO: Make $.i18n('rdft-dialog/configure')
-                if (this.#node.valueSource.source = "column") {
+                if (this.#node.valueSource.source === "column") {
                     strSpanText = this.#node.valueSource.columnName + " " + strNodeLabel;
                 }
                 else {
@@ -341,15 +358,10 @@ class RDFTransformUINode {
         .appendTo(divFooter)
         .click(
             () => {
-                var nodeObject = {};
-                nodeObject.valueType = {};
-                nodeObject.valueType.type = "literal";
-                nodeObject.valueSource = {};
+                var nodeObject = cloneDeep(gnodeMasterObject);
                 nodeObject.valueSource.source = RDFTransform.gstrValueSource;
 
-                var theProperty = {}; // ...defaults...
-                theProperty.prefix = null;
-                theProperty.localPart = null;
+                var theProperty = cloneDeep(gpropMasterProperty); // ...defaults...
                 theProperty.nodeObject = nodeObject;
 
                 // Set up the Property UI...
@@ -388,7 +400,7 @@ class RDFTransformUINode {
 
     #hideExpandable() {
         $(this.#tdToggle).hide();
-        $(this.#tdDetails).hide();
+        $(this.#tdDetails).show();
     }
 
     #buildIndexChoice(tableColumns, isChecked) {
@@ -1073,7 +1085,7 @@ class RDFTransformUINode {
             // For Resource or Literal (NOT Blank) Nodes,
             //  Get the Expression...
             //      (Blank Nodes don't use Expressions)
-            if (eType !== RDFTransformCommon.NodeType.Blank) {
+            if (this.#eType !== RDFTransformCommon.NodeType.Blank) {
                 // Set expression...
                 var strExpCode = $('#rdf-cell-expr').text();
                 if ( strExpCode === null || strExpCode.length === 0 ) {
@@ -1237,7 +1249,7 @@ class RDFTransformUINode {
         var theNode = {};
 
         //
-        // Namespace...
+        // Prefix...
         //
         if ("prefix" in this.#node) {
             theNode.prefix = this.#node.prefix;
@@ -1299,7 +1311,7 @@ class RDFTransformUINode {
         var node = {};
 
         //
-        // Namespace...
+        // Prefix...
         //
         if ("prefix" in theNode) {
             node.prefix = theNode.prefix;

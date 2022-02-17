@@ -112,6 +112,8 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
 	protected void writeNode(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException {
 		// Prefix
+        //      null means Raw (Full) IRI
+        //      "" means baseIRI + Local Part
         if (this.strPrefix != null) {
             writer.writeStringField(Util.gstrPrefix, this.strPrefix);
         }
