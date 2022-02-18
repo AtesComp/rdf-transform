@@ -14,7 +14,7 @@ class RDFTransformNamespaceAdder {
 	constructor(namespacesManager) {
 		this.#namespacesManager = namespacesManager;
 
-		this.#dialog = $( DOM.loadHTML("rdf-transform", "scripts/dialogs/rdf-transform-prefix-add.html") );
+		this.#dialog = $( DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-prefix-add.html") );
 		this.#elements = DOM.bind(this.#dialog);
 		this.#level = DialogSystem.showDialog(this.#dialog);
 
@@ -94,16 +94,9 @@ class RDFTransformNamespaceAdder {
 			//
 			// All Good: Process the Prefix Info for addition on the server...
 			//
+			var postCmd = null;
+			var postData = {};
 			var dismissBusy = null;
-			var postCmd = "command/rdf-transform/add-namespace";
-			// Prepare the data values...
-			var postData = {
-				"project"    : theProject.id,
-				"prefix"     : strPrefix,
-				"namespace"  : strNamespace,
-				"fetch"      : strFetchOption,
-				"fetch-url"  : strNamespace
-			};
 
 			if (strFetchOption === 'file') {
 				// Prepare the form values by id attributes...
@@ -112,14 +105,23 @@ class RDFTransformNamespaceAdder {
 				$('#vocab-namespace').val(strNamespace);
 
 				postCmd = "command/rdf-transform/add-namespace-from-file";
-				postData = {};
 				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace);
 			}
-			else if (strFetchOption === 'web') {
-				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
-			}
-			else { // if (fetchOption === 'prefix') {
-				dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
+			else {
+				postCmd = "command/rdf-transform/add-namespace";
+				// Prepare the data values...
+				postData.project   = theProject.id;
+				postData.prefix    = strPrefix;
+				postData.namespace = strNamespace;
+				postData.fetch     = strFetchOption;
+				postData.fetchURL  = strNamespace;
+	
+				if (strFetchOption === 'web') {
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
+				}
+				else { // if (fetchOption === 'prefix') {
+					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
+				}
 			}
 
 			Refine.postCSRF(

@@ -44,7 +44,7 @@ class RDFTransformUIProperty {
             // If the property's Object node is missing...
             if ( this.#property.nodeObject === null) {
                 // ...set to the default.  This will skip the Object node Property Mappings processing...
-                this.#property.nodeObject = cloneDeep(RDFTransformUIProperty.#nodeObjectDefault);
+                this.#property.nodeObject = JSON.parse(JSON.stringify(RDFTransformUIProperty.#nodeObjectDefault));
             }
 
             var options = {};
@@ -264,6 +264,7 @@ class RDFTransformUIProperty {
     }
 
     getTransformExport() {
+        /** @type {{prefix?: string, valueSource?: {source?: string, constant?: string}, objectMappings?: [RDFTransformUINode?]}} */
         var theProperty = null;
         if ("localPart" in this.#property && this.#property.localPart !== null)
         {

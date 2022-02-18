@@ -56,6 +56,7 @@ class RDFTransformResourceDialog {
                 //    "iri"   : data,
                 //    "cirie" : data
                 //}
+                /** @type {{prefix?: string, localPart?: string}} */
                 var obj = null;
                 var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(data);
                 if ( iPrefixedIRI == 1 ) { // ...Prefixed IRI
@@ -104,6 +105,7 @@ class RDFTransformResourceDialog {
                         // ...yes, add resource...
                         // IRI   = Namespace of Prefix + strLocalPart
                         // CIRIE = strResPrefix + ":" + strLocalPart
+                        /** @type {{prefix?: string, localPart?: string}} */
                         var obj = {};
                         obj.prefix = strPrefix;   // Given Prefix
                         obj.localPart = strLocalPart; // Path portion of IRI
@@ -122,6 +124,7 @@ class RDFTransformResourceDialog {
                                 // NOTE: Only the prefix (without the related IRI) is returned.  We don't need
                                 //      the IRI...addNamespace() added it.  We will get the IRI from the prefix
                                 //      manager later to ensure the IRI is present.
+                                /** @type {{prefix?: string, localPart?: string}} */
                                 var obj = null;
                                 // Do the original and resulting prefix match?
                                 // NOTE: It can change via edits in RDFTransformNamespaceAdder.show()
@@ -164,6 +167,7 @@ class RDFTransformResourceDialog {
 
                     //new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
                     // ...take it as is...
+                    /** @type {{prefix?: string, localPart?: string}} */
                     var obj = {};
                     obj.prefix = null;  // No Prefix
                     obj.localPart = data; // Full IRI

@@ -51,7 +51,7 @@ class RDFTransform {
         //       loaded and before a project is selected.  Therefore, "theProject" is
         //       incomplete until project selection.
         //      Then, these values are "locked in" for each RDFTransform session (when the
-        //       dialog is displayed).  They may change between session, such as the index
+        //       dialog is displayed).  They may change between sessions, such as the index
         //       method changing from row to record or record to row.
 
         // The Default Expression setting is reset each time the dialog is opened since we
@@ -172,7 +172,7 @@ class RDFTransformDialog {
             localTransform = theTransform;
         }
         // Set the transform for modification...
-        this.#theTransform = cloneDeep(localTransform); // ...clone current transform
+        this.#theTransform = JSON.parse(JSON.stringify(localTransform)); // ...clone current transform
 
         // ...For NEW Transforms, set up the baseIRI, namespaces, and subjectMappings...
 
@@ -275,7 +275,7 @@ class RDFTransformDialog {
             if (column) {
                 iColumnCount++;
                 // Default Object of the Property (new Object for each Property)...
-                var nodeObject = cloneDeep(RDFTransform.gnodeMasterObject);
+                var nodeObject = JSON.parse(JSON.stringify(RDFTransform.gnodeMasterObject));
                 nodeObject.valueSource.columnName = column.name;
 
                 // Default property...
@@ -311,7 +311,7 @@ class RDFTransformDialog {
 
     #createRootNode() {
         // Retrieve a copy of the Master Root Node...
-        return cloneDeep(RDFTransform.gnodeMasterRoot);
+        return JSON.parse(JSON.stringify(RDFTransform.gnodeMasterRoot));
     }
 
     #createNewNodeIU(node, properties) {
@@ -328,7 +328,7 @@ class RDFTransformDialog {
     }
 
     #buildBody() {
-        this.#dialog = $(DOM.loadHTML('rdf-transform', 'scripts/dialogs/rdf-transform.html'));
+        this.#dialog = $(DOM.loadHTML(RDFTransform.KEY, 'scripts/dialogs/rdf-transform.html'));
         this.#dialog.resizable();
 
         this.#elements = DOM.bind(this.#dialog);

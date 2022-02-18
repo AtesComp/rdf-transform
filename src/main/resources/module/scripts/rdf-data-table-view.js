@@ -453,6 +453,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		var container = this._elmts.expressionPreviewPreviewContainer.empty();
 
 		// Create data table...
+		/** @type {HTMLTableElement} */
+		// @ts-ignore
 		var table = $('<table width="100%" height="100%"></table>').appendTo(container)[0];
 
 		// Create table column headings...
@@ -470,7 +472,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		// Process rows (data.results) for data table...
 		//
 		if (bResults) {
-			var tr = null;
+			/** @type {HTMLTableRowElement} */
+			tr = null;
 			var tdElem = null;
 			// Loop on "data.results" as that is the primary reason to process...
 			//   NOTE: Since "bResults", then "data.results" have a good index length.
@@ -514,8 +517,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
 				// Populate Absolute IRI of results, if applicable...
 				if (bAbsolutes) {
-					var tdElem = $( tr.insertCell(3) ).addClass("expression-preview-value");
-					var tdValue = data.absolutes[iIndex];
+					tdElem = $( tr.insertCell(3) ).addClass("expression-preview-value");
+					tdValue = data.absolutes[iIndex];
 					//if (!tdValue) {
 					//	tdElem.css( {"font-style": "italic"} );
 					//	tdValue = "Unresolved IRI";

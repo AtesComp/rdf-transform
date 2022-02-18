@@ -5,9 +5,12 @@
  *    the following $.i18n() language callouts process correctly.  An asynchronous
  *    load does not present the language elements for many of the display items.
  */
+/** @type {string} */
 var dict = "";
+/** @type {string} */
 var lang =
-        navigator.language.split("-")[0] || 
+        navigator.language.split("-")[0] ||
+        // @ts-ignore  Old Style
         navigator.userLanguage.split("-")[0];
 $.ajax(
     {   url: "command/core/load-language",
@@ -21,9 +24,7 @@ $.ajax(
     }
 )
 .always(
-    () => {
-        $.i18n().load(dict, lang);
-    }
+    () => { $.i18n().load(dict, lang); }
 );
 
 // ...end Language Management

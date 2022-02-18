@@ -7,6 +7,7 @@ class RDFImportTemplate
         // NOTE: No Server-Side processing required.  The current RDF Template
         //      always resides on the Client-Side.  Prior processing should
         //      save the prior template since we are importing over the current one.
+        /** @type {string} */
         var strTemplate = null;
         var waitOnOpenFile =
             async () => {
@@ -17,6 +18,7 @@ class RDFImportTemplate
                 );
             };
         try {
+            // @ts-ignore
             strTemplate = waitOnOpenFile();
             return JSON.parse( strTemplate );
         }

@@ -30,7 +30,7 @@ public class NamespaceAddCommand extends RDFTransformCommand {
         String strFetchOption  = request.getParameter("fetch").strip();
 
 		if ( strFetchOption.equals("web") ) {
-			String strFetchURL = request.getParameter("fetch-url");
+			String strFetchURL = request.getParameter("fetchURL");
 			if (strFetchURL == null || strFetchOption.isEmpty()) {
 				strFetchURL = strNamespace;
 			}

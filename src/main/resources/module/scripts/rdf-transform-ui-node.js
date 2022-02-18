@@ -198,6 +198,8 @@ class RDFTransformUINode {
         var elements = DOM.bind(html);
         this.#theNodeLabel = elements.rdftNodeLabel;
         if (bExpandable) {
+            /** @type {HTMLTableElement} */
+            // @ts-ignore
             var typesTable = $('<table width="100%"></table>')[0];
             if ("typeMappings" in this.#node && this.#node.typeMappings.length > 0) {
                 // Create each type display with removal icon...
@@ -358,10 +360,10 @@ class RDFTransformUINode {
         .appendTo(divFooter)
         .click(
             () => {
-                var nodeObject = cloneDeep(gnodeMasterObject);
+                var nodeObject = JSON.parse(JSON.stringify(RDFTransformUINode.gnodeMasterObject));
                 nodeObject.valueSource.source = RDFTransform.gstrValueSource;
 
-                var theProperty = cloneDeep(gpropMasterProperty); // ...defaults...
+                var theProperty = JSON.parse(JSON.stringify(RDFTransformUINode.gpropMasterProperty)); // ...defaults...
                 theProperty.nodeObject = nodeObject;
 
                 // Set up the Property UI...
@@ -750,6 +752,7 @@ class RDFTransformUINode {
                 iIndexColumn
             );
         const bIsIndex = (iColumnIndex === iIndexColumn);
+        /** @type {{cellIndex?: number, columnName?: string}} */
         var objColumn = null; // ...just get the rows
         if ( ! bIsIndex ) {
             objColumn = {}; // ...get the rows and the related column values
@@ -800,7 +803,7 @@ class RDFTransformUINode {
             $('<div class="grid-layout layout-full"></div>')
             .addClass("dialog-body rdf-transform");
 
-        var html = $(DOM.loadHTML('rdf-transform', 'scripts/dialogs/rdf-transform-node-config.html'));
+        var html = $(DOM.loadHTML(RDFTransform.KEY, 'scripts/dialogs/rdf-transform-node-config.html'));
 
         var elements = DOM.bind(html);
         elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
@@ -1034,6 +1037,8 @@ class RDFTransformUINode {
                 // Check for custom datatype literal...
                 if ( $('#rdf-content-type-radio').prop('checked') ) {
                     // Check for custom dataType IRI value...
+                    /** @type {string} */
+                    // @ts-ignore
                     var strConstVal = $('#rdf-content-type-input').val();
                     if ( strConstVal !== null && strConstVal.length === 0 ) {
                         alert( $.i18n('rdft-dialog/alert-custom') );
@@ -1073,6 +1078,8 @@ class RDFTransformUINode {
         // All Cell-based Nodes (NOT Constant)...
         if (this.#bIsVarNode) {
             // Prepare for Row/Record or Column...
+            /** @type {string} */
+            // @ts-ignore
             const strColumnName = $("input[name='rdf-column-radio']:checked").val();
             if (strColumnName.length === 0) { // ...Row or Record Index...
                 theNode.valueSource.source = RDFTransform.gstrValueSource;
@@ -1105,6 +1112,8 @@ class RDFTransformUINode {
         // All Constant-based Nodes...
         else {
             // Set value...
+            /** @type {string} */
+            // @ts-ignore
             var strConstVal = $('#rdf-constant-value-input').val();
             if ( strConstVal.length === 0 ) {
                 alert( $.i18n('rdft-dialog/alert-enter-const') );
@@ -1138,6 +1147,11 @@ class RDFTransformUINode {
         theDialog.show();
     }
 
+    /**
+     * @param {Object} theCIRIE
+     * @param {string} theCIRIE.prefix
+     * @param {string} theCIRIE.localPart
+     */
     #addNodeRDFType(theCIRIE) {
         // A Condensed IRI Expression (CIRIE) is:
         //      a prefix for a namespace +
@@ -1156,7 +1170,7 @@ class RDFTransformUINode {
             this.#node.typeMappings = [];
         }
 
-        theType = {};
+        var theType = {};
         if ( "prefix" in theCIRIE ) {
             theType.prefix = theCIRIE.prefix;
         }

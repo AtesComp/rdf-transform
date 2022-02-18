@@ -9,7 +9,7 @@ class RDFTransformVocabManager {
 	}
 
 	show() {
-		var dialog = $(DOM.loadHTML("rdf-transform", "scripts/dialogs/rdf-transform-vocab-manager.html"));
+		var dialog = $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"));
 		this.#level = DialogSystem.showDialog(dialog);
 		this.#elements = DOM.bind(dialog);
 
@@ -113,11 +113,15 @@ class RDFTransformVocabManager {
 		var bEven = false;
 		for (const strPrefix in this.#namespacesManager.namespaces) {
 			const strNamespace = this.#namespacesManager.namespaces[strPrefix];
+			/** @type {HTMLElement} */
+			// @ts-ignore
 			var htmlRemoveNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/delete') )
 				.attr('href', '#')
 				.click( this.#getRemoveHandler(strPrefix) );
+			/** @type {HTMLElement} */
+			// @ts-ignore
 			var htmlRefreshNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/refresh') )

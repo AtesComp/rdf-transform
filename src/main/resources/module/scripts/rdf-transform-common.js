@@ -501,6 +501,7 @@ class RDFTransformCommon {
 
         // Get the File Handler...
         const fileHandle =
+			// @ts-ignore
             await window.showSaveFilePicker(
                 {	"excludeAcceptAllOption" : true,
 					"suggestedName" : strFilename,
@@ -533,6 +534,7 @@ class RDFTransformCommon {
 	 static async openFile(strExt, strType, strDesc) {
         // Get the File Handler...
         const [ fileHandle ] =
+			// @ts-ignore
             await window.showOpenFilePicker(
                 {	"excludeAcceptAllOption" : true,
 					"multiple" : false,

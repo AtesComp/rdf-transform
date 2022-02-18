@@ -42,7 +42,7 @@ class RDFTransformNamespacesManager {
 			if (bError) {
 				alert("ERROR: Could not retrieve default namespaces!");
 			}
-			this.show(this.namespaces);
+			this.show();
 		}
 		else {
 			this.#save();
