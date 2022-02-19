@@ -110,7 +110,7 @@ class RDFTransformUINode {
         var imgExpand =
             $('<img />')
             .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
-            .click(
+            .on("click",
                 (evt) => {
                     this.#options.expanded = ! this.#options.expanded;
                     $(evt.currentTarget)
@@ -216,7 +216,7 @@ class RDFTransformUINode {
                         .attr("title", $.i18n('rdft-dialog/remove-type'))
                         .attr("src", "images/close.png")
                         .css("cursor", "pointer")
-                        .click(
+                        .on("click",
                             () => {
                                 this.#removeNodeRDFType(iLocalIndex);
                             }
@@ -231,7 +231,7 @@ class RDFTransformUINode {
                                 this.#getTypeName( this.#node.typeMappings[iIndex] )
                             )
                         )
-                        .click(
+                        .on("click",
                             (evt) => {
                                 evt.preventDefault();
                                 this.#showNodeRDFType( $(evt.target), iLocalIndex );
@@ -245,7 +245,7 @@ class RDFTransformUINode {
                 elements.rdftTypesTR.remove();
             }
             elements.rdftAddType
-            .click(
+            .on("click",
                 (evt) => {
                     evt.preventDefault();
                     this.#addRDFType(evt.currentTarget);
@@ -257,7 +257,7 @@ class RDFTransformUINode {
             $('<a href="javascript:{}"></a>')
             .addClass("rdf-transform-node-tag")
             .appendTo(this.#theNodeLabel)
-            .click(
+            .on("click",
                 () => {
                     this.showNodeConfigDialog();
                 }
@@ -358,7 +358,7 @@ class RDFTransformUINode {
 
         $('<a href="javascript:{}"></a>').addClass("action").text( $.i18n('rdft-dialog/add-prop') )
         .appendTo(divFooter)
-        .click(
+        .on("click",
             () => {
                 var nodeObject = JSON.parse(JSON.stringify(RDFTransformUINode.gnodeMasterObject));
                 nodeObject.valueSource.source = RDFTransform.gstrValueSource;
@@ -420,7 +420,7 @@ class RDFTransformUINode {
             .attr("name", "rdf-column-radio")
             .attr("id", strID)
             .prop("checked", isChecked)
-            .click(
+            .on("click",
                 () => {
                     $("#rdf-constant-value-input").prop(this.#disabledTrue);
                 }
@@ -455,7 +455,7 @@ class RDFTransformUINode {
             .attr("type", "radio").val(column.name) // ...== a Column Node
             .attr("name", "rdf-column-radio")
             .attr("id", strID)
-            .click(
+            .on("click",
                 () => {
                     $("#rdf-constant-value-input").prop(this.#disabledTrue);
                 }
@@ -494,7 +494,7 @@ class RDFTransformUINode {
             .attr("name", "rdf-column-radio")
             .attr("id", strID)
             .prop("checked", isChecked)
-            .click(
+            .on("click",
                 () => {
                     $("#rdf-constant-value-input").prop(this.#disabledFalse);
                 }
@@ -608,7 +608,7 @@ class RDFTransformUINode {
         .add(elements.rdf_content_date_time_radio)
         .add(elements.rdf_content_boolean_radio)
         .add(elements.rdf_content_blank_radio)
-        .click(
+        .on("click",
             () => {
                 $(this.#strLangInputID).add(this.#strTypeInputID).prop(this.#disabledTrue);
             }
@@ -616,7 +616,7 @@ class RDFTransformUINode {
 
         // Content radio Language...
         elements.rdf_content_lang_radio
-        .click(
+        .on("click",
             () => {
                 elements.rdf_content_lang_input.prop(this.#disabledFalse);
                 elements.rdf_content_type_input.prop(this.#disabledTrue);
@@ -625,7 +625,7 @@ class RDFTransformUINode {
 
         // Content radio Custom...
         elements.rdf_content_type_radio
-        .click(
+        .on("click",
             () => {
                 elements.rdf_content_lang_input.prop(this.#disabledTrue);
                 elements.rdf_content_type_input.prop(this.#disabledFalse);
@@ -634,7 +634,7 @@ class RDFTransformUINode {
 
         // Edit & Preview...
         elements.expEditPreview
-        .click(
+        .on("click",
             (evt) => {
                 evt.preventDefault();
 
@@ -879,7 +879,7 @@ class RDFTransformUINode {
             $('<button></button>')
             .addClass('button')
             .html( $.i18n('rdft-buttons/ok') )
-            .click(
+            .on("click",
                 () => {
                     var node = this.#getResultJSON();
                     if (node !== null) {
@@ -903,7 +903,7 @@ class RDFTransformUINode {
             $('<button></button>')
             .addClass('button')
             .text( $.i18n('rdft-buttons/cancel') )
-            .click(
+            .on("click",
                 () => {
                     DialogSystem.dismissUntil(this.#level - 1);
                 }
@@ -1051,7 +1051,7 @@ class RDFTransformUINode {
                 // Otherwise, popular XSD datatype literal...
                 else {
                     // TODO: Check for namespace "xsd" exists...
-                    theNode.valueType.datatype.namespace = "xsd"; // http://www.w3.org/2001/XMLSchema#
+                    theNode.valueType.datatype.prefix = "xsd"; // http://www.w3.org/2001/XMLSchema#
                     if ( $('#rdf-content-int-radio').prop('checked') ) {
                         theNode.valueType.datatype.valueSource.constant = 'int';
                     }
@@ -1212,7 +1212,7 @@ class RDFTransformUINode {
         var strText = "Full: " + strLocalPart; // ...default: display just the IRI (Full IRI)
         // If the prefix is present, display both...
         if (strPrefix) {
-            strText = "CIRIE: " + strPrefix + ':' + strLocalPart;
+            strText += "\nCIRIE: " + strPrefix + ":" + strLocalPart;
         }
 
         var elements = DOM.bind(menu);
@@ -1238,23 +1238,22 @@ class RDFTransformUINode {
             }
         );
         elements.rdftTypeText.trigger('change', [ elements.rdftTypeContainer, menu ]);
-        elements.buttonOK.click( () => { MenuSystem.dismissAll(); } );
+        elements.buttonOK.on("click", () => { MenuSystem.dismissAll(); } );
     }
 
     #getTypeName(theType) {
         if ( ! theType ) {
             return "<ERROR: No Type!>";
         }
-        // Prefixed IRI (CIRIE)...
-        if ("prefix" in theType && theType.prefix !== null) {
-            return theType.prefix + ":" + theType.valueSource.constant;
-        }
-        // Full IRI (no prefix)...
-        else if ("valueSource" in theType && theType.valueSource !== null) {
+        if ("valueSource" in theType && theType.valueSource !== null) {
+            // Prefixed IRI (CIRIE)...
+            if ("prefix" in theType && theType.prefix !== null) {
+                return theType.prefix + ":" + theType.valueSource.constant;
+            }
+            // Full IRI (no prefix)...
             return theType.valueSource.constant;
         }
-        // Neither: Type exists but is empty...
-        else {
+        else { // Type exists but doesn't have "the juice"...
             return "type?";
         }
     }
@@ -1310,9 +1309,9 @@ class RDFTransformUINode {
             if (this.#propertyUIs && this.#propertyUIs.length > 0) {
                 theNode.propertyMappings = [];
                 for (const propertyUI of this.#propertyUIs) {
-                    const property = propertyUI.getTransformExport();
-                    if (property !== null) {
-                        theNode.propertyMappings.push(property);
+                    const theProperty = propertyUI.getTransformExport();
+                    if (theProperty !== null) {
+                        theNode.propertyMappings.push(theProperty);
                     }
                 }
             }

@@ -52,7 +52,7 @@ class RDFDataTableView {
 		// Use OpenRefine's DataTableView.sampleVisibleRows() to preview the working RDFTransform on a sample
 		// of the parent data...
 		//	 FROM: OpenRefine/main/webapp/modules/core/scripts/views/data-table/data-table-view.js
-		//   NOTE: On objColumn == null, just return the rows (no column information)
+		//   NOTE: On objColumn === null, just return the rows (no column information)
 		const rows = DataTableView.sampleVisibleRows(objColumn);
 		var strColumnName = ""; // ...for row index processing (missing column information)
 		if (objColumn !== null) {
@@ -175,7 +175,7 @@ class RDFExpressionPreviewDialog {
 
 		// Substitute our button for OpenRefine's ExpressionPreviewDialog button...
 		var buttonOK = $('<button></button>').addClass('button').text( $.i18n('rdft-buttons/ok') );
-		buttonOK.click(
+		buttonOK.on("click",
 			() => {
 				DialogSystem.dismissUntil(this.#level - 1);
 				this.#onDone( this.#previewWidget.getExpression(true) );
@@ -184,9 +184,8 @@ class RDFExpressionPreviewDialog {
 
 		// Substitute our button for OpenRefine's ExpressionPreviewDialog button...
 		var buttonCancel = $('<button></button>').addClass('button').text( $.i18n('rdft-buttons/cancel') );
-		buttonCancel.click( () => {
-				DialogSystem.dismissUntil(this.#level - 1);
-			}
+		buttonCancel.on("click",
+			() => { DialogSystem.dismissUntil(this.#level - 1); }
 		);
 
 		header.text( this.#dtvManager.getTitle() );
@@ -418,22 +417,22 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		var statusMessage;
 		statusElem.removeClass("error");
 		// If some error...
-		if (data.code == "error" || data.results == null) {
+		if (data.code === "error" || data.results == null) {
 			// General error...
 			statusElem.addClass("error");
 			statusMessage = $.i18n('rdft-data/internal-error');
 			// Defined error...
 			if (data.message) {
 				// Parsing error...
-				if (data.type == "parser") {
+				if (data.type === "parser") {
 					statusMessage = data.message;
 				}
 				// Absolute IRI error...
-				else if (data.type == "absolute") {
+				else if (data.type === "absolute") {
 					statusMessage = "ABS: " + data.message;
 				}
 				// Other error...
-				else if (data.type == "other") {
+				else if (data.type === "other") {
 					statusMessage = "Other: " + data.message;
 				}
 			}
@@ -536,7 +535,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	#renderValue(tdElem, tdValue) {
 		// Does a value exist?
-		if (tdValue !== null && tdValue !== undefined) {
+		if (tdValue != null) {
 			// Is the value an error message? (value created as an object {"message":"..."})
 			if ( $.isPlainObject(tdValue) ) {
 				//console.log(tdValue);

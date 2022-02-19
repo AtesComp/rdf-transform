@@ -7,11 +7,11 @@
         <format>zip</format>
     </formats>
     <fileSets>
-		<fileSet> <!-- Zip everything from target/classes except the **/module/** related directories -->
+		<fileSet> <!-- Zip everything from target/classes except **/*module/** related directories -->
             <directory>target/classes</directory>
             <outputDirectory>rdf-transform/module/MOD-INF/classes</outputDirectory>
             <excludes>
-                <exclude>**/module/**</exclude>
+                <exclude>module/**</exclude>
             </excludes>
         </fileSet>
         <!-- fileSet> <!- Zip other non-java files from the source (src/main/java) ->
@@ -24,6 +24,11 @@
 		<fileSet> <!-- Zip the module for the resourcees (src/main/resources/module) -->
             <directory>target/classes/module</directory>
             <outputDirectory>rdf-transform/module</outputDirectory>
+            <excludes>
+                <exclude>node_modules/**</exclude>
+                <exclude>*.json</exclude>
+                <exclude>*.ts</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
     <dependencySets>

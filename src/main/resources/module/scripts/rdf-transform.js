@@ -99,7 +99,7 @@ class RDFTransform {
 
     static findColumn(columnName) {
         for (const column of theProject.columnModel.columns) {
-            if (column && column.name == columnName) {
+            if (column && column.name === columnName) {
                 return column;
             }
         }
@@ -285,17 +285,37 @@ class RDFTransformDialog {
                     // Use baseIRI prefix and set Local Part to default column name...
                     strIRI = "column_" + iColumnCount.toString();
                 }
-                var iProtoIndex = strIRI.indexOf("://");
-                if (iProtoIndex === -1 && strIRI[0] === ":") {
-                    // Use baseIRI prefix and set Local Part...
-                    strIRI = strIRI.substring(1);
+                const iIndexProto = strIRI.indexOf("://");
+                if (iIndexProto === -1) {
+                    const iIndexPrefix = strIRI.indexOf(":");
+                    if (iIndexPrefix === 0) { // ...begins with ':'
+                        // Use baseIRI prefix and set Local Part (chop 1st)...
+                        strIRI = strIRI.substring(1);
+                    }
+                    else if (iIndexPrefix > 0) { // ...somewhere past beginning...
+                        if (iIndexPrefix + 1 === strIRI.length) { // ...ends with ':'
+                            // Use baseIRI prefix and set Local Part (chop last)...
+                            strIRI = strIRI.substring(0, strIRI.length - 1);
+                        }
+                        else { // ...in the middle
+                            const strTestPrefix = strIRI.substring(0, iIndexPrefix);
+                            if ( this.namespacesManager.hasPrefix(strTestPrefix) ) { // ...existing prefix
+                                // Use the given prefix and set Local Part (after prefix)...
+                                strPrefix = strTestPrefix;
+                                strIRI = strIRI.substring(iIndexPrefix + 1);
+                            }
+                            // Otherwise, same as iIndexPrefix === -1...
+                        }
+                    }
+                    // Otherwise, iIndexPrefix === -1
+                    //      Then, we use baseIRI prefix and take the IRI as the local part
                 }
-                if (iProtoIndex === 0) { // ...should never occur
-                    // Use baseIRI prefix and set Local Part...
+                else if (iIndexProto === 0) { // ...should never occur
+                    // Use baseIRI prefix and set Local Part (chop 1st 3)...
                     strIRI = strIRI.substring(3);
                 }
-                else { // ...a good protocol exists, so it's a Full IRI
-                    // Use no prefix and Full IRI...
+                else { // iIndexProto > 0, ...a good protocol exists since it's an IRI, so it's a Full IRI
+                    // Use no prefix, i.e., take the IRI as a Full IRI...
                     strPrefix = null;
                 }
                 var theProperty = {};
@@ -354,14 +374,13 @@ class RDFTransformDialog {
         this.#elements.rdftSampleTurtleText.html( strSample );
 
         this.#elements.buttonOK
-        .click(
-            () => {
+        .on("click", () => {
                 this.#doSave();
                 DialogSystem.dismissUntil(this.#level - 1);
             }
         );
         this.#elements.buttonCancel
-        .click( () => DialogSystem.dismissUntil(this.#level - 1) );
+        .on("click", () => DialogSystem.dismissUntil(this.#level - 1) );
 
         this.#functionalizeBody();
 
@@ -383,7 +402,7 @@ class RDFTransformDialog {
 
         // Hook up the BaseIRI Editor...
         this.#elements.rdftEditBaseIRI
-        .click( (evt) => {
+        .on("click", (evt) => {
                 evt.preventDefault();
                 this.#editBaseIRI( $(evt.target) );
             }
@@ -391,7 +410,7 @@ class RDFTransformDialog {
 
         // Hook up the Add New Root Node button...
         this.#elements.rdftAddRootNode
-        .click( (evt) => {
+        .on("click", (evt) => {
                 evt.preventDefault();
                 var nodeRoot = this.#createRootNode();
                 this.#theTransform.subjectMappings.push(nodeRoot);
@@ -402,7 +421,7 @@ class RDFTransformDialog {
 
         // Hook up the Import RDF Template button...
         this.#elements.rdftImpTemplate
-        .click( (evt) => {
+        .on("click", (evt) => {
                 evt.preventDefault();
                 this.#doImport();
             }
@@ -410,7 +429,7 @@ class RDFTransformDialog {
 
         // Hook up the Export RDF Template button...
         this.#elements.rdftExpTemplate
-        .click( (evt) => {
+        .on("click", (evt) => {
                 evt.preventDefault();
                 this.#doExport();
             }
@@ -418,7 +437,7 @@ class RDFTransformDialog {
 
         // Hook up the Save RDFTransform button...
         this.#elements.rdftSaveTransform
-        .click( (evt) => {
+        .on("click", (evt) => {
                 evt.preventDefault();
                 this.#doSave();
             }
@@ -452,7 +471,7 @@ class RDFTransformDialog {
 
         var theTransform = null;
         theTransform = RDFImportTemplate.importTemplate()
-        if ( theTransform == null ) {
+        if ( theTransform === null ) {
             return;
         }
         this.initTransform(theTransform)
@@ -476,7 +495,7 @@ class RDFTransformDialog {
             {   onDone: (data) => { // callbacks
                     theProject.overlayModels.RDFTransform = theTransform;
                     if (data.code === "error") {
-                        alert($.i18n('rdft-dialog/error') + ':' + "Save failed!");
+                        alert($.i18n('rdft-dialog/error') + ":" + "Save failed!");
                     }
                     else if (data.code === "pending") {
                         alert( $.i18n("Save pending history queue processing.") );
@@ -567,11 +586,11 @@ class RDFTransformDialog {
         elements.rdftNewBaseIRIValue.val(this.#theTransform.baseIRI).focus().select();
 
         elements.buttonApply
-        .click(
+        .on("click",
             async () => {
                 var strIRI = elements.rdftNewBaseIRIValue.val();
 
-                if ( ! await RDFTransformCommon.validatePrefix(strIRI) ) {
+                if ( ! await RDFTransformCommon.validateNamespace(strIRI) ) {
                     return;
                 }
 
@@ -583,7 +602,7 @@ class RDFTransformDialog {
         );
 
         elements.buttonCancel
-        .click( () => { MenuSystem.dismissAll(); } );
+        .on("click", () => { MenuSystem.dismissAll(); } );
     }
 
     #replaceBaseIRI(strIRI, bSave = true) {
@@ -597,7 +616,7 @@ class RDFTransformDialog {
             //     { "baseIRI" : strIRI },
             //     (data) => {
             //         if (data.code === "error") {
-            //             alert($.i18n('rdft-dialog/error') + ':' + data.message);
+            //             alert($.i18n('rdft-dialog/error') + ":" + data.message);
             //             return; // ...don't replace or update anything
             //         }
             //     },
@@ -609,7 +628,7 @@ class RDFTransformDialog {
                 },
                 (data) => {
                     if (data.code === "error") {
-                        alert($.i18n('rdft-dialog/error') + ':' + data.message);
+                        alert($.i18n('rdft-dialog/error') + ":" + data.message);
                         return; // ...don't replace or update anything
                     }
                 },

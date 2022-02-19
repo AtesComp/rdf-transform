@@ -48,16 +48,16 @@
 							$("<div></div>")
 							// @ts-ignore
 							.addClass(this.options.css.item_type)
-							.text(data.iri) // data.id
+							.text(data.iri)
 						);
 					var nameText =
 						$("<label></label>")
 						.append(
 							$.suggest
-							.strongify(data.cirie, response.prefix) // data.name
+							.strongify(data.prefix + ':' + data.localPart, response.prefix)
 						);
 
-					data.cirie = nameText.text(); // data.name
+					//data.label = nameText.text();
 					name.append(nameText);
 	                li.append(name);
 
@@ -80,8 +80,9 @@
 					// The "type" holds the value type to search (class, property)...
 					// @ts-ignore
 					data.type = this.options.type;
-					// "The prefix" holds the query search value...
-					data.query = query;
+					// The "prefix" holds the query search value...
+					// NOTE: The Query Prefix is needed by the response processor.
+					data.prefix = query;
 					// See Defaults below for other default parameters.
 
                     var url =
@@ -106,14 +107,14 @@
 								.done(
 									(data, strStatus, xhr) => {
 										$.suggest.cache[url] = data;
-										data.query = query;  // ...keep track of query to match with response
+										// NOTE: The Query Prefix is needed by the response processor and
+										// 		is included from the server side.
 										// @ts-ignore
 										this.response(data, cursor ? cursor : -1);
 										// @ts-ignore
 										this.trackEvent(
 											// @ts-ignore
-											this.name, "request", "tid",
-											xhr.getResponseHeader("X-Metaweb-TID")
+											this.name, "request", "tid", xhr.getResponseHeader("X-Metaweb-TID")
 										);
 									}
 								)
@@ -132,8 +133,7 @@
 										// @ts-ignore
 										this.input.trigger("fb-error", Array.prototype.slice.call(arguments));
 									}
-								);
-								/*
+								)//;
 								.always(
 									(data, strStatus, xhr) => {
 										var errorThrown;
@@ -142,14 +142,14 @@
 											xhr = data;
 										}
 										if (xhr) {
+											// @ts-ignore
 											this.trackEvent(
-												this.name, "request", "tid",
-												xhr.getResponseHeader("X-Metaweb-TID")
+												// @ts-ignore
+												this.name, "request", "tid", xhr.getResponseHeader("X-Metaweb-TID")
 											);
 										}
 									}
 								);
-								*/
 	                    	},
 							// @ts-ignore
 							this.options.xhr_delay

@@ -106,7 +106,7 @@ class RDFTransformNamespacesManager {
 		}
 		// Add button...
 		$('<a href="#" class="add-namespace-box">' + $.i18n('rdft-prefix/add') + '</a>')
-		.click(
+		.on("click",
 			(evt) => {
 				evt.preventDefault();
 				this.addNamespace(false, false, false);
@@ -116,7 +116,7 @@ class RDFTransformNamespacesManager {
 
 		// Manage button...
 		$('<a href="#" class="manage-vocabularies-box">' + $.i18n('rdft-prefix/manage') + '</a>')
-		.click(
+		.on("click",
 			(evt) => {
 				evt.preventDefault();
 				this.#showManageWidget();
@@ -196,7 +196,7 @@ class RDFTransformNamespacesManager {
 	async isPrefixedQName(strQName) {
 		if ( await RDFTransformCommon.validateIRI(strQName) ) {
 			var iIndex = strQName.indexOf(':'); // ...first ':'
-			if ( strQName.substring(iIndex, iIndex + 3) != "://" ) {
+			if ( strQName.substring(iIndex, iIndex + 3) !== "://" ) {
 				return 1; // ...prefixed
 			}
 			return 0; // ...not prefixed, but good IRI
@@ -209,7 +209,7 @@ class RDFTransformNamespacesManager {
 		if (iIndex === -1) {
 			return null;
 		}
-		// NOTE: Same start and end == "" (baseIRI)
+		// NOTE: Same start and end === "" (baseIRI)
 		return strQName.substring(0, iIndex);
 	}
 
@@ -233,12 +233,13 @@ class RDFTransformNamespacesManager {
 		if ( objIRIParts.prefix === "" ) {
 			return strBaseIRI + objIRIParts.localPart;
 		}
-		return objIRIParts.prefix + ':' + objIRIParts.localPart;
+		return objIRIParts.prefix + ":" + objIRIParts.localPart;
 	}
 
 	#deAssembleQName(strQName) {
+		var iFull = strQName.indexOf("://");
 		var iIndex = strQName.indexOf(':');
-		if (iIndex === -1) {
+		if (iFull !== -1 || iIndex === -1) {
 			return {
 				"prefix"    : null,
 				"localPart" : strQName

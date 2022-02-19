@@ -279,21 +279,27 @@ abstract public class ResourceNode extends Node {
         //
         List<IRI> listTypesForStmts = new ArrayList<IRI>();
         for ( RDFType typeItem : this.listTypes ) {
-            strPrefix = typeItem.getPrefix();
+            strPrefix = typeItem.getPrefix(); // Null indicated FULL IRI, Empty indicate BaseIRI
             strType = typeItem.getLocalPart(); // ...assume FULL IRI
             strLocalName = null;
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strType;
-                strType = strPrefix + ":" + strLocalName; // ...CIRIE (or FULL if missing namespace)
+                strType = strPrefix + ":" + strLocalName; // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: " + strType);
+            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
+
             if ( ! (strType == null || strType.isEmpty() ) ) {
                 try {
-                    strFullType = Util.resolveIRI(this.baseIRI, strType);
+                    if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references
+                        strFullType = Util.resolveIRI(this.baseIRI, strLocalName); // ...just removing the leading ":"
+                    }
+                    else { // ...other CIRIE references
+                        strFullType = Util.resolveIRI(this.baseIRI, strType);
+                    }
                     if (strFullType != null) {
-                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: " + strFullType);
+                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: [" + strFullType + "]");
                         if (strNamespace != null) {
                             iriType = this.theFactory.createIRI(strNamespace, strLocalName);
                         }
@@ -379,13 +385,13 @@ abstract public class ResourceNode extends Node {
             //
             // PROPERTY
             //
-            strPrefix = propItem.getPrefix();
+            strPrefix = propItem.getPrefix(); // Null indicated FULL IRI, Empty indicate BaseIRI
             strProperty = propItem.getPathProperty(); // ...assume FULL IRI
             strLocalName = null;
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
-                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE (or FULL if missing namespace)
+                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
 
@@ -393,25 +399,30 @@ abstract public class ResourceNode extends Node {
             // OBJECTS
             //
             nodeObject = propItem.getObject();
-            if (nodeObject == null) {
-                continue;
+            if (nodeObject == null) { // ...no Object?
+                continue; // ...then, no statement can be processed
             }
             listObjects = nodeObject.createObjects(this);
-            if (listObjects == null) {
-                continue;
+            if (listObjects == null) { // ...no Object List?
+                continue; // ...then, no statements can be processed
             }
 
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: " + strProperty);
+            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
             if ( ! ( strProperty == null || strProperty.isEmpty() ) ) {
                 try {
-                    strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
+                    if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references
+                        strFullProperty = Util.resolveIRI(this.baseIRI, strLocalName); // ...just removing the leading ":"
+                    }
+                    else { // ...other CIRIE references
+                        strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
+                    }
                     if (strFullProperty != null) {
-                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: " + strFullProperty);
+                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: [" + strFullProperty + "]");
                         if (strNamespace != null) {
                             iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
                         }
                         else { // ...on no prefix or missing namespace, treat as Full...
-                            iriProperty = this.theFactory.createIRI(strProperty);
+                            iriProperty = this.theFactory.createIRI(strFullProperty);
                         }
                         listPropsForStmts.add( new PropertyObjectList(iriProperty, listObjects) );
                     }

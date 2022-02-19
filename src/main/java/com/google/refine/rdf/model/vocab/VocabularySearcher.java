@@ -70,7 +70,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 
 	public VocabularySearcher(File dir)
 			throws IOException {
-		if ( Util.isVerbose(3) ) logger.info("Creating vocabulary searcher...");
+		if ( Util.isVerbose(3) ) VocabularySearcher.logger.info("Creating vocabulary searcher...");
 
 		this.dirLucene = FSDirectory.open( new File(dir, LUCENE_DIR).toPath() );
 		Analyzer analyzer = new StandardAnalyzer();
@@ -93,7 +93,7 @@ public class VocabularySearcher implements IVocabularySearcher {
         //this.reader = DirectoryReader.open(this.dirLucene);
         this.reader = DirectoryReader.open(this.writer);
         this.searcher = new IndexSearcher(this.reader);
-		if ( Util.isVerbose(3) ) logger.info("...created vocabulary searcher");
+		if ( Util.isVerbose(3) ) VocabularySearcher.logger.info("...created vocabulary searcher");
 	}
 
 	@Override
@@ -112,8 +112,10 @@ public class VocabularySearcher implements IVocabularySearcher {
 		List<RDFSProperty> properties = new ArrayList<RDFSProperty>();
 
 		// Import classes & properties from Namespace at URL...
-		if ( Util.isDebugMode() ) logger.info("DEBUG: Import And Index vocabulary " + strPrefix + ": <" + strNamespace + "> " +
-												"from " + strFetchURL);
+		if ( Util.isDebugMode() ) {
+			VocabularySearcher.logger.info("DEBUG: Import And Index vocabulary " +
+					strPrefix + ": <" + strNamespace + "> " + "from " + strFetchURL);
+		}
 		importer.importVocabulary(strFetchURL, classes, properties);
 		this.indexTerms(strProjectID, classes, properties);
 	}
@@ -127,7 +129,10 @@ public class VocabularySearcher implements IVocabularySearcher {
 		List<RDFSProperty> properties = new ArrayList<RDFSProperty>();
 
 		// Import classes & properties from Namespace in Repository...
-		if ( Util.isDebugMode() ) logger.info("DEBUG: Import And Index vocabulary " + strPrefix + ": <" + strNamespace + ">");
+		if ( Util.isDebugMode() ) {
+			VocabularySearcher.logger.info("DEBUG: Import And Index vocabulary " +
+					strPrefix + ": <" + strNamespace + ">");
+		}
 		importer.importVocabulary(repository, classes, properties);
 		this.indexTerms(strProjectID, classes, properties);
 	}
@@ -135,7 +140,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 	@Override
 	public List<SearchResultItem> searchClasses(String strQueryVal, String strProjectID)
 			throws IOException {
-		Query query = prepareQuery(strQueryVal, CLASS_TYPE, strProjectID);
+		Query query = this.prepareQuery(strQueryVal, CLASS_TYPE, strProjectID);
 		return this.searchDocs(query);
 	}
 

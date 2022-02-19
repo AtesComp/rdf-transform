@@ -39,21 +39,23 @@ public class PreviewRDFCommand extends Command {
             throws ServletException, IOException {
         // No CSRF Token required for this command.
 
+        if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing for Preview...");
 		try {
             Project theProject = this.getProject(request);
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
 
             String strTransform = request.getParameter(RDFTransform.KEY);
             if (strTransform == null) {
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  No Transform JSON.");
                 PreviewRDFCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             if (jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty()  ) {
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  No Transform.");
                 PreviewRDFCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing for Preview...");
             RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
 
             //if ( Util.isDebugMode() ) {

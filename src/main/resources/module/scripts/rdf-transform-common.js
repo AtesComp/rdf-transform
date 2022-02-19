@@ -228,7 +228,7 @@ class RDFTransformCommon {
 	}
 
 	static async toIRIString(strText) {
-        if ( ! strText || strText === null) {
+        if ( ! strText ) {
             return null;
         }
         var strConvert = strText;
@@ -344,7 +344,7 @@ class RDFTransformCommon {
 	 *	Test that ALL of the given string is a single IRI and properly ends
 	 *  with a prefix suffix "/" or "#"
 	 */
-	 static async validatePrefix(strIRI) {
+	 static async validateNamespace(strIRI) {
 		function endsWith(strTest, strSuffix) {
 			return strTest.indexOf(strSuffix, strTest.length - strSuffix.length) !== -1;
 		}
@@ -424,32 +424,32 @@ class RDFTransformCommon {
 		//
 		// Try to shorten all other strings...
 		//
-		var istrAuth  = strResource.indexOf('//');
-		var istrPath  = strResource.indexOf('/', istrAuth + 2)
-		var istrQuery = strResource.indexOf('?');
-		var istrFrag  = strResource.indexOf('#');
+		var iIndexAuth  = strResource.indexOf('//');
+		var iIndexPath  = strResource.indexOf('/', iIndexAuth + 2)
+		var iIndexQuery = strResource.indexOf('?');
+		var iIndexFrag  = strResource.indexOf('#');
 
 		// Absolute IRI?
-		if (istrAuth > 0) {
+		if (iIndexAuth > 0) {
 			// Get a lead...
 			var strLead = null;
 
 			//   Order is important: shortest possible to longest lead
 			// Start to Path...
-			if (istrPath > 0) {
-				strLead = strResource.substring(0, istrPath)
+			if (iIndexPath > 0) {
+				strLead = strResource.substring(0, iIndexPath)
 			}
 			// Start to Query...
-			else if (istrQuery > 0) {
-				strLead = strResource.substring(0, istrQuery)
+			else if (iIndexQuery > 0) {
+				strLead = strResource.substring(0, iIndexQuery)
 			}
 			// Start to Fragment...
-			else if (istrFrag > 0) {
-				strLead = strResource.substring(0, istrFrag)
+			else if (iIndexFrag > 0) {
+				strLead = strResource.substring(0, iIndexFrag)
 			}
 			// Too long? Get "schema://" only...
-			if (strLead == null || strLead + 6 > iMax) { // 3 for the "..." and 3 for minimum remains
-				strLead = strResource.substring(0, istrAuth + 2)
+			if (strLead === null || strLead + 6 > iMax) { // 3 for the "..." and 3 for minimum remains
+				strLead = strResource.substring(0, iIndexAuth + 2)
 			}
 			var iLead = strLead.length;
 
@@ -458,23 +458,23 @@ class RDFTransformCommon {
 			var iLen = 0;
 			// Order is important: longest possible to shortest remainder...
 			// Path to end...
-			if ( istrPath > 0 ) {
-				strRemains = strResource.substring(istrPath);
+			if ( iIndexPath > 0 ) {
+				strRemains = strResource.substring(iIndexPath);
 				iLen = iLead + strRemains.length + 3;
 			}
 			// No remains or too long? Query to end...
-			if ( ( strRemains == null || iLen > iMax ) && istrQuery > 0 ) {
-				strRemains = strResource.substring(istrQuery);
+			if ( ( strRemains === null || iLen > iMax ) && iIndexQuery > 0 ) {
+				strRemains = strResource.substring(iIndexQuery);
 				iLen = iLead + strRemains.length + 3;
 			}
 			// No remains or too long? Fragment to end...
-			if ( ( strRemains == null || iLen > iMax ) && istrFrag > 0) {
-				strRemains = strResource.substring(istrFrag);
+			if ( ( strRemains === null || iLen > iMax ) && iIndexFrag > 0) {
+				strRemains = strResource.substring(iIndexFrag);
 				iLen = iLead + strRemains.length + 3;
 			}
 
 			// All good? Get the results...
-			if ( strRemains != null && iLen <= iMax ) {
+			if ( strRemains !== null && iLen <= iMax ) {
 				return (strLead + "..." + strRemains);
 			}
 		}

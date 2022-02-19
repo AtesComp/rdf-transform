@@ -173,7 +173,7 @@ public class Util {
 
 		// No IRI is not a problem (there is just nothing to resolve)...
 		if (strIRI == null || strIRI.length() == 0) {
-			if ( Util.isDebugMode() ) logger.info(strDEBUG + "No IRI");
+			if ( Util.isDebugMode() ) Util.logger.info(strDEBUG + "No IRI");
 			return strAbsoluteIRI;
 		}
 
@@ -221,12 +221,12 @@ public class Util {
 				strDebugOut = strDEBUG + "NULL " + strErrMsg;
 			else
 				strDebugOut = strDEBUG + strAbsoluteIRI;
-			logger.info(strDebugOut);
+			Util.logger.info(strDebugOut);
 		}
 
 		if (strAbsoluteIRI == null && strErrMsg != null) {
-			logger.error(strError + "Malformed IRI [" + strIRI + "]");
-			logger.error(strError + strErrMsg);
+			Util.logger.error(strError + "Malformed IRI [" + strIRI + "]");
+			Util.logger.error(strError + strErrMsg);
 			throw new Util.IRIParsingException(strError + strErrMsg);
 		}
 
@@ -254,8 +254,7 @@ public class Util {
 
 	public static ParsedIRI buildIRI(String strIRI) {
 		if (strIRI == null) {
-			if ( Util.isVerbose() )
-				logger.error("ERROR: buildIRI(): Null IRI");
+			if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error("ERROR: buildIRI(): Null IRI");
 			return null;
 		}
 
@@ -264,7 +263,7 @@ public class Util {
 			iriNew = new ParsedIRI(strIRI);
 		}
 		catch (Exception ex) {
-			logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
+			Util.logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
 			iriNew = null;
 		}
 
@@ -277,9 +276,12 @@ public class Util {
 		// Evaluate the expression on the cell and return results...
 		//   NOTE: Here is where we tie the RDF Transform model to the data.
 		//
-		if ( Util.isDebugMode() ) logger.info("DEBUG: evaluateExpression: Exp: [" + strExpression + "] " +
-																	     "Col: [" + strColumnName + "] " +
-																	     "Row: [" + iRowIndex     + "]");
+		if ( Util.isDebugMode() ) {
+			Util.logger.info("DEBUG: evaluateExpression: " +
+								"Exp: [" + strExpression + "] " +
+								"Col: [" + strColumnName + "] " +
+								"Row: [" + iRowIndex     + "]");
+		}
 
 		//
 		if ( strExpression == null ) {

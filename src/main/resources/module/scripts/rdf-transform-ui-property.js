@@ -107,7 +107,7 @@ class RDFTransformUIProperty {
         var imgExpand =
             $('<img />')
             .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
-            .click(
+            .on("click",
                 (evt) => {
                     this.#options.expanded = !this.#options.expanded;
                     $(evt.currentTarget)
@@ -161,7 +161,7 @@ class RDFTransformUIProperty {
             .attr("title", $.i18n('rdft-dialog/remove-property'))
             .attr("src", "images/close.png")
             .css("cursor", "pointer")
-            .click(
+            .on("click",
                 () => {
                     setTimeout(
                         () => {
@@ -179,10 +179,10 @@ class RDFTransformUIProperty {
             .addClass("rdf-transform-property")
             .html(
                 RDFTransformCommon.shortenResource(
-                    this.#getTypeName(this.#property)
+                    this.#getPropertyName(this.#property)
                 )
             )
-            .click( (evt) => { this.#editProperty(evt.target); } );
+            .on("click", (evt) => { this.#editProperty(evt.target); } );
 
 
         $(this.#tdMain)
@@ -232,17 +232,19 @@ class RDFTransformUIProperty {
         $(this.#tdDetails).show();
     }
 
-    #getTypeName(theProperty) {
+    #getPropertyName(theProperty) {
         if (! theProperty ) {
             return "<ERROR: No Property!>";
         }
-        if ("prefix" in theProperty && theProperty.prefix !== null) {
-            return theProperty.prefix + ":" + theProperty.localPart;
-        }
-        else if ("localPart" in theProperty && theProperty.localPart !== null) {
+        if ("localPart" in theProperty && theProperty.localPart !== null) {
+            // Prefixed IRI (CIRIE)...
+            if ("prefix" in theProperty && theProperty.prefix !== null) {
+                return theProperty.prefix + ":" + theProperty.localPart;
+            }
+            // Full IRI (no prefix)...
             return theProperty.localPart;
         }
-        else {
+        else { // Property exists but doesn't have "the juice"...
             return "Property?";
         }
     }
@@ -257,8 +259,14 @@ class RDFTransformUIProperty {
     }
 
     #editPropertyInfo(theProperty) {
-        this.#property.prefix    = theProperty.prefix;
-        this.#property.localPart = theProperty.localPart;
+        this.#property.prefix = null;
+        if ("prefix" in theProperty && theProperty.prefix !== null) {
+            this.#property.prefix    = theProperty.prefix;
+        }
+        this.#property.localPart = null;
+        if ("localPart" in theProperty && theProperty.localPart !== null) {
+            this.#property.localPart = theProperty.localPart;
+        }
         this.#render();
         this.#dialog.updatePreview();
     }
@@ -297,19 +305,28 @@ class RDFTransformUIProperty {
     }
 
     static getTransformImport(theDialog, theProperty, theSubjectNodeUI) {
+        if (theProperty === null) {
+            return null;
+        }
         var property = {};
-        property.prefix = theProperty.prefix;
+        property.prefix = null;
+        if ("prefix" in theProperty && theProperty.prefix !== null) {
+            property.prefix = theProperty.prefix;
+        }
         // TODO: Currently, all properties are "constant".  Change to allow
         //      column with expression.
-        property.localPart = theProperty.valueSource.constant;
+        property.localPart = null;
+        if ("valueSource" in theProperty && theProperty.valueSource !== null &&
+            "constant" in theProperty.valueSource && theProperty.valueSource.constant !== null) {
+            property.localPart = theProperty.valueSource.constant;
+        }
         property.nodeObject = null; // ...default: no Object node
         // NOTE: A null Object node is also a hint in the process to set it later if
         //      an Object Mapping exists.
 
         var theObjectNodeUI = null; // ...default: no Object Node UI
-        if ("objectMappings" in theProperty &&
-            theProperty.objectMappings !== null &&
-            theProperty.objectMappings.length > 0)
+        if ("objectMappings" in theProperty && theProperty.objectMappings !== null &&
+            Array.isArray(theProperty.objectMappings) && theProperty.objectMappings.length > 0)
         {
             // TODO: Currently, a property contains at most one Object node.  Change to allow
             //      multiple Object nodes.
@@ -330,7 +347,7 @@ class RDFTransformUIProperty {
         // Set up the Property UI with the existing Object Node UI...
         //
         var propertyUI = new RDFTransformUIProperty(
-            theDialog, // dialog
+            theDialog,
             property,
             { expanded: true },
             theSubjectNodeUI,

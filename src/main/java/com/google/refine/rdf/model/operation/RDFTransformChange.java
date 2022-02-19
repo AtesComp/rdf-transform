@@ -96,7 +96,7 @@ public class RDFTransformChange implements Change {
     //
     static public Change load(LineNumberReader theReader, Pool thePool)
             throws Exception {
-        if ( Util.isDebugMode() ) RDFTransformChange.logger.info("DEBUG: Reconstructing from Change...");
+        if ( Util.isDebugMode() ) RDFTransformChange.logger.info("DEBUG: load(): Reconstructing...");
         RDFTransform transformPrevious = null;
         RDFTransform transformCurrent = null;
 
@@ -107,8 +107,10 @@ public class RDFTransformChange implements Change {
             String strValue = strLine.substring(iEqualIndex + 1);
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strValue);
             if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
+                if ( Util.isDebugMode() ) RDFTransformChange.logger.info("  No Transform.");
                 continue;
             }
+            if ( Util.isDebugMode() ) RDFTransformChange.logger.info("  Found Transform...");
             RDFTransform theTransform = RDFTransform.reconstruct(jnodeTransform);
 
             if ( strField.equals(RDFTransformChange.strNew) && ! strValue.isEmpty() ) {

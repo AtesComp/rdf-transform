@@ -71,8 +71,8 @@ class RDFTransformNamespaceAdder {
 			//
 			// Test the user supplied prefix and namespace...
 			//
-			var bUndefinedNamespace = (strNamespace == undefined || strNamespace == "");
-			if ( ! bUndefinedNamespace && ! await RDFTransformCommon.validatePrefix(strNamespace) ) {
+			var bUndefinedNamespace = (strNamespace === undefined || strNamespace === "");
+			if ( ! bUndefinedNamespace && ! await RDFTransformCommon.validateNamespace(strNamespace) ) {
 				// NOTE: The validatePrefix() call does its own alert dialog.
 				// Let the user try again...
 				return;
@@ -144,13 +144,13 @@ class RDFTransformNamespaceAdder {
 		});
 
 		this.#elements.buttonOK
-		.click( () => { this.#elements.file_upload_form.submit(); } );
+		.on("click", () => { this.#elements.file_upload_form.submit(); } );
 
 		this.#elements.buttonCancel
-		.click( () => { this.#dismiss(); } );
+		.on("click", () => { this.#dismiss(); } );
 
 		this.#elements.buttonAdvanced
-		.click( () => {
+		.on("click", () => {
 				this.#elements.fetching_options_table.show();
 				$('#button-advanced-options').hide();
 				$('#button-advanced-options').prop("disabled", "true");
@@ -160,7 +160,7 @@ class RDFTransformNamespaceAdder {
 		this.#elements.fetching_options_table
 		.hide()
 		.find('input[name="vocab_fetch_method"]')
-		.click( (evt) => {
+		.on("click", (evt) => {
 				var bHideUpload = ( $(evt.currentTarget).val() !== 'file' );
 				this.#elements.fetching_options_table
 				.find('.upload_file_inputs')

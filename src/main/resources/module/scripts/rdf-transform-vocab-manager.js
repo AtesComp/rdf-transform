@@ -19,10 +19,10 @@ class RDFTransformVocabManager {
 		this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
 
 		this.#elements.buttonCancel
-		.click( () => { this.#dismiss(); } );
+		.on("click", () => { this.#dismiss(); } );
 
 		this.#elements.buttonAddNamespace
-		.click(
+		.on("click",
 			(evt) => {
 				evt.preventDefault();
 				this.#namespacesManager.addNamespace(
@@ -37,7 +37,7 @@ class RDFTransformVocabManager {
 		this.#renderBody();
 
 		this.#elements.buttonOK
-		.click(
+		.on("click",
 			() => {
 				this.#namespacesManager.show();
 				this.#dismiss();
@@ -119,14 +119,14 @@ class RDFTransformVocabManager {
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/delete') )
 				.attr('href', '#')
-				.click( this.#getRemoveHandler(strPrefix) );
+				.on("click", this.#getRemoveHandler(strPrefix) );
 			/** @type {HTMLElement} */
 			// @ts-ignore
 			var htmlRefreshNamespace =
 				$('<a/>')
 				.text( $.i18n('rdft-vocab/refresh') )
 				.attr('href', '#')
-				.click( this.#getRefreshHandler(strPrefix, strNamespace) );
+				.on("click", this.#getRefreshHandler(strPrefix, strNamespace) );
 			var tr = $('<tr/>').addClass(bEven ? 'rdf-table-even' : 'rdf-table-odd')
 				.append( $('<td>').text(strPrefix) )
 				.append( $('<td>').text(strNamespace) )

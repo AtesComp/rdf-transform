@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SaveRDFTransformCommand extends RDFTransformCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:SaveRDFTransCmd");
 
     public SaveRDFTransformCommand() {
 		super();
@@ -29,7 +29,9 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
 	@Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing for Save...");
         if ( ! this.hasValidCSRFToken(request) ) {
+            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No CSRF Token.");
             SaveRDFTransformCommand.respondCSRFError(response);
             return;
         }
@@ -41,15 +43,16 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             // Get the RDF Transform...
             String strTransform = request.getParameter(RDFTransform.KEY);
             if (strTransform == null) {
+                if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No Transform JSON.");
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
+                if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No Transform.");
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing for Save...");
             RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
 
             // Process the "save" operations...

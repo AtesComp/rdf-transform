@@ -65,7 +65,7 @@ public class RDFNode {
             //           the split was at the 0 index
             //           and there is nothing to do!
             if ( ! this.strLocalPart.isEmpty() ) {
-                splitNamespaceAndLocalPart(false);
+                this.splitNamespaceAndLocalPart(false);
             }
         }
     }

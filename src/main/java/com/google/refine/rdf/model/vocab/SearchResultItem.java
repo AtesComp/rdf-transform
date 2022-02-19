@@ -50,12 +50,23 @@ public class SearchResultItem {
 	public void writeAsSearchResult(JsonGenerator theWriter)
 			throws IOException {
 		theWriter.writeStartObject();
-		// The "iri" is the absolute IRI...
-		theWriter.writeStringField("iri", this.strIRI);
-		// The "cirie" is the Condensed IRI Expression (CIRIE) using
-		// the prefix and IRI's local part...
+		if (this.strIRI != null) {
+			theWriter.writeStringField("iri", this.strIRI);
+		}
+		if (this.strLabel != null) {
+			theWriter.writeStringField("label", this.strLabel);
+		}
+		if (this.strDescription != null) {
+			theWriter.writeStringField("desc", this.strDescription);
+		}
 		if (this.strPrefix != null) {
-			theWriter.writeStringField("cirie", this.strPrefix + ":" + this.strLocalPart);
+			theWriter.writeStringField("prefix", this.strPrefix);
+		}
+		if (this.strNamespace != null) {
+			theWriter.writeStringField("namespace", this.strNamespace);
+		}
+		if (this.strLocalPart != null) {
+			theWriter.writeStringField("localPart", this.strLocalPart);
 		}
 		// The "description" contains everything:
 		//		the full IRI,

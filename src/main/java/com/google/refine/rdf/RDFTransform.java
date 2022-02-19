@@ -101,7 +101,7 @@ public class RDFTransform implements OverlayModel {
 	}
 
     static public RDFTransform load(Project theProject, JsonNode jnodeTransform) {
-        if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Reconstructing from store...");
+        if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: load(): Reconstructing...");
         return RDFTransform.reconstruct(theProject, jnodeTransform);
     }
 
@@ -264,7 +264,7 @@ public class RDFTransform implements OverlayModel {
             if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Subjects!");
         }
 
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("...reconstructed");
+        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("...ending reconstruction");
         return theTransform;
     }
 
@@ -337,7 +337,7 @@ public class RDFTransform implements OverlayModel {
         Constructors
     */
     public RDFTransform() {
-        if ( Util.isVerbose(3) || Util.isDebugMode() ) RDFTransform.logger.info("Reconstructing from Overlay...");
+        if ( Util.isVerbose(3) || Util.isDebugMode() ) RDFTransform.logger.info("Created empty transform.");
     }
 
     public RDFTransform(Project theProject) {
@@ -347,13 +347,13 @@ public class RDFTransform implements OverlayModel {
         //      a complete portrait of a RDFTransform.
 
         String strSpace = "";
-        String strContext = "for";
+        String strContext = " for project";
         if (theProject == null) {
             strSpace = "  ";
-            strContext = "without";
+            strContext = "";
         }
         if ( Util.isVerbose(2) || Util.isDebugMode() ) {
-                RDFTransform.logger.info("{}Creating default transform {} project...", strSpace, strContext);
+                RDFTransform.logger.info("{}Creating default transform{}...", strSpace, strContext);
         }
 
         this.theBaseIRI = Util.buildIRI( RDFTransform.theGlobalContext.getDefaultBaseIRI() );
@@ -421,25 +421,31 @@ public class RDFTransform implements OverlayModel {
     @JsonProperty(Util.gstrBaseIRI)
     public String getBaseIRIAsString() {
         // Return "String" is ok for JSON since it's a single value.
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting Base IRI...");
+        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting BaseIRI...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
+        String strBaseIRI = null;
         if (this.theBaseIRI != null) {
-            return this.theBaseIRI.toString();
+            strBaseIRI = this.theBaseIRI.toString();
         }
-        return RDFTransform.theGlobalContext.getDefaultBaseIRI(); // ...null context
+        else {
+            strBaseIRI = RDFTransform.theGlobalContext.getDefaultBaseIRI(); // ...null context
+        }
+        if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI is: " + strBaseIRI);
+        return strBaseIRI;
     }
 
     @JsonIgnore // ...see setBaseIRI(JsonNode)
     public void setBaseIRI(ParsedIRI iriBase)  {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting Base IRI...");
+        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting BaseIRI from ParsedIRI...");
+        if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI set to:" + iriBase.toString());
         this.theBaseIRI = iriBase;
     }
 
     @JsonProperty(Util.gstrBaseIRI)
     public void setBaseIRI(JsonNode jnodeBaseIRI)  {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting Base IRI from JSON...");
+        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting BaseIRI from JSON...");
 
         // If it is not a direct string representation, then these keys are stored:
         // { "scheme"   : null or scheme in "scheme:" from beginning of string,
@@ -454,66 +460,74 @@ public class RDFTransform implements OverlayModel {
         // }
 
         ParsedIRI iriBase = null;
-        if ( ! ( jnodeBaseIRI == null || jnodeBaseIRI.isNull() || jnodeBaseIRI.isEmpty() ) ) {
-            String strBaseIRI;
-            if ( jnodeBaseIRI.isValueNode() ) {
-                // Get the Base IRI string...
-                strBaseIRI = jnodeBaseIRI.asText();
-                iriBase = Util.buildIRI( strBaseIRI );
+        String strBaseIRI = null;
+        if ( jnodeBaseIRI == null || jnodeBaseIRI.isNull() ) {
+            // Get Default BaseIRI...
+            if (Util.isDebugMode()) RDFTransform.logger.info("  No BaseIRI.");
+            iriBase = null;
+        }
+        else if ( jnodeBaseIRI.isTextual() ) {
+            // Get the Base IRI string...
+            strBaseIRI = jnodeBaseIRI.textValue();
+            if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI JSON Value Text: " + jnodeBaseIRI.isValueNode());
+            iriBase = Util.buildIRI( strBaseIRI );
+        }
+        else if ( jnodeBaseIRI.isObject() && ! jnodeBaseIRI.isEmpty() ) {
+            // Get the Base IRI from components...
+            if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI JSON extracting components...");
+
+            String  strScheme   = jnodeBaseIRI.get("scheme"  ).asText();
+            String  strUserInfo = jnodeBaseIRI.get("userInfo").asText();
+            String  strHost     = jnodeBaseIRI.get("host"    ).asText();
+            int     iPort       = jnodeBaseIRI.get("port"    ).asInt(-1);
+            String  strPath     = jnodeBaseIRI.get("path"    ).asText();
+            String  strQuery    = jnodeBaseIRI.get("query"   ).asText();
+            String  strFragment = jnodeBaseIRI.get("fragment").asText();
+            boolean bAbsolute   = jnodeBaseIRI.get("absolute").asBoolean();
+            boolean bOpaque     = jnodeBaseIRI.get("opaque"  ).asBoolean();
+
+            // Construct the Base IRI string from the components...
+            strBaseIRI = "";
+            if ( strScheme != null && ! strScheme.isEmpty() )
+                strBaseIRI += strScheme + ":";
+            if ( strHost != null && ! strHost.isEmpty() ) {
+                strBaseIRI += "//";
+                if ( strUserInfo != null && ! strUserInfo.isEmpty() )
+                    strBaseIRI += strUserInfo + "@";
+                strBaseIRI += strHost;
+                if ( iPort > -1 )
+                    strBaseIRI += ":" + Integer.toString(iPort);
             }
-            else {
-                // Get the Base IRI components...
-                String  strScheme   = jnodeBaseIRI.get("scheme"  ).asText();
-                String  strUserInfo = jnodeBaseIRI.get("userInfo").asText();
-                String  strHost     = jnodeBaseIRI.get("host"    ).asText();
-                int     iPort       = jnodeBaseIRI.get("port"    ).asInt(-1);
-                String  strPath     = jnodeBaseIRI.get("path"    ).asText();
-                String  strQuery    = jnodeBaseIRI.get("query"   ).asText();
-                String  strFragment = jnodeBaseIRI.get("fragment").asText();
-                boolean bAbsolute   = jnodeBaseIRI.get("absolute").asBoolean();
-                boolean bOpaque     = jnodeBaseIRI.get("opaque"  ).asBoolean();
+            if ( strPath != null && ! strPath.isEmpty() )
+                strBaseIRI += strPath;
+            if ( strQuery != null && ! strQuery.isEmpty() )
+                strBaseIRI += "?" + strQuery;
+            if ( strFragment != null && ! strFragment.isEmpty() )
+                strBaseIRI += "#" + strFragment;
 
-                // Construct the Base IRI string from the components...
-                strBaseIRI = "";
-                if ( strScheme != null && ! strScheme.isEmpty() )
-                    strBaseIRI += strScheme + ":";
-                if ( strHost != null && ! strHost.isEmpty() ) {
-                    strBaseIRI += "//";
-                    if ( strUserInfo != null && ! strUserInfo.isEmpty() )
-                        strBaseIRI += strUserInfo + "@";
-                    strBaseIRI += strHost;
-                    if ( iPort > -1 )
-                        strBaseIRI += ":" + Integer.toString(iPort);
-                }
-                if ( strPath != null && ! strPath.isEmpty() )
-                    strBaseIRI += strPath;
-                if ( strQuery != null && ! strQuery.isEmpty() )
-                    strBaseIRI += "?" + strQuery;
-                if ( strFragment != null && ! strFragment.isEmpty() )
-                    strBaseIRI += "#" + strFragment;
+            // Realize the Base IRI...
+            iriBase = Util.buildIRI( strBaseIRI );
 
-                // Realize the Base IRI...
-                iriBase = Util.buildIRI( strBaseIRI );
-
-                // Sanity check the Base IRI against remaining components...
+            // Sanity check the Base IRI against remaining components...
+            if ( Util.isVerbose() || Util.isDebugMode() ) {
                 if (iriBase != null) {
                     if (iriBase.isAbsolute() != bAbsolute) {
-                        if ( Util.isVerbose() || Util.isDebugMode() ) RDFTransform.logger.warn("Mismatch reconstructing Base IRI: Absolute Value");
+                        RDFTransform.logger.warn("Mismatch reconstructing BaseIRI: Absolute Value");
                     }
                     if (iriBase.isOpaque() != bOpaque) {
-                        if ( Util.isVerbose() || Util.isDebugMode() ) RDFTransform.logger.warn("Mismatch reconstructing Base IRI: Opaque Value");
+                        RDFTransform.logger.warn("Mismatch reconstructing BaseIRI: Opaque Value");
                     }
                 }
             }
-            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Set to:" + strBaseIRI);
         }
 
         if (iriBase != null) {
             this.theBaseIRI = iriBase;
+            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: BaseIRI set to: " + strBaseIRI);
         }
         else {
             this.theBaseIRI = Util.buildIRI( RDFTransform.theGlobalContext.getDefaultBaseIRI() );
-            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Set to default");
+            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: BaseIRI set to default.");
         }
     }
 
@@ -555,6 +569,7 @@ public class RDFTransform implements OverlayModel {
         }
         synchronized(this.theNamespaces) {
             if ( jnodeNamespaces == null || jnodeNamespaces.isNull() || jnodeNamespaces.isEmpty() ) {
+                if (Util.isDebugMode()) RDFTransform.logger.info("  No Namespaces.");
                 return;
             }
             this.theNamespaces.clear();
@@ -562,7 +577,7 @@ public class RDFTransform implements OverlayModel {
             if ( Util.isDebugMode() ) RDFTransform.logger.info("  Namespaces:\n" + jnodeNamespaces.toPrettyString());
 
             if ( jnodeNamespaces.isObject() ) {
-                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Set by JSON Object...");
+                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Namespaces set by JSON Object...");
                 Iterator<Entry<String, JsonNode>> iterNodes = jnodeNamespaces.fields();
                 Map.Entry<String, JsonNode> mePrefix;
                 while ( iterNodes.hasNext() ) {
@@ -573,7 +588,7 @@ public class RDFTransform implements OverlayModel {
                 }
             }
             if ( this.theNamespaces.isEmpty() ) {
-                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Set by Predefined defaults...");
+                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Namespaces set by Predefined defaults...");
                 this.theNamespaces =
                     RDFTransform.theGlobalContext.
                         getPredefinedVocabularyManager().
@@ -648,7 +663,7 @@ public class RDFTransform implements OverlayModel {
         }
         synchronized(this.theRootNodes) {
             if ( jnodeSubjectMappings == null || jnodeSubjectMappings.isNull() || jnodeSubjectMappings.isEmpty() ) {
-                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Empty Subject Mappings.");
+                if ( Util.isDebugMode() ) RDFTransform.logger.info("  No Subject Mappings.");
                 return;
             }
             List<ResourceNode> listRootNodes = new ArrayList<ResourceNode>();
