@@ -15,6 +15,8 @@
  *
  ****************************************************************************************************/
 
+import { RDFTransform } from "./rdf-transform";
+
 /*
  *  CLASS RDFDataTableView
  *
@@ -256,7 +258,7 @@ class RDFExpressionPreviewDialog {
  *   _prepareUpdate = function(params)
  *   _renderPreview = function(expression, data)
  */
-function ExpressionPreviewDialog_WidgetCopy() {};
+function ExpressionPreviewDialog_WidgetCopy() {}
 ExpressionPreviewDialog_WidgetCopy.prototype = Object.create(ExpressionPreviewDialog.Widget.prototype);
 ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDialog_WidgetCopy;
 
@@ -557,3 +559,5 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		}
 	}
 }
+
+export { RDFDataTableView };

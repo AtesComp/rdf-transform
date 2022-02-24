@@ -352,7 +352,7 @@ class RDFTransformResourceDialog {
             // ...take it as is...
             //new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
             /** @type {{prefix?: string, localPart?: string}} */
-            var obj = {};
+            obj = {};
             obj.prefix = null;  // No Prefix
             obj.localPart = strIRI; // Full IRI
             this.#onDone(obj);
@@ -367,6 +367,8 @@ class RDFTransformResourceDialog {
         }
     }
 }
+
+export { RDFTransformResourceDialog }
 
 /*
  *  CLASS RDFTransformResourceResolveDialog

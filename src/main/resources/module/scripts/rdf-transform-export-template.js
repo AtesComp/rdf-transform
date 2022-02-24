@@ -1,3 +1,5 @@
+import { RDFTransformCommon } from "./rdf-transform-common";
+
 /*
  *  Export Template
  */
@@ -34,3 +36,5 @@ class RDFExportTemplate
         //});
     }
 }
+
+export { RDFExportTemplate };

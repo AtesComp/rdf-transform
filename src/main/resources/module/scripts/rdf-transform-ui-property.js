@@ -1,3 +1,8 @@
+import { RDFTransform } from "./rdf-transform";
+import { RDFTransformCommon } from "./rdf-transform-common";
+import { RDFTransformResourceDialog } from "./rdf-transform-resource";
+import { RDFTransformUINode } from "./rdf-transform-ui-node";
+
 /*
  *  CLASS RDFTransformUIProperty
  *
@@ -357,3 +362,5 @@ class RDFTransformUIProperty {
         return propertyUI;
     }
 }
+
+export { RDFTransformUIProperty }

@@ -1,3 +1,5 @@
+import { RDFTransform } from "./rdf-transform";
+
 class RDFTransformVocabManager {
 	#namespacesManager;
 
@@ -79,7 +81,7 @@ class RDFTransformVocabManager {
 			{
 				var dismissBusy =
 					DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
-				
+
 				Refine.postCSRF(
 					"command/rdf-transform/refresh-prefix",
 					{   "project" : theProject.id,
@@ -142,3 +144,5 @@ class RDFTransformVocabManager {
 		DialogSystem.dismissUntil(this.#level - 1);
 	}
 }
+
+export { RDFTransformVocabManager }

@@ -1,3 +1,7 @@
+import { RDFTransformCommon } from "./rdf-transform-common";
+import { RDFTransformNamespaceAdder } from "./rdf-transform-namespace-adder";
+import { RDFTransformVocabManager } from "./rdf-transform-vocab-manager";
+
 /*
  * RDFTransformNamespacesManager
  *
@@ -250,4 +254,6 @@ class RDFTransformNamespacesManager {
 			"localPart" : strQName.substring(iIndex + 1)
 		};
 	}
-};
+}
+
+export { RDFTransformNamespacesManager }

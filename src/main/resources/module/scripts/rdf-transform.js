@@ -1,3 +1,9 @@
+import { RDFTransformCommon } from "./rdf-transform-common";
+import { RDFExportTemplate } from "./rdf-transform-export-template";
+import { RDFImportTemplate } from "./rdf-transform-import-template";
+import { RDFTransformNamespacesManager } from "./rdf-transform-namespaces-manager";
+import { RDFTransformUINode } from "./rdf-transform-ui-node";
+
 /*
  *  CLASS RDFTransform
  *
@@ -6,7 +12,7 @@
 class RDFTransform {
     // This Client-side RDFTransform.KEY matches Server-side RDFTransform.KEY
     // NOTE: "get KEY()" sets "KEY" for retrieval.
-    static get KEY() { return "rdf-transform"; };
+    static get KEY() { return "rdf-transform"; }
 
     static get strExtension() { return "RDFTransform"; }
     static strVersion = "2.0.0";
@@ -33,7 +39,7 @@ class RDFTransform {
         this.gnodeMasterRoot.expression.language = RDFTransform.gstrDefaultExpLang;
         this.gnodeMasterRoot.expression.code = null; // ...to be replaced with default language expression
         this.gnodeMasterRoot.propertyMappings = [];
-    };
+    }
 
     // Setup default Master Object Node (cloneDeep() as needed)...
     static gnodeMasterObject = {};
@@ -43,7 +49,7 @@ class RDFTransform {
         this.gnodeMasterObject.valueSource = {};
         this.gnodeMasterObject.valueSource.source = "column";
         this.gnodeMasterObject.valueSource.columnName = null; // ...to be replaced with column.name
-    };
+    }
 
     static setDefaults() {
         // NOTE: We can't set these variables as static class statements since they depend on
@@ -105,7 +111,7 @@ class RDFTransform {
         }
         return null;
     }
-};
+}
 
 /*
  *  CLASS RDFTransformDialog
@@ -196,10 +202,12 @@ class RDFTransformDialog {
                     Array.isArray(this.#theTransform.subjectMappings) ) ) {
             this.#theTransform.subjectMappings = [];
         }
+
+        var nodeUI = null;
         // Does the transform have any root nodes?  No, then set the initial root node...
         if ( this.#theTransform.subjectMappings.length === 0) {
             // Get the new node...
-            var nodeUI = await this.#createInitialRootNodeUI();
+            nodeUI = await this.#createInitialRootNodeUI();
             this.#theTransform.subjectMappings.push( nodeUI.getNode() );
         }
         // Otherwise, use the existing Transform data...
@@ -244,7 +252,7 @@ class RDFTransformDialog {
                 // Process the node for display...
                 //
 
-                var nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject);
+                nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject);
                 if (nodeUI !== null) {
                     this.#nodeUIs.push(nodeUI);
                 }
@@ -370,7 +378,7 @@ class RDFTransformDialog {
 
         const strSample =
             $.i18n('rdft-dialog/sample-turtle', this.iSampleLimit) +
-            ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );;
+            ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );
         this.#elements.rdftSampleTurtleText.html( strSample );
 
         this.#elements.buttonOK
@@ -681,4 +689,6 @@ class RDFTransformDialog {
 
         return theTransform;
     }
-};
+}
+
+export { RDFTransform , RDFTransformDialog }

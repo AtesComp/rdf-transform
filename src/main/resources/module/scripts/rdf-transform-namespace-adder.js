@@ -1,3 +1,6 @@
+import { RDFTransform } from "./rdf-transform";
+import { RDFTransformCommon } from "./rdf-transform-common";
+
 /*
  *  CLASS RDFTransformNamespaceAdder
  *
@@ -115,7 +118,7 @@ class RDFTransformNamespaceAdder {
 				postData.namespace = strNamespace;
 				postData.fetch     = strFetchOption;
 				postData.fetchURL  = strNamespace;
-	
+
 				if (strFetchOption === 'web') {
 					dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
 				}
@@ -203,3 +206,5 @@ class RDFTransformNamespaceAdder {
 		DialogSystem.dismissUntil(this.#level - 1);
 	}
 }
+
+export { RDFTransformNamespaceAdder }

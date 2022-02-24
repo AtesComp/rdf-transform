@@ -9,6 +9,5 @@ tmp
 .settings
 .vscode
 RDFTransform.code-workspace
-src/main/resources/module/node_modules/*
-src/main/resources/module/package.json
-src/main/resources/module/package-lock.json
+src/main/resources/module/node_modules
+src/main/resources/module/*.json

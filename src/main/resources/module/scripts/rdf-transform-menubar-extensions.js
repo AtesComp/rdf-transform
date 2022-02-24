@@ -1,3 +1,5 @@
+import { RDFTransformDialog } from "./rdf-transform";
+
 /*
  *  Language Management: Initialize
  *
@@ -5,6 +7,7 @@
  *    the following $.i18n() language callouts process correctly.  An asynchronous
  *    load does not present the language elements for many of the display items.
  */
+
 /** @type {string} */
 var dict = "";
 /** @type {string} */

@@ -1,11 +1,15 @@
+import { RDFDataTableView } from "./rdf-data-table-view";
+import { RDFTransform } from "./rdf-transform";
+import { RDFTransformCommon } from "./rdf-transform-common";
+import { RDFTransformResourceDialog } from "./rdf-transform-resource";
+import { RDFTransformUIProperty } from "./rdf-transform-ui-property";
+
 /*
  *  CLASS RDFTransformUINode
  *
  *  The UI node manager for the RDF Transform dialog
  */
 class RDFTransformUINode {
-    static iMaxNodeLength = 35;
-
     #dialog;
     #node;
     #bIsRoot;
@@ -40,7 +44,7 @@ class RDFTransformUINode {
         this.gnodeMasterObject.valueType.type = "literal";
         this.gnodeMasterObject.valueSource = {};
         this.gnodeMasterObject.valueSource.source = null; // ...to be replaced with row / record index
-    };
+    }
 
     // Setup default Master Property Edge (cloneDeep() as needed)...
     static gpropMasterProperty = {};
@@ -990,6 +994,8 @@ class RDFTransformUINode {
 
         theNode.valueType = {};
         theNode.valueSource = {};
+        /** @type {string} */
+        var strConstVal = null;
 
         // All Resource Nodes...
         if ( this.#eType === RDFTransformCommon.NodeType.Resource ) {
@@ -1037,9 +1043,8 @@ class RDFTransformUINode {
                 // Check for custom datatype literal...
                 if ( $('#rdf-content-type-radio').prop('checked') ) {
                     // Check for custom dataType IRI value...
-                    /** @type {string} */
                     // @ts-ignore
-                    var strConstVal = $('#rdf-content-type-input').val();
+                    strConstVal = $('#rdf-content-type-input').val();
                     if ( strConstVal !== null && strConstVal.length === 0 ) {
                         alert( $.i18n('rdft-dialog/alert-custom') );
                         return null;
@@ -1112,9 +1117,8 @@ class RDFTransformUINode {
         // All Constant-based Nodes...
         else {
             // Set value...
-            /** @type {string} */
             // @ts-ignore
-            var strConstVal = $('#rdf-constant-value-input').val();
+            strConstVal = $('#rdf-constant-value-input').val();
             if ( strConstVal.length === 0 ) {
                 alert( $.i18n('rdft-dialog/alert-enter-const') );
                 return null;
@@ -1400,3 +1404,5 @@ class RDFTransformUINode {
         return nodeUI;
     }
 }
+
+export { RDFTransformUINode }

@@ -4,7 +4,7 @@
  *	Utility class for all occasions
  */
 class RDFTransformCommon {
-	static bGoodIRI;
+	static iMaxNodeLength = 35;
 
 	static NodeType = class {
 		// NOTE: The following string names ("resource", "blank", "literal") are intentinally set
@@ -122,7 +122,7 @@ class RDFTransformCommon {
 			RDFTransformCommon.#strRE_IPV4 +
 		")";
 	static #strRE_IPV6 =
-				  	  "(?:" + RDFTransformCommon.#strRE_H16 + ":){6}" +	RDFTransformCommon.#strRE_LS32 + "|" +
+					  "(?:" + RDFTransformCommon.#strRE_H16 + ":){6}" +	RDFTransformCommon.#strRE_LS32 + "|" +
 					"::(?:" + RDFTransformCommon.#strRE_H16 + ":){5}" +	RDFTransformCommon.#strRE_LS32 + "|" +
 		"(?:" +														RDFTransformCommon.#strRE_H16 + ")?" +
 					"::(?:" + RDFTransformCommon.#strRE_H16 + ":){4}" +	RDFTransformCommon.#strRE_LS32 + "|" +
@@ -255,11 +255,11 @@ class RDFTransformCommon {
                 case 0:
                     // Replace whitespace and unallowed characters with underscores...
                     var strTmp = strConvert.replace(/\u{C2A0}/gu, " ");
-					strReplace = strTmp.replace(/[\p{White_Space}<>"{}|\^`]+/gu, "_");
+					strReplace = strTmp.replace(/[\p{White_Space}<>"{}|^`]+/gu, "_");
 					break;
                 case 1:
                     // Replace any unsupported characters with underscores...
-					strReplace = strConvert.replace(/[^-\p{N}\p{L}_\.~:\/\?#\[\]@%!\$&'\(\)\*\+,;=]+/gu, "_");
+					strReplace = strConvert.replace(/[^-\p{N}\p{L}_.~:/?#[\]@%!$&'()*+,;=]+/gu, "_");
                     break;
                 case 2:
                     // Replace (multiple) leading ":/+" or "/+" with nothing (remove) (first occurrences, not global)...
@@ -267,11 +267,11 @@ class RDFTransformCommon {
                     break;
                 case 3:
                     // Replace sub-delim characters with underscores...
-                    strReplace = strConvert.replace(/[!\$&'\(\)\*\+,;=]+/gu, "_");
+                    strReplace = strConvert.replace(/[!$&'()*+,;=]+/gu, "_");
                     break;
                 case 4:
                     // Replace gen-delim (but not ":" and "/") characters with underscores...
-                    strReplace = strConvert.replace(/[\?#\[\]@]+/gu, "_");
+                    strReplace = strConvert.replace(/[?#[\]@]+/gu, "_");
                     break;
                 case 5:
                     // Replace "/" characters with underscores...
@@ -283,7 +283,7 @@ class RDFTransformCommon {
                     break;
                 default:
                     // Replace all but Unreserved characters with underscores...
-                    strReplace = strConvert.replace(/[^-\\p{N}\\p{L}_\\.~]+/gu, "_");
+                    strReplace = strConvert.replace(/[^-\p{N}\p{L}_\\.~]+/gu, "_");
                     break;
             }
             // Condense underscores...
@@ -344,7 +344,7 @@ class RDFTransformCommon {
 	 *	Test that ALL of the given string is a single IRI and properly ends
 	 *  with a prefix suffix "/" or "#"
 	 */
-	 static async validateNamespace(strIRI) {
+	static async validateNamespace(strIRI) {
 		function endsWith(strTest, strSuffix) {
 			return strTest.indexOf(strSuffix, strTest.length - strSuffix.length) !== -1;
 		}
@@ -374,9 +374,9 @@ class RDFTransformCommon {
 	 *
 	 *	Converts all line terminals to HTML breaks
 	 */
-	 static toHTMLBreaks(strText) {
+	static toHTMLBreaks(strText) {
 		return strText.replace(RDFTransformCommon.#reLINE_TERMINAL_gm, "<br />");
-	 }
+	}
 
 	/*
 	 * Method shortenLiteral(strLiteral)
@@ -388,7 +388,7 @@ class RDFTransformCommon {
 		if (! strLiteral)
 			return "ERROR: NO STRING";
 
-		var iMax = RDFTransformUINode.iMaxNodeLength;
+		var iMax = RDFTransformCommon.iMaxNodeLength;
 
 		// Short string?
 		if (strLiteral.length <= iMax)
@@ -412,7 +412,7 @@ class RDFTransformCommon {
 		if (! strResource)
 			return "ERROR: NO STRING";
 
-		var iMax = RDFTransformUINode.iMaxNodeLength;
+		var iMax = RDFTransformCommon.iMaxNodeLength;
 
 		// Short string?
 		if (strResource.length <= iMax)
@@ -492,7 +492,7 @@ class RDFTransformCommon {
 	 *		strExt: the file name extension
 	 *		strDesc: the description displayed for the file extension
 	 */
-	 static async saveFile(strTemplate, strFilename, strExt, strType, strDesc) {
+	static async saveFile(strTemplate, strFilename, strExt, strType, strDesc) {
 		const blobPart = [];
 		blobPart[0] = strTemplate;
         // Create the blob object...
@@ -531,7 +531,7 @@ class RDFTransformCommon {
 	 *  	strTemplate: the string containing the RDF Transform template in
 	 *			JSON format
 	 */
-	 static async openFile(strExt, strType, strDesc) {
+	static async openFile(strExt, strType, strDesc) {
         // Get the File Handler...
         const [ fileHandle ] =
 			// @ts-ignore
@@ -551,3 +551,5 @@ class RDFTransformCommon {
 		return strTemplate;
     }
 }
+
+export { RDFTransformCommon };
