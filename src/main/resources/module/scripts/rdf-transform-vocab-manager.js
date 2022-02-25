@@ -1,5 +1,3 @@
-import { RDFTransform } from "./rdf-transform";
-
 class RDFTransformVocabManager {
 	#namespacesManager;
 
@@ -144,5 +142,3 @@ class RDFTransformVocabManager {
 		DialogSystem.dismissUntil(this.#level - 1);
 	}
 }
-
-export { RDFTransformVocabManager }

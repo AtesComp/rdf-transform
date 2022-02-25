@@ -3,11 +3,12 @@ package com.google.refine.rdf.model.vocab;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.refine.rdf.model.Util;
 
 public class SearchResultItem {
 	private String strIRI;
 	private String strLabel;
-	private String strDescription;
+	private String strDesc;
 	private String strPrefix;
 	private String strNamespace;
 	private String strLocalPart;
@@ -15,12 +16,12 @@ public class SearchResultItem {
 	public SearchResultItem(
 				String strIRI, String strLabel, String strDesc,
 				String strPrefix, String strNamespace, String strLocalPart) {
-		this.strIRI         = strIRI;
-		this.strLabel       = strLabel;
-		this.strDescription = strDesc;
-		this.strPrefix      = strPrefix;
-		this.strNamespace   = strNamespace;
-		this.strLocalPart   = strLocalPart;
+		this.strIRI       = strIRI;
+		this.strLabel     = strLabel;
+		this.strDesc      = strDesc;
+		this.strPrefix    = strPrefix;
+		this.strNamespace = strNamespace;
+		this.strLocalPart = strLocalPart;
 	}
 
 	public String getIRI() {
@@ -32,7 +33,7 @@ public class SearchResultItem {
 	}
 
 	public String getDescription() {
-		return this.strDescription;
+		return this.strDesc;
 	}
 
 	public String getPrefix() {
@@ -51,42 +52,44 @@ public class SearchResultItem {
 			throws IOException {
 		theWriter.writeStartObject();
 		if (this.strIRI != null) {
-			theWriter.writeStringField("iri", this.strIRI);
+			theWriter.writeStringField(Util.gstrIRI, this.strIRI);
 		}
 		if (this.strLabel != null) {
-			theWriter.writeStringField("label", this.strLabel);
+			theWriter.writeStringField(Util.gstrLabel, this.strLabel);
 		}
-		if (this.strDescription != null) {
-			theWriter.writeStringField("desc", this.strDescription);
+		if (this.strDesc != null) {
+			theWriter.writeStringField(Util.gstrDesc, this.strDesc);
 		}
 		if (this.strPrefix != null) {
-			theWriter.writeStringField("prefix", this.strPrefix);
+			theWriter.writeStringField(Util.gstrPrefix, this.strPrefix);
 		}
 		if (this.strNamespace != null) {
-			theWriter.writeStringField("namespace", this.strNamespace);
+			theWriter.writeStringField(Util.gstrNamespace, this.strNamespace);
 		}
 		if (this.strLocalPart != null) {
-			theWriter.writeStringField("localPart", this.strLocalPart);
+			theWriter.writeStringField(Util.gstrLocalPart, this.strLocalPart);
 		}
-		// The "description" contains everything:
+		// The long "description" contains everything:
 		//		the full IRI,
 		//		the Label,
-		//		the actual stored Description,
+		//		the stored Description,
 		//		the Prefix,
 		//		the Namespace, and
 		//		the Local Part
-		theWriter.writeStringField(
-			"description",
-			this.strIRI + "<br/>" +
-			"<em>Label</em>: " + this.strLabel + "<br/>" +
-			"<em>Description</em>: " + this.strDescription + "<br/>" +
+		// for searchTerm display purposes.
+		String strDescription =
+			this.strIRI +
+			((this.strDesc != null) ?
+				("<br/>" + "<em>Label</em>: " + this.strLabel) : "") +
+			((this.strDesc != null) ?
+				("<br/>" + "<em>Description</em>: " + this.strDesc) : "") +
 			((this.strPrefix != null) ?
-				("<em>Prefix</em>: " + this.strPrefix + "<br/>") : "") +
+				("<br/>" + "<em>Prefix</em>: " + this.strPrefix) : "") +
 			((this.strNamespace != null) ?
-				("<em>Namespace</em>: " + this.strNamespace + "<br/>") : "") +
+				("<br/>" + "<em>Namespace</em>: " + this.strNamespace) : "") +
 			((this.strLocalPart != null) ?
-				("<em>LocalPart</em>: " + this.strLocalPart) : "")
-		);
+				("<br/>" + "<em>LocalPart</em>: " + this.strLocalPart) : "");
+		theWriter.writeStringField(Util.gstrDescription, strDescription);
 		theWriter.writeEndObject();
 	}
 

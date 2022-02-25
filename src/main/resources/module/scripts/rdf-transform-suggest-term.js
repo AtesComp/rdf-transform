@@ -11,7 +11,7 @@
  */
 ( function($) {
     if (! $.suggest) {
-    	alert(
+		alert(
 			"ERROR: $.suggest required!\n" +
 			"See: https://docs.openrefine.org/technical-reference/suggest-api"
 		);
@@ -103,7 +103,7 @@
 					this.request.timeout =
 						setTimeout(
 							() => {
-	                        	$.get(ajax_options)
+								$.get(ajax_options)
 								.done(
 									(data, strStatus, xhr) => {
 										$.suggest.cache[url] = data;
@@ -150,7 +150,7 @@
 										}
 									}
 								);
-	                    	},
+							},
 							// @ts-ignore
 							this.options.xhr_delay
 						);
@@ -222,29 +222,29 @@
 		$.suggest.suggestTerm,
 		// object merged (overwrites same named prior objects)...
 		{
-         	defaults : $.extend(
+			defaults : $.extend(
 				// deep copy...
-        		true,
+				true,
 				// object extended...
-        		{},
+				{},
 				// object merged (overwrites same named prior objects)...
-        		$.suggest.suggest.defaults,
+				$.suggest.suggest.defaults,
 				// object merged (overwrites same named prior objects)...
-        		{
-        			"service_url"         : "",
-        			"service_path"        : "command/rdf-transform/suggest-term",
-        			"flyout_service_path" : "command/rdf-transform/suggest-term",
-        			"type"                : "class",
-        			"suggest_new"         : $.i18n('rdft-dialog/add-it'),
-        			"cache"               : false,
-        			//"soft                : true,
-        			"nomatch" :  {
-        				"title"   : $.i18n('rdft-dialog/no-matches'),
-        				"heading" : null,
-        				"tips"    : null
-        			}
-         		}
+				{
+					"service_url"         : "",
+					"service_path"        : "command/rdf-transform/suggest-term",
+					"flyout_service_path" : "command/rdf-transform/suggest-term",
+					"type"                : "class",
+					"suggest_new"         : $.i18n('rdft-dialog/add-it'),
+					"cache"               : false,
+					//"soft                : true,
+					"nomatch" :  {
+						"title"   : $.i18n('rdft-dialog/no-matches'),
+						"heading" : null,
+						"tips"    : null
+					}
+				}
 			)
-     	}
+		}
 	);
 } ) (jQuery); // ...self-execute on JQuery

@@ -50,7 +50,12 @@ class RDFTransformResourceDialog {
         )
         .bind('fb-select', // ...select existing item...
             async (evt, data) => {
+                // Variable "data" is a JSON object from the RDFTransform SearchResultItem class
+                // containing key:value entries:
+                //  iri, label, desc, prefix, namespace, localPart, description
+
                 MenuSystem.dismissAll();
+
                 var strIRI = null;
                 var strLabel = null;
                 var strDesc = null;
@@ -58,26 +63,29 @@ class RDFTransformResourceDialog {
                 var strNamespace = null;
                 var strLocalPart = null;
                 var strLongDescription = null;
-                if ("iri" in data) {
-                    strIRI = data.iri;
-                }
-                if ("label" in data) {
-                    strLabel = data.label;
-                }
-                if ("desc" in data) {
-                    strDesc = data.desc;
-                }
-                if ("prefix" in data) {
-                    strPrefix = data.prefix;
-                }
-                if ("namespace" in data) {
-                    strNamespace = data.namespace;
-                }
-                if ("localPart" in data) {
-                    strLocalPart = data.localPart;
-                }
-                if ("description" in data) {
-                    strLongDescription = data.description;
+
+                if ( data !== null && typeof data === 'object' && !Array.isArray(data) ) {
+                    if ("iri" in data) {
+                        strIRI = data.iri;
+                    }
+                    if ("label" in data) {
+                        strLabel = data.label;
+                    }
+                    if ("desc" in data) {
+                        strDesc = data.desc;
+                    }
+                    if ("prefix" in data) {
+                        strPrefix = data.prefix;
+                    }
+                    if ("namespace" in data) {
+                        strNamespace = data.namespace;
+                    }
+                    if ("localPart" in data) {
+                        strLocalPart = data.localPart;
+                    }
+                    if ("description" in data) {
+                        strLongDescription = data.description;
+                    }
                 }
                 alert("DEBUG: Existing Item:\n" +
                         "   IRI: " + strIRI + "\n" +
@@ -88,6 +96,7 @@ class RDFTransformResourceDialog {
                         " lPart: " + strLocalPart + "\n" +
                         " LDesc: " + strLongDescription
                 );
+
                 /** @type {{prefix?: string, localPart?: string}} */
                 var obj = null;
                 if (strLocalPart) { // ...not null or ""
@@ -119,13 +128,16 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        "The selection does not have a valid Resource object!" // TODO: i18n
+                        "The selection does not have a valid Resource object!\n" + // TODO: i18n
+                        "IRI: " + strIRI
                     );
                 }
             }
         )
         .bind('fb-select-new', // ...add new item...
-            /*async*/ (evt, data) => {
+            async (evt, data) => {
+                // Variable "data" is the raw IRI input value from the dialog
+
                 var strIRI = null;
                 var strLabel = null;
                 var strDesc = null;
@@ -133,26 +145,44 @@ class RDFTransformResourceDialog {
                 var strNamespace = null;
                 var strLocalPart = null;
                 var strLongDescription = null;
-                if ("iri" in data) {
-                    strIRI = data.iri;
-                }
-                if ("label" in data) {
-                    strLabel = data.label;
-                }
-                if ("desc" in data) {
-                    strDesc = data.desc;
-                }
-                if ("prefix" in data) {
-                    strPrefix = data.prefix;
-                }
-                if ("namespace" in data) {
-                    strNamespace = data.namespace;
-                }
-                if ("localPart" in data) {
-                    strLocalPart = data.localPart;
-                }
-                if ("description" in data) {
-                    strLongDescription = data.description;
+
+                // If there is a possible IRI...
+                if ( data !== null && typeof data === 'string' ) {
+                    strIRI = data;
+                    // Does the IRI look like a prefixed IRI?
+                    var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(strIRI);
+                    // Is it a good IRI?
+                    if ( iPrefixedIRI >= 0 ) {
+                        MenuSystem.dismissAll();
+
+                        // Is it a prefixed IRI?
+                        if ( iPrefixedIRI === 1 ) {
+                            // Divide the IRI into Prefix and LocalPart portions...
+                            strPrefix = this.#dialog.namespacesManager.getPrefixFromQName(strIRI);
+                            strLocalPart = this.#dialog.namespacesManager.getSuffixFromQName(strIRI);
+                            // Get the Namespace of the Prefix...
+                            strNamespace = this.#dialog.namespacesManager.getNamespaceOfPrefix(strPrefix);
+                            // Get the Full IRI from the Prefixed IRI...
+                            strIRI = this.#dialog.namespacesManager.getFullIRIFromQName(strIRI);
+                            strLabel = strIRI;
+                        }
+                        // Is it a good IRI?
+                        else if ( iPrefixedIRI === 0 ) {
+                            // Does it have a Base IRI prefix?  Yes...
+                            if (strIRI[0] === ':') {
+                                strPrefix = ""; // ...use Base IRI Prefix
+                                strNamespace = this.#dialog.getBaseIRI();
+                                strLocalPart = strIRI.substring(1);
+                                strLabel = strIRI;
+                                strIRI = strNamespace + strLocalPart;
+                            }
+                            // Otherwise, it's a Full IRI...
+                            else {
+                                // ...take it as is...
+                                strLabel = strIRI;
+                            }
+                        }
+                    }
                 }
                 alert("DEBUG: Add Item:\n" +
                         "   IRI: " + strIRI + "\n" +
@@ -163,8 +193,11 @@ class RDFTransformResourceDialog {
                         " lPart: " + strLocalPart + "\n" +
                         " LDesc: " + strLongDescription
                 );
+
                 /** @type {{prefix?: string, localPart?: string}} */
                 var obj = null;
+
+                // If there are valid parts decribed from the given IRI...
                 if (strLocalPart) { // ...not null or ""
                     // Is there an existing prefix matching the given prefix?
                     if ( strPrefix === "" || this.#dialog.namespacesManager.hasPrefix(strPrefix) ) {
@@ -210,6 +243,7 @@ class RDFTransformResourceDialog {
                             }
                         );
                     }
+                    // Otherwise, check for a namespace without a prefix...
                     else if (strNamespace != null) {
                         // Not Prefixed: Full IRI...
                         obj = {};
@@ -217,11 +251,19 @@ class RDFTransformResourceDialog {
                         obj.localPart = strNamespace + strLocalPart;
                     }
                 }
+                // Otherwise, if there is a good IRI...
                 else if (strIRI) {
-                    // Full IRI...
                     obj = {};
-                    obj.prefix = null;      // No Prefix
-                    obj.localPart = strIRI; // Full IRI
+                    // If it has a Base IRI prefix...
+                    if (strIRI[0] === ':') {
+                        obj.prefix = ""; // ...use Base IRI Prefix
+                        obj.localPart = strIRI.substring(1);
+                    }
+                    // Otherwise, it's a Full IRI...
+                    else {
+                        obj.prefix = null;      // No Prefix
+                        obj.localPart = strIRI; // Full IRI
+                    }
                 }
 
                 // Do we have a good resource (obj) to add?
@@ -233,7 +275,8 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        "The seletion does not have a valid Resource object!" // TODO: i18n
+                        "The selection does not have a valid Resource object!\n" + // TODO: i18n
+                        "IRI: " + strIRI
                     );
                 }
 
@@ -242,8 +285,9 @@ class RDFTransformResourceDialog {
         elements.rdftNewResourceIRI.focus();
     }
 
+    /*
     async #extractPrefixLocalPart(strIRI, strResp) {
-        /** @type {{prefix?: string, localPart?: string}} */
+        /** @type {{prefix?: string, localPart?: string}} * /
         var obj = null;
         var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(strIRI);
         if ( iPrefixedIRI === 1 ) { // ...Prefixed IRI
@@ -274,7 +318,7 @@ class RDFTransformResourceDialog {
     }
 
     async #addPrefixLocalPart(strIRI, strResp) {
-        /** @type {{prefix?: string, localPart?: string}} */
+        /** @type {{prefix?: string, localPart?: string}} * /
         var obj = null;
 
         // Does the IRI look like a prefixed IRI?
@@ -351,7 +395,7 @@ class RDFTransformResourceDialog {
 
             // ...take it as is...
             //new RDFTransformResourceResolveDialog(this.#element, data, this.#onDone);
-            /** @type {{prefix?: string, localPart?: string}} */
+            /** @type {{prefix?: string, localPart?: string}} * /
             obj = {};
             obj.prefix = null;  // No Prefix
             obj.localPart = strIRI; // Full IRI
@@ -366,9 +410,8 @@ class RDFTransformResourceDialog {
             );
         }
     }
+    */
 }
-
-export { RDFTransformResourceDialog }
 
 /*
  *  CLASS RDFTransformResourceResolveDialog

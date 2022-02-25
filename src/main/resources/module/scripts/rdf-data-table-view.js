@@ -15,8 +15,6 @@
  *
  ****************************************************************************************************/
 
-import { RDFTransform } from "./rdf-transform";
-
 /*
  *  CLASS RDFDataTableView
  *
@@ -199,7 +197,7 @@ class RDFExpressionPreviewDialog {
 
 		footer.css(
 			{	"position" : "absolute",
-			 	"bottom" : "0px" }
+				"bottom" : "0px" }
 		);
 
 		header.appendTo(this.#frame);
@@ -559,5 +557,3 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		}
 	}
 }
-
-export { RDFDataTableView };

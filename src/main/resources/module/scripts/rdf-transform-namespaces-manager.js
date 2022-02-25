@@ -1,7 +1,3 @@
-import { RDFTransformCommon } from "./rdf-transform-common";
-import { RDFTransformNamespaceAdder } from "./rdf-transform-namespace-adder";
-import { RDFTransformVocabManager } from "./rdf-transform-vocab-manager";
-
 /*
  * RDFTransformNamespacesManager
  *
@@ -225,7 +221,7 @@ class RDFTransformNamespacesManager {
 		return strQName.substring(iIndex + 1);
 	}
 
-	getFullIRIFromQName(strPrefixedQName, strBaseIRI) {
+	getFullIRIFromQName(strPrefixedQName) {
 		var objIRIParts = this.#deAssembleQName(strPrefixedQName);
 		if ( objIRIParts.prefix === null ) {
 			return objIRIParts.localPart;
@@ -235,7 +231,7 @@ class RDFTransformNamespacesManager {
 					globalNamespaces[objIRIParts.prefix] + objIRIParts.localPart;
 		}
 		if ( objIRIParts.prefix === "" ) {
-			return strBaseIRI + objIRIParts.localPart;
+			return this.#dialog.getBaseIRI() + objIRIParts.localPart;
 		}
 		return objIRIParts.prefix + ":" + objIRIParts.localPart;
 	}
@@ -243,17 +239,15 @@ class RDFTransformNamespacesManager {
 	#deAssembleQName(strQName) {
 		var iFull = strQName.indexOf("://");
 		var iIndex = strQName.indexOf(':');
+		var obj = {};
 		if (iFull !== -1 || iIndex === -1) {
-			return {
-				"prefix"    : null,
-				"localPart" : strQName
-			};
+			obj.prefix = null;
+			obj.localPart = strQName
 		}
-		return {
-			"prefix"    : strQName.substring(0, iIndex),
-			"localPart" : strQName.substring(iIndex + 1)
-		};
+		else {
+			obj.prefix = strQName.substring(0, iIndex),
+			obj.localPart = strQName.substring(iIndex + 1)
+		}
+		return obj;
 	}
 }
-
-export { RDFTransformNamespacesManager }

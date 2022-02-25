@@ -3,7 +3,9 @@ package com.google.refine.rdf.command;
 //import com.google.refine.ProjectManager;
 //import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
+
 import com.google.refine.rdf.RDFTransform;
+//import com.google.refine.rdf.model.Util;
 import com.google.refine.rdf.model.vocab.SearchResultItem;
 import com.google.refine.rdf.model.vocab.Vocabulary;
 import com.google.refine.rdf.model.vocab.VocabularyList;
@@ -26,6 +28,8 @@ import org.eclipse.rdf4j.common.net.ParsedIRI;
 public class SuggestTermCommand extends RDFTransformCommand {
 	//private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
 
+	//private HttpServletRequest theRequest = null;
+
 	public SuggestTermCommand() {
 		super();
 	}
@@ -33,10 +37,11 @@ public class SuggestTermCommand extends RDFTransformCommand {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+		//theRequest = request;
 
-    	// Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
+		// Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
     	// The "project" holds the project ID of the project to search...
-        String strProjectID = request.getParameter("project");
+		String strProjectID = request.getParameter("project");
     	// The "type" holds the value type to search ("class" or "property")...
         String strType = request.getParameter("type");
     	// The "prefix" holds the prefix of the query search value...
@@ -52,16 +57,16 @@ public class SuggestTermCommand extends RDFTransformCommand {
         theWriter.writeStringField("prefix", strQueryPrefix);
 
 		// Get the imported vocabulary matches...
-        List<SearchResultItem> listResults = null;
+        List<SearchResultItem> listSearchResults = null;
 		if (strType != null) {
 			if ( strType.strip().equals("class") ) {
-				listResults =
+				listSearchResults =
 					RDFTransform.getGlobalContext().
 						getVocabularySearcher().
 							searchClasses(strQueryPrefix, strProjectID);
 			}
 			else if ( strType.strip().equals("property") ) {
-				listResults =
+				listSearchResults =
 					RDFTransform.getGlobalContext().
 						getVocabularySearcher().
 							searchProperties(strQueryPrefix, strProjectID);
@@ -69,21 +74,19 @@ public class SuggestTermCommand extends RDFTransformCommand {
 		}
 
 		// Augment with the local curated namespaces vocabulary matches...
-        if (listResults == null || listResults.size() == 0) {
-            RDFTransform theTransform =
-				RDFTransform.getRDFTransform( this.getProject(request) );
-			List<SearchResultItem> listResultsVocab = this.search(theTransform, strQueryPrefix);
-			if (listResults == null) {
-				listResults = listResultsVocab;
-			}
-			else {
-				listResults.addAll(listResultsVocab);
-			}
-        }
+		RDFTransform theTransform = RDFTransform.getRDFTransform( this.getProject(request) );
+		List<SearchResultItem> listVocabResults = this.search(theTransform, strQueryPrefix);
+		if (listSearchResults == null) {
+			listSearchResults = listVocabResults;
+		}
+		else {
+			listSearchResults.addAll(listVocabResults);
+		}
 
+		// Write the results...
         theWriter.writeFieldName("result");
         theWriter.writeStartArray();
-        for (SearchResultItem result : listResults) {
+        for (SearchResultItem result : listSearchResults) {
             result.writeAsSearchResult(theWriter);
         }
         theWriter.writeEndArray();
@@ -95,40 +98,6 @@ public class SuggestTermCommand extends RDFTransformCommand {
         writerBase.flush();
         writerBase.close();
     }
-
-	/*
-	 * OVERRIDE
-	 * Project getProject(HttpServletRequest request)
-	 * 		Overridden from Command since the ProjectID is held in a "term" parameter
-	 * 		instead of the normal "project" parameter.
-	 */
-	/*
-	@Override
-	protected Project getProject(HttpServletRequest request)
-			throws ServletException {
-        if (request == null) {
-            throw new ServletException("Parameter 'request' should not be null");
-        }
-        String strProjectID = request.getParameter("term");
-        if (strProjectID == null || "".equals(strProjectID)) {
-            throw new ServletException("Can't find type: missing Project ID parameter");
-        }
-        Long liProjectID;
-        try {
-            liProjectID = Long.parseLong(strProjectID);
-        }
-		catch (NumberFormatException ex) {
-            throw new ServletException("Can't find project: badly formatted Project ID #", ex);
-        }
-        Project theProject = ProjectManager.singleton.getProject(liProjectID);
-        if (theProject != null) {
-            return theProject;
-        }
-		else {
-            throw new ServletException("Failed to find Project ID #" + strProjectID + " - may be corrupt");
-        }
-	}
-	*/
 
 	private boolean isPrefixedQuery(String strQueryPrefix) {
 		boolean bIsPrefixed = false;
@@ -165,7 +134,8 @@ public class SuggestTermCommand extends RDFTransformCommand {
 			// is a prefix for a CIRIE...
 
 			int iIndex = strQueryPrefix.indexOf(":");
-			 // If we have a possible prefix (the ':' could also be in the path)...
+			 // If we have a possible prefix but not a base IRI reference (where iIndex == 0)...
+			 // NOTE: The ':' could also be in the path
 			if (iIndex > 0) {
 				// Is there is a possible path...
 				//    iIndex + 1 = the length of strQuery to the ':' inclusive
@@ -193,6 +163,24 @@ public class SuggestTermCommand extends RDFTransformCommand {
 						bIsPrefixed = true; // ...accept it
 				}
 			}
+			// Else, we might have a possible base IRI reference (starts with ':")...
+			// ...don't accept...
+			/*
+			else if (iIndex == 0 && strQueryPrefix.length() > 1) {
+				// Create Absolute IRI with Relative IRI using Base IRI...
+				try {
+					Project theProject = this.getProject(this.theRequest);
+					String strBaseIRI =
+						RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
+					ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strQueryPrefix.substring(1));
+					// It parses with the Base IRI...
+					bIsPrefixed = true; // ...accept it
+				}
+				catch (Exception ex) {
+					// ...continue...
+				}
+			}
+			*/
 		}
 		return bIsPrefixed;
     }

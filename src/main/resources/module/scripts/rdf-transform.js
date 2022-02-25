@@ -1,9 +1,3 @@
-import { RDFTransformCommon } from "./rdf-transform-common";
-import { RDFExportTemplate } from "./rdf-transform-export-template";
-import { RDFImportTemplate } from "./rdf-transform-import-template";
-import { RDFTransformNamespacesManager } from "./rdf-transform-namespaces-manager";
-import { RDFTransformUINode } from "./rdf-transform-ui-node";
-
 /*
  *  CLASS RDFTransform
  *
@@ -690,5 +684,3 @@ class RDFTransformDialog {
         return theTransform;
     }
 }
-
-export { RDFTransform , RDFTransformDialog }

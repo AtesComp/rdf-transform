@@ -70,6 +70,7 @@ public class Util {
 
     static public final String gstrNamespace = "namespace";
 	static public final String gstrLabel = "label";
+	static public final String gstrDesc = "desc";
 	static public final String gstrDescription = "description";
 	static public final String gstrLocalPart = "localPart";
 

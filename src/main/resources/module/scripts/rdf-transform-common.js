@@ -236,63 +236,60 @@ class RDFTransformCommon {
             return null;
         }
 
-        var iTry = 0;
-        do {
-            // Check if it's an acceptable IRI now (absolute or relative)...
-            if ( await RDFTransformCommon.validateIRI(strConvert) ) {
+        var iTry = 0; // case 0: No replacements...
+		var strReplace = null;
+        // While the IRI (absolute or relative) is NOT valid...
+		while ( ! ( await RDFTransformCommon.validateIRI(strConvert) ) ) {
+            ++iTry;
+			//  If the try count is out of range...
+			if (iTry > 8) {
+				strConvert = null; // ...cannot use the text as an IRI
 				break;
 			}
-			else if (iTry > 7) {
-				strConvert = null; // ...cannot use the text as an IRI
-                break;
-            }
-
 			//
 			// Continue by narrowing the conversion string...
 			//
-			var strReplace;
 			switch (iTry) {
-                case 0:
-                    // Replace whitespace and unallowed characters with underscores...
-                    var strTmp = strConvert.replace(/\u{C2A0}/gu, " ");
-					strReplace = strTmp.replace(/[\p{White_Space}<>"{}|^`]+/gu, "_");
-					break;
                 case 1:
+                    // Replace whitespace and unallowed characters with underscores...
+					strReplace = strConvert.replace(/\u{C2A0}/gu, " ");
+					strReplace = strReplace.replace(/[\p{White_Space}<>"{}|^`]+/gu, "_");
+					break;
+                case 2:
                     // Replace any unsupported characters with underscores...
 					strReplace = strConvert.replace(/[^-\p{N}\p{L}_.~:/?#[\]@%!$&'()*+,;=]+/gu, "_");
                     break;
-                case 2:
+                case 3:
                     // Replace (multiple) leading ":/+" or "/+" with nothing (remove) (first occurrences, not global)...
                     strReplace = strConvert.replace(/^(:?\/+)+/u, "");
                     break;
-                case 3:
+                case 4:
                     // Replace sub-delim characters with underscores...
                     strReplace = strConvert.replace(/[!$&'()*+,;=]+/gu, "_");
                     break;
-                case 4:
+                case 5:
                     // Replace gen-delim (but not ":" and "/") characters with underscores...
                     strReplace = strConvert.replace(/[?#[\]@]+/gu, "_");
                     break;
-                case 5:
+                case 6:
                     // Replace "/" characters with underscores...
                     strReplace = strConvert.replace(/\/+/gu, "_");
                     break;
-                case 6:
+                case 7:
                     // Replace ":" characters with underscores...
                     strReplace = strConvert.replace(/:+/gu, "_");
                     break;
+				case 8:
                 default:
                     // Replace all but Unreserved characters with underscores...
                     strReplace = strConvert.replace(/[^-\p{N}\p{L}_\\.~]+/gu, "_");
                     break;
             }
-            // Condense underscores...
+            // Condense any underscores...
             strConvert = strReplace.replace(/__+/gu, "_");
-            ++iTry;
-        } while (true);
+        }
 
         return strConvert;
-
 	}
 
 	/*
@@ -551,5 +548,3 @@ class RDFTransformCommon {
 		return strTemplate;
     }
 }
-
-export { RDFTransformCommon };

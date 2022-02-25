@@ -1,6 +1,3 @@
-import { RDFTransform } from "./rdf-transform";
-import { RDFTransformCommon } from "./rdf-transform-common";
-
 /*
  *  CLASS RDFTransformNamespaceAdder
  *
@@ -206,5 +203,3 @@ class RDFTransformNamespaceAdder {
 		DialogSystem.dismissUntil(this.#level - 1);
 	}
 }
-
-export { RDFTransformNamespaceAdder }
