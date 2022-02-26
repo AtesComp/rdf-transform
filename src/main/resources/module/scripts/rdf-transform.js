@@ -246,7 +246,7 @@ class RDFTransformDialog {
                 // Process the node for display...
                 //
 
-                nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject);
+                nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject, true);
                 if (nodeUI !== null) {
                     this.#nodeUIs.push(nodeUI);
                 }

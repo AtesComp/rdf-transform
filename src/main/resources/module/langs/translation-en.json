@@ -33,7 +33,7 @@
     "rdft-data/turtle": "Turtle",
     "rdft-dialog/add-it": "Add it",
     "rdft-dialog/add-prop": "Add property",
-    "rdft-dialog/add-type": "Add type...",
+    "rdft-dialog/add-type": "Add type",
     "rdft-dialog/alert-blank": "These triples will each have an independent blank node!",
     "rdft-dialog/alert-cblank": "These triples will point to a shared blank node!",
     "rdft-dialog/alert-cliteral": "These triples will have the constant literal",

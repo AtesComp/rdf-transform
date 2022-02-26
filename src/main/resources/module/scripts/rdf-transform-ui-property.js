@@ -10,11 +10,16 @@ class RDFTransformUIProperty {
     #nodeuiSubject;
     #nodeuiObject;
 
+    #tableDetails;
+
     #tr;
     #tdMain;
     #tdToggle;
-    #tdDetails
-    #tableDetails;
+    #tdDetails;
+
+    #imgExpand;
+    #imgNone;
+    #columnWidth;
 
     #collapsedDetailDiv;
     #expandedDetailDiv;
@@ -65,7 +70,8 @@ class RDFTransformUIProperty {
                 this.#property.nodeObject,
                 false,
                 null, // ...if needed, process and set properties later.  Otherwise, done!
-                options
+                options,
+                this
             );
 
             // Do we need to process Object node Property Mappings? Yes...
@@ -91,20 +97,8 @@ class RDFTransformUIProperty {
             // ...from the Node UI...
             this.#property.nodeObject = this.#nodeuiObject.getNode();
         }
-    }
 
-    getProperty() {
-        return this.#property;
-    }
-
-    processView(theTable) {
-        this.#tr = theTable.insertRow();
-        this.#tdMain  = this.#tr.insertCell(0);
-        this.#tdToggle  = this.#tr.insertCell(1);
-        this.#tdDetails = this.#tr.insertCell(2);
-        this.#tableDetails = null;
-
-        var imgExpand =
+        this.#imgExpand =
             $('<img />')
             .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
             .on("click",
@@ -115,6 +109,20 @@ class RDFTransformUIProperty {
                     this.show();
                 }
             );
+        this.#imgNone = $('<img />');
+
+        this.#columnWidth = "150px";
+    }
+
+    getProperty() {
+        return this.#property;
+    }
+
+    processView(theTable) {
+        this.#tr = theTable.insertRow(); // ...the preperty's "tr" is removable, so preserve
+        this.#tdMain    = this.#tr.insertCell(); // 0
+        this.#tdToggle  = this.#tr.insertCell(); // 1
+        this.#tdDetails = this.#tr.insertCell(); // 2
 
         this.#collapsedDetailDiv =
             $('<div></div>')
@@ -126,28 +134,28 @@ class RDFTransformUIProperty {
 
         $(this.#tdMain)
             .addClass("rdf-transform-property-main")
-            .attr("width", "250")
+            .css({ minWidth: this.#columnWidth }) //.width("33%")
             .addClass("padded");
         $(this.#tdToggle)
             .addClass("rdf-transform-property-toggle")
-            .attr("width", "3%")
-            .addClass("padded")
-            .append(imgExpand);
+            .width("5px")
+            .addClass("padded");
         $(this.#tdDetails)
             .addClass("rdf-transform-property-details")
-            .attr("width", "62%")
+            .css({ minWidth: this.#columnWidth }) //.width("66%")
             .append(this.#collapsedDetailDiv)
             .append(this.#expandedDetailDiv);
 
-        this.#render();
+        this.render();
 
         this.#renderDetails(); // ...one time only
 
         this.show();
     }
 
-    #render() {
+    render() {
         this.#renderMain();
+        this.#collapsedDetailDiv.html( this.#isExpandable() ? "..." : "" );
         if ( this.#isExpandable() ) {
             this.#showExpandable();
         }
@@ -175,21 +183,20 @@ class RDFTransformUIProperty {
             );
         var imgArrowStart = $('<img />').attr("src", "images/arrow-start.png");
         var imgArrowEnd = $('<img />').attr("src", "images/arrow-end.png");
-        var ahrefProperty = $('<a href="javascript:{}"></a>')
+        var ahref = $('<a href="javascript:{}"></a>')
             .addClass("rdf-transform-property")
-            .html(
-                RDFTransformCommon.shortenResource(
-                    this.#getPropertyName(this.#property)
-                )
-            )
             .on("click", (evt) => { this.#editProperty(evt.target); } );
-
+        ahref.append(
+            $("<span></span>")
+                .addClass("rdf-transform-property-label")
+                .text( RDFTransformCommon.shortenResource( this.#getPropertyName(this.#property) ) )
+        );
 
         $(this.#tdMain)
             .empty()
             .append(imgClose)
             .append(imgArrowStart)
-            .append(ahrefProperty)
+            .append(ahref)
             .append(imgArrowEnd);
     }
 
@@ -202,7 +209,7 @@ class RDFTransformUIProperty {
             .addClass("rdf-transform-details-table-layout");
         this.#expandedDetailDiv.append(this.#tableDetails);
 
-        if (this.#nodeuiObject !== null) {
+        if (this.#nodeuiObject !== null) { // TODO: Expand for Node List
             this.#nodeuiObject.processView(this.#tableDetails[0]);
         }
     }
@@ -223,13 +230,15 @@ class RDFTransformUIProperty {
     }
 
     #showExpandable() {
-        $(this.#tdToggle).show();
-        $(this.#tdDetails).show();
+        $(this.#tdToggle).empty().append(this.#imgExpand);
+        //$(this.#tdToggle).show();
+        //$(this.#tdDetails).show();
     }
 
     #hideExpandable() {
-        $(this.#tdToggle).hide();
-        $(this.#tdDetails).show();
+        $(this.#tdToggle).empty().append(this.#imgNone);
+        //$(this.#tdToggle).hide();
+        //$(this.#tdDetails).show();
     }
 
     #getPropertyName(theProperty) {
@@ -267,7 +276,7 @@ class RDFTransformUIProperty {
         if ("localPart" in theProperty && theProperty.localPart !== null) {
             this.#property.localPart = theProperty.localPart;
         }
-        this.#render();
+        this.render();
         this.#dialog.updatePreview();
     }
 
@@ -333,7 +342,7 @@ class RDFTransformUIProperty {
             var nodeObject = theProperty.objectMappings[0];
 
             // Process the Object node for display...
-            theObjectNodeUI = RDFTransformUINode.getTransformImport(theDialog, nodeObject);
+            theObjectNodeUI = RDFTransformUINode.getTransformImport(theDialog, nodeObject, false);
             // NOTE: A null Object node and valid Object Node UI kicks off a process in the
             //      RDFTransformUIProperty constructor to set an Object node generated in the
             //      import for the Object Node UI above.

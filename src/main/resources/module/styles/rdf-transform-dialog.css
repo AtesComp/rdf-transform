@@ -45,11 +45,16 @@ div.rdf-transform-tab-footer,
 div.tab,
 div.rdf-transform-menu-search
 div.rdf-transform-detail-container
-table.rdf-transform-table-layout
 .rdf-transform-iri-text
 #rdf-transform-base-iri-value {
 }
 */
+
+table.rdf-transform-table-layout,
+table.rdf-transform-property-table-layout,
+table.rdf-transform-details-table-layout {
+    table-layout: fixed;
+}
 
 div.tabcontent {
     display: flex;
@@ -181,7 +186,12 @@ span.rdf-value-expression {
 }
 
 /*
-table.rdf-transform-property-table-layout,
+ * RDF Transform UI Node Dialog
+ */
+
+/*
+a.rdf-transform-node,
+span.rdf-transform-node-label,
 table.rdf-transform-types-table,
 td.rdf-transform-node-main,
 td.rdf-transform-node-toggle,
@@ -190,12 +200,12 @@ td.rdf-transform-node-details {
 */
 
 /*
- * RDF Transform UI Link Dialog
+ * RDF Transform UI Property Dialog
  */
 
 /*
-table.rdf-transform-details-table-layout,
 a.rdf-transform-property,
+span.rdf-transform-property-label,
 td.rdf-transform-property-main,
 td.rdf-transform-property-toggle,
 td.rdf-transform-property-details {

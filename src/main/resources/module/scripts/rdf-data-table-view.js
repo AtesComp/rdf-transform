@@ -493,7 +493,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 				if (bIndices) {
 					tdValue = String( parseInt( data.indicies[iIndex] ) + 1 ) + ".";
 				}
-				tdElem = $( tr.insertCell(0) ); //.attr("width", "1%");
+				tdElem = $( tr.insertCell(0) ); //.width("1%");
 				tdElem.html( tdValue );
 
 				// Populate row index or raw value for expression...
