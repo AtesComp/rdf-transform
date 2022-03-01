@@ -227,11 +227,12 @@ class RDFTransformNamespacesManager {
 			return objIRIParts.localPart;
 		}
 		if (objIRIParts.prefix in RDFTransformNamespacesManager.globalNamespaces) {
-			return RDFTransformNamespacesManager.
-					globalNamespaces[objIRIParts.prefix] + objIRIParts.localPart;
+			return RDFTransformNamespacesManager.globalNamespaces[objIRIParts.prefix] +
+				RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
 		}
 		if ( objIRIParts.prefix === "" ) {
-			return this.#dialog.getBaseIRI() + objIRIParts.localPart;
+			return this.#dialog.getBaseIRI() +
+				RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
 		}
 		return objIRIParts.prefix + ":" + objIRIParts.localPart;
 	}
@@ -246,7 +247,8 @@ class RDFTransformNamespacesManager {
 		}
 		else {
 			obj.prefix = strQName.substring(0, iIndex),
-			obj.localPart = strQName.substring(iIndex + 1)
+			obj.localPart =
+				RDFTransformCommon.unescapeLocalPart( strQName.substring(iIndex + 1) )
 		}
 		return obj;
 	}

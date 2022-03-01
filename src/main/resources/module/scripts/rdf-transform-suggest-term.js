@@ -54,7 +54,9 @@
 						$("<label></label>")
 						.append(
 							$.suggest
-							.strongify(data.prefix + ':' + data.localPart, response.prefix)
+							.strongify(data.prefix + ':' +
+								RDFTransformCommon.escapeLocalPart( data.localPart ),
+								response.prefix)
 						);
 
 					//data.label = nameText.text();

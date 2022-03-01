@@ -293,7 +293,7 @@ class RDFTransformCommon {
 	}
 
 	/*
-	 * Method validateIRI(strText)
+	 * Method validateIRI(strIRI)
 	 *
 	 *	Test that ALL of the given string is a single IRI
 	 */
@@ -336,7 +336,7 @@ class RDFTransformCommon {
 	}
 
 	/*
-	 * Method validatePrefix(strText)
+	 * Method validateNamespace(strIRI)
 	 *
 	 *	Test that ALL of the given string is a single IRI and properly ends
 	 *  with a prefix suffix "/" or "#"
@@ -364,6 +364,24 @@ class RDFTransformCommon {
 		}
 
 		return true;
+	}
+
+	/*
+	 * Method escapeLocalPart(strLocalPart)
+	 *
+	 *	Escapes forward slashes in the Local Part
+	 */
+	 static escapeLocalPart(strLocalPart) {
+		return RDFTransformCommon.unescapeLocalPart(strLocalPart).replace("/", "\\/");
+	}
+
+	/*
+	 * Method unescapeLocalPart(strLocalPart)
+	 *
+	 *	Unescapes forward slashes in the Local Part
+	 */
+	 static unescapeLocalPart(strLocalPart) {
+		return strLocalPart.replace("\\/", "/");
 	}
 
 	/*

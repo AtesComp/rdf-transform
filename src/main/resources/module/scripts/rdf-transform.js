@@ -24,7 +24,7 @@ class RDFTransform {
     static gstrIndexTitle;                              // ...the column title for the index: "Row" or "Record"
     static gbRowBased = true;                           // ...the type of indexing used: Row (true) or Record (false)
 
-    // Setup default Master Root Node (cloneDeep() as needed)...
+    // Setup default Master Root Node (copy as needed)...
     static gnodeMasterRoot = {};
     static {
         this.gnodeMasterRoot.valueSource = {};
@@ -33,16 +33,6 @@ class RDFTransform {
         this.gnodeMasterRoot.expression.language = RDFTransform.gstrDefaultExpLang;
         this.gnodeMasterRoot.expression.code = null; // ...to be replaced with default language expression
         this.gnodeMasterRoot.propertyMappings = [];
-    }
-
-    // Setup default Master Object Node (cloneDeep() as needed)...
-    static gnodeMasterObject = {};
-    static {
-        this.gnodeMasterObject.valueType = {};
-        this.gnodeMasterObject.valueType.type = "literal";
-        this.gnodeMasterObject.valueSource = {};
-        this.gnodeMasterObject.valueSource.source = "column";
-        this.gnodeMasterObject.valueSource.columnName = null; // ...to be replaced with column.name
     }
 
     static setDefaults() {
@@ -113,6 +103,16 @@ class RDFTransform {
  *  The RDF Transform dialog class for transforming data to RDF
  */
 class RDFTransformDialog {
+    // Setup Root's default Object Node (copy as needed)...
+    static #nodeObjectDefault = {};
+    static {
+        this.#nodeObjectDefault.valueType = {};
+        this.#nodeObjectDefault.valueType.type = "literal";
+        this.#nodeObjectDefault.valueSource = {};
+        this.#nodeObjectDefault.valueSource.source = "column";
+        this.#nodeObjectDefault.valueSource.columnName = null; // ...to be replaced with column.name
+    }
+
     iSampleLimit = 20; // TODO: Modify for user input
 
     theNamespaces;
@@ -246,7 +246,7 @@ class RDFTransformDialog {
                 // Process the node for display...
                 //
 
-                nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject, true);
+                nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject);
                 if (nodeUI !== null) {
                     this.#nodeUIs.push(nodeUI);
                 }
@@ -277,18 +277,19 @@ class RDFTransformDialog {
             if (column) {
                 iColumnCount++;
                 // Default Object of the Property (new Object for each Property)...
-                var nodeObject = JSON.parse(JSON.stringify(RDFTransform.gnodeMasterObject));
+                var nodeObject = JSON.parse(JSON.stringify(RDFTransformDialog.#nodeObjectDefault));
                 nodeObject.valueSource.columnName = column.name;
 
                 // Default property...
                 var strPrefix = ""; // ...use BaseIRI prefix
                 var strIRI = await RDFTransformCommon.toIRIString(column.name);
+                var bEscape = true;
                 if (strIRI === null || strIRI.length === 0) {
                     // Use baseIRI prefix and set Local Part to default column name...
                     strIRI = "column_" + iColumnCount.toString();
                 }
                 const iIndexProto = strIRI.indexOf("://");
-                if (iIndexProto === -1) {
+                if (iIndexProto === -1) { // ...Not Found
                     const iIndexPrefix = strIRI.indexOf(":");
                     if (iIndexPrefix === 0) { // ...begins with ':'
                         // Use baseIRI prefix and set Local Part (chop 1st)...
@@ -312,17 +313,18 @@ class RDFTransformDialog {
                     // Otherwise, iIndexPrefix === -1
                     //      Then, we use baseIRI prefix and take the IRI as the local part
                 }
-                else if (iIndexProto === 0) { // ...should never occur
+                else if (iIndexProto === 0) { // Found at Start...should never occur
                     // Use baseIRI prefix and set Local Part (chop 1st 3)...
                     strIRI = strIRI.substring(3);
                 }
-                else { // iIndexProto > 0, ...a good protocol exists since it's an IRI, so it's a Full IRI
+                else { // Found Within...iIndexProto > 0 and it's an IRI, so it's a Full IRI
                     // Use no prefix, i.e., take the IRI as a Full IRI...
                     strPrefix = null;
+                    bEscape = false;
                 }
                 var theProperty = {};
                 theProperty.prefix = strPrefix;
-                theProperty.localPart = strIRI;
+                theProperty.localPart = (bEscape ? RDFTransformCommon.escapeLocalPart(strIRI) : strIRI);
                 theProperty.nodeObject = nodeObject;
                 properties.push(theProperty);
             }
@@ -339,11 +341,12 @@ class RDFTransformDialog {
     #createNewNodeIU(node, properties) {
         // Store the node data for the UI...
         var nodeUI = new RDFTransformUINode(
-            this, // dialog
+            this,
             node,
-            true, // bIsRoot
+            true, // ...a Root Node
             properties,
             { expanded: true }
+            // No Subject Property since the Node is a Root
         );
         this.#nodeUIs.push(nodeUI);
         return nodeUI;

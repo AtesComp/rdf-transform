@@ -285,17 +285,22 @@ abstract public class ResourceNode extends Node {
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strType;
-                strType = strPrefix + ":" + strLocalName; // ...CIRIE
+                strType = strPrefix + ":" + strLocalName.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
 
             if ( ! (strType == null || strType.isEmpty() ) ) {
                 try {
-                    if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references
-                        strFullType = Util.resolveIRI(this.baseIRI, strLocalName); // ...just removing the leading ":"
+                    if ( strPrefix != null ) { // ...a CIRIE...
+                        if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references...
+                            strFullType = Util.resolveIRI(this.baseIRI, strType);
+                        }
+                        else { // ...other CIRIE references...
+                            strFullType = Util.resolveIRI(this.baseIRI, strType);
+                        }
                     }
-                    else { // ...other CIRIE references
+                    else { // ...Full IRI...
                         strFullType = Util.resolveIRI(this.baseIRI, strType);
                     }
                     if (strFullType != null) {
@@ -391,7 +396,7 @@ abstract public class ResourceNode extends Node {
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
-                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
+                strProperty = strPrefix + ":" + strLocalName.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
 
@@ -410,10 +415,15 @@ abstract public class ResourceNode extends Node {
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
             if ( ! ( strProperty == null || strProperty.isEmpty() ) ) {
                 try {
-                    if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references
-                        strFullProperty = Util.resolveIRI(this.baseIRI, strLocalName); // ...just removing the leading ":"
+                    if ( strPrefix != null ) { // ...a CIRIE...
+                        if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references...
+                            strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
+                        }
+                        else { // ...other CIRIE references...
+                            strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
+                        }
                     }
-                    else { // ...other CIRIE references
+                    else { // ...Full IRI...
                         strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
                     }
                     if (strFullProperty != null) {

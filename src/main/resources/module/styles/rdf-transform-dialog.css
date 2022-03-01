@@ -192,10 +192,7 @@ span.rdf-value-expression {
 /*
 a.rdf-transform-node,
 span.rdf-transform-node-label,
-table.rdf-transform-types-table,
-td.rdf-transform-node-main,
-td.rdf-transform-node-toggle,
-td.rdf-transform-node-details {
+table.rdf-transform-types-table {
 }
 */
 
@@ -205,12 +202,22 @@ td.rdf-transform-node-details {
 
 /*
 a.rdf-transform-property,
-span.rdf-transform-property-label,
-td.rdf-transform-property-main,
-td.rdf-transform-property-toggle,
-td.rdf-transform-property-details {
+span.rdf-transform-property-label {
 }
 */
+
+td.rdf-transform-node-main,
+td.rdf-transform-node-details,
+td.rdf-transform-property-main,
+td.rdf-transform-property-details {
+    min-width: 150px
+
+}
+
+td.rdf-transform-node-toggle,
+td.rdf-transform-property-toggle {
+    width: 5px
+}
 
 /*
  * RDF Transform Dialog Flyouts

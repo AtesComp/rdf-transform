@@ -106,7 +106,7 @@ public class RDFType {
 
     public String getPrefixedIRI() {
         if (this.strPrefix != null) {
-		    return this.strPrefix + ":" + this.strLocalPart;
+		    return this.strPrefix + ":" + this.strLocalPart.replaceAll("\\/", "/").replaceAll("/", "\\/");
         }
         return this.strLocalPart;
 	}
