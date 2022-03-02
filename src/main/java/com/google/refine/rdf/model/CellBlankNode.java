@@ -115,9 +115,12 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     }
 
 	private void normalizeBNodeResource(Object objResult) {
-		// TODO: Add prefix "\"_:\" + " and use it or just "true" or "false"?
 		String strResult = objResult.toString();
+		// TODO: Add prefix ["_:" + strResult] and use it or just "true" or "false"?
+		// Currently, "true" or "false"
+		// If we have a good result...
 		if ( ! ( strResult == null || strResult.isEmpty() ) ) {
+			// ...produce a blank node...
 			BNode bnode = this.theFactory.createBNode();
 			this.listValues.add(bnode);
 		}

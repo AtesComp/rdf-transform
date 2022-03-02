@@ -1,8 +1,6 @@
 package com.google.refine.rdf.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.io.IOException;
 
 import com.google.refine.expr.ExpressionUtils;
@@ -100,15 +98,13 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         // Results are an array...
         if ( results.getClass().isArray() ) {
             if (Util.isDebugMode()) CellResourceNode.logger.info("DEBUG: Result is Array...");
-
-            List<Object> listResult = Arrays.asList(results);
-            for (Object objResult : listResult) {
-                this.normalizeResource(this.strPrefix, objResult);
-            }
+            this.processResultsAsArray(this.strPrefix, results);
         }
         // Results are singular...
         else {
-            this.normalizeResource(this.strPrefix, results);
+            if ( ! this.processResultsAsSingle(this.strPrefix, results) ) {
+                this.normalizeResource(this.strPrefix, results);
+            }
         }
 
         if ( this.listValues.isEmpty() ) {

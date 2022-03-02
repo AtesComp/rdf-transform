@@ -91,8 +91,8 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
 	@Override
 	protected void createRecordResources() {
-        // NOT USED!
-        this.listValues = null;
+        // NOT USED!  Just in case, process as a row...
+        this.createRowResources();
     }
 
 	@Override
@@ -100,6 +100,8 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 		if (Util.isDebugMode()) ConstantBlankNode.logger.info("DEBUG: createRowResources...");
 
 		this.listValues = new ArrayList<Value>();
+		// The resource has already been processed during construction.
+		// See: the constructor for the "createBNode" call.
 		this.listValues.add(bnode);
     }
 

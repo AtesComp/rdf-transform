@@ -99,9 +99,9 @@ public class SuggestTermCommand extends RDFTransformCommand {
         writerBase.close();
     }
 
-	private boolean isPrefixedQuery(String strQueryPrefix) {
+	private boolean isPrefixedIRI(String strIRI) {
 		boolean bIsPrefixed = false;
-		if (strQueryPrefix != null) {
+		if (strIRI != null) {
 			//
 			// A Prefixed Qualified Name is by definition an IRI of the form:
 			//    prefix:FQDN
@@ -133,16 +133,16 @@ public class SuggestTermCommand extends RDFTransformCommand {
 			// We really don't care!  All we need to know is whether the text up to the first ':'
 			// is a prefix for a CIRIE...
 
-			int iIndex = strQueryPrefix.indexOf(":");
+			int iIndex = strIRI.indexOf(":");
 			 // If we have a possible prefix but not a base IRI reference (where iIndex == 0)...
 			 // NOTE: The ':' could also be in the path
 			if (iIndex > 0) {
 				// Is there is a possible path...
 				//    iIndex + 1 = the length of strQuery to the ':' inclusive
 				//    Is there anything after...
-				if (strQueryPrefix.length() > iIndex + 1) {
+				if (strIRI.length() > iIndex + 1) {
 					try {
-						ParsedIRI tempIRI = new ParsedIRI(strQueryPrefix);
+						ParsedIRI tempIRI = new ParsedIRI(strIRI);
 						// ...it parsed as an IRI...
 						// If a scheme is present, but a host is not present...
 						if (tempIRI.getScheme() != null && tempIRI.getHost() == null) {
@@ -159,20 +159,20 @@ public class SuggestTermCommand extends RDFTransformCommand {
 					}
 				}
 				// Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
-				else if ( strQueryPrefix.matches("\\S+") ) { // ...contains no whitespace...
+				else if ( strIRI.matches("\\S+") ) { // ...contains no whitespace...
 						bIsPrefixed = true; // ...accept it
 				}
 			}
 			// Else, we might have a possible base IRI reference (starts with ':")...
 			// ...don't accept...
 			/*
-			else if (iIndex == 0 && strQueryPrefix.length() > 1) {
+			else if (iIndex == 0 && strIRI.length() > 1) {
 				// Create Absolute IRI with Relative IRI using Base IRI...
 				try {
 					Project theProject = this.getProject(this.theRequest);
 					String strBaseIRI =
 						RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
-					ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strQueryPrefix.substring(1));
+					ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strIRI.substring(1));
 					// It parses with the Base IRI...
 					bIsPrefixed = true; // ...accept it
 				}
@@ -192,7 +192,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
 		String strNotImported = "From local curated namespaces--not imported.";
 		VocabularyList theVocabList = theTransform.getNamespaces();
 
-    	if ( this.isPrefixedQuery(strQueryPrefix) ) {
+    	if ( this.isPrefixedIRI(strQueryPrefix) ) {
     		int iIndex = strQueryPrefix.indexOf(":");
     		String strPrefix = strQueryPrefix.substring(0, iIndex);
     		String strLocalPart = "";

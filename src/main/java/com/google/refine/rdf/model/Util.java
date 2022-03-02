@@ -234,6 +234,122 @@ public class Util {
 		return strAbsoluteIRI;
 	}
 
+    public int findLocalPartIndex(String strIRI) {
+        if ( strIRI == null || strIRI.isEmpty() ) {
+			return -1;
+		}
+        // From RDF4J Interface IRI documentation:
+        // --------------------------------------------------------------------------------
+        // An IRI can be split into a namespace part and a local name part, which are
+        // derived from an IRI string by splitting it in two using the following algorithm:
+        //
+        // * Split after the first occurrence of the '#' character,
+        // * If this fails, split after the last occurrence of the '/' character,
+        // * If this fails, split after the last occurrence of the ':' character.
+        //
+        // The last step should never fail as every legal (full) IRI contains at least one
+        // ':' character to separate the scheme from the rest of the IRI. The
+        // implementation should check this upon object creation.
+		int iIndex = strIRI.indexOf('#');
+		if (iIndex == -1) {
+			iIndex = strIRI.lastIndexOf('/');
+			if (iIndex == -1) {
+				iIndex = strIRI.lastIndexOf(':');
+			}
+		}
+		if (iIndex != -1) { // ...found a split
+			++iIndex; // ...split after
+			// ...because Namespace includes the character...
+		}
+		return iIndex;
+    }
+
+	public int findPrefixIndex(String strIRI) {
+		//
+		// A Prefixed Qualified Name is by definition an IRI of the form:
+		//    prefix:FQDN
+		// where the FQDN is just a representation of a host, therefore:
+		//    prefix:host
+		//
+		// IRIs for this context can be represented essentially 2 ways:
+		//    1. schema://host/path (an IRI)
+		//    2. prefix:path (a condensed IRI expression, CIRIE)
+		// NOTE: For 1, the '//' after the schema always indicates an authority component
+		//		 that contains a host component.  Also, the path component includes the '/'.
+		// See:
+		//   https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier
+		//   https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+		//
+		// NOTE: The second representation may contain a host component within the path.
+		//       Without the '//', there is no definitive way for the IRI parser to know
+		//       what is authority vs path.
+		//
+		//       Consider:
+		//       1. If the path does not begin with a '/', then the content up to the first '/'
+		//          can be interpreted as the host component.
+		//          This also implies that there was no authority component (no '//').
+		//       2. If the path does begin with a '/', it implies there is an authority component
+		//          that contains a host component.
+		//       Then, IRI parsing will interpret the Prefixed Qualified Name format as
+		//         prefix:path
+		//
+		// We really don't care!  All we need to know is whether the text up to the first ':'
+		// is a prefix for a CIRIE...
+
+		int iIndex = -1;
+		if (strIRI != null) {
+			iIndex = strIRI.indexOf(":");
+			 // If we have a possible prefix but not a base IRI reference (where iIndex == 0)...
+			 // NOTE: The ':' could also be in the path
+			if (iIndex > 0) {
+				// Is there is a possible path...
+				//    iIndex + 1 = the length of strQuery to the ':' inclusive
+				//    Is there anything after...
+				if (strIRI.length() > iIndex + 1) {
+					try {
+						ParsedIRI tempIRI = new ParsedIRI(strIRI);
+						// ...it parsed as an IRI...
+						// If a scheme is present, but a host is not present...
+						if (tempIRI.getScheme() != null && tempIRI.getHost() == null) {
+							// There is no authority component:
+							//    i.e., there was no "schema://...", just "schema:...", so
+							//    the authority parsing that contains the host parsing was not
+							//    performed.  The rest may parse as a path, query, fragment.
+							// Then, the schema is a prefix and that is enough...
+							return iIndex; // ...accept it
+						}
+					}
+					catch (Exception ex) {
+						// ...continue: strQuery is NOT an IRI...yet...
+					}
+				}
+				// Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
+				else if ( strIRI.matches("\\S+") ) { // ...contains no whitespace...
+						return iIndex; // ...accept it
+				}
+			}
+			// Else, we might have a possible base IRI reference (starts with ':")...
+			// ...don't accept...
+			/*
+			else if (iIndex == 0 && strIRI.length() > 1) {
+				// Create Absolute IRI with Relative IRI using Base IRI...
+				try {
+					Project theProject = this.getProject(this.theRequest);
+					String strBaseIRI =
+						RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
+					ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strIRI.substring(1));
+					// It parses with the Base IRI...
+					bIsPrefixed = true; // ...accept it
+				}
+				catch (Exception ex) {
+					// ...continue...
+				}
+			}
+			*/
+		}
+		return iIndex;
+    }
+
 	public static String getDataType(ParsedIRI baseIRI, String strDataType) {
 		if (strDataType == null) {
 			return strDataType;

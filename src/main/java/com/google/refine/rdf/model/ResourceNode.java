@@ -1,6 +1,7 @@
 package com.google.refine.rdf.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.io.IOException;
 
@@ -57,32 +58,96 @@ abstract public class ResourceNode extends Node {
 	}
 
     /*
+     *  Method processResultsAsArray() for results to Resources
+     */
+    protected void processResultsAsArray(String strPrefix, Object results) {
+        List<Object> listResult = Arrays.asList(results);
+        for (Object objResult : listResult) {
+            if (strPrefix == null) {
+                if ( processResultsAsSingle(strPrefix, objResult) ) {
+                    continue;
+                }
+            }
+            this.normalizeResource(strPrefix, objResult);
+        }
+    }
+
+    /*
+     *  Method processResultsAsArray() for a single result to a Resource
+     */
+    protected boolean processResultsAsSingle(String strPrefix, Object objResult) {
+        String strEmbeddedPrefix = null;
+        String strLocalPart = objResult.toString();
+        try {
+            ParsedIRI tempIRI = new ParsedIRI(strLocalPart);
+            // ...it parsed as an IRI...
+            // If a scheme is present, but a host is not present...
+            strEmbeddedPrefix = tempIRI.getScheme();
+            if (strEmbeddedPrefix != null && tempIRI.getHost() == null) {
+                // There is no authority component:
+                //    i.e., there was no "schema://...", just "schema:...", so
+                //    the authority parsing that contains the host parsing was not
+                //    performed.  The rest may parse as a path, query, fragment.
+                // Then, the schema is a prefix and that is enough...
+                strLocalPart = strLocalPart.substring(strEmbeddedPrefix.length() + 1);
+                this.normalizeResource(strEmbeddedPrefix, strLocalPart);
+                return true;
+            }
+        }
+        catch (Exception ex) {
+            // ...continue: try as non-prefixed IRI...
+        }
+        return false;
+    }
+
+    /*
      *  Method normalizeResource() for Resource Node to IRI
      */
     protected void normalizeResource(String strPrefix, Object objResult) {
         String strIRI = "";
+        String strLocalPart = null;
         if ( strPrefix != null ) {
             strIRI = strPrefix + ":";
+            if ( objResult != null) {
+                strLocalPart = objResult.toString().replaceAll("\\/", "/").replaceAll("/", "\\/");
+                strIRI += strLocalPart; // ...CIRIE
+            }
         }
-        if ( objResult != null) {
-            strIRI += objResult.toString();
+        else {
+            if ( objResult != null) {
+                strIRI += objResult.toString(); // ...Full IRI
+            }
         }
-        if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Given IRI: " + strIRI);
+        if ( Util.isDebugMode() ) {
+            String strDebug = "DEBUG: normalizeResource: Given: Prefix: ";
+            strDebug += (strPrefix == null ? "[NULL]" : strPrefix);
+            strDebug += " LocalPart: " + strLocalPart;
+            ResourceNode.logger.info(strDebug);
+        }
 
         if ( ! strIRI.isEmpty() ) {
             try {
                 String strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Resolved IRI: " + strPrefixedIRI);
                 if (strPrefixedIRI != null) {
-                    //String strNamespace = "";
-                    //if (strPrefix != null) {
-                    //    strNamespace = this.theConnection.getNamespace(strPrefix);
-                    //}
-                    //String strFullIRI = strNamespace + objResult.toString();
-                    //if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
-                    this.listValues.add( this.theFactory.createIRI(strPrefixedIRI) );
+                    String strNamespace = "";
+                    if (strPrefix != null) {
+                        strNamespace = this.theConnection.getNamespace(strPrefix);
+                    }
+                    String strFullIRI = strNamespace + objResult.toString();
+                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
+                    IRI iriResource;
+                    if (strPrefix != null) {
+                        iriResource = this.theFactory.createIRI(strNamespace, strLocalPart);
+                    }
+                    else { // ...on no prefix or missing namespace, treat as Full...
+                        iriResource = this.theFactory.createIRI(strFullIRI);
+                    }
+                    this.listValues.add( iriResource );
                 }
             }
-            catch (IRIParsingException | IllegalArgumentException ex) {
+            //catch (IRIParsingException | IllegalArgumentException ex) {
+            catch (Exception ex) {
                 // An IRIParsingException from Util.resolveIRI() means a bad IRI.
                 // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
                 // In either case, record error and eat the exception...
@@ -270,7 +335,7 @@ abstract public class ResourceNode extends Node {
         String strType = null;
 
         String strNamespace;
-        String strLocalName;
+        String strLocalPart;
         String strFullType;
         IRI iriType;
 
@@ -281,11 +346,11 @@ abstract public class ResourceNode extends Node {
         for ( RDFType typeItem : this.listTypes ) {
             strPrefix = typeItem.getPrefix(); // Null indicated FULL IRI, Empty indicate BaseIRI
             strType = typeItem.getLocalPart(); // ...assume FULL IRI
-            strLocalName = null;
+            strLocalPart = null;
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
-                strLocalName = strType;
-                strType = strPrefix + ":" + strLocalName.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
+                strLocalPart = strType;
+                strType = strPrefix + ":" + strLocalPart.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
@@ -306,7 +371,7 @@ abstract public class ResourceNode extends Node {
                     if (strFullType != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: [" + strFullType + "]");
                         if (strNamespace != null) {
-                            iriType = this.theFactory.createIRI(strNamespace, strLocalName);
+                            iriType = this.theFactory.createIRI(strNamespace, strLocalPart);
                         }
                         else { // ...on no prefix or missing namespace, treat as Full...
                             iriType = this.theFactory.createIRI(strFullType);
@@ -359,7 +424,6 @@ abstract public class ResourceNode extends Node {
 
         String strNamespace;
         String strLocalName;
-        boolean bNamespace;
         Node nodeObject;
         List<Value> listObjects;
         String strFullProperty;

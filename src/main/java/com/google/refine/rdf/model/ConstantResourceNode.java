@@ -8,7 +8,6 @@ import org.eclipse.rdf4j.model.Value;
 import com.fasterxml.jackson.annotation.JsonCreator;
 //import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.refine.rdf.model.Util.IRIParsingException;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.slf4j.Logger;
@@ -75,7 +74,9 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         }
 
         this.listValues = new ArrayList<Value>();
-        this.normalizeResource(this.strPrefix, this.strConstant);
+        if ( ! this.processResultsAsSingle(this.strPrefix, this.strConstant) ) {
+            this.normalizeResource(this.strPrefix, this.strConstant);
+        }
 
         if ( this.listValues.isEmpty() ) {
             this.listValues = null;
@@ -86,26 +87,41 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
      *  Method normalizeResourceAsString() for Resource Node to IRI
      */
     public String normalizeResourceAsString() {
-        String strIRI = Util.toSpaceStrippedString(this.strPrefix) + Util.toSpaceStrippedString(this.strConstant);
+        String strIRI = "";
+        //Util.toSpaceStrippedString(this.strPrefix) + Util.toSpaceStrippedString(this.strConstant);
+        if ( this.strPrefix != null ) {
+            strIRI = this.strPrefix + ":";
+            if ( this.strConstant != null) {
+                strIRI += this.strConstant.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
+            }
+        }
+        else {
+            if ( this.strConstant != null) {
+                strIRI += this.strConstant; // ...Full IRI
+            }
+        }
         if ( Util.isDebugMode() ) ConstantResourceNode.logger.info("DEBUG: normalizeResourceAsString: Given IRI: " + strIRI);
 
-        String strPrefixedIRI = null;
+        //String strPrefixedIRI = null;
         if ( ! ( strIRI == null || strIRI.isEmpty() ) ) {
             try {
-                strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+                //strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+                Util.resolveIRI(this.baseIRI, strIRI);
                 //if (strPrefixedIRI != null) {
                 //    String strFullIRI = this.expandPrefixedIRI(strPrefixedIRI);
                 //    if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
                 //}
             }
-            catch (IRIParsingException | IllegalArgumentException ex) {
+            //catch (IRIParsingException | IllegalArgumentException ex) {
+            catch (Exception ex) {
                 // An IRIParsingException from Util.resolveIRI() means a bad IRI.
                 // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
                 // In either case, record error and eat the exception...
                 ConstantResourceNode.logger.error("ERROR: Bad IRI: " + strIRI, ex);
             }
         }
-        return strPrefixedIRI;
+        //return strPrefixedIRI;
+        return strIRI;
     }
 
 	@Override

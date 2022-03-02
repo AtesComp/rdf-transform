@@ -83,7 +83,7 @@ public class RDFNode {
                     // Also, the Prefix may be related to the Namespace.
                     //
                     // Report an error and continue...
-                    logger.error(
+                    RDFNode.logger.error(
                         "ERROR: extractLocalPart(): Namespace is not in IRI!\n" +
                         "             IRI: " + this.strIRI + "\n" +
                         "       Namespace: " + this.strNamespace
