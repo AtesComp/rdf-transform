@@ -32,8 +32,6 @@ class RDFTransformUINode {
     #checkedTrue;
     #disabledTrue;
     #disabledFalse;
-    #strLangInputID;
-    #strTypeInputID;
 
     // Setup default Master Object Node (copy as needed)...
     static #nodeObjectDefault = {};
@@ -84,8 +82,6 @@ class RDFTransformUINode {
         this.#checkedTrue = { "checked" : true };
         this.#disabledTrue = { "disabled" : true };
         this.#disabledFalse = { "disabled" : false };
-        this.#strLangInputID = '#rdf-content-lang-input';
-        this.#strTypeInputID = '#rdf-content-type-input';
 
         // Based on the node,
         //  1. Set the Variable vs Constant boolean
@@ -97,13 +93,48 @@ class RDFTransformUINode {
             .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
             .on("click",
                 (evt) => {
-                    this.#options.expanded = !this.#options.expanded;
+                    this.#options.expanded = ! this.#options.expanded;
                     $(evt.currentTarget)
                     .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png");
                     this.show();
                 }
             );
         this.#imgNone = $('<img />');
+    }
+
+    //
+    // Method #initilizeNodeTypes()
+    //
+    //  From existing node on construction.  See #getResultJSON()
+    //
+    //  Get the Node Type information:
+    //      1. Node Value Type: Variable or Constant
+    //      2. Node RDF Type: "resource", "literal", or "blank"
+    //  When the Node's RDF Type cannot be determined, return a failed indicator (false)
+    //
+    #initilizeNodeTypes() {
+        // Determine the Node's Value Type: Variable or Constant
+        //      by testing the node's value source type:
+        //      Variable == "row_index", "record_id", "column"
+        //      Constant == "constant"
+        this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
+
+        // Determine the Node's RDF Type: "resource", "literal", or "blank"...
+        var strNodeType = "literal";
+        if ( ! ("valueType" in this.#node) || this.#node.valueType.type === "iri") {
+            strNodeType = "resource";
+        }
+        else if (   this.#node.valueType.type === "bnode" ||
+                    this.#node.valueType.type === "value_bnode" ) {
+            strNodeType = "blank";
+        }
+        this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
+
+        if ( this.#eType === null ) {
+            alert( $.i18n('rdft-data/alert-RDF-type') );
+            return false;
+        }
+        return true;
     }
 
     getNode() {
@@ -162,13 +193,11 @@ class RDFTransformUINode {
     }
 
     #renderMain() {
-        $(this.#tdMain).empty();
-
         var bExpandable = this.#isExpandable();
-        var htmlType = '';
+        var strHTMLType = '';
         if ( bExpandable )
         {
-            htmlType =
+            strHTMLType =
 '<tr>' +
   '<td>' +
     '<table width="100%" class="rdf-transform-types-table" bind="rdftTypesTable">' +
@@ -186,18 +215,17 @@ class RDFTransformUINode {
   '</td>' +
 '</tr>';
         }
-
-        var html = $(
+        var strHTML = $(
 '<table width="100%">' +
   '<tr>' +
     '<td bind="rdftNodeLabel"></td>' +
   '</tr>' +
-  htmlType +
+  strHTMLType +
 '</table>'
-        )
-        .appendTo(this.#tdMain);
+        );
+        $(this.#tdMain).empty().append(strHTML);
 
-        var elements = DOM.bind(html);
+        var elements = DOM.bind(strHTML);
         this.#theNodeLabel = elements.rdftNodeLabel;
         if (bExpandable) {
             /** @type {HTMLTableElement} */
@@ -236,7 +264,7 @@ class RDFTransformUINode {
                         .on("click",
                             (evt) => {
                                 evt.preventDefault();
-                                this.#showNodeRDFType( $(evt.target), iLocalIndex );
+                                this.#renderNodeRDFType( $(evt.target), iLocalIndex );
                             }
                         )
                     );
@@ -337,7 +365,7 @@ class RDFTransformUINode {
                 .addClass("rdf-transform-node")
                 .on("click",
                     () => {
-                        this.showNodeConfigDialog();
+                        this.#renderNodeConfigDialog();
                     }
                 );
         ahref.append(
@@ -354,6 +382,70 @@ class RDFTransformUINode {
         aux_table.append($('<tr>').append(td));
         this.typesTd = $('<td>').width("250px").appendTo($('<tr>').appendTo(aux_table));
         this.renderTypes();*/
+    }
+
+    #renderNodeRDFType(target, iIndex) {
+        var menu = MenuSystem.createMenu(); // ...size doesn't matter since we fit
+        menu.html(
+'<div bind="rdftTypeContainer">' +
+  '<span class="rdf-transform-iri-text" bind="rdftTypeText" style="overflow: hidden;" /></span>' +
+  '<button class="button" bind="buttonOK">' +
+    $.i18n('rdft-buttons/ok') +
+  '</button>' +
+'</div>'
+        );
+
+        MenuSystem.showMenu(menu, () => {});
+        MenuSystem.positionMenuLeftRight(menu, target);
+
+        var strPrefix = null;
+        if ( "prefix" in this.#node.typeMappings[iIndex] ) {
+            strPrefix = this.#node.typeMappings[iIndex].prefix;
+        }
+        var strLocalPart = this.#node.typeMappings[iIndex].valueSource.constant;
+        var strText;
+        // If the prefix is present, display Full IRI and CIRIE...
+        if (strPrefix) {
+            var strNamespace = this.#dialog.namespacesManager.getNamespaceOfPrefix(strPrefix);
+            if (strNamespace) { // Namespace exists...
+                strText =
+                    " Full: " + strNamespace + strLocalPart + "\n" +
+                    "CIRIE: " + strPrefix + ":" + strLocalPart;
+            }
+            else { // Namespace is not identified with the Prefix...
+                // ...then, the combined Prefix and Local Part is a Full IRI...
+                strText = "Full: " + strPrefix + ":" + strLocalPart;
+            }
+        }
+        // Otherwise, the Local Part is the Full IRI...
+        else {
+            strText = "Full: " + strLocalPart;
+        }
+
+        var elements = DOM.bind(menu);
+
+        // Set the display text...
+        elements.rdftTypeText.html('<pre>' + strText + '</pre>');
+
+        // Resize to fit display text..
+        elements.rdftTypeText.on('change',
+            (evt, divContainer, menuContainer) => {
+                $(evt.target)
+                .width(1)
+                .height(1)
+                .width(evt.target.scrollWidth)
+                .height(evt.target.scrollHeight);
+                //.css('resize', 'none');
+                $(divContainer)
+                .width(1)
+                .width(divContainer.context.scrollWidth);
+                $(menuContainer)
+                .width(1)
+                .width(menuContainer[0].scrollWidth);
+            }
+        );
+        elements.rdftTypeText.trigger('change', [ elements.rdftTypeContainer, menu ]);
+        elements.buttonOK.on("click", () => { MenuSystem.dismissAll(); } );
     }
 
     #renderDetails() {
@@ -499,57 +591,6 @@ class RDFTransformUINode {
 
         this.#render();
         this.#dialog.updatePreview();
-    }
-
-    #showNodeRDFType(target, iIndex) {
-        var menu = MenuSystem.createMenu(); // ...size doesn't matter since we fit
-        menu.html(
-'<div bind="rdftTypeContainer">' +
-  '<span class="rdf-transform-iri-text" bind="rdftTypeText" style="overflow: hidden;" /></span>' +
-  '<button class="button" bind="buttonOK">' +
-    $.i18n('rdft-buttons/ok') +
-  '</button>' +
-'</div>'
-        );
-
-        MenuSystem.showMenu(menu, () => {});
-        MenuSystem.positionMenuLeftRight(menu, target);
-
-        var strPrefix = null;
-        if ( "prefix" in this.#node.typeMappings[iIndex] ) {
-            strPrefix = this.#node.typeMappings[iIndex].prefix;
-        }
-        var strLocalPart= this.#node.typeMappings[iIndex].valueSource.constant;
-        var strText = "Full: " + strLocalPart; // ...default: display just the IRI (Full IRI)
-        // If the prefix is present, display both...
-        if (strPrefix) {
-            strText += "\nCIRIE: " + strPrefix + ":" + strLocalPart;
-        }
-
-        var elements = DOM.bind(menu);
-
-        // Set the display text...
-        elements.rdftTypeText.html('<pre>' + strText + '</pre>');
-
-        // Resize to fit display text..
-        elements.rdftTypeText.on('change',
-            (evt, divContainer, menuContainer) => {
-                $(evt.target)
-                .width(1)
-                .height(1)
-                .width(evt.target.scrollWidth)
-                .height(evt.target.scrollHeight);
-                //.css('resize', 'none');
-                $(divContainer)
-                .width(1)
-                .width(divContainer.context.scrollWidth);
-                $(menuContainer)
-                .width(1)
-                .width(menuContainer[0].scrollWidth);
-            }
-        );
-        elements.rdftTypeText.trigger('change', [ elements.rdftTypeContainer, menu ]);
-        elements.buttonOK.on("click", () => { MenuSystem.dismissAll(); } );
     }
 
     #getTypeName(theType) {
@@ -732,7 +773,7 @@ class RDFTransformUINode {
                 }
                 else {
                     // Custom Datatype tag...
-                    elements.rdf_content_type_radio.prop(this.#checkedTrue);
+                    elements.rdf_content_dtype_radio.prop(this.#checkedTrue);
                     elements.rdf_content_type_input.prop(this.#disabledFalse).val(strType);
                 }
             }
@@ -763,7 +804,7 @@ class RDFTransformUINode {
         // Click Events...
         //
 
-        // All Content radios except Language and Custom...
+        // All Content radios except Language and Custom Data Type...
         elements.rdf_content_iri_radio
         .add(elements.rdf_content_txt_radio)
         .add(elements.rdf_content_int_radio)
@@ -774,7 +815,9 @@ class RDFTransformUINode {
         .add(elements.rdf_content_blank_radio)
         .on("click",
             () => {
-                $(this.#strLangInputID).add(this.#strTypeInputID).prop(this.#disabledTrue);
+                elements.rdf_content_lang_input
+                .add(elements.rdf_content_type_input)
+                .prop(this.#disabledTrue);
             }
         );
 
@@ -787,8 +830,8 @@ class RDFTransformUINode {
             }
         );
 
-        // Content radio Custom...
-        elements.rdf_content_type_radio
+        // Content radio Custom Data Type...
+        elements.rdf_content_dtype_radio
         .on("click",
             () => {
                 elements.rdf_content_lang_input.prop(this.#disabledTrue);
@@ -796,7 +839,9 @@ class RDFTransformUINode {
             }
         );
 
-        // Edit & Preview...
+        //
+        // Expression Edit & Preview...
+        //
         elements.expEditPreview
         .on("click",
             (evt) => {
@@ -819,7 +864,7 @@ class RDFTransformUINode {
                         alert( $.i18n('rdft-dialog/alert-blank') );
                     }
                     else { // Expression preview...
-                        this.#preview(strColumnName, strExpression, bIsResource);
+                        this.#expressionEditAndPreview(strColumnName, strExpression, bIsResource);
                     }
                 }
                 // For Constant Node Types...
@@ -841,6 +886,23 @@ class RDFTransformUINode {
                 }
             }
         );
+
+        //
+        // View Management...
+        //
+        if (this.#bIsRoot) {
+            // Root nodes can only be resources, so we only allow resource elements...
+            elements.rdf_content_txt_radio
+            .add(elements.rdf_content_int_radio)
+            .add(elements.rdf_content_double_radio)
+            .add(elements.rdf_content_date_radio)
+            .add(elements.rdf_content_date_time_radio)
+            .add(elements.rdf_content_boolean_radio)
+            .add(elements.rdf_content_lang_radio)
+            .add(elements.rdf_content_dtype_radio)
+            .prop(this.#disabledTrue);
+            // ...and never turn them on!
+        }
     }
 
     //
@@ -869,42 +931,7 @@ class RDFTransformUINode {
         return true;
     }
 
-    //
-    // Method #initilizeNodeTypes()
-    //
-    //  From existing node on construction.  See #getResultJSON()
-    //
-    //  Get the Node Type information:
-    //      1. Node Value Type: Variable or Constant
-    //      2. Node RDF Type: "resource", "literal", or "blank"
-    //  When the Node's RDF Type cannot be determined, return a failed indicator (false)
-    //
-    #initilizeNodeTypes() {
-        // Determine the Node's Value Type: Variable or Constant
-        //      by testing the node's value source type:
-        //      Variable == "row_index", "record_id", "column"
-        //      Constant == "constant"
-        this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
-
-        // Determine the Node's RDF Type: "resource", "literal", or "blank"...
-        var strNodeType = "literal";
-        if ( ! ("valueType" in this.#node) || this.#node.valueType.type === "iri") {
-            strNodeType = "resource";
-        }
-        else if (   this.#node.valueType.type === "bnode" ||
-                    this.#node.valueType.type === "value_bnode" ) {
-            strNodeType = "blank";
-        }
-        this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
-
-        if ( this.#eType === null ) {
-            alert( $.i18n('rdft-data/alert-RDF-type') );
-            return false;
-        }
-        return true;
-    }
-
-    #preview(strColumnName, strExpression, bIsResource) {
+    #expressionEditAndPreview(strColumnName, strExpression, bIsResource) {
         // NOTE: The column (cell) index is a zero (0) based index.
         //      When there is no "Row / Record Index column", we use -1 to represent it.
         const iIndexColumn = -1;
@@ -935,7 +962,7 @@ class RDFTransformUINode {
         dialogDataTable.preview(objColumn, strExpression, bIsIndex, onDone);
     }
 
-    showNodeConfigDialog() {
+    #renderNodeConfigDialog() {
         if (theProject.columnModel.columns.length < 1)
             return;
 
@@ -987,12 +1014,16 @@ class RDFTransformUINode {
         elements.useExpression.text(  $.i18n('rdft-dialog/use-exp') + '...'      );
         elements.expEditPreview.text( $.i18n('rdft-dialog/edit-preview')         );
 
-        var tableColumns =
+        var tableLeft = $('<table></table>');
+        var tableColumns = tableLeft[0];
             $('<table></table>').appendTo(elements.columnLeft)[0];
             //.attr("cellspacing", "5")
             //.attr("cellpadding", "0")
+        elements.columnLeft.append(tableColumns)
 
+        //
         // Add Row/Record Radio Row...
+        //
         // NOTE: Always ResourceNode
         this.#buildIndexChoice(tableColumns, this.#bIsVarNode);
 
@@ -1022,7 +1053,10 @@ class RDFTransformUINode {
             this.#buildColumnChoice(tableColumns, columns[iLoopLast], -1);
         }
 
+        //
         // Add Constant Value Radio Row...
+        //
+        // NOTE: A ResourceNode OR A LiteralNode
         this.#buildConstantChoice(tableColumns, !(this.#bIsVarNode));
 
         // Initilize inputs...
@@ -1056,6 +1090,7 @@ class RDFTransformUINode {
                         // Property Mappings are reserved in #propertyUIs
 
                         this.#node = node;
+                        this.#initilizeNodeTypes(); // ...re-initialize for new node
                         DialogSystem.dismissUntil(this.#level - 1);
                         this.#render();
                         this.#dialog.updatePreview();
@@ -1101,7 +1136,7 @@ class RDFTransformUINode {
     //                               "datatype_literal"
     //      theNode.valueType.language = <language>
     //      theNode.valueType.datatype = {}
-    //      theNode.valueType.datatype.namespace = <dt_namespace>
+    //      theNode.valueType.datatype.prefix = <dt_prefix>
     //      theNode.valueType.datatype.valueSource = {}
     //      theNode.valueType.datatype.valueSource.source = "constant"
     //      theNode.valueType.datatype.valueSource.constant = <xsd/other type>
@@ -1209,13 +1244,13 @@ class RDFTransformUINode {
                         alert( $.i18n('rdft-dialog/alert-custom') );
                         return null;
                     }
-                    // TODO: Extract namespace if present...
-                    //theNode.valueType.datatype.namespace =
+                    // TODO: Extract prefix if present and reduce constant to local part...
+                    //theNode.valueType.datatype.prefix =
                     theNode.valueType.datatype.valueSource.constant = strConstVal;
                 }
                 // Otherwise, popular XSD datatype literal...
                 else {
-                    // TODO: Check for namespace "xsd" exists...
+                    // TODO: Check for prefix "xsd" exists...
                     theNode.valueType.datatype.prefix = "xsd"; // http://www.w3.org/2001/XMLSchema#
                     if ( $('#rdf-content-int-radio').prop('checked') ) {
                         theNode.valueType.datatype.valueSource.constant = 'int';

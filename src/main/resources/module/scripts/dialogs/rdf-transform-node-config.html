@@ -18,7 +18,7 @@
             </div>
           </td>
           <td name="tdColumnRight">
-            <div class="rdf-transform-node-dialog-step">
+            <div class="rdf-transform-node-dialog-step" bind="columnRight">
               <table width="100%" cols="2">
                 <tr>
                   <td><input type="radio" name="rdf-content-radio" value="resource" id="rdf-content-iri-radio" bind="rdf_content_iri_radio" /></td>
@@ -63,7 +63,7 @@
                   <td><label for="rdf-content-boolean-radio" bind="asBool"></label></td>
                 </tr>
                 <tr>
-                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-type-radio" bind="rdf_content_type_radio" /></td>
+                  <td><input type="radio" name="rdf-content-radio" value="literal" id="rdf-content-type-radio" bind="rdf_content_dtype_radio" /></td>
                   <td>
                     <label for="rdf-content-type-radio" bind="asCustom"></label>
                     <span class="rdf-node-info">&nbsp(specify type IRI)</span>
