@@ -46,6 +46,7 @@
     "rdft-dialog/available-prefix": "Available Namespaces",
     "rdft-dialog/base-iri": "Base IRI",
     "rdft-dialog/cell": "Cell",
+    "rdft-dialog/choose-none": "Choose / None",
     "rdft-dialog/confirm-one": "The base IRI should end with a / or #.",
     "rdft-dialog/confirm-two": "Do you want to keep this IRI anyway? It may not be displayed correctly.",
     "rdft-dialog/constant-val": "Constant value",

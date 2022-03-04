@@ -46,6 +46,7 @@
     "rdft-dialog/available-prefix": "Prefissi Disponibili",
     "rdft-dialog/base-iri": "Base IRI",
     "rdft-dialog/cell": "Cella",
+    "rdft-dialog/choose-none": "Scegliere / Nessuna",
     "rdft-dialog/confirm-one": "L'IRI di base dovrebbe terminare con un frammento di identificatore / oppure #.",
     "rdft-dialog/confirm-two": "Vuoi mantenere questa IRI comunque? Potrebbe non essere viuaizzata correttamente.",
     "rdft-dialog/constant-val": "Valore costante",

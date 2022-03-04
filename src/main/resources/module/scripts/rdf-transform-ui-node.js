@@ -86,7 +86,7 @@ class RDFTransformUINode {
         // Based on the node,
         //  1. Set the Variable vs Constant boolean
         //  2. Set the Node Enumeration Type: Resource, Blank, or Literal
-        this.#initilizeNodeTypes();
+        this.#initializeNodeTypes();
 
         this.#imgExpand =
             $('<img />')
@@ -103,7 +103,7 @@ class RDFTransformUINode {
     }
 
     //
-    // Method #initilizeNodeTypes()
+    // Method #initializeNodeTypes()
     //
     //  From existing node on construction.  See #getResultJSON()
     //
@@ -112,7 +112,7 @@ class RDFTransformUINode {
     //      2. Node RDF Type: "resource", "literal", or "blank"
     //  When the Node's RDF Type cannot be determined, return a failed indicator (false)
     //
-    #initilizeNodeTypes() {
+    #initializeNodeTypes() {
         // Determine the Node's Value Type: Variable or Constant
         //      by testing the node's value source type:
         //      Variable == "row_index", "record_id", "column"
@@ -428,22 +428,23 @@ class RDFTransformUINode {
         elements.rdftTypeText.html('<pre>' + strText + '</pre>');
 
         // Resize to fit display text..
-        elements.rdftTypeText.on('change',
-            (evt, divContainer, menuContainer) => {
-                $(evt.target)
-                .width(1)
-                .height(1)
-                .width(evt.target.scrollWidth)
-                .height(evt.target.scrollHeight);
-                //.css('resize', 'none');
-                $(divContainer)
-                .width(1)
-                .width(divContainer.context.scrollWidth);
-                $(menuContainer)
-                .width(1)
-                .width(menuContainer[0].scrollWidth);
-            }
-        );
+        elements.rdftTypeText
+            .on('change',
+                (evt, divContainer, menuContainer) => {
+                    $(evt.target)
+                    .width(1)
+                    .height(1)
+                    .width(evt.target.scrollWidth)
+                    .height(evt.target.scrollHeight);
+                    //.css('resize', 'none');
+                    $(divContainer)
+                    .width(1)
+                    .width(divContainer.context.scrollWidth);
+                    $(menuContainer)
+                    .width(1)
+                    .width(menuContainer[0].scrollWidth);
+                }
+            );
         elements.rdftTypeText.trigger('change', [ elements.rdftTypeContainer, menu ]);
         elements.buttonOK.on("click", () => { MenuSystem.dismissAll(); } );
     }
@@ -733,20 +734,64 @@ class RDFTransformUINode {
     }
 
     #initInputs(elements) {
+        //
+        // Set Prefix Selections...
+        //
+        const strOption = '<option value="{V}">{T}</option>';
+        elements.rdf_prefix_select
+            .append(
+                strOption
+                    .replace(/{V}/, '')
+                    .replace(/{T}/, $.i18n('rdft-dialog/choose-none') ) );
+        elements.rdf_prefix_select
+            .append(
+                strOption
+                    .replace(/{V}/, ':')
+                    .replace(/{T}/, ': (' + $.i18n('rdft-dialog/base-iri') + ')') );
+        const theNamespaces = this.#dialog.namespacesManager.namespaces;
+        if (theNamespaces != null) {
+            for (const strPrefix in theNamespaces) {
+                // const theNamespace = theNamespaces[strPrefix]);
+                elements.rdf_prefix_select
+                    .append( strOption.replace(/{V}/, strPrefix + ':').replace(/{T}/, strPrefix) );
+            }
+        }
+        // Set the prefix selection if it matches an existing prefix...
+        elements.rdf_prefix_select.find("option:selected").prop("selected", false);
+        elements.rdf_prefix_select.find("option:first").prop("selected", "selected"); // ...default: select "Choose / None"
+        if ("prefix" in this.#node && this.#node.prefix !== null) {
+            const strPrefix = this.#node.prefix + ':';
+            const selOptions = elements.rdf_prefix_select.find("option");
+            const iLen = selOptions.length;
+            for (var iIndex = 0; iIndex < iLen; iIndex++) { 
+                if (selOptions[iIndex].value === strPrefix) {
+                    elements.rdf_prefix_select.prop('selectedIndex', iIndex);
+                    break;
+                }
+            }
+        }
+
+        // Disable Language and Custom Data Type inputs...
         elements.rdf_content_lang_input
-        .add(elements.rdf_content_type_input)
-        .prop(this.#disabledTrue);
+            .add(elements.rdf_content_type_input)
+            .prop(this.#disabledTrue);
 
         //
         // Set initial values and property settings...
         //
         if ( this.#eType === RDFTransformCommon.NodeType.Resource ) {
+            // Enable Prefix Select...
+            elements.rdf_prefix.find("*").prop(this.#disabledFalse);
+
             //
             // Resource node...
             //
             elements.rdf_content_iri_radio.prop(this.#checkedTrue);
         }
         else if ( this.#eType === RDFTransformCommon.NodeType.Literal ) {
+            // Disable Prefix Select...
+            elements.rdf_prefix.find("*").prop(this.#disabledTrue);
+
             //
             // Literal node...
             //
@@ -786,6 +831,9 @@ class RDFTransformUINode {
             }
         }
         else if ( this.#eType === RDFTransformCommon.NodeType.Blank ) {
+            // Disable Prefix Select...
+            elements.rdf_prefix.find("*").prop(this.#disabledTrue);
+
             //
             // Blank node...
             //
@@ -804,9 +852,27 @@ class RDFTransformUINode {
         // Click Events...
         //
 
-        // All Content radios except Language and Custom Data Type...
+        // Prefix...
+        elements.rdf_prefix_select
+        .on("change",
+            () => {
+
+            }
+        );
+
+        // Resource Content radio...
         elements.rdf_content_iri_radio
-        .add(elements.rdf_content_txt_radio)
+        .on("click",
+            () => {
+                elements.rdf_prefix.find("*").prop(this.#disabledFalse);
+                elements.rdf_content_lang_input
+                .add(elements.rdf_content_type_input)
+                .prop(this.#disabledTrue);
+            }
+        );
+
+        // All Literal Content radios and Blank Content radio...
+        elements.rdf_content_txt_radio
         .add(elements.rdf_content_int_radio)
         .add(elements.rdf_content_double_radio)
         .add(elements.rdf_content_date_radio)
@@ -815,6 +881,7 @@ class RDFTransformUINode {
         .add(elements.rdf_content_blank_radio)
         .on("click",
             () => {
+                elements.rdf_prefix.find("*").prop(this.#disabledTrue);
                 elements.rdf_content_lang_input
                 .add(elements.rdf_content_type_input)
                 .prop(this.#disabledTrue);
@@ -825,6 +892,7 @@ class RDFTransformUINode {
         elements.rdf_content_lang_radio
         .on("click",
             () => {
+                elements.rdf_prefix.find("*").prop(this.#disabledTrue);
                 elements.rdf_content_lang_input.prop(this.#disabledFalse);
                 elements.rdf_content_type_input.prop(this.#disabledTrue);
             }
@@ -834,6 +902,7 @@ class RDFTransformUINode {
         elements.rdf_content_dtype_radio
         .on("click",
             () => {
+                elements.rdf_prefix.find("*").prop(this.#disabledTrue);
                 elements.rdf_content_lang_input.prop(this.#disabledTrue);
                 elements.rdf_content_type_input.prop(this.#disabledFalse);
             }
@@ -859,12 +928,17 @@ class RDFTransformUINode {
                     const strColumnName = $("input[name='rdf-column-radio']:checked").val();
                     const strExpression = $("#rdf-cell-expr").text();
                     const bIsResource = ( this.#eType === RDFTransformCommon.NodeType.Resource );
+                    var strPrefix = null;
+                    if (bIsResource) {
+                        var selPrefix = elements.rdf_prefix_select;
+                        strPrefix = selPrefix.val();
+                    }
                     if ( this.#eType === RDFTransformCommon.NodeType.Blank ) {
                         // Blank (not much to do)...
                         alert( $.i18n('rdft-dialog/alert-blank') );
                     }
                     else { // Expression preview...
-                        this.#expressionEditAndPreview(strColumnName, strExpression, bIsResource);
+                        this.#expressionEditAndPreview(strColumnName, strExpression, bIsResource, strPrefix);
                     }
                 }
                 // For Constant Node Types...
@@ -931,7 +1005,7 @@ class RDFTransformUINode {
         return true;
     }
 
-    #expressionEditAndPreview(strColumnName, strExpression, bIsResource) {
+    #expressionEditAndPreview(strColumnName, strExpression, bIsResource, strPrefix) {
         // NOTE: The column (cell) index is a zero (0) based index.
         //      When there is no "Row / Record Index column", we use -1 to represent it.
         const iIndexColumn = -1;
@@ -958,7 +1032,7 @@ class RDFTransformUINode {
         };
 
         // Data Preview: Resource or Literal...
-        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), bIsResource );
+        const dialogDataTable = new RDFDataTableView( this.#dialog.getBaseIRI(), bIsResource, strPrefix );
         dialogDataTable.preview(objColumn, strExpression, bIsIndex, onDone);
     }
 
@@ -997,6 +1071,8 @@ class RDFTransformUINode {
         var html = $(DOM.loadHTML(RDFTransform.KEY, 'scripts/dialogs/rdf-transform-node-config.html'));
 
         var elements = DOM.bind(html);
+        elements.prefixSelect.text( $.i18n('rdft-prefix/prefix') + ": " );
+
         elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
         elements.contentUsed.text(    $.i18n('rdft-dialog/content-used') + '...' );
 
@@ -1090,7 +1166,7 @@ class RDFTransformUINode {
                         // Property Mappings are reserved in #propertyUIs
 
                         this.#node = node;
-                        this.#initilizeNodeTypes(); // ...re-initialize for new node
+                        this.#initializeNodeTypes(); // ...re-initialize for new node
                         DialogSystem.dismissUntil(this.#level - 1);
                         this.#render();
                         this.#dialog.updatePreview();
@@ -1125,6 +1201,7 @@ class RDFTransformUINode {
     // Method #getResultJSON()
     //
     //  Construct a node object from the dialog contents:
+    //    theNode.prefix = <prefix>
     //    theNode.valueType = {}
     //    For RESOURCE:
     //      theNode.valueType.type = "iri"
@@ -1187,22 +1264,45 @@ class RDFTransformUINode {
         // Dynamically add keys with values as needed...
         //
 
-        theNode.valueType = {};
         theNode.valueSource = {};
         /** @type {string} */
         var strConstVal = null;
 
         // All Resource Nodes...
         if ( this.#eType === RDFTransformCommon.NodeType.Resource ) {
+            //
+            // Get the prefix, if any...
+            //
+            /** @type {{ val: Function, find: Function }} */
+            // @ts-ignore
+            var selPrefix = $('#rdf-prefix-select');
+            // Get the selection value...
+            const strPrefixVal = selPrefix.val();
+            // Get the selection text (for prefix)...
+            var strPrefixText = null;
+            if (strPrefixVal !== '') {
+                if ( strPrefixVal === ':' ) {
+                    strPrefixText = "";
+                }
+                else {
+                    strPrefixText = selPrefix.find(":selected").text();
+                }
+            }
+            if (strPrefixText !== null) {
+                theNode.prefix = strPrefixText;
+            }
+
             //  We don't need "iri" types for root nodes as they are common.
             //  Store for all others...
             if ( ! this.#bIsRoot ) {
+                theNode.valueType = {};
                 theNode.valueType.type = "iri"; // ...implied for root nodes if missing
             }
         }
 
         // All Blank Nodes...
         else if ( this.#eType === RDFTransformCommon.NodeType.Blank ) {
+            theNode.valueType = {};
             if (this.#bIsVarNode) {
                 theNode.valueType.type = "bnode";
             }
@@ -1213,6 +1313,7 @@ class RDFTransformUINode {
 
         // All Literal Nodes...
         else if ( this.#eType === RDFTransformCommon.NodeType.Literal ) {
+            theNode.valueType = {};
             // Check for simple text literal...
             if ( $('#rdf-content-txt-radio').prop('checked') ) {
                 theNode.valueType.type = "literal";
@@ -1244,9 +1345,22 @@ class RDFTransformUINode {
                         alert( $.i18n('rdft-dialog/alert-custom') );
                         return null;
                     }
-                    // TODO: Extract prefix if present and reduce constant to local part...
-                    //theNode.valueType.datatype.prefix =
-                    theNode.valueType.datatype.valueSource.constant = strConstVal;
+                    // Extract prefix if present and reduce constant to local part...
+                    theNode.valueType.datatype.valueSource.constant = strConstVal; // ...default: Full or not prefixed
+                    if (strConstVal.indexOf('://') < 0) { // ...not Full...
+                        var iIndex = strConstVal.indexOf(':');
+                        if (iIndex === 0) { // ...at beginning, so Base IRI...
+                            theNode.valueType.datatype.prefix = ""; // ...prefix
+                            theNode.valueType.datatype.valueSource.constant =
+                                strConstVal.substring(1); // ...local part
+                        }
+                        else if (iIndex > 0) { // ...inside, so split...
+                            theNode.valueType.datatype.prefix =
+                                strConstVal.substring(0, iIndex); // ...prefix
+                            theNode.valueType.datatype.valueSource.constant =
+                                strConstVal.substring(iIndex + 1); // ...local part
+                        }
+                    }
                 }
                 // Otherwise, popular XSD datatype literal...
                 else {

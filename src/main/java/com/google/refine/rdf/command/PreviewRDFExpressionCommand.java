@@ -33,6 +33,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
     private Project theProject = null;
     private String strExpression = null;
     private JsonNode theRowIndices = null;
+    private String strPrefix = ""; // No Prefix, Base IRI == ":", all others are "ccc:"
     private String strColumnName = null;
     private ParsedIRI baseIRI = null;
 
@@ -65,6 +66,11 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
             String strIsIRI = request.getParameter("isIRI");
             boolean bIsIRI = ( strIsIRI != null && strIsIRI.equals("1") ) ? true : false;
+
+            String strPrefix = request.getParameter("prefix");
+            if ( strPrefix != null ) {
+                this.strPrefix = strPrefix;
+            }
 
             this.strColumnName = request.getParameter("columnName");
 
@@ -168,10 +174,11 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                     strbuffTempAbs.setLength(0); // ...absolute IRI
                     strbuffTempAbs.append("["); // ...absolute IRI
                     for (int iResult = 0; iResult < iResultCount; iResult++) {
-                        // Convert all non-breaking spaces to whitespace and strip string ends...
+                        // Convert all non-breaking spaces to whitespace and strip string ends and
+                        // prepend the prefix...
                         // NOTE: The expectation for this stripping is that the expression result will
                         //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
-                        strResult = Util.toSpaceStrippedString( Array.get(results, iResult) );
+                        strResult = this.strPrefix + Util.toSpaceStrippedString( Array.get(results, iResult) );
                         if ( Util.isDebugMode() ) PreviewRDFExpressionCommand.logger.info("DEBUG: Resource (" + iResult + "): [" + strResult + "]");
                         if (strResult == null || strResult.isEmpty()) { // ...skip empties
                             continue;
@@ -193,10 +200,11 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
                 }
                 // Process anything but an array as a string...
                 else {
-                    // Convert all non-breaking spaces to whitespace and strip string ends...
+                    // Convert all non-breaking spaces to whitespace and strip string ends and
+                    // prepend the prefix...
                     // NOTE: The expectation for this stripping is that the expression result will
                     //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
-                    strResult = Util.toSpaceStrippedString(results);
+                    strResult = this.strPrefix + Util.toSpaceStrippedString(results);
                     if ( Util.isDebugMode() ) PreviewRDFExpressionCommand.logger.info("DEBUG: Resource: [" + strResult + "]");
                     if ( strResult == null || strResult.isEmpty() ) {
                         this.theWriter.writeNull();

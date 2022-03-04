@@ -23,29 +23,35 @@
  *  editor.
  */
 class RDFDataTableView {
+	#strTitle;
 	#strBaseIRI;
 	#bIsResource; // Resource OR Literal
-	#strTitle;
+	#strPrefix;
 
-	constructor(baseIRI, bIsResource) {
-		this.#strBaseIRI = baseIRI;
-		this.#bIsResource = bIsResource;
+	constructor(baseIRI, bIsResource, strPrefix) {
 		this.#strTitle =
 			( bIsResource ?
 				$.i18n('rdft-dialog/preview-iri-val') :
 				$.i18n('rdft-dialog/preview-lit-val') );
-	}
-
-	getBaseIRI() {
-		return this.#strBaseIRI;
+		this.#strBaseIRI = baseIRI;
+		this.#bIsResource = bIsResource;
+		this.#strPrefix = strPrefix;
 	}
 
 	getTitle() {
 		return this.#strTitle;
 	}
 
+	getBaseIRI() {
+		return this.#strBaseIRI;
+	}
+
 	isResource() {
 		return this.#bIsResource;
+	}
+
+	getPrefix() {
+		return this.#strPrefix;
 	}
 
 	preview(objColumn, strExpression, bIsIndex, onDone) {
@@ -228,7 +234,8 @@ class RDFExpressionPreviewDialog {
 		this.#previewWidget =
 			new RDFWidget(
 				this.#dtvManager.getBaseIRI(), strColumnName, rows, strExpression,
-				this.#dtvManager.isResource(), bIsIndex, this.#elements
+				this.#dtvManager.isResource(), this.#dtvManager.getPrefix(),
+				bIsIndex, this.#elements
 			);
 		this.#previewWidget.preview();
 	}
@@ -297,6 +304,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	// Private...
 	_elmts;
 	#bIsResource; // Resource OR Literal
+	#strPrefix;
 	#bIsIndex;
 	#baseIRI;
 	#columnName;
@@ -317,7 +325,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	// Method constructor(): OVERRIDE Base
 	//
-	constructor(strBaseIRI, strColumnName, rows, strExpression,	bIsResource, bIsIndex, elements)
+	constructor(strBaseIRI, strColumnName, rows, strExpression,	bIsResource, strPrefix, bIsIndex, elements)
 	{
 		super(); // ...empty constructor to get "this"
 
@@ -332,6 +340,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		}
 
 		this.#bIsResource = bIsResource;
+		this.#strPrefix = strPrefix;
 		this.#bIsIndex = bIsIndex;
 		this._elmts = elements;
 
@@ -382,6 +391,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			"expression" : this.expression,
 			"rowIndices" : JSON.stringify(this.#rowIndices),
 			"isIRI"      : this.#bIsResource ? "1" : "0",
+			"prefix"     : this.#strPrefix === null ? "" : this.#strPrefix,
 			"columnName" : this.#bIsIndex ? "" : this.#columnName,
 			"baseIRI"    : this.#baseIRI
 		};
