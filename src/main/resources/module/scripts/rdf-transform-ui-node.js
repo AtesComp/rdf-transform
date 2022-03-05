@@ -8,10 +8,11 @@ class RDFTransformUINode {
     #node;
     #bIsRoot;
     #propertyUIs;
-    #options;
+    #bIsExpanded;
     #propUISubject;
 
     #bIsVarNode;
+    #bIsVarNodeConfig;
     #eType;
 
     #tableDetails;
@@ -50,12 +51,18 @@ class RDFTransformUINode {
         this.#propDefault.nodeObject = null; // ...hold's Object Node of Property
     }
 
-    constructor(theDialog, theNode, bIsRoot, theProperties, theOptions, theSubjectPropertyUI = null) {
+    constructor(theDialog, theNode, bIsRoot, theProperties, bIsExpanded, theSubjectPropertyUI = null) {
         this.#dialog = theDialog;
         this.#node = theNode; // ...a Transform Node
         this.#bIsRoot = bIsRoot; // Root or Object Node
-        this.#options = theOptions;
+        this.#bIsExpanded = bIsExpanded;
         this.#propUISubject = theSubjectPropertyUI; // ...Subject's Property connected to this Object
+
+        // If the Node is null...
+        if (this.#node == null) {
+            // ...set it as the default node...
+            this.#node = JSON.parse( JSON.stringify(RDFTransformUINode.#nodeObjectDefault) );
+        }
 
         //
         // Process any Properties for the Node...
@@ -71,7 +78,7 @@ class RDFTransformUINode {
                 var propertyUI = new RDFTransformUIProperty(
                     this.#dialog,
                     theProperty,
-                    { expanded: true },
+                    true,
                     this // ...Subject Node UI
                     // ...Object Node UI is set by theProperty's Object Node
                 );
@@ -90,13 +97,13 @@ class RDFTransformUINode {
 
         this.#imgExpand =
             $('<img />')
-            .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png")
+            .attr("src", this.#bIsExpanded ? "images/expanded.png" : "images/collapsed.png")
             .on("click",
                 (evt) => {
-                    this.#options.expanded = ! this.#options.expanded;
+                    this.#bIsExpanded = ! this.#bIsExpanded;
                     $(evt.currentTarget)
-                    .attr("src", this.#options.expanded ? "images/expanded.png" : "images/collapsed.png");
-                    this.show();
+                    .attr("src", this.#bIsExpanded ? "images/expanded.png" : "images/collapsed.png");
+                    this.#show();
                 }
             );
         this.#imgNone = $('<img />');
@@ -108,7 +115,7 @@ class RDFTransformUINode {
     //  From existing node on construction.  See #getResultJSON()
     //
     //  Get the Node Type information:
-    //      1. Node Value Type: Variable or Constant
+    //      1. Node Value Type: Variable (true) or Constant (false)
     //      2. Node RDF Type: "resource", "literal", or "blank"
     //  When the Node's RDF Type cannot be determined, return a failed indicator (false)
     //
@@ -117,12 +124,18 @@ class RDFTransformUINode {
         //      by testing the node's value source type:
         //      Variable == "row_index", "record_id", "column"
         //      Constant == "constant"
-        this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
+        this.#bIsVarNode = null;
+        if (this.#node.valueSource.source !== null) {
+            this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
+        }
 
         // Determine the Node's RDF Type: "resource", "literal", or "blank"...
-        var strNodeType = "literal";
-        if ( ! ("valueType" in this.#node) || this.#node.valueType.type === "iri") {
+        var strNodeType = null;
+        if ( ! ("valueType" in this.#node) || this.#node.valueType.type === "iri" ) {
             strNodeType = "resource";
+        }
+        else if ( this.#node.valueType.type === "literal" ) {
+            strNodeType = "literal";
         }
         else if (   this.#node.valueType.type === "bnode" ||
                     this.#node.valueType.type === "value_bnode" ) {
@@ -167,7 +180,9 @@ class RDFTransformUINode {
             .addClass("padded");
         $(this.#tdToggle)
             .addClass("rdf-transform-node-toggle")
-            .addClass("padded");
+            .addClass("padded")
+            .append(this.#imgExpand)
+            .append(this.#imgNone);
         $(this.#tdDetails)
             .addClass("rdf-transform-node-details")
             .append(this.#collapsedDetailDiv)
@@ -177,12 +192,12 @@ class RDFTransformUINode {
 
         this.#renderDetails(); // ...one time only
 
-        this.show();
+        this.#show();
     }
 
     #render() {
         this.#renderMain();
-        if ( this.#isExpandable() ) {
+        if ( this.isExpandable() ) {
             this.#collapsedDetailDiv.html("...");
             this.#showExpandable();
         }
@@ -193,7 +208,7 @@ class RDFTransformUINode {
     }
 
     #renderMain() {
-        var bExpandable = this.#isExpandable();
+        var bExpandable = this.isExpandable();
         var strHTMLType = '';
         if ( bExpandable )
         {
@@ -296,70 +311,74 @@ class RDFTransformUINode {
         if (this.#eType === RDFTransformCommon.NodeType.Literal) {
             strNodeLabel = "L"; //$.i18n('rdft-as/literal')[0];
         }
-        strNodeLabel = "(" + strNodeLabel + ")";
+        strNodeLabel = strNodeLabel + ": ";
 
-        // When source is not well defined...
-        var strNodeText = "Configure?"; // TODO: Make $.i18n('rdft-dialog/configure')
+        // When a Node is not well defined, defaults...
+        var strNodeText = $.i18n("rdft-dialog/configure"); // Configure?
         var bNodeLabel = false;
 
-        //
-        // CELL Nodes...
-        //
-        if (this.#bIsVarNode) {
-            // If Definite Source: "row_index", "record_id", "column"...
-            if (this.#node.valueSource.source !== null) {
-                if (this.#eType === RDFTransformCommon.NodeType.Blank) { // ...Blank Resource
-                    strNodeText = $.i18n('rdft-as/blank');
-                    bNodeLabel = true;
-                }
-                else if (this.#node.valueSource.source === "column") { // ...Column-based Resource or Literal
-                    strNodeText =
-                        RDFTransformCommon.shortenLiteral(this.#node.valueSource.columnName);
-                    bNodeLabel = true;
-                }
-                else { // ...Index-based (row or record) Resource or Literal
-                    strNodeText = "[" + $.i18n("rdft-dialog/index") + "]";
-                    bNodeLabel = true;
+        if (this.#bIsVarNode !== null) {
+            //
+            // CELL Nodes...
+            //
+            if (this.#bIsVarNode) {
+                // If Definite Source: "row_index", "record_id", "column"...
+                if (this.#node.valueSource.source !== null) {
+                    if (this.#eType === RDFTransformCommon.NodeType.Blank) { // ...Blank Resource
+                        strNodeText = $.i18n('rdft-as/blank');
+                        bNodeLabel = true;
+                    }
+                    else if (this.#node.valueSource.source === "column") { // ...Column-based Resource or Literal
+                        strNodeText =
+                            RDFTransformCommon.shortenLiteral(this.#node.valueSource.columnName);
+                        bNodeLabel = true;
+                    }
+                    else { // ...Index-based (row or record) Resource or Literal
+                        strNodeText = "[" + $.i18n("rdft-dialog/index") + "]";
+                        bNodeLabel = true;
+                    }
                 }
             }
-        }
-        //
-        // CONSTANT Nodes...
-        //
-        else {
-            // Definite Source: "constant"...
-            if ("constant" in this.#node.valueSource) {
-                var strConst = this.#node.valueSource.constant;
+            //
+            // CONSTANT Nodes...
+            //
+            else {
+                // Definite Source: "constant"...
+                if ("constant" in this.#node.valueSource) {
+                    var strConst = this.#node.valueSource.constant;
 
-                if (this.#eType === RDFTransformCommon.NodeType.Resource) {
-                    strNodeText = $.i18n('rdft-dialog/which-res');
-                    if (strConst !== null) {
-                        strNodeText = RDFTransformCommon.shortenResource(strConst);
-                        bNodeLabel = true;
+                    if (this.#eType === RDFTransformCommon.NodeType.Resource) {
+                        strNodeText = $.i18n('rdft-dialog/which-res');
+                        if (strConst !== null) {
+                            strNodeText = RDFTransformCommon.shortenResource(strConst);
+                            bNodeLabel = true;
+                        }
                     }
-                }
-                else if (this.#eType === RDFTransformCommon.NodeType.Blank) {
-                    strNodeText = $.i18n('rdft-dialog/constant-val');
-                    if (strConst !== null) {
-                        strNodeText = RDFTransformCommon.shortenLiteral(strConst);
-                        bNodeLabel = true;
+                    else if (this.#eType === RDFTransformCommon.NodeType.Blank) {
+                        strNodeText = $.i18n('rdft-dialog/constant-val');
+                        if (strConst !== null) {
+                            // Even though it's a Resource, treat the name like a Literal...
+                            strNodeText = RDFTransformCommon.shortenLiteral(strConst);
+                            bNodeLabel = true;
+                        }
                     }
-                }
-                else if (this.#eType === RDFTransformCommon.NodeType.Literal) {
-                    strNodeText = $.i18n('rdft-dialog/what-val');
-                    if (strConst !== null) {
-                        strNodeText = RDFTransformCommon.shortenLiteral(strConst);
-                        bNodeLabel = true;
+                    else if (this.#eType === RDFTransformCommon.NodeType.Literal) {
+                        strNodeText = $.i18n('rdft-dialog/what-val');
+                        if (strConst !== null) {
+                            strNodeText = RDFTransformCommon.shortenLiteral(strConst);
+                            bNodeLabel = true;
+                        }
                     }
                 }
             }
         }
 
         if (! this.#bIsRoot && bNodeLabel) {
-            strNodeText += " " + strNodeLabel;
+            strNodeText = strNodeLabel + strNodeText;
         }
 
-        // Add the Node Label as a Span reference since text can be an IRL--HTML would render link...
+        // Add the Node Label as a Span reference since text is an IRI and
+        // can be interpreted as an IRL (HTML would render a link)...
         var ahref =
             $('<a href="javascript:{}"></a>')
                 .addClass("rdf-transform-node")
@@ -472,16 +491,17 @@ class RDFTransformUINode {
             .text( $.i18n('rdft-dialog/add-prop') + '...' )
             .on("click",
                 () => {
-                    var theProperty = JSON.parse(JSON.stringify(RDFTransformUINode.#propDefault)); // ...default property
-                    var nodeObject = JSON.parse(JSON.stringify(RDFTransformUINode.#nodeObjectDefault)); // ...default node for property
-                    nodeObject.valueSource.source = RDFTransform.gstrValueSource; // ...current row / record mode source
+                    // Default Property...
+                    var theProperty = JSON.parse( JSON.stringify(RDFTransformUINode.#propDefault) );
+                    // Default Node for Property...
+                    var nodeObject = JSON.parse( JSON.stringify(RDFTransformUINode.#nodeObjectDefault) );
                     theProperty.nodeObject = nodeObject;
 
                     // Set up the Property UI...
                     var propertyUI = new RDFTransformUIProperty(
                         this.#dialog,
                         theProperty,
-                        { expanded: true },
+                        true,
                         this // ...Subject Node UI
                     );
                     this.#propertyUIs.push(propertyUI); // ...add a Property to this Node...
@@ -499,8 +519,8 @@ class RDFTransformUINode {
         this.#expandedDetailDiv.append(divFooter);
     }
 
-    show() {
-        if (this.#options.expanded) {
+    #show() {
+        if (this.#bIsExpanded) {
             this.#collapsedDetailDiv.hide();
             this.#expandedDetailDiv.show();
         }
@@ -510,19 +530,23 @@ class RDFTransformUINode {
         }
     }
 
-    #isExpandable() {
+    isExpandable() {
         return (this.#eType !== RDFTransformCommon.NodeType.Literal);
     }
 
     #showExpandable() {
-        $(this.#tdToggle).empty().append(this.#imgExpand);
+        //$(this.#tdToggle).empty().append(this.#imgExpand);
         //$(this.#tdToggle).show();
+        $(this.#imgExpand).show();
+        $(this.#imgNone).hide();
         $(this.#tdDetails).show();
     }
 
     #hideExpandable() {
-        $(this.#tdToggle).empty().append(this.#imgNone);
+        //$(this.#tdToggle).empty().append(this.#imgNone);
         //$(this.#tdToggle).hide();
+        $(this.#imgExpand).hide();
+        $(this.#imgNone).show();
         $(this.#tdDetails).hide();
     }
 
@@ -534,7 +558,7 @@ class RDFTransformUINode {
             this.#propertyUIs.splice(iPropertyIndex, 1); // ...remove Property from this Node...
             this.#render(); // ...and update the Node's view
             // If a Subject has this Node as an Object AND
-            //      this Node has just added it's 1st Property...
+            //      this Node has just removed it's last Property...
             if (this.#propUISubject !== null && this.#propertyUIs.length === 0) {
                 this.#propUISubject.render();
             }
@@ -922,7 +946,7 @@ class RDFTransformUINode {
                 }
 
                 // For Index (Row / Record) or Cell based Node Types...
-                if (this.#bIsVarNode) {
+                if (this.#bIsVarNodeConfig) {
                     // Get the column name from the value of the checked column radio...
                     // NOTE: An empty column name == a Row / Record Index (Constant is eliminated)
                     const strColumnName = $("input[name='rdf-column-radio']:checked").val();
@@ -992,7 +1016,7 @@ class RDFTransformUINode {
     #validateNodeTypes() {
         // Determine the Node's Value Type: Variable or Constant
         //      by testing if Constant Radio button is checked...
-        this.#bIsVarNode = ! ( $("#rdf-constant-value-radio").is(':checked') );
+        this.#bIsVarNodeConfig = ! ( $("#rdf-constant-value-radio").is(':checked') );
 
         // Determine the Node's RDF Type: "resource", "literal", or "blank"...
         const strNodeType = $("input[name='rdf-content-radio']:checked").val();
@@ -1037,6 +1061,9 @@ class RDFTransformUINode {
     }
 
     #renderNodeConfigDialog() {
+        this.#bIsVarNodeConfig = // ...default to Varible Node...
+            ( this.#bIsVarNode === null ? true : this.#bIsVarNode );
+
         if (theProject.columnModel.columns.length < 1)
             return;
 
@@ -1101,7 +1128,7 @@ class RDFTransformUINode {
         // Add Row/Record Radio Row...
         //
         // NOTE: Always ResourceNode
-        this.#buildIndexChoice(tableColumns, this.#bIsVarNode);
+        this.#buildIndexChoice(tableColumns, this.#bIsVarNodeConfig);
 
         //
         // Add Column Name Radio Rows...
@@ -1133,7 +1160,7 @@ class RDFTransformUINode {
         // Add Constant Value Radio Row...
         //
         // NOTE: A ResourceNode OR A LiteralNode
-        this.#buildConstantChoice(tableColumns, !(this.#bIsVarNode));
+        this.#buildConstantChoice(tableColumns, ! this.#bIsVarNodeConfig);
 
         // Initilize inputs...
         this.#initInputs(elements);
@@ -1169,6 +1196,7 @@ class RDFTransformUINode {
                         this.#initializeNodeTypes(); // ...re-initialize for new node
                         DialogSystem.dismissUntil(this.#level - 1);
                         this.#render();
+                        this.#show();
                         this.#dialog.updatePreview();
                     }
                 }
@@ -1201,55 +1229,30 @@ class RDFTransformUINode {
     // Method #getResultJSON()
     //
     //  Construct a node object from the dialog contents:
-    //    theNode.prefix = <prefix>
-    //    theNode.valueType = {}
-    //    For RESOURCE:
-    //      theNode.valueType.type = "iri"
-    //    For BLANK:
-    //      theNode.valueType.type = "bnode" || "value_bnode"
-    //    For LITERAL:
-    //      theNode.valueType.type = "literal" ||
-    //                               "language_literal" ||
-    //                               "datatype_literal"
-    //      theNode.valueType.language = <language>
-    //      theNode.valueType.datatype = {}
-    //      theNode.valueType.datatype.prefix = <dt_prefix>
-    //      theNode.valueType.datatype.valueSource = {}
-    //      theNode.valueType.datatype.valueSource.source = "constant"
-    //      theNode.valueType.datatype.valueSource.constant = <xsd/other type>
-    //
-    //    theNode.valueSource = {}
-    //    For CELL-based:
-    //      INDEX:
-    //        theNode.valueSource.source = "row_index" || "record_id"
-    //      COLUMN:
-    //        theNode.valueSource.source = "column"
-    //        theNode.valueSource.columnName = <columnName>
-    //      For RESOURCE or LITERAL:
-    //        theNode.expression = {};
-    //        theNode.expression.language = "grel"
-    //        theNode.expression.code = <expression>
-    //    For CONSTANT-based:
-    //      theNode.valueSource.source = "constant";
-    //      theNode.valueSource.constant = <constValue>;
-    //
-    //      INDEX Node --------| COLUMN Node -------| CONSTANT Node -----|
-    //        row_index OR     |   column           |   constant         |
-    //        record_id        |     columnName     |     constValue     |
-    // RESOURCE                |                    |                    |
-    //        iri              |   "                |   "                |
-    //        expression       |   "                |                    |
-    // LITERAL                 |                    |                    |
-    //        literal          |   "                |   "                |
-    //          none           |     "              |     "              |
-    //        language_literal |   "                |   "                |
-    //          language       |     "              |     "              |
-    //        datatype_literal |   "                |   "                |
-    //          constType      |     "              |     "              |
-    //        expression       |   "                |                    |
-    //  BLANK                  |                    |                    |
-    //        bnode OR         |   "                |   "                |
-    //        value_bnode      |                    |                    |
+    //    theNode =
+    //    { prefix: <prefix>,
+    //      valueType: {
+    //  RESOURCE... type: "iri"
+    //  BLANK...... type: "bnode" | "value_bnode"
+    //  LITERAL.... type: "literal" | "language_literal" | "datatype_literal",
+    //             language: <language>,
+    //             datatype: {
+    //               prefix: <dt_prefix>
+    //               valueSource: { source: "constant", constant: <xsd/other type> }
+    //             }
+    //      }
+    //      valueSource: {
+    //  CELL-based...
+    //    INDEX.... source: "row_index" | "record_id"
+    //    COLUMN... source: "column", columnName: <columnName>
+    //    RESOURCE or LITERAL (not BLANK)...
+    //              expression: { language: "grel", code: <expression> }
+    //  CONSTANT-based...
+    //              source: "constant", constant: <constValue>
+    //      }
+    //      typeMappings:     ...are not processed by the NodeConfig dialog
+    //      propertyMappings: ...are not processed by the NodeConfig dialog
+    //    }
     //
     #getResultJSON() {
         // Validate the node type information...
@@ -1303,7 +1306,7 @@ class RDFTransformUINode {
         // All Blank Nodes...
         else if ( this.#eType === RDFTransformCommon.NodeType.Blank ) {
             theNode.valueType = {};
-            if (this.#bIsVarNode) {
+            if (this.#bIsVarNodeConfig) {
                 theNode.valueType.type = "bnode";
             }
             else { // ...Constant...
@@ -1390,7 +1393,7 @@ class RDFTransformUINode {
         }
 
         // All Cell-based Nodes (NOT Constant)...
-        if (this.#bIsVarNode) {
+        if (this.#bIsVarNodeConfig) {
             // Prepare for Row/Record or Column...
             /** @type {string} */
             // @ts-ignore
@@ -1442,53 +1445,61 @@ class RDFTransformUINode {
     }
 
     getTransformExport() {
-        var theNode = {};
+        // If the Node is unconfigured...
+        if ( ! ("valueSource" in this.#node) || this.#node.valueSource.source === null) {
+            return null;
+        }
 
-        //
-        // Prefix...
-        //
+        /** @type {{
+         *      prefix?: string,
+         *      valueType?: {
+         *          type: string,
+         *          language: string,
+         *          datatype: {
+         *              prefix: string,
+         *              valueSource: { source: string, constant: string } } },
+         *      valueSource?: { source: string, constant?: string, columnName?: string },
+         *      expression?: { language: string, code: string },
+         *      typeMappings?: {},
+         *      propertyMappings?: [ ...any ]
+         *  }}
+         */
+         var theNode = {};
+
+         // Prefix...
         if ("prefix" in this.#node) {
             theNode.prefix = this.#node.prefix;
         }
 
-        //
         // Value Type...
-        //
         if ("valueType" in this.#node) {
             theNode.valueType = this.#node.valueType;
         }
 
-        //
-        // Value Source...
-        //
+        // Value Source (we know it's configured)...
         if ("valueSource" in this.#node) {
             theNode.valueSource = this.#node.valueSource;
         }
 
-        //
         // Expressions...
-        //
         if ( "expression" in this.#node ) {
             theNode.expression = this.#node.expression;
         }
 
-        //
         // Resource and Blank Nodes (NOT Literal)...
-        //
-        if (this.#node.valueSource.type !== "literal" &&
-            this.#node.valueSource.type !== "language_literal" &&
-            this.#node.valueSource.type !== "datatype_literal")
+        if ( ! ("valueType" in this.#node) || // ...a Root Node
+            // ...an Object Node & not a Literal type...
+            (   this.#node.valueType.type !== "literal" &&
+                this.#node.valueType.type !== "language_literal" &&
+                this.#node.valueType.type !== "datatype_literal" ) )
         {
-            //
             // Type Mappings...
-            //
             if ("typeMappings" in this.#node && this.#node.typeMappings.length > 0) {
                 //theNode.typeMappings = cloneDeep(this.#node.typeMappings);
                 theNode.typeMappings = this.#node.typeMappings;
             }
-            //
+
             // Property Mappings...
-            //
             if (this.#propertyUIs && this.#propertyUIs.length > 0) {
                 theNode.propertyMappings = [];
                 for (const propertyUI of this.#propertyUIs) {
@@ -1500,70 +1511,79 @@ class RDFTransformUINode {
             }
         }
 
+        if ( theNode === {} ) {
+            return null;
+        }
         return theNode;
     }
 
     static getTransformImport(theDialog, theJSONNode, bIsRoot = true, theSubjectPropertyUI = null) {
-        var theNode = {};
+        /** @type {{
+         *      prefix?: string,
+         *      valueType?: {
+         *          type: string,
+         *          language: string,
+         *          datatype: {
+         *              prefix: string,
+         *              valueSource: { source: string, constant: string } } },
+         *      valueSource?: { source: string, constant?: string, columnName?: string },
+         *      expression?: { language: string, code: string },
+         *      typeMappings?: {},
+         *      propertyMappings?: [ ...any ]
+         *  }}
+         */
+         var theNode = null;
 
-        //
-        // Prefix...
-        //
-        if ("prefix" in theJSONNode) {
-            theNode.prefix = theJSONNode.prefix;
+        // If the JSON Node represents an unconfigured node, set it to the default node...
+        if ( ! ("valueSource" in theJSONNode) ) {
+            theNode = JSON.parse(JSON.stringify(RDFTransformUINode.#nodeObjectDefault)); // ...default node
         }
+        else {
+            theNode = {};
 
-        //
-        // Value Type...
-        //
-        if ("valueType" in theJSONNode) {
-            theNode.valueType = theJSONNode.valueType;
-        }
+            // Prefix...
+            if ("prefix" in theJSONNode) {
+                theNode.prefix = theJSONNode.prefix;
+            }
 
-        //
-        // Value Source...
-        //
-        if ("valueSource" in theJSONNode) {
+            // Value Type...
+            if ("valueType" in theJSONNode) {
+                theNode.valueType = theJSONNode.valueType;
+            }
+
+            // Value Source (we know exists)...
             theNode.valueSource = theJSONNode.valueSource;
+
+            // Expressions...
+            if ( "expression" in theJSONNode ) {
+                theNode.expression = theJSONNode.expression;
+            }
         }
 
-        //
-        // Expressions...
-        //
-        if ( "expression" in theJSONNode ) {
-            theNode.expression = theJSONNode.expression;
-        }
-
-        //
-        // Set up the NodeUI Store...
-        //
+        // Set up the Node UI...
         var theNodeUI = new RDFTransformUINode(
             theDialog,
             theNode,
             bIsRoot, // ...a Root or Object Node
             null, // ...process and set properties later
-            { expanded : true },
+            true,
             theSubjectPropertyUI // ...for an Object Node
         );
 
-        //
         // Resource and Blank Nodes (NOT Literal)...
-        //
-        if (theJSONNode.valueSource.type !== "literal" &&
-            theJSONNode.valueSource.type !== "language_literal" &&
-            theJSONNode.valueSource.type !== "datatype_literal")
+        if ( ! ("valueType" in theJSONNode) || // ...a Root Node
+            (   "valueType" in theJSONNode &&  // ...an Object Node & not a Literal type
+                theJSONNode.valueType.type !== "literal" &&
+                theJSONNode.valueType.type !== "language_literal" &&
+                theJSONNode.valueType.type !== "datatype_literal" ) )
         {
-            //
             // Type Mappings...
-            //
             if ("typeMappings" in theJSONNode && theJSONNode.typeMappings.length > 0) {
                 //theNode.typeMappings = cloneDeep(theNode.typeMappings);
                 theNode.typeMappings = theJSONNode.typeMappings;
             }
 
-            //
             // Property Mappings...
-            //
             var propertyUIs = null;
             if ("propertyMappings" in theJSONNode &&
                 theJSONNode.propertyMappings !== null &&

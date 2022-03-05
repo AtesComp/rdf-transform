@@ -141,7 +141,7 @@ class RDFTransformNamespacesManager {
 		var iIndex = 0;
 		for (const strPrefix in this.namespaces) {
 			if (strPrefixFind === strPrefix) {
-				this.namespaces.splice(iIndex, 1);
+				delete this.namespaces[strPrefix];
 				iIndex--;
 				this.#dialog.updatePreview();
 			}

@@ -3,7 +3,7 @@
  */
 class RDFImportTemplate
 {
-    static importTemplate() {
+    static async importTemplate() {
         // NOTE: No Server-Side processing required.  The current RDF Template
         //      always resides on the Client-Side.  Prior processing should
         //      save the prior template since we are importing over the current one.
@@ -19,7 +19,7 @@ class RDFImportTemplate
             };
         try {
             // @ts-ignore
-            strTemplate = waitOnOpenFile();
+            strTemplate = await waitOnOpenFile();
             return JSON.parse( strTemplate );
         }
         catch (evt) {

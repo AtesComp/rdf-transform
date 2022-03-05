@@ -172,7 +172,7 @@ class RDFTransformDialog {
             localTransform = theTransform;
         }
         // Set the transform for modification...
-        this.#theTransform = JSON.parse(JSON.stringify(localTransform)); // ...clone current transform
+        this.#theTransform = JSON.parse( JSON.stringify(localTransform) ); // ...clone current transform
 
         // ...For NEW Transforms, set up the baseIRI, namespaces, and subjectMappings...
 
@@ -345,7 +345,7 @@ class RDFTransformDialog {
             node,
             true, // ...a Root Node
             properties,
-            { expanded: true }
+            true
             // No Subject Property since the Node is a Root
         );
         this.#nodeUIs.push(nodeUI);
@@ -471,15 +471,16 @@ class RDFTransformDialog {
         );
     }
 
-    #doImport() {
+    async #doImport() {
         this.#doSave(); // ...for undo
 
         var theTransform = null;
-        theTransform = RDFImportTemplate.importTemplate()
+        theTransform = await RDFImportTemplate.importTemplate();
         if ( theTransform === null ) {
             return;
         }
-        this.initTransform(theTransform)
+        //DialogSystem.dismissUntil(this.#level - 1);
+        this.initTransform( theTransform );
     }
 
     #doExport() {
