@@ -15,16 +15,21 @@ class RDFExportTemplate
             .replace(/[^\p{L}\p{N}_]/gu, '_') // ...convert non-char to "_"
             .replace(/\p{White_Space}+/gu, '-'); // ...convert sp to '-'
 
-        var waitOnSaveFile =
-            async () => {
-                await RDFTransformCommon.saveFile(
-                    strTemplate, strFilename, "json",
-                    "application/json",
-                    "RDF Template (.json)"
-                );
-            };
+        //var waitOnSaveFile =
+        //    async () => {
+        //        await RDFTransformCommon.saveFile(
+        //            strTemplate, strFilename, "json",
+        //            "application/json",
+        //            "RDF Template (.json)"
+        //        );
+        //    };
         try {
-            waitOnSaveFile();
+            //waitOnSaveFile();
+            RDFTransformCommon.saveFile(
+                strTemplate, strFilename, "json",
+                "application/json",
+                "RDF Template (.json)"
+            );
         }
         catch (evt) {
             // ...ignore...

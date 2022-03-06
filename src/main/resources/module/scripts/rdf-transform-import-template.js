@@ -9,18 +9,22 @@ class RDFImportTemplate
         //      save the prior template since we are importing over the current one.
         /** @type {string} */
         var strTemplate = null;
-        var waitOnOpenFile =
-            async () => {
-                await RDFTransformCommon.openFile(
+        //var waitOnOpenFile =
+        //    async () => {
+        //        await RDFTransformCommon.openFile(
+        //            "json",
+        //            "application/json",
+        //            "RDF Template (.json)"
+        //        );
+        //    };
+        try {
+            //strTemplate = await waitOnOpenFile();
+            strTemplate =
+                await RDFTransformCommon.readFile(
                     "json",
                     "application/json",
                     "RDF Template (.json)"
                 );
-            };
-        try {
-            // @ts-ignore
-            strTemplate = await waitOnOpenFile();
-            return JSON.parse( strTemplate );
         }
         catch (evt) {
             return null;
@@ -29,5 +33,6 @@ class RDFImportTemplate
         //        theTransform = null;
         //        // ...ignore...
         //    });
+        return JSON.parse(strTemplate);
     }
 }

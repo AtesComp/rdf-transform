@@ -38,7 +38,7 @@ class RDFTransformUINode {
     static #nodeObjectDefault = {};
     static {
         this.#nodeObjectDefault.valueType = {};
-        this.#nodeObjectDefault.valueType.type = "literal";
+        this.#nodeObjectDefault.valueType.type = RDFTransform.gstrLiteral;
         this.#nodeObjectDefault.valueSource = {};
         this.#nodeObjectDefault.valueSource.source = null; // ...hold's row / record index as default
     }
@@ -126,19 +126,27 @@ class RDFTransformUINode {
         //      Constant == "constant"
         this.#bIsVarNode = null;
         if (this.#node.valueSource.source !== null) {
-            this.#bIsVarNode = (this.#node.valueSource.source !== "constant");
+            this.#bIsVarNode = (this.#node.valueSource.source !== RDFTransform.gstrConstant);
         }
 
         // Determine the Node's RDF Type: "resource", "literal", or "blank"...
         var strNodeType = null;
-        if ( ! ("valueType" in this.#node) || this.#node.valueType.type === "iri" ) {
+        if ( ! (RDFTransform.gstrValueType in this.#node) ||
+            this.#node.valueType.type === RDFTransform.gstrIRI )
+        {
             strNodeType = "resource";
         }
-        else if ( this.#node.valueType.type === "literal" ) {
-            strNodeType = "literal";
+        else if (
+            this.#node.valueType.type === RDFTransform.gstrLiteral ||
+            this.#node.valueType.type === RDFTransform.gstrLanguageLiteral ||
+            this.#node.valueType.type === RDFTransform.gstrDatatypeLiteral )
+        {
+            strNodeType = RDFTransform.gstrLiteral;
         }
-        else if (   this.#node.valueType.type === "bnode" ||
-                    this.#node.valueType.type === "value_bnode" ) {
+        else if (
+            this.#node.valueType.type === RDFTransform.gstrBNode ||
+            this.#node.valueType.type === RDFTransform.gstrValueBNode )
+        {
             strNodeType = "blank";
         }
         this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
@@ -246,7 +254,7 @@ class RDFTransformUINode {
             /** @type {HTMLTableElement} */
             // @ts-ignore
             var typesTable = $('<table width="100%"></table>')[0];
-            if ("typeMappings" in this.#node && this.#node.typeMappings.length > 0) {
+            if (RDFTransform.gstrTypeMappings in this.#node && this.#node.typeMappings.length > 0) {
                 // Create each type display with removal icon...
                 for (var iIndex = 0; iIndex < this.#node.typeMappings.length; iIndex++) {
                     var tr = typesTable.insertRow();
@@ -324,16 +332,19 @@ class RDFTransformUINode {
             if (this.#bIsVarNode) {
                 // If Definite Source: "row_index", "record_id", "column"...
                 if (this.#node.valueSource.source !== null) {
-                    if (this.#eType === RDFTransformCommon.NodeType.Blank) { // ...Blank Resource
+                    // If a Blank Resource...
+                    if (this.#eType === RDFTransformCommon.NodeType.Blank) {
                         strNodeText = $.i18n('rdft-as/blank');
                         bNodeLabel = true;
                     }
-                    else if (this.#node.valueSource.source === "column") { // ...Column-based Resource or Literal
+                    // Else If a Column-based Resource or Literal...
+                    else if (this.#node.valueSource.source === RDFTransform.gstrColumn) {
                         strNodeText =
                             RDFTransformCommon.shortenLiteral(this.#node.valueSource.columnName);
                         bNodeLabel = true;
                     }
-                    else { // ...Index-based (row or record) Resource or Literal
+                    // Otherwise, an Index-based (row or record) Resource or Literal...
+                    else {
                         strNodeText = "[" + $.i18n("rdft-dialog/index") + "]";
                         bNodeLabel = true;
                     }
@@ -344,7 +355,7 @@ class RDFTransformUINode {
             //
             else {
                 // Definite Source: "constant"...
-                if ("constant" in this.#node.valueSource) {
+                if (RDFTransform.gstrConstant in this.#node.valueSource) {
                     var strConst = this.#node.valueSource.constant;
 
                     if (this.#eType === RDFTransformCommon.NodeType.Resource) {
@@ -418,27 +429,29 @@ class RDFTransformUINode {
         MenuSystem.positionMenuLeftRight(menu, target);
 
         var strPrefix = null;
-        if ( "prefix" in this.#node.typeMappings[iIndex] ) {
+        if ( RDFTransform.gstrPrefix in this.#node.typeMappings[iIndex] ) {
             strPrefix = this.#node.typeMappings[iIndex].prefix;
         }
         var strLocalPart = this.#node.typeMappings[iIndex].valueSource.constant;
+        const strFullLabel = "Full: ";
+        const strCIRIELabel = "CIRIE: ";
         var strText;
         // If the prefix is present, display Full IRI and CIRIE...
         if (strPrefix) {
             var strNamespace = this.#dialog.namespacesManager.getNamespaceOfPrefix(strPrefix);
             if (strNamespace) { // Namespace exists...
                 strText =
-                    " Full: " + strNamespace + strLocalPart + "\n" +
-                    "CIRIE: " + strPrefix + ":" + strLocalPart;
+                    " " + strFullLabel + strNamespace + strLocalPart + "\n" +
+                    strCIRIELabel + strPrefix + ":" + strLocalPart;
             }
             else { // Namespace is not identified with the Prefix...
                 // ...then, the combined Prefix and Local Part is a Full IRI...
-                strText = "Full: " + strPrefix + ":" + strLocalPart;
+                strText = strFullLabel + strPrefix + ":" + strLocalPart;
             }
         }
         // Otherwise, the Local Part is the Full IRI...
         else {
-            strText = "Full: " + strLocalPart;
+            strText = strFullLabel + strLocalPart;
         }
 
         var elements = DOM.bind(menu);
@@ -465,7 +478,7 @@ class RDFTransformUINode {
                 }
             );
         elements.rdftTypeText.trigger('change', [ elements.rdftTypeContainer, menu ]);
-        elements.buttonOK.on("click", () => { MenuSystem.dismissAll(); } );
+        elements.buttonOK.on("click", () => { MenuSystem.dismissAll(); });
     }
 
     #renderDetails() {
@@ -591,19 +604,19 @@ class RDFTransformUINode {
         // is a Full IRI (not a CIRIE)
 
         // Check for BAD CIRIE
-        if ( ! ( theCIRIE && "localPart" in theCIRIE ) ) {
+        if ( ! ( theCIRIE && RDFTransform.gstrLocalPart in theCIRIE ) ) {
             return;
         }
-        if ( ! ( "typeMappings" in this.#node ) ) {
+        if ( ! ( RDFTransform.gstrTypeMappings in this.#node ) ) {
             this.#node.typeMappings = [];
         }
 
         var theType = {};
-        if ( "prefix" in theCIRIE ) {
+        if ( RDFTransform.gstrPrefix in theCIRIE ) {
             theType.prefix = theCIRIE.prefix;
         }
         theType.valueSource = {};
-        theType.valueSource.source = "constant";
+        theType.valueSource.source = RDFTransform.gstrConstant;
         theType.valueSource.constant = theCIRIE.localPart;
         this.#node.typeMappings.push(theType);
 
@@ -622,9 +635,9 @@ class RDFTransformUINode {
         if ( ! theType ) {
             return "<ERROR: No Type!>";
         }
-        if ("valueSource" in theType && theType.valueSource !== null) {
+        if (RDFTransform.gstrValueSource in theType && theType.valueSource !== null) {
             // Prefixed IRI (CIRIE)...
-            if ("prefix" in theType && theType.prefix !== null) {
+            if (RDFTransform.gstrPrefix in theType && theType.prefix !== null) {
                 return theType.prefix + ":" + theType.valueSource.constant;
             }
             // Full IRI (no prefix)...
@@ -747,7 +760,7 @@ class RDFTransformUINode {
         td = tr.insertCell(); // ...align Textbox with Label
         $(td).attr("colspan", "2");
         const strConstVal =
-            ( ("constant" in this.#node.valueSource &&
+            ( (RDFTransform.gstrConstant in this.#node.valueSource &&
                this.#node.valueSource.constant !== null) ? this.#node.valueSource.constant : '');
         var tdInput = $('<input />')
             .attr("id", "rdf-constant-value-input")
@@ -783,11 +796,11 @@ class RDFTransformUINode {
         // Set the prefix selection if it matches an existing prefix...
         elements.rdf_prefix_select.find("option:selected").prop("selected", false);
         elements.rdf_prefix_select.find("option:first").prop("selected", "selected"); // ...default: select "Choose / None"
-        if ("prefix" in this.#node && this.#node.prefix !== null) {
+        if (RDFTransform.gstrPrefix in this.#node && this.#node.prefix !== null) {
             const strPrefix = this.#node.prefix + ':';
             const selOptions = elements.rdf_prefix_select.find("option");
             const iLen = selOptions.length;
-            for (var iIndex = 0; iIndex < iLen; iIndex++) { 
+            for (var iIndex = 0; iIndex < iLen; iIndex++) {
                 if (selOptions[iIndex].value === strPrefix) {
                     elements.rdf_prefix_select.prop('selectedIndex', iIndex);
                     break;
@@ -821,7 +834,7 @@ class RDFTransformUINode {
             //
             if ("datatype" in this.#node.valueType) { // ...with Datatype tag... http://www.w3.org/2001/XMLSchema#
                 var strType = null;
-                if ("constant" in this.#node.valueType.datatype.valueSource) {
+                if (RDFTransform.gstrConstant in this.#node.valueType.datatype.valueSource) {
                     strType = this.#node.valueType.datatype.valueSource.constant;
                 }
                 // Standard Datatype tags...
@@ -867,7 +880,7 @@ class RDFTransformUINode {
         // Set cell expression...
         // TODO: Future code language.  It's all "grel" currently.
         var strExpCode = RDFTransform.gstrDefaultExpCode; // ...default expression
-        if ("expression" in this.#node && "code" in this.#node.expression ) {
+        if (RDFTransform.gstrExpression in this.#node && "code" in this.#node.expression ) {
             strExpCode = this.#node.expression.code;
         }
         elements.rdf_cell_expr.empty().text(strExpCode);
@@ -1069,10 +1082,9 @@ class RDFTransformUINode {
 
         var frame = DialogSystem.createDialog();
 
-        //frame.width("490px")
         frame
-        .css({  minWidth: "490px",
-                width: "490px",
+        .css({  minWidth: "500px",
+                width: "500px",
                 minHeight: "300px",
             });
 
@@ -1117,11 +1129,8 @@ class RDFTransformUINode {
         elements.useExpression.text(  $.i18n('rdft-dialog/use-exp') + '...'      );
         elements.expEditPreview.text( $.i18n('rdft-dialog/edit-preview')         );
 
-        var tableLeft = $('<table></table>');
-        var tableColumns = tableLeft[0];
-            $('<table></table>').appendTo(elements.columnLeft)[0];
-            //.attr("cellspacing", "5")
-            //.attr("cellpadding", "0")
+        elements.columnLeft.append($('<table></table>')[0]);
+        var tableColumns = $('<table></table>')[0];
         elements.columnLeft.append(tableColumns)
 
         //
@@ -1172,9 +1181,7 @@ class RDFTransformUINode {
          *--------------------------------------------------
          */
 
-         var footer =
-            $('<div></div>')
-            .addClass("dialog-footer");
+         var footer = $('<div></div>').addClass("dialog-footer");
 
          var buttonOK =
             $('<button></button>')
@@ -1185,7 +1192,7 @@ class RDFTransformUINode {
                     var node = this.#getResultJSON();
                     if (node !== null) {
                         // If Old Node has Type Mappings, move them to New Node
-                        if ("typeMappings" in this.#node) {
+                        if (RDFTransform.gstrTypeMappings in this.#node) {
                             // Copy existing types to new node...
                             //node.typeMappings = cloneDeep(this.#node.typeMappings);
                             node.typeMappings = this.#node.typeMappings;
@@ -1198,6 +1205,10 @@ class RDFTransformUINode {
                         this.#render();
                         this.#show();
                         this.#dialog.updatePreview();
+                        if (this.#propUISubject != null) {
+                            this.#propUISubject.render();
+                        }
+
                     }
                 }
             );
@@ -1299,18 +1310,18 @@ class RDFTransformUINode {
             //  Store for all others...
             if ( ! this.#bIsRoot ) {
                 theNode.valueType = {};
-                theNode.valueType.type = "iri"; // ...implied for root nodes if missing
+                theNode.valueType.type = RDFTransform.gstrIRI; // ...implied for root nodes if missing
             }
         }
 
         // All Blank Nodes...
         else if ( this.#eType === RDFTransformCommon.NodeType.Blank ) {
             theNode.valueType = {};
-            if (this.#bIsVarNodeConfig) {
-                theNode.valueType.type = "bnode";
+            if (this.#bIsVarNodeConfig) { // Variable BNode...
+                theNode.valueType.type = RDFTransform.gstrBNode;
             }
-            else { // ...Constant...
-                theNode.valueType.type = "value_bnode";
+            else { // Constant Value BNode...
+                theNode.valueType.type = RDFTransform.gstrValueBNode;
             }
         }
 
@@ -1319,21 +1330,21 @@ class RDFTransformUINode {
             theNode.valueType = {};
             // Check for simple text literal...
             if ( $('#rdf-content-txt-radio').prop('checked') ) {
-                theNode.valueType.type = "literal";
+                theNode.valueType.type = RDFTransform.gstrLiteral;
             }
             // Check for language literal...
             else if ( $('#rdf-content-lang-radio').prop('checked') ) {
-                theNode.valueType.type = "language_literal";
+                theNode.valueType.type = RDFTransform.gstrLanguageLiteral;
                 theNode.valueType.language = $('#rdf-content-lang-input').val();
             }
             // Check for datatype literal...
             else {
-                theNode.valueType.type = "datatype_literal";
+                theNode.valueType.type = RDFTransform.gstrDatatypeLiteral;
                 theNode.valueType.datatype = {};
                 theNode.valueType.datatype.valueSource = {};
-                theNode.valueType.datatype.valueSource.source = "constant";
+                theNode.valueType.datatype.valueSource.source = RDFTransform.gstrConstant;
                 // TODO: Expand from "constant" to allow "cell" datatypes with expressions...
-                //if (dataType "expression" && "code" in "expression" ) {
+                //if (theNode.valueType.dataType.type === "expression" && "code" in "expression" ) {
                 //    theNode.valueType.datatype.expression = {};
                 //    theNode.valueType.datatype.expression.language = RDFTransform.g_strDefaultExpLang;
                 //    theNode.valueType.datatype.expression.code = strExpCode;
@@ -1384,7 +1395,7 @@ class RDFTransformUINode {
                     else if ( $('#rdf-content-boolean-radio').prop('checked') ) {
                         theNode.valueType.datatype.valueSource.constant = 'boolean';
                     }
-                    if ( ! ("constant" in theNode.valueType.datatype.valueSource) ) {
+                    if ( ! (RDFTransform.gstrConstant in theNode.valueType.datatype.valueSource) ) {
                         alert( $.i18n('rdft-data/internal-error') );
                         return null;
                     }
@@ -1399,10 +1410,10 @@ class RDFTransformUINode {
             // @ts-ignore
             const strColumnName = $("input[name='rdf-column-radio']:checked").val();
             if (strColumnName.length === 0) { // ...Row or Record Index...
-                theNode.valueSource.source = RDFTransform.gstrValueSource;
+                theNode.valueSource.source = RDFTransform.gstrValueSourceIndex;
             }
             else { // ...Column...
-                theNode.valueSource.source = "column";
+                theNode.valueSource.source = RDFTransform.gstrColumn;
                 theNode.valueSource.columnName = strColumnName;
             }
 
@@ -1436,7 +1447,7 @@ class RDFTransformUINode {
                 return null;
             }
             // ...get value...
-            theNode.valueSource.source = "constant";
+            theNode.valueSource.source = RDFTransform.gstrConstant;
             theNode.valueSource.constant = strConstVal;
         }
 
@@ -1446,7 +1457,9 @@ class RDFTransformUINode {
 
     getTransformExport() {
         // If the Node is unconfigured...
-        if ( ! ("valueSource" in this.#node) || this.#node.valueSource.source === null) {
+        if ( ! (RDFTransform.gstrValueSource in this.#node) ||
+            this.#node.valueSource.source === null)
+        {
             return null;
         }
 
@@ -1467,34 +1480,36 @@ class RDFTransformUINode {
          var theNode = {};
 
          // Prefix...
-        if ("prefix" in this.#node) {
+        if (RDFTransform.gstrPrefix in this.#node) {
             theNode.prefix = this.#node.prefix;
         }
 
         // Value Type...
-        if ("valueType" in this.#node) {
+        if (RDFTransform.gstrValueType in this.#node) {
             theNode.valueType = this.#node.valueType;
         }
 
         // Value Source (we know it's configured)...
-        if ("valueSource" in this.#node) {
+        if (RDFTransform.gstrValueSource in this.#node) {
             theNode.valueSource = this.#node.valueSource;
         }
 
         // Expressions...
-        if ( "expression" in this.#node ) {
+        if ( RDFTransform.gstrExpression in this.#node ) {
             theNode.expression = this.#node.expression;
         }
 
         // Resource and Blank Nodes (NOT Literal)...
-        if ( ! ("valueType" in this.#node) || // ...a Root Node
+        if ( ! (RDFTransform.gstrValueType in this.#node) || // ...a Root Node
             // ...an Object Node & not a Literal type...
-            (   this.#node.valueType.type !== "literal" &&
-                this.#node.valueType.type !== "language_literal" &&
-                this.#node.valueType.type !== "datatype_literal" ) )
+            (   this.#node.valueType.type !== RDFTransform.gstrLiteral &&
+                this.#node.valueType.type !== RDFTransform.gstrLanguageLiteral &&
+                this.#node.valueType.type !== RDFTransform.gstrDatatypeLiteral ) )
         {
             // Type Mappings...
-            if ("typeMappings" in this.#node && this.#node.typeMappings.length > 0) {
+            if (RDFTransform.gstrTypeMappings in this.#node &&
+                this.#node.typeMappings.length > 0)
+            {
                 //theNode.typeMappings = cloneDeep(this.#node.typeMappings);
                 theNode.typeMappings = this.#node.typeMappings;
             }
@@ -1535,19 +1550,19 @@ class RDFTransformUINode {
          var theNode = null;
 
         // If the JSON Node represents an unconfigured node, set it to the default node...
-        if ( ! ("valueSource" in theJSONNode) ) {
+        if ( ! (RDFTransform.gstrValueSource in theJSONNode) ) {
             theNode = JSON.parse(JSON.stringify(RDFTransformUINode.#nodeObjectDefault)); // ...default node
         }
         else {
             theNode = {};
 
             // Prefix...
-            if ("prefix" in theJSONNode) {
+            if (RDFTransform.gstrPrefix in theJSONNode) {
                 theNode.prefix = theJSONNode.prefix;
             }
 
             // Value Type...
-            if ("valueType" in theJSONNode) {
+            if (RDFTransform.gstrValueType in theJSONNode) {
                 theNode.valueType = theJSONNode.valueType;
             }
 
@@ -1555,7 +1570,7 @@ class RDFTransformUINode {
             theNode.valueSource = theJSONNode.valueSource;
 
             // Expressions...
-            if ( "expression" in theJSONNode ) {
+            if ( RDFTransform.gstrExpression in theJSONNode ) {
                 theNode.expression = theJSONNode.expression;
             }
         }
@@ -1571,21 +1586,23 @@ class RDFTransformUINode {
         );
 
         // Resource and Blank Nodes (NOT Literal)...
-        if ( ! ("valueType" in theJSONNode) || // ...a Root Node
-            (   "valueType" in theJSONNode &&  // ...an Object Node & not a Literal type
-                theJSONNode.valueType.type !== "literal" &&
-                theJSONNode.valueType.type !== "language_literal" &&
-                theJSONNode.valueType.type !== "datatype_literal" ) )
+        if ( ! (RDFTransform.gstrValueType in theJSONNode) || // ...a Root Node
+            (   // ...an Object Node & not a Literal type
+                theJSONNode.valueType.type !== RDFTransform.gstrLiteral &&
+                theJSONNode.valueType.type !== RDFTransform.gstrLanguageLiteral &&
+                theJSONNode.valueType.type !== RDFTransform.gstrDatatypeLiteral ) )
         {
             // Type Mappings...
-            if ("typeMappings" in theJSONNode && theJSONNode.typeMappings.length > 0) {
+            if (RDFTransform.gstrTypeMappings in theJSONNode &&
+                theJSONNode.typeMappings.length > 0)
+            {
                 //theNode.typeMappings = cloneDeep(theNode.typeMappings);
                 theNode.typeMappings = theJSONNode.typeMappings;
             }
 
             // Property Mappings...
             var propertyUIs = null;
-            if ("propertyMappings" in theJSONNode &&
+            if (RDFTransform.gstrPropertyMappings in theJSONNode &&
                 theJSONNode.propertyMappings !== null &&
                 theJSONNode.propertyMappings.length > 0)
             {

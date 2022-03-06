@@ -15,7 +15,7 @@ class RDFTransformCommon {
 		//
 		static Resource = new this("resource");
 		static Blank    = new this("blank");
-		static Literal  = new this("literal");
+		static Literal  = new this(RDFTransform.gstrLiteral);
 
 		#name;
 
@@ -319,7 +319,7 @@ class RDFTransformCommon {
 	static #getValidIRI(strIRI) {
 		return new Promise(
 			(resolve, reject) => {
-				var params = { "iri" : strIRI };
+				var params = { [RDFTransform.gstrIRI] : strIRI };
 
 				$.ajax(
 					{	url  : "command/rdf-transform/validate-iri",
@@ -535,9 +535,9 @@ class RDFTransformCommon {
     }
 
 	/*
-	 * Method openFile(strTemplate, strName, strExt, strType, strDesc)
+	 * Method readFile(strTemplate, strName, strExt, strType, strDesc)
 	 *
-	 *	Open an RDF Transform template from local storage for use
+	 *	Read an RDF Transform template from local storage for use
 	 *		strName: the suggested file name
 	 *		strExt: the file name extension
 	 *		strDesc: the description displayed for the file extension
@@ -546,7 +546,7 @@ class RDFTransformCommon {
 	 *  	strTemplate: the string containing the RDF Transform template in
 	 *			JSON format
 	 */
-	static async openFile(strExt, strType, strDesc) {
+	static async readFile(strExt, strType, strDesc) {
         // Get the File Handler...
         const [ fileHandle ] =
 			// @ts-ignore

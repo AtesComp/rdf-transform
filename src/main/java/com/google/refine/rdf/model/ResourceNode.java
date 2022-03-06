@@ -63,8 +63,11 @@ abstract public class ResourceNode extends Node {
     protected void processResultsAsArray(String strPrefix, Object results) {
         List<Object> listResult = Arrays.asList(results);
         for (Object objResult : listResult) {
+            if ( objResult == null || objResult.toString().isEmpty() ) {
+                continue;
+            }
             if (strPrefix == null) {
-                if ( processResultsAsSingle(strPrefix, objResult) ) {
+                if ( processResultsAsSingle(objResult) ) {
                     continue;
                 }
             }
@@ -75,7 +78,10 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method processResultsAsArray() for a single result to a Resource
      */
-    protected boolean processResultsAsSingle(String strPrefix, Object objResult) {
+    protected boolean processResultsAsSingle(Object objResult) {
+        if ( objResult == null || objResult.toString().isEmpty() ) {
+            return false;
+        }
         String strEmbeddedPrefix = null;
         String strLocalPart = objResult.toString();
         try {
@@ -104,32 +110,34 @@ abstract public class ResourceNode extends Node {
      *  Method normalizeResource() for Resource Node to IRI
      */
     protected void normalizeResource(String strPrefix, Object objResult) {
-        String strIRI = "";
+        if (objResult == null) {
+            return;
+        }
+        String strIRI = null;
         String strLocalPart = null;
-        if ( strPrefix != null ) {
-            strIRI = strPrefix + ":";
-            if ( objResult != null) {
-                strLocalPart = objResult.toString().replaceAll("\\/", "/").replaceAll("/", "\\/");
-                strIRI += strLocalPart; // ...CIRIE
-            }
+        if (strPrefix == null) {
+            strIRI = objResult.toString(); // ...Full IRI
         }
         else {
-            if ( objResult != null) {
-                strIRI += objResult.toString(); // ...Full IRI
-            }
+            strLocalPart = objResult.toString().replaceAll("\\/", "/").replaceAll("/", "\\/");
+            strIRI = strPrefix + ":" + strLocalPart; // ...CIRIE
         }
         if ( Util.isDebugMode() ) {
-            String strDebug = "DEBUG: normalizeResource: Given: Prefix: ";
-            strDebug += (strPrefix == null ? "[NULL]" : strPrefix);
-            strDebug += " LocalPart: " + strLocalPart;
+            String strDebug = "DEBUG: normalizeResource: Given: ";
+            if (strPrefix == null) {
+                strDebug += "IRI: " + strIRI;
+            }
+            else {
+                strDebug += "Prefix: " + strPrefix + " LocalPart: " + strLocalPart;
+            }
             ResourceNode.logger.info(strDebug);
         }
 
         if ( ! strIRI.isEmpty() ) {
             try {
-                String strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
-                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Resolved IRI: " + strPrefixedIRI);
-                if (strPrefixedIRI != null) {
+                String strResolvedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Resolved IRI: " + strResolvedIRI);
+                if (strResolvedIRI != null) {
                     String strNamespace = "";
                     if (strPrefix != null) {
                         strNamespace = this.theConnection.getNamespace(strPrefix);

@@ -102,7 +102,14 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         }
         // Results are singular...
         else {
-            if ( ! this.processResultsAsSingle(this.strPrefix, results) ) {
+            if ( results.toString().isEmpty() ) {
+                return;
+            }
+            var bDone = false;
+            if (this.strPrefix == null) {
+                bDone = this.processResultsAsSingle(results);
+            }
+            if ( ! bDone ) {
                 this.normalizeResource(this.strPrefix, results);
             }
         }

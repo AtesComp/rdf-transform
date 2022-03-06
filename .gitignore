@@ -11,3 +11,4 @@ tmp
 RDFTransform.code-workspace
 src/main/resources/module/node_modules
 src/main/resources/module/*.json
+src/main/resources/module/*.d.ts

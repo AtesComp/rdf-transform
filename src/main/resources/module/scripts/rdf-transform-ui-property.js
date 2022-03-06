@@ -26,9 +26,9 @@ class RDFTransformUIProperty {
     static #nodeObjectDefault = {};
     static {
         this.#nodeObjectDefault.valueType = {};
-        this.#nodeObjectDefault.valueType.type = "literal";
+        this.#nodeObjectDefault.valueType.type = RDFTransform.gstrLiteral;
         this.#nodeObjectDefault.valueSource = {};
-        this.#nodeObjectDefault.valueSource.source = RDFTransform.gstrValueSource;
+        this.#nodeObjectDefault.valueSource.source = RDFTransform.gstrValueSourceIndex;
     }
 
     constructor(theDialog, theProperty, bIsExpanded, theSubjectNodeUI) {
@@ -87,7 +87,7 @@ class RDFTransformUIProperty {
         var bIsExpanded = false; // ...no presumed Object Node Property Mappings to process.
 
         // If Property Mappings exist (it's also a Resource Node)...
-        if ("propertyMappings" in this.#property.nodeObject &&
+        if (RDFTransform.gstrPropertyMappings in this.#property.nodeObject &&
             this.#property.nodeObject.propertyMappings !== null &&
             this.#property.nodeObject.propertyMappings.length > 0)
         {
@@ -259,9 +259,9 @@ class RDFTransformUIProperty {
         if (! theProperty ) {
             return "<ERROR: No Property!>";
         }
-        if ("localPart" in theProperty && theProperty.localPart !== null) {
+        if (RDFTransform.gstrLocalPart in theProperty && theProperty.localPart !== null) {
             // Prefixed IRI (CIRIE)...
-            if ("prefix" in theProperty && theProperty.prefix !== null) {
+            if (RDFTransform.gstrPrefix in theProperty && theProperty.prefix !== null) {
                 return theProperty.prefix + ":" + theProperty.localPart;
             }
             // Full IRI (no prefix)...
@@ -283,11 +283,11 @@ class RDFTransformUIProperty {
 
     #editPropertyInfo(theProperty) {
         this.#property.prefix = null;
-        if ("prefix" in theProperty && theProperty.prefix !== null) {
+        if (RDFTransform.gstrPrefix in theProperty && theProperty.prefix !== null) {
             this.#property.prefix = theProperty.prefix;
         }
         this.#property.localPart = null;
-        if ("localPart" in theProperty && theProperty.localPart !== null) {
+        if (RDFTransform.gstrLocalPart in theProperty && theProperty.localPart !== null) {
             // Full or LocalPart (preprocessed)...
             this.#property.localPart = theProperty.localPart;
         }
@@ -296,25 +296,25 @@ class RDFTransformUIProperty {
     }
 
     getTransformExport() {
-        if ( ! ("localPart" in this.#property) || this.#property.localPart === null) {
+        if ( ! (RDFTransform.gstrLocalPart in this.#property) || this.#property.localPart === null) {
             return null;
         }
 
         /** @type {{prefix?: string, valueSource?: {source?: string, constant?: string}, objectMappings?: any[]}} */
         var theProperty = {};
 
-        if ("prefix" in this.#property && this.#property.prefix !== null) {
+        if (RDFTransform.gstrPrefix in this.#property && this.#property.prefix !== null) {
             theProperty.prefix = this.#property.prefix;
         }
 
         // For properties, "iri" valueType is implied, so the following is NOT needed:
         //theProperty.valueType = {};
-        //theProperty.valueType.type = "iri";
+        //theProperty.valueType.type = RDFTransform.gstrIRI;
 
         // TODO: Currently, all properties are "constant".  Change to allow
         //      column with expression.
         theProperty.valueSource = {};
-        theProperty.valueSource.source = "constant";
+        theProperty.valueSource.source = RDFTransform.gstrConstant;
         theProperty.valueSource.constant = this.#property.localPart;
 
         if (this.#nodeuiObject !== null) {
@@ -338,14 +338,17 @@ class RDFTransformUIProperty {
         //
         var theProperty = {};
         theProperty.prefix = null;
-        if ("prefix" in theJSONProperty && theJSONProperty.prefix !== null) {
+        if (RDFTransform.gstrPrefix in theJSONProperty && theJSONProperty.prefix !== null) {
             theProperty.prefix = theJSONProperty.prefix;
         }
         // TODO: Currently, all properties are "constant".  Change to allow
         //      column with expression.
         theProperty.localPart = null;
-        if ("valueSource" in theJSONProperty && theJSONProperty.valueSource !== null &&
-            "constant" in theJSONProperty.valueSource && theJSONProperty.valueSource.constant !== null) {
+        if (RDFTransform.gstrValueSource in theJSONProperty &&
+            theJSONProperty.valueSource !== null &&
+            RDFTransform.gstrConstant in theJSONProperty.valueSource &&
+            theJSONProperty.valueSource.constant !== null )
+        {
             theProperty.localPart = theJSONProperty.valueSource.constant;
         }
         theProperty.nodeObject = null; // ...default: no Object Node
@@ -365,8 +368,10 @@ class RDFTransformUIProperty {
             );
 
         var theObjectNodeUI = null;
-        if ("objectMappings" in theJSONProperty && theJSONProperty.objectMappings !== null &&
-            Array.isArray(theJSONProperty.objectMappings) && theJSONProperty.objectMappings.length > 0)
+        if (RDFTransform.gstrObjectMappings in theJSONProperty &&
+            theJSONProperty.objectMappings !== null &&
+            Array.isArray(theJSONProperty.objectMappings) &&
+            theJSONProperty.objectMappings.length > 0)
         {
             // TODO: Currently, a property contains at most one Object node.  Change to allow
             //      multiple Object nodes.

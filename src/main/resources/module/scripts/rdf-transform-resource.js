@@ -65,7 +65,7 @@ class RDFTransformResourceDialog {
                 var strLongDescription = null;
 
                 if ( data !== null && typeof data === 'object' && !Array.isArray(data) ) {
-                    if ("iri" in data) {
+                    if (RDFTransform.gstrIRI in data) {
                         strIRI = data.iri;
                     }
                     if ("label" in data) {
@@ -74,13 +74,13 @@ class RDFTransformResourceDialog {
                     if ("desc" in data) {
                         strDesc = data.desc;
                     }
-                    if ("prefix" in data) {
+                    if (RDFTransform.gstrPrefix in data) {
                         strPrefix = data.prefix;
                     }
                     if ("namespace" in data) {
                         strNamespace = data.namespace;
                     }
-                    if ("localPart" in data) {
+                    if (RDFTransform.gstrLocalPart in data) {
                         strLocalPart = data.localPart;
                     }
                     if ("description" in data) {
@@ -186,7 +186,8 @@ class RDFTransformResourceDialog {
                         }
                     }
                 }
-                alert("DEBUG: Add Item:\n" +
+                /* DEBUG */
+                /* alert("DEBUG: Add Item:\n" +
                         "   IRI: " + strIRI + "\n" +
                         " Label: " + strLabel + "\n" +
                         "  Desc: " + strDesc + "\n" +
@@ -194,7 +195,7 @@ class RDFTransformResourceDialog {
                         "    NS: " + strNamespace + "\n" +
                         " lPart: " + strLocalPart + "\n" +
                         " LDesc: " + strLongDescription
-                );
+                ); */
 
                 /** @type {{prefix?: string, localPart?: string}} */
                 var obj = null;

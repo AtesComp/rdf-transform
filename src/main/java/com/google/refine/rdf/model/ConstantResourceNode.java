@@ -74,7 +74,11 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         }
 
         this.listValues = new ArrayList<Value>();
-        if ( ! this.processResultsAsSingle(this.strPrefix, this.strConstant) ) {
+        var bDone = false;
+        if (this.strPrefix == null) {
+            bDone = this.processResultsAsSingle(this.strConstant);
+        }
+        if ( ! bDone ) {
             this.normalizeResource(this.strPrefix, this.strConstant);
         }
 
@@ -89,21 +93,19 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     public String normalizeResourceAsString() {
         String strIRI = "";
         //Util.toSpaceStrippedString(this.strPrefix) + Util.toSpaceStrippedString(this.strConstant);
-        if ( this.strPrefix != null ) {
-            strIRI = this.strPrefix + ":";
-            if ( this.strConstant != null) {
+        if ( this.strConstant != null) {
+            if ( this.strPrefix != null ) {
+                strIRI = this.strPrefix + ":";
                 strIRI += this.strConstant.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
             }
-        }
-        else {
-            if ( this.strConstant != null) {
+            else {
                 strIRI += this.strConstant; // ...Full IRI
             }
         }
         if ( Util.isDebugMode() ) ConstantResourceNode.logger.info("DEBUG: normalizeResourceAsString: Given IRI: " + strIRI);
 
         //String strPrefixedIRI = null;
-        if ( ! ( strIRI == null || strIRI.isEmpty() ) ) {
+        if ( ! strIRI.isEmpty() ) {
             try {
                 //strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
                 Util.resolveIRI(this.baseIRI, strIRI);
