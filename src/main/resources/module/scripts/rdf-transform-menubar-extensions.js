@@ -49,11 +49,12 @@ class RDFExporterMenuBar
             .replace(/\p{White_Space}+$/u, '')
             .replace(/[^\p{L}\p{N}_]/gu, '_')
             .replace(/\p{White_Space}+/gu, '-');
-        // DEBUG:
-        //alert("Project Name: " + theProject.metadata.name +
-        //    "\nCalc'ed Name: " + name +
-        //    "\nFormat: " + format +
-        //    "\nExt: " + ext);
+        /* DEBUG:
+        alert("Project Name: " + theProject.metadata.name +
+            "\nCalc'ed Name: " + name +
+            "\nFormat: " + format +
+            "\nExt: " + ext);
+        */
 
         var form = document.createElement("form");
 

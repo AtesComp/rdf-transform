@@ -38,9 +38,9 @@ class RDFTransformNamespacesManager {
 			else { // (data === null || data.code === "error")
 				bError = true;
 			}
-			// We might have changed data for errors...
+			// We might have namespace errors...
 			if (bError) {
-				alert("ERROR: Could not retrieve default namespaces!");
+				alert("ERROR: Could not retrieve default namespaces!"); // TODO: $.i18n()
 			}
 			this.show();
 		}

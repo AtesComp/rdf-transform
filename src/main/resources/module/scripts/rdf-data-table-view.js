@@ -532,8 +532,10 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 					//	tdElem.css( {"font-style": "italic"} );
 					//	tdValue = "Unresolved IRI";
 					//}
-					//console.log(tdValue);
-					//console.log( $.isPlainObject(tdValue) );
+					/* DEBUG
+					console.log(tdValue);
+					console.log( $.isPlainObject(tdValue) );
+					*/
 					this.#renderValue(tdElem, tdValue);
 				}
 			}
@@ -548,7 +550,9 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		if (tdValue != null) {
 			// Is the value an error message? (value created as an object {"message":"..."})
 			if ( $.isPlainObject(tdValue) ) {
-				//console.log(tdValue);
+				/* DEBUG
+				console.log(tdValue);
+				*/
 				$('<span></span>')
 				.addClass("expression-preview-special-value")
 				.text($.i18n('rdft-data/error') + ": " + tdValue.message)

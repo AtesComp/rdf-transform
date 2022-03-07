@@ -527,10 +527,10 @@ class RDFTransformDialog {
             {   onDone: (data) => { // callbacks
                     theProject.overlayModels.RDFTransform = theTransform;
                     if (data.code === "error") {
-                        alert($.i18n('rdft-dialog/error') + ":" + "Save failed!");
+                        alert($.i18n('rdft-dialog/error') + ": " + "Save failed!"); // TODO: $.i18n()
                     }
                     else if (data.code === "pending") {
-                        alert( $.i18n("Save pending history queue processing.") );
+                        alert("Save pending history queue processing."); // TODO: $.i18n()
                     }
                 }
             }
@@ -559,7 +559,9 @@ class RDFTransformDialog {
         // Process Preview Tab
         //
         const theTransform = this.getTransformExport();
-        /*DEBUG*/ console.log(theTransform);
+        /* DEBUG
+        console.log(theTransform);
+        */
         this.#panePreview.empty();
         $('<img />')
         .attr('src', 'images/large-spinner.gif')
@@ -643,16 +645,6 @@ class RDFTransformDialog {
         }
 
         if (bSave) { // ...save the base IRI...
-            // Refine.postCSRF(
-            //     "command/rdf-transform/save-baseIRI" + "?" + $.param({ "project" : theProject.id }),
-            //     { "baseIRI" : strIRI },
-            //     (data) => {
-            //         if (data.code === "error") {
-            //             alert($.i18n('rdft-dialog/error') + ":" + data.message);
-            //             return; // ...don't replace or update anything
-            //         }
-            //     },
-            //     "json");
             Refine.postCSRF(
                 "command/rdf-transform/save-baseIRI",
                 {   "project" : theProject.id,
@@ -660,7 +652,7 @@ class RDFTransformDialog {
                 },
                 (data) => {
                     if (data.code === "error") {
-                        alert($.i18n('rdft-dialog/error') + ":" + data.message);
+                        alert($.i18n('rdft-dialog/error') + ": " + data.message);
                         return; // ...don't replace or update anything
                     }
                 },
@@ -696,17 +688,14 @@ class RDFTransformDialog {
         {
             theTransform.namespaces = this.namespacesManager.namespaces;
         }
-        //else {
-        //    alert("No namespaces!");
-        //}
 
         // Get the current Subject Mapping nodes...
         theTransform.subjectMappings = [];
         for (const nodeUI of this.#nodeUIs) {
             if (nodeUI) {
-                var node = nodeUI.getTransformExport();
-                if (node !== null) {
-                    theTransform.subjectMappings.push(node);
+                var nodeSubject = nodeUI.getTransformExport();
+                if (nodeSubject !== null) {
+                    theTransform.subjectMappings.push(nodeSubject);
                 }
             }
         }

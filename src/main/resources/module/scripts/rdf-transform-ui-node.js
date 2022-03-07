@@ -1396,7 +1396,7 @@ class RDFTransformUINode {
                         theNode.valueType.datatype.valueSource.constant = 'boolean';
                     }
                     if ( ! (RDFTransform.gstrConstant in theNode.valueType.datatype.valueSource) ) {
-                        alert( $.i18n('rdft-data/internal-error') );
+                        alert( $.i18n('rdft-data/internal-error') + "\n" + "No Constant source value in type's datatype.");
                         return null;
                     }
                 }

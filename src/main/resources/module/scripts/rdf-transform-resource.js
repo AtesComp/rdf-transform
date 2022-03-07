@@ -87,7 +87,8 @@ class RDFTransformResourceDialog {
                         strLongDescription = data.description;
                     }
                 }
-                alert("DEBUG: Existing Item:\n" +
+                /* DEBUG
+                alert("DEBUG: Select: Existing Item:\n" +
                         "   IRI: " + strIRI + "\n" +
                         " Label: " + strLabel + "\n" +
                         "  Desc: " + strDesc + "\n" +
@@ -96,6 +97,7 @@ class RDFTransformResourceDialog {
                         " lPart: " + strLocalPart + "\n" +
                         " LDesc: " + strLongDescription
                 );
+                */
 
                 /** @type {{prefix?: string, localPart?: string}} */
                 var obj = null;
@@ -130,7 +132,7 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        "The selection does not have a valid Resource object!\n" + // TODO: i18n
+                        "The selection does not have a valid Resource object!\n" + // TODO: $.i18n()
                         "IRI: " + strIRI
                     );
                 }
@@ -184,18 +186,20 @@ class RDFTransformResourceDialog {
                                 strLabel = strIRI;
                             }
                         }
+                        // Otherwise, it's a BAD IRI!
                     }
                 }
-                /* DEBUG */
-                /* alert("DEBUG: Add Item:\n" +
-                        "   IRI: " + strIRI + "\n" +
-                        " Label: " + strLabel + "\n" +
-                        "  Desc: " + strDesc + "\n" +
-                        "Prefix: " + strPrefix + "\n" +
-                        "    NS: " + strNamespace + "\n" +
-                        " lPart: " + strLocalPart + "\n" +
-                        " LDesc: " + strLongDescription
-                ); */
+                /* DEBUG
+                alert("DEBUG: Select New: Add Item:\n" +
+                    "   IRI: " + strIRI + "\n" +
+                    " Label: " + strLabel + "\n" +
+                    "  Desc: " + strDesc + "\n" +
+                    "Prefix: " + strPrefix + "\n" +
+                    "    NS: " + strNamespace + "\n" +
+                    " lPart: " + strLocalPart + "\n" +
+                    " LDesc: " + strLongDescription
+                );
+                */
 
                 /** @type {{prefix?: string, localPart?: string}} */
                 var obj = null;
@@ -280,7 +284,7 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        "The selection does not have a valid Resource object!\n" + // TODO: i18n
+                        "The selection does not have a valid Resource object!\n" + // TODO: $.i18n()
                         "IRI: " + strIRI
                     );
                 }
@@ -321,7 +325,9 @@ class RDFTransformResourceDialog {
             );
         }
     }
+    */
 
+    /*
     async #addPrefixLocalPart(strIRI, strResp) {
         /** @type {{prefix?: string, localPart?: string}} * /
         var obj = null;
@@ -426,65 +432,67 @@ class RDFTransformResourceDialog {
  *
  *  The resource resolver for the resource manager dialog
  */
-// class RDFTransformResourceResolveDialog {
-//     #onDone;
-//
-//     constructor(element, defaultVal, onDone) {
-//         this.#onDone = onDone;
-//
-//         var menu = MenuSystem.createMenu().width('400px'); // ...6:1 on input size
-//         menu.html(
-// '<div class="rdf-transform-menu-search">' +
-//   '<span class="rdf-transform-node-label">IRI: ' +
-//     '<small>(' + $.i18n('rdft-dialog/resolve') + ')</small>' +
-//   '</span>' +
-//   '<input type="text" size="50" bind="rdftNewResourceIRI"><br/>' +
-//   '<button class="button" bind="buttonApply">' +
-//     $.i18n('rdft-buttons/apply') +
-//   '</button>' +
-//   '<button class="button" bind="buttonCancel">' +
-//     $.i18n('rdft-buttons/cancel') +
-//   '</button>' +
-// '</div>'
-//         );
-//         MenuSystem.showMenu(menu, () => {} );
-//         MenuSystem.positionMenuLeftRight(menu, $(element));
-//
-//         var elements = DOM.bind(menu);
-//         elements.rdftNewResourceIRI
-//         .val(defaultVal)
-//         .focus()
-//         .select();
-//
-//         elements.buttonCancel
-//         .on("click", () => { MenuSystem.dismissAll(); } );
-//
-//         elements.buttonApply
-//         .on("click",
-//             async () => {
-//                 var strIRI = elements.rdftNewResourceIRI.val();
-//                 if (!strIRI) {
-//                     alert( $.i18n('rdft-dialog/alert-iri') );
-//                     return;
-//                 }
-//                 if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
-//                     alert(
-//                         $.i18n('rdft-dialog/alert-iri') + "\n" +
-//                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-//                         strIRI
-//                     );
-//                     return;
-//                 }
-//                 MenuSystem.dismissAll();
-//                 //if (strIRI.charAt(0) === ':') {
-//                 //    strIRI = strIRI.substring(1);
-//                 //}
-//                 var obj = {
-//                     "iri"   : strIRI, // Full IRI
-//                     "cirie" : strIRI  // Prefixed IRI
-//                 };
-//                 this.#onDone(obj);
-//             }
-//         );
-//     }
-// }
+/*
+class RDFTransformResourceResolveDialog {
+    #onDone;
+
+    constructor(element, defaultVal, onDone) {
+        this.#onDone = onDone;
+
+        var menu = MenuSystem.createMenu().width('400px'); // ...6:1 on input size
+        menu.html(
+'<div class="rdf-transform-menu-search">' +
+  '<span class="rdf-transform-node-label">IRI: ' +
+    '<small>(' + $.i18n('rdft-dialog/resolve') + ')</small>' +
+  '</span>' +
+  '<input type="text" size="50" bind="rdftNewResourceIRI"><br/>' +
+  '<button class="button" bind="buttonApply">' +
+    $.i18n('rdft-buttons/apply') +
+  '</button>' +
+  '<button class="button" bind="buttonCancel">' +
+    $.i18n('rdft-buttons/cancel') +
+  '</button>' +
+'</div>'
+        );
+        MenuSystem.showMenu(menu, () => {} );
+        MenuSystem.positionMenuLeftRight(menu, $(element));
+
+        var elements = DOM.bind(menu);
+        elements.rdftNewResourceIRI
+        .val(defaultVal)
+        .focus()
+        .select();
+
+        elements.buttonCancel
+        .on("click", () => { MenuSystem.dismissAll(); } );
+
+        elements.buttonApply
+        .on("click",
+            async () => {
+                var strIRI = elements.rdftNewResourceIRI.val();
+                if (!strIRI) {
+                    alert( $.i18n('rdft-dialog/alert-iri') );
+                    return;
+                }
+                if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
+                    alert(
+                        $.i18n('rdft-dialog/alert-iri') + "\n" +
+                        $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
+                        strIRI
+                    );
+                    return;
+                }
+                MenuSystem.dismissAll();
+                //if (strIRI.charAt(0) === ':') {
+                //    strIRI = strIRI.substring(1);
+                //}
+                var obj = {
+                    "iri"   : strIRI, // Full IRI
+                    "cirie" : strIRI  // Prefixed IRI
+                };
+                this.#onDone(obj);
+            }
+        );
+    }
+}
+*/
