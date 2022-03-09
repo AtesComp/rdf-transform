@@ -193,9 +193,10 @@ class RDFTransformUIProperty {
             );
         var imgArrowStart = $('<img />').attr("src", "images/arrow-start.png");
         var imgArrowEnd = $('<img />').attr("src", "images/arrow-end.png");
-        var ahref = $('<a href="javascript:{}"></a>')
-            .addClass("rdf-transform-property")
-            .on("click", (evt) => { this.#editProperty(evt.target); } );
+        var ahref =
+            $('<a href="javascript:{}"></a>')
+                .addClass("rdf-transform-property")
+                .on("click", (evt) => { this.#editProperty(evt.target); } );
         ahref.append(
             $("<span></span>")
                 .addClass("rdf-transform-property-label")

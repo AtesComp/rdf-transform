@@ -372,7 +372,7 @@ class RDFTransformCommon {
 	 *	Escapes forward slashes in the Local Part
 	 */
 	 static escapeLocalPart(strLocalPart) {
-		return RDFTransformCommon.unescapeLocalPart(strLocalPart).replace("/", "\\/");
+		return RDFTransformCommon.unescapeLocalPart(strLocalPart).replace(/\//g, "\\/");
 	}
 
 	/*
@@ -381,7 +381,7 @@ class RDFTransformCommon {
 	 *	Unescapes forward slashes in the Local Part
 	 */
 	 static unescapeLocalPart(strLocalPart) {
-		return strLocalPart.replace("\\/", "/");
+		return strLocalPart.replace(/\\\//g, "/");
 	}
 
 	/*
@@ -565,4 +565,67 @@ class RDFTransformCommon {
 
 		return strTemplate;
     }
+
+	/*
+	 * Qualified Name IRI functions...
+	 */
+
+	static async isPrefixedQName(strQName) {
+		if ( await RDFTransformCommon.validateIRI(strQName) ) {
+			var iIndex = strQName.indexOf(':'); // ...first ':'
+			if ( strQName.substring(iIndex, iIndex + 3) !== "://" ) {
+				return 1; // ...prefixed
+			}
+			return 0; // ...not prefixed, but good IRI
+		}
+		return -1; // ...bad IRI
+	}
+
+	static getPrefixFromQName(strQName) {
+		var iIndex = strQName.indexOf(':');
+		if (iIndex === -1) {
+			return null;
+		}
+		// NOTE: Same start and end === "" (baseIRI)
+		return strQName.substring(0, iIndex);
+	}
+
+	static getSuffixFromQName(strQName) {
+		var iIndex = strQName.indexOf(':');
+		if (iIndex === -1) {
+			return null;
+		}
+		return strQName.substring(iIndex + 1);
+	}
+
+	static getFullIRIFromQName(strPrefixedQName, strBaseIRI) {
+		var objIRIParts = this.#deAssembleQName(strPrefixedQName);
+		if ( objIRIParts.prefix === null ) {
+			return objIRIParts.localPart;
+		}
+		if (objIRIParts.prefix in RDFTransformNamespacesManager.globalNamespaces) {
+			return RDFTransformNamespacesManager.globalNamespaces[objIRIParts.prefix] +
+				RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
+		}
+		if ( objIRIParts.prefix === "" ) {
+			return strBaseIRI + RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
+		}
+		return objIRIParts.prefix + ":" + objIRIParts.localPart;
+	}
+
+	static #deAssembleQName(strQName) {
+		var iFull = strQName.indexOf("://");
+		var iIndex = strQName.indexOf(':');
+		var obj = {};
+		if (iFull !== -1 || iIndex === -1) {
+			obj.prefix = null;
+			obj.localPart = strQName;
+		}
+		else {
+			obj.prefix = strQName.substring(0, iIndex);
+			obj.localPart =
+				RDFTransformCommon.unescapeLocalPart( strQName.substring(iIndex + 1) );
+		}
+		return obj;
+	}
 }

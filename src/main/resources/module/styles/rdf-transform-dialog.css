@@ -74,11 +74,11 @@ div.rdf-transform-tab-header {
 }
 
 div.rdf-transform-data-transform {
-/* 600 - 280 = 320
-   25 less than preview due to extra bottom buttons
+/* 600 - 286.375 = 313.625
+   31.375 less than preview due to extra bottom buttons
 */
-    height: 320px;
-    min-height: 320px;
+    height: 313.625px;
+    min-height: 313.625px;
     overflow: scroll;
     flex: 1 1 auto;
 }

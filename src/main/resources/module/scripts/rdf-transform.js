@@ -156,6 +156,7 @@ class RDFTransformDialog {
 
     #iDiffFrameHeight;
     #iLastDiffFrameHeight;
+    #iBodyHeadInit;
 
     constructor() {
         // The transform defaults are set here since "theProject" is not completely
@@ -391,7 +392,7 @@ class RDFTransformDialog {
         this.#elements.rdftBaseIRIValue.text(     this.#theTransform.baseIRI                   );
         this.#elements.rdftTabTransformText.text( $.i18n('rdft-dialog/tab-transform')          );
         this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview')            );
-        this.#elements.rdftNamespacesText.text(   $.i18n('rdft-dialog/available-prefix') + ':' );
+        this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
         this.#elements.buttonAddRootNode.text(    $.i18n('rdft-buttons/add-root')              );
         this.#elements.buttonImpTemplate.text(    $.i18n('rdft-buttons/import-template')       );
         this.#elements.buttonExpTemplate.text(    $.i18n('rdft-buttons/export-template')       );
@@ -424,6 +425,9 @@ class RDFTransformDialog {
         // Get preview pane as element with class "rdf-transform-data-preview"...
         //   AFTER show...
         this.#panePreview = $(".rdf-transform-data-preview");
+
+        // Set the initial Body Header div height...
+        this.#iBodyHeadInit = this.#elements.dialogBodyHead.height();
     }
 
     #functionalizeBody() {
@@ -476,17 +480,18 @@ class RDFTransformDialog {
 
         // Hook up resize...
         this.#iDiffFrameHeight = 0;
-        this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
+        this.#iLastDiffFrameHeight = 0;
         var doResize;
         this.#dialog.resize(
-            () => {
+            (evt, ui) => {
                 clearTimeout(doResize);
                 doResize = setTimeout(
                     () => {
                         this.#iDiffFrameHeight = this.#dialog.height() - 600;
                         if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
-                            this.#paneTransform.height(320 + this.#iDiffFrameHeight);
-                            this.#panePreview.height(345 + this.#iDiffFrameHeight);
+                            const iBodyHeadDiff = this.#iBodyHeadInit - this.#elements.dialogBodyHead.height();
+                            this.#paneTransform.height(313.625 + this.#iDiffFrameHeight + iBodyHeadDiff);
+                            this.#panePreview.height(345 + this.#iDiffFrameHeight + iBodyHeadDiff);
                             this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
                         }
                     },
@@ -604,12 +609,8 @@ class RDFTransformDialog {
         menu.html(
 '<div id="rdf-transform-base-iri-value">' +
   '<input type="text" bind="rdftNewBaseIRIValue" size="50" />' +
-  '<button class="button" bind="buttonApply">' +
-    $.i18n('rdft-buttons/apply') +
-  '</button>' +
-  '<button class="button" bind="buttonCancel">' +
-    $.i18n('rdft-buttons/cancel') +
-  '</button>' +
+  '<button class="button" bind="buttonApply">'  + $.i18n('rdft-buttons/apply')  + '</button>' +
+  '<button class="button" bind="buttonCancel">' + $.i18n('rdft-buttons/cancel') + '</button>' +
 '</div>'
         );
 
@@ -684,9 +685,9 @@ class RDFTransformDialog {
 
         // Get the current namespaces...
         theTransform.namespaces = {};
-        if (this.namespacesManager.namespaces != null)
+        if ( ! this.namespacesManager.isNull() )
         {
-            theTransform.namespaces = this.namespacesManager.namespaces;
+            theTransform.namespaces = this.namespacesManager.getNamespaces();
         }
 
         // Get the current Subject Mapping nodes...

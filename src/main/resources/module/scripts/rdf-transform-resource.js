@@ -154,7 +154,7 @@ class RDFTransformResourceDialog {
                 if ( data !== null && typeof data === 'string' ) {
                     strIRI = data;
                     // Does the IRI look like a prefixed IRI?
-                    var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(strIRI);
+                    var iPrefixedIRI = await RDFTransformCommon.isPrefixedQName(strIRI);
                     // Is it a good IRI?
                     if ( iPrefixedIRI >= 0 ) {
                         MenuSystem.dismissAll();
@@ -162,12 +162,12 @@ class RDFTransformResourceDialog {
                         // Is it a prefixed IRI?
                         if ( iPrefixedIRI === 1 ) {
                             // Divide the IRI into Prefix and LocalPart portions...
-                            strPrefix = this.#dialog.namespacesManager.getPrefixFromQName(strIRI);
-                            strLocalPart = this.#dialog.namespacesManager.getSuffixFromQName(strIRI);
+                            strPrefix = RDFTransformCommon.getPrefixFromQName(strIRI);
+                            strLocalPart = RDFTransformCommon.getSuffixFromQName(strIRI);
                             // Get the Namespace of the Prefix...
                             strNamespace = this.#dialog.namespacesManager.getNamespaceOfPrefix(strPrefix);
                             // Get the Full IRI from the Prefixed IRI...
-                            strIRI = this.#dialog.namespacesManager.getFullIRIFromQName(strIRI);
+                            strIRI = RDFTransformCommon.getFullIRIFromQName(strIRI, this.#dialog.getBaseIRI());
                             strLabel = strIRI;
                         }
                         // Is it a good IRI?
@@ -298,10 +298,10 @@ class RDFTransformResourceDialog {
     async #extractPrefixLocalPart(strIRI, strResp) {
         /** @type {{prefix?: string, localPart?: string}} * /
         var obj = null;
-        var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(strIRI);
+        var iPrefixedIRI = await RDFTransformCommon.isPrefixedQName(strIRI);
         if ( iPrefixedIRI === 1 ) { // ...Prefixed IRI
-            var strPrefix = this.#dialog.namespacesManager.getPrefixFromQName(strIRI);
-            var strLocalPart = this.#dialog.namespacesManager.getSuffixFromQName(strIRI);
+            var strPrefix = RDFTransformCommon.getPrefixFromQName(strIRI);
+            var strLocalPart = RDFTransformCommon.getSuffixFromQName(strIRI);
             // IRI   = Namespace of Prefix + strLocalPart
             // CIRIE = strResPrefix + ":" + strLocalPart
             obj = {};
@@ -333,14 +333,14 @@ class RDFTransformResourceDialog {
         var obj = null;
 
         // Does the IRI look like a prefixed IRI?
-        var iPrefixedIRI = await this.#dialog.namespacesManager.isPrefixedQName(strIRI);
+        var iPrefixedIRI = await RDFTransformCommon.isPrefixedQName(strIRI);
         // Is it a prefixed IRI?
         if ( iPrefixedIRI === 1 ) {
             MenuSystem.dismissAll();
 
             // Divide the IRI into Prefix and LocalPart portions...
-            var strPrefix = this.#dialog.namespacesManager.getPrefixFromQName(strIRI);
-            var strLocalPart = this.#dialog.namespacesManager.getSuffixFromQName(strIRI);
+            var strPrefix = RDFTransformCommon.getPrefixFromQName(strIRI);
+            var strLocalPart = RDFTransformCommon.getSuffixFromQName(strIRI);
 
             // Is there an existing prefix matching the given prefix?
             if ( strPrefix === "" || this.#dialog.namespacesManager.hasPrefix(strPrefix) ) {

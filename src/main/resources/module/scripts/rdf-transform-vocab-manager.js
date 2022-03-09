@@ -111,8 +111,9 @@ class RDFTransformVocabManager {
 		);
 
 		var bEven = false;
-		for (const strPrefix in this.#namespacesManager.namespaces) {
-			const strNamespace = this.#namespacesManager.namespaces[strPrefix];
+		const theNamespaces = this.#namespacesManager.getNamespaces();
+		for (const strPrefix in theNamespaces) {
+			const strNamespace = theNamespaces[strPrefix];
 			/** @type {HTMLElement} */
 			// @ts-ignore
 			var htmlRemoveNamespace =

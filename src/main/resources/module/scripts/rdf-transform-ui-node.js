@@ -265,7 +265,7 @@ class RDFTransformUINode {
                     let iLocalIndex = iIndex;
 
                     var td = tr.insertCell();
-                    var img = $('<img />')
+                    var imgClose = $('<img />')
                         .attr("title", $.i18n('rdft-dialog/remove-type'))
                         .attr("src", "images/close.png")
                         .css("cursor", "pointer")
@@ -274,7 +274,7 @@ class RDFTransformUINode {
                                 this.#removeNodeRDFType(iLocalIndex);
                             }
                         );
-                    $(td).append(img);
+                    $(td).append(imgClose);
 
                     td = tr.insertCell();
                     $(td).append(
@@ -419,9 +419,7 @@ class RDFTransformUINode {
         menu.html(
 '<div bind="rdftTypeContainer">' +
   '<span class="rdf-transform-iri-text" bind="rdftTypeText" style="overflow: hidden;" /></span>' +
-  '<button class="button" bind="buttonOK">' +
-    $.i18n('rdft-buttons/ok') +
-  '</button>' +
+  '<button class="button" bind="buttonOK">' + $.i18n('rdft-buttons/ok') + '</button>' +
 '</div>'
         );
 
@@ -785,7 +783,7 @@ class RDFTransformUINode {
                 strOption
                     .replace(/{V}/, ':')
                     .replace(/{T}/, ': (' + $.i18n('rdft-dialog/base-iri') + ')') );
-        const theNamespaces = this.#dialog.namespacesManager.namespaces;
+        const theNamespaces = this.#dialog.namespacesManager.getNamespaces();
         if (theNamespaces != null) {
             for (const strPrefix in theNamespaces) {
                 // const theNamespace = theNamespaces[strPrefix]);
@@ -1184,7 +1182,7 @@ class RDFTransformUINode {
          var footer = $('<div></div>').addClass("dialog-footer");
 
          var buttonOK =
-            $('<button></button>')
+            $('<button />')
             .addClass('button')
             .html( $.i18n('rdft-buttons/ok') )
             .on("click",
@@ -1214,7 +1212,7 @@ class RDFTransformUINode {
             );
 
         var buttonCancel =
-            $('<button></button>')
+            $('<button />')
             .addClass('button')
             .text( $.i18n('rdft-buttons/cancel') )
             .on("click",

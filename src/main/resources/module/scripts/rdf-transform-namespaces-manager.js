@@ -7,7 +7,7 @@
 class RDFTransformNamespacesManager {
 	static globalNamespaces = null;
 
-	namespaces;
+	#theNamespaces;
 
 	#dialog;
 
@@ -20,11 +20,11 @@ class RDFTransformNamespacesManager {
 
 	async init() {
 		this.#dialog.theNamespaces.empty().html('<img src="images/small-spinner.gif" />');
-		this.namespaces = this.#dialog.getNamespaces(); // ...existing namespaces
+		this.#theNamespaces = this.#dialog.getNamespaces(); // ...existing namespaces
 
-		if ( ! this.namespaces ) {
+		if ( ! this.#theNamespaces ) {
 			var data = null;
-			this.namespaces = {} // ...empty object, no namespaces
+			this.#theNamespaces = {} // ...empty object, no namespaces
 			try {
 				data = await this.#getDefaults();
 			}
@@ -33,7 +33,7 @@ class RDFTransformNamespacesManager {
 			}
 			var bError = false;
 			if (data !== null && "namespaces" in data) {
-				this.namespaces = data.namespaces; // ...new defaults namespaces
+				this.#theNamespaces = data.namespaces; // ...new defaults namespaces
 			}
 			else { // (data === null || data.code === "error")
 				bError = true;
@@ -48,12 +48,12 @@ class RDFTransformNamespacesManager {
 			this.#save();
 			this.show();
 		}
-		RDFTransformNamespacesManager.globalNamespaces = this.namespaces;
+		RDFTransformNamespacesManager.globalNamespaces = this.#theNamespaces;
 	}
 
 	reset() {
 		this.#dialog.theNamespaces.empty().html('<img src="images/small-spinner.gif" />');
-		this.namespaces = this.#dialog.getNamespaces();
+		this.#theNamespaces = this.#dialog.getNamespaces();
 		this.#save();
 		this.show();
 	}
@@ -87,7 +87,7 @@ class RDFTransformNamespacesManager {
 		Refine.postCSRF(
 			"command/rdf-transform/save-namespaces",
 			{   "project" : theProject.id,
-				"namespaces" : this.namespaces
+				"namespaces" : this.#theNamespaces
 			},
 			(data) => { if (onDoneSave) { onDoneSave(data); } },
 			"json"
@@ -101,28 +101,43 @@ class RDFTransformNamespacesManager {
 
 	show() {
 		this.#dialog.theNamespaces.empty();
-		for (const strPrefix in this.namespaces) {
-			this.#render(strPrefix, this.namespaces[strPrefix]);
+		for (const strPrefix in this.#theNamespaces) {
+			this.#render(strPrefix, this.#theNamespaces[strPrefix]);
 		}
 		// Add button...
-		$('<a href="#" class="add-namespace-box">' + $.i18n('rdft-prefix/add') + '</a>')
-		.on("click",
-			(evt) => {
-				evt.preventDefault();
-				this.addNamespace(false, false, false);
-			}
-		)
-		.appendTo(this.#dialog.theNamespaces);
+		var linkAdd = $('<a href="#" class="add-namespace-box">' + $.i18n('rdft-prefix/add') + '</a>');
+		this.#dialog.theNamespaces.append(linkAdd);
+		//var imgAdd =
+		//	$('<img />')
+		//	.attr('src', 'images/add.png')
+		//	.css('cursor', 'pointer');
+		//var buttonAdd =
+		//	$('<button />')
+		//	.addClass('button')
+		//	.append(imgAdd)
+		//	.append(" " + $.i18n('rdft-prefix/add'))
+		//	.on("click",
+		//		(evt) => {
+		//			evt.preventDefault();
+		//			this.addNamespace(false, false, false);
+		//		}
+		//	);
+		//this.#dialog.theNamespaces.append(buttonAdd);
 
 		// Manage button...
-		$('<a href="#" class="manage-vocabularies-box">' + $.i18n('rdft-prefix/manage') + '</a>')
-		.on("click",
-			(evt) => {
-				evt.preventDefault();
-				this.#showManageWidget();
-			}
-		)
-		.appendTo(this.#dialog.theNamespaces);
+		var linkManage = $('<a href="#" class="manage-vocabularies-box">' + $.i18n('rdft-prefix/manage') + '</a>')
+		this.#dialog.theNamespaces.append(linkManage);
+		//var buttonManage =
+		//	$('<button />')
+		//	.addClass('button')
+		//	.html('<img src="images/configure.png" /> ' + $.i18n('rdft-prefix/manage'))
+		//	.on("click",
+		//		(evt) => {
+		//			evt.preventDefault();
+		//			this.#showManageWidget();
+		//		}
+		//	);
+		//this.#dialog.theNamespaces.append(buttonManage);
 
 		// TODO: Add refresh all button
 	}
@@ -137,15 +152,28 @@ class RDFTransformNamespacesManager {
 		);
 	}
 
+	isNull() {
+		if (this.#theNamespaces === null) {
+			return true;
+		}
+		return false;
+	}
+
+	isEmpty() {
+		if (this.#theNamespaces === null || Object.keys(this.#theNamespaces).length === 0) {
+			return true;
+		}
+		return false;
+	}
+
+	getNamespaces(){
+		return this.#theNamespaces
+	}
+
 	removeNamespace(strPrefixFind) {
-		var iIndex = 0;
-		for (const strPrefix in this.namespaces) {
-			if (strPrefixFind === strPrefix) {
-				delete this.namespaces[strPrefix];
-				iIndex--;
-				this.#dialog.updatePreview();
-			}
-			iIndex++;
+		if (strPrefixFind in this.#theNamespaces) {
+			delete this.#theNamespaces[strPrefixFind];
+			this.#dialog.updatePreview();
 		}
 	}
 
@@ -159,7 +187,7 @@ class RDFTransformNamespacesManager {
 				//		prefix information, so no checks are required here.
 
 				// Add the Prefix and its Namespace...
-				this.namespaces[strPrefix] = strNamespace;
+				this.#theNamespaces[strPrefix] = strNamespace;
 				this.#save();
 				this.show();
 
@@ -172,84 +200,16 @@ class RDFTransformNamespacesManager {
 	}
 
 	hasPrefix(strPrefixFind) {
-		for (const strPrefix in this.namespaces) {
-			if (strPrefix === strPrefixFind) {
-				return true;
-			}
+		if (strPrefixFind in this.#theNamespaces) {
+			return true;
 		}
 		return false;
 	}
 
 	getNamespaceOfPrefix(strPrefixFind) {
-		for (const strPrefix in this.namespaces) {
-			if (strPrefix === strPrefixFind) {
-				return this.namespaces[strPrefix];
-			}
+		if (strPrefixFind in this.#theNamespaces) {
+			return this.#theNamespaces[strPrefixFind];
 		}
 		return null;
-	}
-
-	/*
-	 * Some utility functions...
-	 */
-
-	async isPrefixedQName(strQName) {
-		if ( await RDFTransformCommon.validateIRI(strQName) ) {
-			var iIndex = strQName.indexOf(':'); // ...first ':'
-			if ( strQName.substring(iIndex, iIndex + 3) !== "://" ) {
-				return 1; // ...prefixed
-			}
-			return 0; // ...not prefixed, but good IRI
-		}
-		return -1; // ...bad IRI
-	}
-
-	getPrefixFromQName(strQName) {
-		var iIndex = strQName.indexOf(':');
-		if (iIndex === -1) {
-			return null;
-		}
-		// NOTE: Same start and end === "" (baseIRI)
-		return strQName.substring(0, iIndex);
-	}
-
-	getSuffixFromQName(strQName) {
-		var iIndex = strQName.indexOf(':');
-		if (iIndex === -1) {
-			return null;
-		}
-		return strQName.substring(iIndex + 1);
-	}
-
-	getFullIRIFromQName(strPrefixedQName) {
-		var objIRIParts = this.#deAssembleQName(strPrefixedQName);
-		if ( objIRIParts.prefix === null ) {
-			return objIRIParts.localPart;
-		}
-		if (objIRIParts.prefix in RDFTransformNamespacesManager.globalNamespaces) {
-			return RDFTransformNamespacesManager.globalNamespaces[objIRIParts.prefix] +
-				RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
-		}
-		if ( objIRIParts.prefix === "" ) {
-			return this.#dialog.getBaseIRI() +
-				RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
-		}
-		return objIRIParts.prefix + ":" + objIRIParts.localPart;
-	}
-
-	#deAssembleQName(strQName) {
-		var iFull = strQName.indexOf("://");
-		var iIndex = strQName.indexOf(':');
-		var obj = {};
-		if (iFull !== -1 || iIndex === -1) {
-			obj.prefix = null;
-			obj.localPart = strQName
-		}
-		else {
-			obj.prefix = strQName.substring(0, iIndex),
-			obj.localPart =
-				RDFTransformCommon.unescapeLocalPart( strQName.substring(iIndex + 1) )
-		}
-		return obj;
 	}
 }

@@ -180,7 +180,7 @@ class RDFExpressionPreviewDialog {
 		this.#elements = DOM.bind(html);
 
 		// Substitute our button for OpenRefine's ExpressionPreviewDialog button...
-		var buttonOK = $('<button></button>').addClass('button').text( $.i18n('rdft-buttons/ok') );
+		var buttonOK = $('<button />').addClass('button').text( $.i18n('rdft-buttons/ok') );
 		buttonOK.on("click",
 			() => {
 				DialogSystem.dismissUntil(this.#level - 1);
@@ -189,7 +189,7 @@ class RDFExpressionPreviewDialog {
 		);
 
 		// Substitute our button for OpenRefine's ExpressionPreviewDialog button...
-		var buttonCancel = $('<button></button>').addClass('button').text( $.i18n('rdft-buttons/cancel') );
+		var buttonCancel = $('<button />').addClass('button').text( $.i18n('rdft-buttons/cancel') );
 		buttonCancel.on("click",
 			() => { DialogSystem.dismissUntil(this.#level - 1); }
 		);
