@@ -1,5 +1,6 @@
 declare var Refine: any;
 declare var theProject: any;
+declare var ModuleWirings: any;
 declare var MenuSystem: any;
 declare var DialogSystem: any;
 declare var DataTableView: any;

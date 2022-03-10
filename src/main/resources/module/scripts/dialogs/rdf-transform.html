@@ -23,7 +23,13 @@
           <table>
             <tr>
               <td><span bind="rdftPrefixesText"></span></td>
-              <td><div class="rdf-transform-namespaces" bind="rdftEditNamespaces"></div></td>
+              <td>
+                <div class="rdf-transform-prefixes">
+                  <span bind="rdftPrefixesContainer"></span>
+                  <button class="Button" bind="buttonAddPrefix"></button>
+                  <button class="Button" bind="buttonManagePrefixes"></button>
+                </div>
+              </td>
             </tr>
           </table>
         </div>

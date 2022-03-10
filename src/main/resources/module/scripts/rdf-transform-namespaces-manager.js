@@ -5,8 +5,6 @@
  */
 
 class RDFTransformNamespacesManager {
-	static globalNamespaces = null;
-
 	#theNamespaces;
 
 	#dialog;
@@ -15,12 +13,14 @@ class RDFTransformNamespacesManager {
 		this.#dialog = dialog;
 
 		// Namespaces have not been initialized...
-		// Initialize after construction!
+		// Initialize after construction due to await'ing on defaults when needed!
 	}
 
 	async init() {
-		this.#dialog.theNamespaces.empty().html('<img src="images/small-spinner.gif" />');
-		this.#theNamespaces = this.#dialog.getNamespaces(); // ...existing namespaces
+		this.#dialog.waitOnNamespaces();
+
+		// Get existing namespaces (clone namespaces)...
+		this.#theNamespaces = JSON.parse( JSON.stringify( this.#dialog.getNamespaces() ) );
 
 		if ( ! this.#theNamespaces ) {
 			var data = null;
@@ -42,20 +42,19 @@ class RDFTransformNamespacesManager {
 			if (bError) {
 				alert("ERROR: Could not retrieve default namespaces!"); // TODO: $.i18n()
 			}
-			this.show();
 		}
 		else {
-			this.#save();
-			this.show();
+			this.#saveNamespaces();
 		}
-		RDFTransformNamespacesManager.globalNamespaces = this.#theNamespaces;
+		this.#renderNamespaces();
 	}
 
 	reset() {
-		this.#dialog.theNamespaces.empty().html('<img src="images/small-spinner.gif" />');
-		this.#theNamespaces = this.#dialog.getNamespaces();
-		this.#save();
-		this.show();
+		this.#dialog.waitOnNamespaces();
+		// Get existing namespaces (clone namespaces)...
+		this.#theNamespaces = JSON.parse( JSON.stringify( this.#dialog.getNamespaces() ) );
+		this.#saveNamespaces();
+		this.#renderNamespaces();
 	}
 
 	/*
@@ -83,7 +82,7 @@ class RDFTransformNamespacesManager {
 		);
 	}
 
-	#save(onDoneSave) {
+	#saveNamespaces(onDoneSave) {
 		Refine.postCSRF(
 			"command/rdf-transform/save-namespaces",
 			{   "project" : theProject.id,
@@ -94,62 +93,13 @@ class RDFTransformNamespacesManager {
 		);
 	}
 
-	#showManageWidget() {
+	showManageWidget() {
 		var vocabManager = new RDFTransformVocabManager(this);
-		vocabManager.show();
+		vocabManager.show( () => this.#renderNamespaces() );
 	}
 
-	show() {
-		this.#dialog.theNamespaces.empty();
-		for (const strPrefix in this.#theNamespaces) {
-			this.#render(strPrefix, this.#theNamespaces[strPrefix]);
-		}
-		// Add button...
-		var linkAdd = $('<a href="#" class="add-namespace-box">' + $.i18n('rdft-prefix/add') + '</a>');
-		this.#dialog.theNamespaces.append(linkAdd);
-		//var imgAdd =
-		//	$('<img />')
-		//	.attr('src', 'images/add.png')
-		//	.css('cursor', 'pointer');
-		//var buttonAdd =
-		//	$('<button />')
-		//	.addClass('button')
-		//	.append(imgAdd)
-		//	.append(" " + $.i18n('rdft-prefix/add'))
-		//	.on("click",
-		//		(evt) => {
-		//			evt.preventDefault();
-		//			this.addNamespace(false, false, false);
-		//		}
-		//	);
-		//this.#dialog.theNamespaces.append(buttonAdd);
-
-		// Manage button...
-		var linkManage = $('<a href="#" class="manage-vocabularies-box">' + $.i18n('rdft-prefix/manage') + '</a>')
-		this.#dialog.theNamespaces.append(linkManage);
-		//var buttonManage =
-		//	$('<button />')
-		//	.addClass('button')
-		//	.html('<img src="images/configure.png" /> ' + $.i18n('rdft-prefix/manage'))
-		//	.on("click",
-		//		(evt) => {
-		//			evt.preventDefault();
-		//			this.#showManageWidget();
-		//		}
-		//	);
-		//this.#dialog.theNamespaces.append(buttonManage);
-
-		// TODO: Add refresh all button
-	}
-
-	#render(strPrefix, strNamespace) {
-		this.#dialog.theNamespaces
-		.append(
-			$('<span/>')
-			.addClass('rdf-transform-prefix-box')
-			.attr('title', strNamespace)
-			.text(strPrefix)
-		);
+	#renderNamespaces() {
+		this.#dialog.updateNamespaces(this.#theNamespaces);
 	}
 
 	isNull() {
@@ -188,8 +138,8 @@ class RDFTransformNamespacesManager {
 
 				// Add the Prefix and its Namespace...
 				this.#theNamespaces[strPrefix] = strNamespace;
-				this.#save();
-				this.show();
+				this.#saveNamespaces();
+				this.#renderNamespaces();
 
 				if (onDoneAdd) {
 					onDoneAdd(strPrefix);

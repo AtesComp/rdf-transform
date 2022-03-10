@@ -58,12 +58,14 @@ class RDFTransformUIProperty {
 
         this.#imgExpand =
             $('<img />')
-            .attr("src", this.#bIsExpanded ? "images/expanded.png" : "images/collapsed.png")
+            .attr("src", ModuleWirings[RDFTransform.KEY] +
+                        (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"))
             .on("click",
                 (evt) => {
                     this.#bIsExpanded = !this.#bIsExpanded;
                     $(evt.currentTarget)
-                    .attr("src", this.#bIsExpanded ? "images/expanded.png" : "images/collapsed.png");
+                    .attr("src", ModuleWirings[RDFTransform.KEY] +
+                                (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"));
                     this.#show();
                 }
             );
@@ -175,9 +177,9 @@ class RDFTransformUIProperty {
     }
 
     #renderMain() {
-        var imgClose = $('<img />')
+        var imgDelete = $('<img />')
             .attr("title", $.i18n('rdft-dialog/remove-property'))
-            .attr("src", "images/close.png")
+            .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
             .css("cursor", "pointer")
             .on("click",
                 () => {
@@ -205,7 +207,7 @@ class RDFTransformUIProperty {
 
         $(this.#tdMain)
             .empty()
-            .append(imgClose)
+            .append(imgDelete)
             .append(imgArrowStart)
             .append(ahref)
             .append(imgArrowEnd);

@@ -141,14 +141,15 @@ class RDFTransformDialog {
 
     iSampleLimit = 20; // TODO: Modify for user input
 
-    theNamespaces;
-    namespacesManager;
+    #namespacesManager;
 
-    #theTransform;
+    #theTransform; // ...holds all the stuffs
     #nodeUIs;
 
     #dialog;
     #elements;
+    #imgLargeSpinner;
+    #imgLineBounce;
     #level;
     #paneTransform;
     #panePreview;
@@ -175,13 +176,11 @@ class RDFTransformDialog {
         await this.#init(theTransform);
         this.#buildBody();
 
-        // Initialize namespaces...
-        this.theNamespaces = this.#elements.rdftEditNamespaces; // ...used in RDFTransformNamespacesManager
-        this.namespacesManager = new RDFTransformNamespacesManager(this);
-        await this.namespacesManager.init();
-
         // Initialize baseIRI...
         this.#replaceBaseIRI(this.#theTransform.baseIRI || location.origin + '/', false);
+
+        // Initialize namespaces...
+        await this.#processNamespaces();
 
         // Initialize transform view...
         this.#processTransformTab();
@@ -198,8 +197,8 @@ class RDFTransformDialog {
         if ( typeof theTransform === 'object' && theTransform !== null ) {
             localTransform = theTransform;
         }
-        // Set the transform for modification...
-        this.#theTransform = JSON.parse( JSON.stringify(localTransform) ); // ...clone current transform
+        // Set the transform for modification (clone current transform)...
+        this.#theTransform = JSON.parse( JSON.stringify(localTransform) );
 
         // ...For NEW Transforms, set up the baseIRI, namespaces, and subjectMappings...
 
@@ -329,7 +328,7 @@ class RDFTransformDialog {
                         }
                         else { // ...in the middle
                             const strTestPrefix = strIRI.substring(0, iIndexPrefix);
-                            if ( this.namespacesManager.hasPrefix(strTestPrefix) ) { // ...existing prefix
+                            if ( this.#namespacesManager.hasPrefix(strTestPrefix) ) { // ...existing prefix
                                 // Use the given prefix and set Local Part (after prefix)...
                                 strPrefix = strTestPrefix;
                                 strIRI = strIRI.substring(iIndexPrefix + 1);
@@ -405,32 +404,34 @@ class RDFTransformDialog {
             ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );
         this.#elements.rdftSampleTurtleText.html( strSample );
 
-        this.#elements.buttonOK
-        .on("click", () => {
-                this.#doSave();
-                DialogSystem.dismissUntil(this.#level - 1);
-            }
-        );
-        this.#elements.buttonCancel
-        .on("click", () => DialogSystem.dismissUntil(this.#level - 1) );
-
-        this.#functionalizeBody();
+        this.#functionalizeDialog();
 
         this.#level = DialogSystem.showDialog(this.#dialog);
 
-        // Get transform pane as element with class "rdf-transform-data-transform"...
+        //
         //   AFTER show...
+        //
+
+        this.#imgLargeSpinner =
+            $('<img />')
+                .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/large_spinner.gif')
+                .attr('title', $.i18n('rdft-dialog/loading') + '...');
+
+        this.#imgLineBounce =
+            $('<img />')
+                .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/line_bounce.gif');
+
+        // Get transform pane as element with class "rdf-transform-data-transform"...
         this.#paneTransform = $(".rdf-transform-data-transform");
 
         // Get preview pane as element with class "rdf-transform-data-preview"...
-        //   AFTER show...
         this.#panePreview = $(".rdf-transform-data-preview");
 
         // Set the initial Body Header div height...
         this.#iBodyHeadInit = this.#elements.dialogBodyHead.height();
     }
 
-    #functionalizeBody() {
+    #functionalizeDialog() {
         // Hook up the Transform and Preview tabs...
         //$( "#rdftTabs", this.#elements.dialogBody ).tabs();
         this.#elements.rdftTabs.tabs();
@@ -478,6 +479,15 @@ class RDFTransformDialog {
             }
         );
 
+        this.#elements.buttonOK
+        .on("click", () => {
+                this.#doSave();
+                DialogSystem.dismissUntil(this.#level - 1);
+            }
+        );
+        this.#elements.buttonCancel
+        .on("click", () => DialogSystem.dismissUntil(this.#level - 1) );
+
         // Hook up resize...
         this.#iDiffFrameHeight = 0;
         this.#iLastDiffFrameHeight = 0;
@@ -486,11 +496,11 @@ class RDFTransformDialog {
             (evt, ui) => {
                 clearTimeout(doResize);
                 doResize = setTimeout(
-                    () => {
+                    () => { // TODO: Vertical Resize Issue - OpenRefine Dialog Resizing is braindead on vertical!
                         this.#iDiffFrameHeight = this.#dialog.height() - 600;
                         if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
                             const iBodyHeadDiff = this.#iBodyHeadInit - this.#elements.dialogBodyHead.height();
-                            this.#paneTransform.height(313.625 + this.#iDiffFrameHeight + iBodyHeadDiff);
+                            this.#paneTransform.height(307.625 + this.#iDiffFrameHeight + iBodyHeadDiff);
                             this.#panePreview.height(345 + this.#iDiffFrameHeight + iBodyHeadDiff);
                             this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
                         }
@@ -542,6 +552,42 @@ class RDFTransformDialog {
         );
     }
 
+    async #processNamespaces() {
+        // Initialize namespaces...
+        this.#namespacesManager = new RDFTransformNamespacesManager(this);
+        await this.#namespacesManager.init();
+
+		var imgAddPrefix =
+			$('<img />')
+			.attr('src', ModuleWirings[RDFTransform.KEY] + 'images/add.png')
+			.css('cursor', 'pointer');
+        this.#elements.buttonAddPrefix
+			.append(imgAddPrefix)
+			.append(" " + $.i18n('rdft-prefix/add'))
+			.on("click",
+				(evt) => {
+					evt.preventDefault();
+					this.#namespacesManager.addNamespace(false, false, false);
+				}
+			);
+
+        var imgManagePrefixes =
+			$('<img />')
+			.attr('src', ModuleWirings[RDFTransform.KEY] + 'images/configure.png')
+			.css('cursor', 'pointer');
+        this.#elements.buttonManagePrefixes
+            .append(imgManagePrefixes)
+            .append(" " + $.i18n('rdft-prefix/manage'))
+			.on("click",
+				(evt) => {
+					evt.preventDefault();
+					this.#namespacesManager.showManageWidget();
+				}
+			);
+
+		// TODO: Add refresh all button
+    }
+
     #processTransformTab() {
         //
         // Process Transform Tab
@@ -549,14 +595,14 @@ class RDFTransformDialog {
         this.#paneTransform.empty()
 
         var table =
-            $('<table></table>').addClass("rdf-transform-table-layout");
+            $('<table></table>').addClass("rdf-transform-pane-table-layout");
         this.#tableNodes = table[0];
 
         for (const nodeUI of this.#nodeUIs) {
             nodeUI.processView(this.#tableNodes);
         }
 
-        table.appendTo(this.#paneTransform);
+        this.#paneTransform.append(table);
     }
 
     #processPreviewTab() {
@@ -567,11 +613,7 @@ class RDFTransformDialog {
         /* DEBUG
         console.log(theTransform);
         */
-        this.#panePreview.empty();
-        $('<img />')
-        .attr('src', 'images/large-spinner.gif')
-        .attr('title', $.i18n('rdft-dialog/loading') + '...')
-        .appendTo(this.#panePreview);
+        this.#panePreview.empty().append(this.#imgLargeSpinner);
 
         // Consult the oracle on the RDF Preview...
         Refine.postProcess(
@@ -602,6 +644,10 @@ class RDFTransformDialog {
                 }
             }
         );
+    }
+
+    getBaseIRI() {
+        return this.#theTransform.baseIRI;
     }
 
     #editBaseIRI(target) {
@@ -663,16 +709,34 @@ class RDFTransformDialog {
         this.#elements.rdftBaseIRIValue.empty().text(strIRI);
     }
 
-    updatePreview() {
-        this.#processPreviewTab();
-    }
-
-    getBaseIRI() {
-        return this.#theTransform.baseIRI;
-    }
-
     getNamespaces() {
         return this.#theTransform.namespaces;
+    }
+
+    getNamespacesManager() {
+        return this.#namespacesManager;
+    }
+
+    waitOnNamespaces() {
+        this.#elements.rdftPrefixesContainer.empty().append(this.#imgLineBounce);
+    }
+
+    updateNamespaces(theNamespaces) {
+		this.#elements.rdftPrefixesContainer.empty();
+		for (const strPrefix in theNamespaces) {
+			this.#elements.rdftPrefixesContainer.append(
+				$('<span/>')
+                    .addClass('rdf-transform-prefix-box')
+                    .attr('title', theNamespaces[strPrefix])
+                    .text(strPrefix)
+                    .css("line-height", "21px")
+                    .css("vertical-align", "middle")
+			);
+		}
+    }
+
+    updatePreview() {
+        this.#processPreviewTab();
     }
 
     getTransformExport() {
@@ -685,9 +749,9 @@ class RDFTransformDialog {
 
         // Get the current namespaces...
         theTransform.namespaces = {};
-        if ( ! this.namespacesManager.isNull() )
+        if ( ! this.#namespacesManager.isNull() )
         {
-            theTransform.namespaces = this.namespacesManager.getNamespaces();
+            theTransform.namespaces = this.#namespacesManager.getNamespaces();
         }
 
         // Get the current Subject Mapping nodes...

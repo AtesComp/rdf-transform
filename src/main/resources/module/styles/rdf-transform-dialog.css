@@ -50,7 +50,7 @@ div.rdf-transform-detail-container
 }
 */
 
-table.rdf-transform-table-layout,
+table.rdf-transform-pane-table-layout,
 table.rdf-transform-property-table-layout,
 table.rdf-transform-details-table-layout {
     table-layout: fixed;
@@ -74,16 +74,16 @@ div.rdf-transform-tab-header {
 }
 
 div.rdf-transform-data-transform {
-/* 600 - 286.375 = 313.625
-   31.375 less than preview due to extra bottom buttons
+/* 600 - 292.375 = 307.625
+   34.625 less than preview due to extra bottom buttons
 */
-    height: 313.625px;
-    min-height: 313.625px;
+    height: 307.625px;
+    min-height: 307.625px;
     overflow: scroll;
     flex: 1 1 auto;
 }
 
-table.rdf-transform-table-layout > tbody > tr > td.padded {
+table.rdf-transform-pane-table-layout > tbody > tr > td.padded {
 	padding: 15px 6px;
 }
 
@@ -105,8 +105,10 @@ div.rdf-transform-data-preview pre {
     word-wrap: break-word;
 }
 
-div.rdf-transform-namespaces {
+div.rdf-transform-prefixes {
+    /*
 	width: 100%;
+    */
 }
 
 span.rdf-transform-prefix-box {

@@ -60,7 +60,7 @@ class RDFTransformUINode {
 
         // If the Node is null...
         if (this.#node == null) {
-            // ...set it as the default node...
+            // ...set it as the default node (clone default)...
             this.#node = JSON.parse( JSON.stringify(RDFTransformUINode.#nodeObjectDefault) );
         }
 
@@ -97,12 +97,14 @@ class RDFTransformUINode {
 
         this.#imgExpand =
             $('<img />')
-            .attr("src", this.#bIsExpanded ? "images/expanded.png" : "images/collapsed.png")
+            .attr("src", ModuleWirings[RDFTransform.KEY] +
+                        (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"))
             .on("click",
                 (evt) => {
                     this.#bIsExpanded = ! this.#bIsExpanded;
                     $(evt.currentTarget)
-                    .attr("src", this.#bIsExpanded ? "images/expanded.png" : "images/collapsed.png");
+                    .attr("src", ModuleWirings[RDFTransform.KEY] +
+                                (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"));
                     this.#show();
                 }
             );
@@ -265,16 +267,16 @@ class RDFTransformUINode {
                     let iLocalIndex = iIndex;
 
                     var td = tr.insertCell();
-                    var imgClose = $('<img />')
+                    var imgDelete = $('<img />')
                         .attr("title", $.i18n('rdft-dialog/remove-type'))
-                        .attr("src", "images/close.png")
+                        .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
                         .css("cursor", "pointer")
                         .on("click",
                             () => {
                                 this.#removeNodeRDFType(iLocalIndex);
                             }
                         );
-                    $(td).append(imgClose);
+                    $(td).append(imgDelete);
 
                     td = tr.insertCell();
                     $(td).append(
@@ -436,7 +438,7 @@ class RDFTransformUINode {
         var strText;
         // If the prefix is present, display Full IRI and CIRIE...
         if (strPrefix) {
-            var strNamespace = this.#dialog.namespacesManager.getNamespaceOfPrefix(strPrefix);
+            var strNamespace = this.#dialog.getNamespacesManager().getNamespaceOfPrefix(strPrefix);
             if (strNamespace) { // Namespace exists...
                 strText =
                     " " + strFullLabel + strNamespace + strLocalPart + "\n" +
@@ -502,9 +504,9 @@ class RDFTransformUINode {
             .text( $.i18n('rdft-dialog/add-prop') + '...' )
             .on("click",
                 () => {
-                    // Default Property...
+                    // Default Property (clone default)...
                     var theProperty = JSON.parse( JSON.stringify(RDFTransformUINode.#propDefault) );
-                    // Default Node for Property...
+                    // Default Node for Property (clone default)...
                     var nodeObject = JSON.parse( JSON.stringify(RDFTransformUINode.#nodeObjectDefault) );
                     theProperty.nodeObject = nodeObject;
 
@@ -783,7 +785,7 @@ class RDFTransformUINode {
                 strOption
                     .replace(/{V}/, ':')
                     .replace(/{T}/, ': (' + $.i18n('rdft-dialog/base-iri') + ')') );
-        const theNamespaces = this.#dialog.namespacesManager.getNamespaces();
+        const theNamespaces = this.#dialog.getNamespacesManager().getNamespaces();
         if (theNamespaces != null) {
             for (const strPrefix in theNamespaces) {
                 // const theNamespace = theNamespaces[strPrefix]);

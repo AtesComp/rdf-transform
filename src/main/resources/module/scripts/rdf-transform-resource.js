@@ -165,9 +165,14 @@ class RDFTransformResourceDialog {
                             strPrefix = RDFTransformCommon.getPrefixFromQName(strIRI);
                             strLocalPart = RDFTransformCommon.getSuffixFromQName(strIRI);
                             // Get the Namespace of the Prefix...
-                            strNamespace = this.#dialog.namespacesManager.getNamespaceOfPrefix(strPrefix);
+                            strNamespace = this.#dialog.getNamespacesManager().getNamespaceOfPrefix(strPrefix);
                             // Get the Full IRI from the Prefixed IRI...
-                            strIRI = RDFTransformCommon.getFullIRIFromQName(strIRI, this.#dialog.getBaseIRI());
+                            strIRI =
+                                RDFTransformCommon.getFullIRIFromQName(
+                                    strIRI,
+                                    this.#dialog.getBaseIRI(),
+                                    this.#dialog.getNamespaceManager().getNamespaces()
+                                );
                             strLabel = strIRI;
                         }
                         // Is it a good IRI?
@@ -207,7 +212,7 @@ class RDFTransformResourceDialog {
                 // If there are valid parts decribed from the given IRI...
                 if (strLocalPart) { // ...not null or ""
                     // Is there an existing prefix matching the given prefix?
-                    if ( strPrefix === "" || this.#dialog.namespacesManager.hasPrefix(strPrefix) ) {
+                    if ( strPrefix === "" || this.#dialog.getNamespacesManager().hasPrefix(strPrefix) ) {
                         // ...yes (BaseIRI or already managed), add resource...
                         obj = {};
                         obj.prefix = strPrefix;
@@ -219,7 +224,7 @@ class RDFTransformResourceDialog {
                         //
                         // NOTE: We are passing a function to RDFTransformNamespacesManager.addNamespace() which,
                         //      in turn, passes it in an event function to RDFTransformNamespaceAdder.show().
-                        this.#dialog.namespacesManager.addNamespace(
+                        this.#dialog.getNamespacesManager().addNamespace(
                             $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                             strPrefix,
                             (strResPrefix) => {
@@ -239,7 +244,7 @@ class RDFTransformResourceDialog {
                                 else {
                                     // ...get new Namespace of the Prefix to validate...
                                     var strResNamespace =
-                                        this.#dialog.namespacesManager.getNamespaceOfPrefix(strResPrefix);
+                                        this.#dialog.getNamespacesManager().getNamespaceOfPrefix(strResPrefix);
                                     // Ensure the prefix's IRI was added...
                                     if ( strResNamespace != null ) {
                                         obj = {};
@@ -343,7 +348,7 @@ class RDFTransformResourceDialog {
             var strLocalPart = RDFTransformCommon.getSuffixFromQName(strIRI);
 
             // Is there an existing prefix matching the given prefix?
-            if ( strPrefix === "" || this.#dialog.namespacesManager.hasPrefix(strPrefix) ) {
+            if ( strPrefix === "" || this.#dialog.getNamespacesManager().hasPrefix(strPrefix) ) {
                 // ...yes (BaseIRI or already managed), add resource...
                 // IRI   = Namespace of Prefix + strLocalPart
                 // CIRIE = strResPrefix + ":" + strLocalPart
@@ -359,7 +364,7 @@ class RDFTransformResourceDialog {
                 //
                 // NOTE: We are passing a function to RDFTransformNamespacesManager.addNamespace() which,
                 //      in turn, passes it in an event function to RDFTransformNamespaceAdder.show().
-                this.#dialog.namespacesManager.addNamespace(
+                this.#dialog.getNamespacesManager().addNamespace(
                     $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                     strPrefix,
                     (strResPrefix) => {
@@ -381,7 +386,7 @@ class RDFTransformResourceDialog {
                         else {
                             // ...get new Namespace of the Prefix to validate...
                             var strResNamespace =
-                                this.#dialog.namespacesManager.getNamespaceOfPrefix(strResPrefix);
+                                this.#dialog.getNamespacesManager().getNamespaceOfPrefix(strResPrefix);
                             // Ensure the prefix's IRI was added...
                             if ( strResNamespace != null ) {
                                 // IRI   = Namespace of Prefix + strLocalPart

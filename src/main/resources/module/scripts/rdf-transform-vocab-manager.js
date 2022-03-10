@@ -8,7 +8,7 @@ class RDFTransformVocabManager {
 		this.#namespacesManager = namespacesManager;
 	}
 
-	show() {
+	show(onDone) {
 		var dialog = $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"));
 		this.#level = DialogSystem.showDialog(dialog);
 		this.#elements = DOM.bind(dialog);
@@ -39,7 +39,9 @@ class RDFTransformVocabManager {
 		this.#elements.buttonOK
 		.on("click",
 			() => {
-				this.#namespacesManager.show();
+				if (onDone) {
+					onDone();
+				}
 				this.#dismiss();
 			}
 		);
