@@ -257,7 +257,7 @@ class RDFTransformDialog {
                 var bValSrcHasOld = ( nodeSubject.valueSource.source === strOldValSrc );
                 var bExpHasOld = false;
                 if (bExpExists) {
-                    bExpHasOld = ( nodeSubject.expression.code.indexOf( strOldExp ) !== -1 );
+                    bExpHasOld = ( nodeSubject.expression.code.indexOf( strOldExp ) >= 0 );
                 }
 
                 // Replace with current cruft...
@@ -271,7 +271,6 @@ class RDFTransformDialog {
                 //
                 // Process the node for display...
                 //
-
                 nodeUI = RDFTransformUINode.getTransformImport(this, nodeSubject);
                 if (nodeUI !== null) {
                     this.#nodeUIs.push(nodeUI);

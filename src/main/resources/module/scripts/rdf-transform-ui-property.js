@@ -1,7 +1,7 @@
 /*
  *  CLASS RDFTransformUIProperty
  *
- *  The UI property manager for the alignment dialog
+ *  The Property Manager UI for the RDF Transform Dialog
  */
 class RDFTransformUIProperty {
     #dialog;

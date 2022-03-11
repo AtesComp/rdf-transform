@@ -7,6 +7,11 @@
 	font-weight: bold;
 }
 
+.view-disabled {
+    opacity: 0.6;
+    filter: grayscale(100%);
+}
+
 p.rdf-transform-base-iri {
 	margin: 0.5em 0 4px 0;
 }

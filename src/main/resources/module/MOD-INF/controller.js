@@ -40,6 +40,7 @@ function registerClientSide() {
 			"scripts/rdf-transform-common.js",
 			"scripts/rdf-transform-resource.js",
 			"scripts/rdf-transform-ui-node.js",
+			"scripts/rdf-transform-ui-node-config.js",
 			"scripts/rdf-transform-ui-property.js",
 			"scripts/rdf-transform-vocab-manager.js",
 			"scripts/rdf-transform-namespaces-manager.js",

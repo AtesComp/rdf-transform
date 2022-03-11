@@ -39,7 +39,7 @@ public class PreviewRDFCommand extends Command {
             throws ServletException, IOException {
         // No CSRF Token required for this command.
 
-        if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing for Preview...");
+        if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing Transform for Preview...");
 		try {
             Project theProject = this.getProject(request);
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
@@ -57,6 +57,7 @@ public class PreviewRDFCommand extends Command {
                 return;
             }
             RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Transform reconstructed.");
 
             //if ( Util.isDebugMode() ) {
             //    PreviewRDFCommand.logger.info( "Given Transform:\n" + strTransform );
@@ -82,25 +83,30 @@ public class PreviewRDFCommand extends Command {
             if ( iLimit != Util.getSampleLimit() ) {
                 Util.setSampleLimit(iLimit);
             }
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Sample Limit processed.");
 
             // Setup writer for output...
             StringWriter strwriterBase = new StringWriter();
 	        RDFWriter theWriter = Rio.createWriter(RDFFormat.TURTLE, strwriterBase);
 
             // Start writing...
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Starting RDF...");
 			theWriter.startRDF();
 
             // Process sample records/rows of data for statements...
 	        RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("    Process by Record Visitor...");
                 theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
             }
             else {
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("    Process by Row Visitor...");
                 theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
             }
             theVisitor.buildModel(theProject, theEngine);
 
             theWriter.endRDF();
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  ...Ended RDF.");
             // ...end writing
 
             this.strStatements = strwriterBase.getBuffer().toString();
@@ -110,6 +116,7 @@ public class PreviewRDFCommand extends Command {
             PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );
         }
 		catch (Exception ex) {
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.error("DEBUG: Error constructing preview", ex);
             PreviewRDFCommand.respondJSON(response, CodeResponse.error);
         }
     }
