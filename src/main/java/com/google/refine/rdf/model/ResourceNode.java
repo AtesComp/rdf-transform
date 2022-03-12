@@ -113,14 +113,15 @@ abstract public class ResourceNode extends Node {
         if (objResult == null) {
             return;
         }
-        String strIRI = null;
-        String strLocalPart = null;
-        if (strPrefix == null) {
-            strIRI = objResult.toString(); // ...Full IRI
+        String strIRI = objResult.toString(); // ...Default: Full IRI
+        if ( strIRI.isEmpty() ) {
+            return;
         }
-        else {
-            strLocalPart = objResult.toString().replaceAll("\\/", "/").replaceAll("/", "\\/");
-            strIRI = strPrefix + ":" + strLocalPart; // ...CIRIE
+        String strNamespace = null;
+        String strLocalPart = strIRI; // ...for "prefix:localPart" IRI
+        if (strPrefix != null) { // ...on prefix, attempt namespace...
+            strIRI = strPrefix + ":" + strLocalPart;
+            strNamespace = this.theConnection.getNamespace(strPrefix);
         }
         if ( Util.isDebugMode() ) {
             String strDebug = "DEBUG: normalizeResource: Given: ";
@@ -133,34 +134,29 @@ abstract public class ResourceNode extends Node {
             ResourceNode.logger.info(strDebug);
         }
 
-        if ( ! strIRI.isEmpty() ) {
-            try {
-                String strResolvedIRI = Util.resolveIRI(this.baseIRI, strIRI);
-                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Resolved IRI: " + strResolvedIRI);
-                if (strResolvedIRI != null) {
-                    String strNamespace = "";
-                    if (strPrefix != null) {
-                        strNamespace = this.theConnection.getNamespace(strPrefix);
-                    }
-                    String strFullIRI = strNamespace + objResult.toString();
-                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
-                    IRI iriResource;
-                    if (strPrefix != null) {
-                        iriResource = this.theFactory.createIRI(strNamespace, strLocalPart);
-                    }
-                    else { // ...on no prefix or missing namespace, treat as Full...
-                        iriResource = this.theFactory.createIRI(strFullIRI);
-                    }
-                    this.listValues.add( iriResource );
+        try {
+            String strResolvedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Resolved IRI: " + strResolvedIRI);
+            if (strResolvedIRI != null) { // ...at least it's a good, basic IRI...
+                String strFullIRI = strResolvedIRI; // ...Default: Full IRI
+                IRI iriResource;
+                if (strNamespace == null) { // ...and both strPrefix == null and != null
+                    iriResource = this.theFactory.createIRI(strFullIRI);
                 }
+                else {
+                    strFullIRI = strNamespace + strLocalPart;
+                    iriResource = this.theFactory.createIRI(strNamespace, strLocalPart);
+                }
+                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
+                this.listValues.add( iriResource );
             }
-            //catch (IRIParsingException | IllegalArgumentException ex) {
-            catch (Exception ex) {
-                // An IRIParsingException from Util.resolveIRI() means a bad IRI.
-                // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
-                // In either case, record error and eat the exception...
-                ResourceNode.logger.error( "ERROR: Bad IRI: " + strIRI, ex);
-            }
+        }
+        //catch (IRIParsingException | IllegalArgumentException ex) {
+        catch (Exception ex) {
+            // An IRIParsingException from Util.resolveIRI() means a bad IRI.
+            // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
+            // In either case, record error and eat the exception...
+            ResourceNode.logger.error( "ERROR: Bad IRI: " + strIRI, ex);
         }
     }
 
@@ -358,24 +354,15 @@ abstract public class ResourceNode extends Node {
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
                 strLocalPart = strType;
-                strType = strPrefix + ":" + strLocalPart.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
+                strType = strPrefix + ":" + strLocalPart; // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
 
             if ( ! (strType == null || strType.isEmpty() ) ) {
                 try {
-                    if ( strPrefix != null ) { // ...a CIRIE...
-                        if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references...
-                            strFullType = Util.resolveIRI(this.baseIRI, strType);
-                        }
-                        else { // ...other CIRIE references...
-                            strFullType = Util.resolveIRI(this.baseIRI, strType);
-                        }
-                    }
-                    else { // ...Full IRI...
-                        strFullType = Util.resolveIRI(this.baseIRI, strType);
-                    }
+                    // Resolve the IRI for Full IRI or CIRIE...
+                    strFullType = Util.resolveIRI(this.baseIRI, strType);
                     if (strFullType != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: [" + strFullType + "]");
                         if (strNamespace != null) {
@@ -468,7 +455,7 @@ abstract public class ResourceNode extends Node {
             strNamespace = null;
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
-                strProperty = strPrefix + ":" + strLocalName.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
+                strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
                 strNamespace = this.theConnection.getNamespace(strPrefix);
             }
 
@@ -487,17 +474,8 @@ abstract public class ResourceNode extends Node {
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
             if ( ! ( strProperty == null || strProperty.isEmpty() ) ) {
                 try {
-                    if ( strPrefix != null ) { // ...a CIRIE...
-                        if ( strPrefix.isEmpty() ) { // ...BaseIRI-based CIRIE references...
-                            strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
-                        }
-                        else { // ...other CIRIE references...
-                            strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
-                        }
-                    }
-                    else { // ...Full IRI...
-                        strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
-                    }
+                    // Resolve Property for Full IRI and CIRIE...
+                    strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
                     if (strFullProperty != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: [" + strFullProperty + "]");
                         if (strNamespace != null) {

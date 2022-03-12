@@ -59,7 +59,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 		} while (true);
 
 		// When there is nothing to evaluate...
-		if ( strConstant == null || strConstant.isEmpty() ) {
+		if ( strBNodeValue == null || strBNodeValue.isEmpty() ) {
 			ConstantBlankNode.logger.error("ERROR: The ConstantBlankNode constant evaluates to nothing! Creating generic BNode.");
 			this.bnode = this.theFactory.createBNode();
 			return;

@@ -117,6 +117,7 @@ public class PreviewRDFCommand extends Command {
         }
 		catch (Exception ex) {
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.error("DEBUG: Error constructing preview", ex);
+            ex.printStackTrace();
             PreviewRDFCommand.respondJSON(response, CodeResponse.error);
         }
     }

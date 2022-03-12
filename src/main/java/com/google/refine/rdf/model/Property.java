@@ -242,7 +242,7 @@ public class Property {
 
     public String getPrefixedProperty() {
         if (this.strPrefix != null) {
-		    return this.strPrefix + ":" + this.strLocalPart.replaceAll("\\/", "/").replaceAll("/", "\\/");
+		    return this.strPrefix + ":" + this.strLocalPart;
         }
         return this.strLocalPart;
 	}

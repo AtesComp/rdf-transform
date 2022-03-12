@@ -92,35 +92,39 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
      */
     public String normalizeResourceAsString() {
         String strIRI = "";
+        if ( this.strConstant == null || this.strConstant.isEmpty() ) {
+            return strIRI;
+        }
         //Util.toSpaceStrippedString(this.strPrefix) + Util.toSpaceStrippedString(this.strConstant);
-        if ( this.strConstant != null) {
-            if ( this.strPrefix != null ) {
-                strIRI = this.strPrefix + ":";
-                strIRI += this.strConstant.replaceAll("\\/", "/").replaceAll("/", "\\/"); // ...CIRIE
+        strIRI += this.strConstant; // ...Full IRI
+        if ( this.strPrefix != null ) {
+            strIRI = this.strPrefix + ":" + this.strConstant; // ...CIRIE
+        }
+        if ( Util.isDebugMode() ) {
+            String strDebug = "DEBUG: normalizeResource: Given: ";
+            if (this.strPrefix == null) {
+                strDebug += "IRI: " + strIRI;
             }
             else {
-                strIRI += this.strConstant; // ...Full IRI
+                strDebug += "Prefix: " + this.strPrefix + " LocalPart: " + this.strConstant;
             }
+            ConstantResourceNode.logger.info(strDebug);
         }
-        if ( Util.isDebugMode() ) ConstantResourceNode.logger.info("DEBUG: normalizeResourceAsString: Given IRI: " + strIRI);
 
         //String strPrefixedIRI = null;
-        if ( ! strIRI.isEmpty() ) {
-            try {
-                //strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
-                Util.resolveIRI(this.baseIRI, strIRI);
-                //if (strPrefixedIRI != null) {
-                //    String strFullIRI = this.expandPrefixedIRI(strPrefixedIRI);
-                //    if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
-                //}
-            }
-            //catch (IRIParsingException | IllegalArgumentException ex) {
-            catch (Exception ex) {
-                // An IRIParsingException from Util.resolveIRI() means a bad IRI.
-                // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
-                // In either case, record error and eat the exception...
-                ConstantResourceNode.logger.error("ERROR: Bad IRI: " + strIRI, ex);
-            }
+        try {
+            //strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
+            //if (strPrefixedIRI != null) {
+            //    String strFullIRI = this.expandPrefixedIRI(strPrefixedIRI);
+            //    if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
+            //}
+            Util.resolveIRI(this.baseIRI, strIRI);
+        }
+        catch (Exception ex) {
+            // An IRIParsingException from Util.resolveIRI() means a bad IRI.
+            // An IllegalArgumentException from theFactory.createIRI() means a bad IRI.
+            // In either case, record error and eat the exception...
+            ConstantResourceNode.logger.error("ERROR: Bad IRI: " + strIRI, ex);
         }
         //return strPrefixedIRI;
         return strIRI;

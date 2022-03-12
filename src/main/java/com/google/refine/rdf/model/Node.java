@@ -73,6 +73,7 @@ abstract public class Node {
             return null;
         }
         if ( jnodeSubject.isNull() ) {
+            Node.logger.warn("WARNING: Subject is NULL");
             return null;
         }
 
@@ -82,6 +83,35 @@ abstract public class Node {
         String strPrefix = null;
         if ( jnodeSubject.has(Util.gstrPrefix) ) {
             strPrefix = jnodeSubject.get(Util.gstrPrefix).asText();
+        }
+
+        //
+        // Get Subject's Value Type...
+        //
+        //      Based on Type, get type information
+        //
+        String strType = Util.gstrIRI;  // ...default for Root nodes
+        JsonNode jnodeValueType = jnodeSubject; // ...for Root nodes
+        boolean bResource = false;
+        boolean bLiteral = false;
+        if ( jnodeSubject.has(Util.gstrValueType) ) { // ...for Object nodes
+            jnodeValueType = jnodeSubject.get(Util.gstrValueType);
+            if ( jnodeValueType.has(Util.gstrType) ) {
+                String strTypeTemp = jnodeValueType.get(Util.gstrType).asText();
+                if ( ! ( strTypeTemp == null || strTypeTemp.isEmpty() ) ) {
+                    strType = strTypeTemp;
+                }
+            }
+        }
+        if ( strType.equals(Util.gstrIRI) ||
+             strType.equals(Util.gstrBNode) ||
+             strType.equals(Util.gstrValueBNode) ) {
+            bResource = true;
+        }
+        if ( strType.equals(Util.gstrLiteral) ||
+             strType.equals(Util.gstrDatatypeLiteral) ||
+             strType.equals(Util.gstrLanguageLiteral) ) {
+            bLiteral = true;
         }
 
         //
@@ -158,36 +188,6 @@ abstract public class Node {
             if ( jnodeExp.has(Util.gstrCode) ) {
                 strExpCode = jnodeExp.get(Util.gstrCode).asText().strip();
             }
-        }
-
-        //
-        // Get Subject's Value Type...
-        //
-        //      Based on Type, get type information
-        //
-        String strType = Util.gstrIRI;  // ...default for Root nodes
-        JsonNode jnodeValueType = jnodeSubject; // ...for Root nodes
-        boolean bResource = false;
-        boolean bLiteral = false;
-        if ( jnodeSubject.has(Util.gstrValueType) ) { // ...for Object nodes
-            jnodeValueType = jnodeSubject.get(Util.gstrValueType);
-            if ( jnodeValueType.has(Util.gstrType) ) {
-                JsonNode jnodeType = jnodeValueType.get(Util.gstrType);
-                String strTypeTemp = jnodeType.asText();
-                if ( ! ( strTypeTemp == null || strTypeTemp.isEmpty() ) ) {
-                    strType = strTypeTemp;
-                }
-            }
-        }
-        if ( strType.equals(Util.gstrIRI) ||
-             strType.equals(Util.gstrBNode) ||
-             strType.equals(Util.gstrValueBNode) ) {
-            bResource = true;
-        }
-        if ( strType.equals(Util.gstrLiteral) ||
-             strType.equals(Util.gstrDatatypeLiteral) ||
-             strType.equals(Util.gstrLanguageLiteral) ) {
-            bLiteral = true;
         }
 
         //
