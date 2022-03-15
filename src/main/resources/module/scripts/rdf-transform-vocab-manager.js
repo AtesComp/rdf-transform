@@ -105,7 +105,7 @@ class RDFTransformVocabManager {
 		var table = this.#elements.namespacesTable;
 		table.empty();
 		table.append(
-			$('<tr>').addClass('rdf-table-even')
+			$('<tr>').addClass('rdf-transform-table-even')
 			.append($('<th/>').text($.i18n('rdft-vocab/prefix')))
 			.append($('<th/>').text($.i18n('rdft-vocab/iri')))
 			.append($('<th/>').text($.i18n('rdft-vocab/delete')))
@@ -130,7 +130,7 @@ class RDFTransformVocabManager {
 				.text( $.i18n('rdft-vocab/refresh') )
 				.attr('href', '#')
 				.on("click", this.#getRefreshHandler(strPrefix, strNamespace) );
-			var tr = $('<tr/>').addClass(bEven ? 'rdf-table-even' : 'rdf-table-odd')
+			var tr = $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
 				.append( $('<td>').text(strPrefix) )
 				.append( $('<td>').text(strNamespace) )
 				.append( $('<td>').html(htmlRemoveNamespace) )

@@ -19,6 +19,7 @@
       </ul>
       <!-- Transform Tab... -->
       <div id="rdf-transform-tab-transform" class="tabcontent">
+        <!-- Transform Header Prefix Controls... -->
         <div class="rdf-transform-tab-header">
           <table>
             <tr>
@@ -35,15 +36,19 @@
         </div>
         <!-- Transform Data... -->
         <div class="rdf-transform-data-transform"></div>
+        <!-- Transform Footer Buttons... -->
         <div class="rdf-transform-tab-footer">
-          <table style="width:100%">
+          <table>
             <tr>
-              <td><button bind="buttonAddRootNode"></button></td>
-              <td></td>
-              <td></td>
-              <td style="text-align:right"><button bind="buttonImpTemplate" ></button></td>
-              <td style="text-align:right"><button bind="buttonExpTemplate"></button></td>
-              <td style="text-align:right"><button bind="buttonSaveTransform"></button></td>
+              <td>
+                <div class="rdf-transform-button-grp">
+                  <button class="Button rdf-transform-left" bind="buttonAddRootNode"></button>
+                  <!-- ...right-most item first for right aligned items... -->
+                  <button class="Button rdf-transform-right" bind="buttonSaveTransform"></button>
+                  <button class="Button rdf-transform-right" bind="buttonExpTemplate"></button>
+                  <button class="Button rdf-transform-right" bind="buttonImpTemplate"></button>
+              </div>
+              </td>
             </tr>
           </table>
         </div>

@@ -155,9 +155,12 @@ class RDFTransformDialog {
     #panePreview;
     #tableNodes;
 
+    #iResize;
     #iDiffFrameHeight;
     #iLastDiffFrameHeight;
     #iBodyHeadInit;
+    #iBaseTransformPaneHeight;
+    #iBasePreviewPaneHeight;
 
     constructor() {
         // The transform defaults are set here since "theProject" is not completely
@@ -422,9 +425,11 @@ class RDFTransformDialog {
 
         // Get transform pane as element with class "rdf-transform-data-transform"...
         this.#paneTransform = $(".rdf-transform-data-transform");
+        this.#iBaseTransformPaneHeight = this.#paneTransform.height();
 
         // Get preview pane as element with class "rdf-transform-data-preview"...
         this.#panePreview = $(".rdf-transform-data-preview");
+        this.#iBasePreviewPaneHeight = this.#panePreview.height();
 
         // Set the initial Body Header div height...
         this.#iBodyHeadInit = this.#elements.dialogBodyHead.height();
@@ -432,7 +437,6 @@ class RDFTransformDialog {
 
     #functionalizeDialog() {
         // Hook up the Transform and Preview tabs...
-        //$( "#rdftTabs", this.#elements.dialogBody ).tabs();
         this.#elements.rdftTabs.tabs();
 
         // Hook up the BaseIRI Editor...
@@ -490,17 +494,19 @@ class RDFTransformDialog {
         // Hook up resize...
         this.#iDiffFrameHeight = 0;
         this.#iLastDiffFrameHeight = 0;
-        var doResize;
-        this.#dialog.resize(
+        this.#iResize = 0;
+        this.#dialog
+        .on("resize",
             (evt, ui) => {
-                clearTimeout(doResize);
-                doResize = setTimeout(
+                clearTimeout(this.#iResize);
+                this.#iResize = setTimeout(
                     () => { // TODO: Vertical Resize Issue - OpenRefine Dialog Resizing is braindead on vertical!
-                        this.#iDiffFrameHeight = this.#dialog.height() - 600;
+                        this.#iDiffFrameHeight = ui.size.height - 600;
                         if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
-                            const iBodyHeadDiff = this.#iBodyHeadInit - this.#elements.dialogBodyHead.height();
-                            this.#paneTransform.height(307.625 + this.#iDiffFrameHeight + iBodyHeadDiff);
-                            this.#panePreview.height(345 + this.#iDiffFrameHeight + iBodyHeadDiff);
+                            const iDiff = this.#iDiffFrameHeight +
+                                            ( this.#iBodyHeadInit - this.#elements.dialogBodyHead.height() );
+                            this.#paneTransform.height(this.#iBaseTransformPaneHeight + iDiff);
+                            this.#panePreview.height(this.#iBasePreviewPaneHeight + iDiff);
                             this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
                         }
                     },
@@ -593,8 +599,7 @@ class RDFTransformDialog {
         //
         this.#paneTransform.empty()
 
-        var table =
-            $('<table></table>').addClass("rdf-transform-pane-table-layout");
+        var table = $('<table />').addClass("rdf-transform-pane-table-layout");
         this.#tableNodes = table[0];
 
         for (const nodeUI of this.#nodeUIs) {
@@ -728,8 +733,6 @@ class RDFTransformDialog {
                     .addClass('rdf-transform-prefix-box')
                     .attr('title', theNamespaces[strPrefix])
                     .text(strPrefix)
-                    .css("line-height", "21px")
-                    .css("vertical-align", "middle")
 			);
 		}
     }

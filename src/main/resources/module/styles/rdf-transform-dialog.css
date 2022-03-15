@@ -13,7 +13,7 @@
 }
 
 p.rdf-transform-base-iri {
-	margin: 0.5em 0 4px 0;
+	margin: 6px 0 4px 0;
 }
 
 input[type="radio"] {
@@ -40,13 +40,11 @@ div.rdf-transform-dialog-frame {
 }
 
 /*
-div.dialog-body,
 div.dialog-header,
+div.dialog-body,
 div.dialog-footer,
 div.dialog-body-head,
 ul.rdf-transform-tab-titles,
-div.rdf-transform-tab-header,
-div.rdf-transform-tab-footer,
 div.tab,
 div.rdf-transform-menu-search
 div.rdf-transform-detail-container
@@ -66,37 +64,57 @@ div.tabcontent {
     flex-direction: column;
 }
 
-div.rdf-transform-tab-header,
-div.rdf-transform-tab-footer {
-	background: none repeat scroll 0 0 #E0EDFE;
-	padding: 0.4em;
-    flex: none;
-}
-
 div.rdf-transform-tab-header {
 	background: none repeat scroll 0 0 #E0EDFE;
-	padding: 0.4em;
+	padding: 2px;
 }
 
 div.rdf-transform-data-transform {
-/* 600 - 292.375 = 307.625
-   34.625 less than preview due to extra bottom buttons
+/* 600 - 282 = 318
+   34 less than preview due to extra bottom buttons
 */
-    height: 307.625px;
-    min-height: 307.625px;
+    height: 318px;
+    min-height: 318px;
     overflow: scroll;
     flex: 1 1 auto;
 }
 
 table.rdf-transform-pane-table-layout > tbody > tr > td.padded {
-	padding: 15px 6px;
+	padding: 2px 2px;
+}
+
+div.rdf-transform-tab-footer {
+	background: none repeat scroll 0 0 #E0EDFE;
+	padding: 2px;
+}
+
+div.rdf-transform-tab-footer > table {
+    width: 100%;
+}
+
+div.rdf-transform-button-grp {
+    display: inline-block;
+    width: 100%;
+}
+
+button.rdf-transform-left {
+    float: left;
+    margin-right: 4px;
+}
+button.rdf-transform-center {
+    float: center;
+    margin-left: 4px;
+}
+button.rdf-transform-right {
+    float: right;
+    margin-left: 4px;
 }
 
 div.rdf-transform-data-preview {
-/* 600 - 255 = 345
+/* 600 - 248 = 352
 */
-    height: 345px;
-    min-height: 345px;
+    height: 352px;
+    min-height: 352px;
     overflow: scroll;
     flex: 1 1 auto;
 }
@@ -120,6 +138,8 @@ span.rdf-transform-prefix-box {
 	padding: 0 4px;
 	font-family: monospace;
 	float: left;
+    line-height: 21px;
+    vertical-align: middle;
 }
 
 a.add-namespace-box {
@@ -151,10 +171,10 @@ a.manage-vocabularies-box {
 
 .rdf-transform-node-dialog-step-header {
 	margin: 1px 5px 1px 0;
-	padding: 0.25em;
+	padding: 2px;
     background: #DDDDFF;
-    -moz-border-radius: 0.5em;
-	border-radius: 0.5em;
+    -moz-border-radius: 6px;
+	border-radius: 6px;
 }
 
 /* NOT USED */
@@ -188,7 +208,6 @@ span.rdf-node-info {
 
 span.rdf-value-expression {
 	font-family: monospace;
-    height: 5em;
     vertical-align: top;
 }
 
@@ -198,8 +217,7 @@ span.rdf-value-expression {
 
 /*
 a.rdf-transform-node,
-span.rdf-transform-node-label,
-table.rdf-transform-types-table {
+span.rdf-transform-node-label {
 }
 */
 
@@ -217,13 +235,14 @@ td.rdf-transform-node-main,
 td.rdf-transform-node-details,
 td.rdf-transform-property-main,
 td.rdf-transform-property-details {
-    min-width: 150px
+    min-width: 150px;
 
 }
 
 td.rdf-transform-node-toggle,
 td.rdf-transform-property-toggle {
-    width: 5px
+    width: 20px;
+    padding: 2px 4px;
 }
 
 /*
@@ -245,7 +264,7 @@ div.rdf-flyout-content div.rdf-header {
  */
 
 img.vocab-action-icon {
-	padding: 0.1em;
+	padding: 1px;
 }
 
 div.vocabulary-container {
@@ -274,39 +293,51 @@ a#add-namespace-link:VISITED {
 	color: #0000FF;
 }
 
-table.rdf-types-table {
-	margin: 0.2em 0 0.6em 0;
+table.rdf-transform-types-table {
+	margin: 2px 0 2px 0;
 }
 
-table.rdf-indented-table {
-	margin: 0 1.5em;
+table.rdf-transform-indented-table {
+	margin: 0 0 0 24px;
 }
 
-table.rdf-namespaces-table {
+table.rdf-transform-namespaces-table {
     width: 100%;
 }
 
-table.rdf-namespaces-table,
-table.rdf-namespaces-table td {
+table.rdf-transform-namespaces-table,
+table.rdf-transform-namespaces-table > tbody > tr > td {
 	border: 1px dotted #DDDDDD;
 	border-collapse: collapse;
-	margin: .2em;
+	margin: 2px;
 }
 
-tr.rdf-table-even {
+tr.rdf-transform-table-even {
 	background-color: #F2F2F2;
+}
+
+tr.rdf-transform-table-odd {
+	background-color: #DDDDDD;
 }
 
 /*
  * RDF Transform Dialog Prefix Management
  */
 div.rdf-transform-prefix-note {
-	font-size: 1em;
+	font-size: 14px;
 	color: #333333;/*#FF6A00;*/
 }
 
 fieldset.rdf-transform-prefix-fieldset {
 	border: 1px solid #BBCCFF;
-	padding: 0.2em 0 0.5em 0.2em;
-	margin-top: 1.5em;
+	padding: 2px 0 6px 2px;
+	margin-top: 6px;
+}
+
+/*
+ * RDF Transform Dialog Expression Preview
+ */
+ div.rdf-transform-exp-preview-frame {
+    width:  700px;
+    min-width:  700px;
 }

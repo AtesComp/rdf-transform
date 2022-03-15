@@ -5,6 +5,7 @@
  */
 class RDFTransformCommon {
 	static iMaxNodeLength = 35;
+	static iMaxExpLength = 35;
 
 	static NodeType = class {
 		// NOTE: The following string names ("resource", "blank", "literal") are intentinally set
@@ -394,26 +395,42 @@ class RDFTransformCommon {
 	}
 
 	/*
+	 * Method shortenExpression(strExp)
+	 *
+	 *	Shorted an Expression's string to fit the maximum displayable length
+	 */
+	static shortenExpression(strExp) {
+		return RDFTransformCommon.shortenString(strExp, RDFTransformCommon.iMaxExpLength);
+	}
+
+	/*
 	 * Method shortenLiteral(strLiteral)
 	 *
 	 *	Shorted a Literal element's string to fit the maximum displayable length
 	 */
-	static shortenLiteral(strLiteral) {
+	 static shortenLiteral(strLiteral) {
+		return RDFTransformCommon.shortenString(strLiteral, RDFTransformCommon.iMaxNodeLength);
+	}
+
+	/*
+	 * Method shortenString(strToShorten, iMaxLen)
+	 *
+	 *	Shorted a string to fit the maximum given length by cutting the middle to '...'
+	 */
+	 static shortenString(strToShorten, iMaxLen) {
 		// No good string?
-		if (! strLiteral)
+		if (! strToShorten)
 			return "ERROR: NO STRING";
 
-		var iMax = RDFTransformCommon.iMaxNodeLength;
-
 		// Short string?
-		if (strLiteral.length <= iMax)
-			return strLiteral;
+		if (strToShorten.length <= iMaxLen)
+			return strToShorten;
 
-		var iHalf     = iMax / 2;
+		var iHalf     = iMaxLen / 2;
 		var iPreHalf  = Math.ceil(iHalf) - 1;
-		var iPostHalf = strLiteral.length - Math.floor(iHalf) + 2;
-		var strPre  = strLiteral.substring(0, iPreHalf);
-		var strPost = strLiteral.substring(iPostHalf);
+		var iPostHalf = strToShorten.length - Math.floor(iHalf) + 2;
+		var strPre  = strToShorten.substring(0, iPreHalf);
+		var strPost = strToShorten.substring(iPostHalf);
 		return ( strPre + '...' + strPost );
 	}
 

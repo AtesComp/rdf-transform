@@ -13,6 +13,7 @@ class RDFTransformUINodeConfig {
     #bIsVarNodeConfig;
 
     #elements;
+    #rdf_cell_expr;
 
     #level;
 
@@ -55,7 +56,7 @@ class RDFTransformUINodeConfig {
          */
 
         var header =
-            $('<div></div>')
+            $('<div />')
                 .addClass("dialog-header")
                 .text( $.i18n('rdft-dialog/rdf-node') );
 
@@ -65,8 +66,11 @@ class RDFTransformUINodeConfig {
          */
 
         var body =
-            $('<div class="grid-layout layout-full"></div>')
-                .addClass("dialog-body rdf-transform");
+            $('<div />')
+                .addClass("grid-layout")
+                .addClass("layout-full")
+                .addClass("dialog-body")
+                .addClass("rdf-transform");
 
         var html = $(DOM.loadHTML(RDFTransform.KEY, 'scripts/dialogs/rdf-transform-node-config.html'));
 
@@ -142,7 +146,9 @@ class RDFTransformUINodeConfig {
          *--------------------------------------------------
          */
 
-         var footer = $('<div></div>').addClass("dialog-footer");
+         var footer =
+            $('<div />')
+                .addClass("dialog-footer");
 
          var buttonOK =
             $('<button />')
@@ -168,8 +174,7 @@ class RDFTransformUINodeConfig {
                 }
             );
 
-        footer.append(buttonOK);
-        footer.append(buttonCancel);
+        footer.append(buttonOK, buttonCancel);
 
         /*--------------------------------------------------
          * Assemble Dialog
@@ -349,8 +354,8 @@ class RDFTransformUINodeConfig {
 
         // Disable Language and Custom Data Type inputs...
         this.#elements.rdf_content_lang_input
-        .add(this.#elements.rdf_content_dtype_input)
-        .prop(this.#disabledTrue);
+            .add(this.#elements.rdf_content_dtype_input)
+            .prop(this.#disabledTrue);
 
         //
         // Set initial values and property settings...
@@ -425,7 +430,8 @@ class RDFTransformUINodeConfig {
         if (RDFTransform.gstrExpression in this.#node && "code" in this.#node.expression ) {
             strExpCode = this.#node.expression.code;
         }
-        this.#elements.rdf_cell_expr.empty().text(strExpCode);
+        this.#rdf_cell_expr = strExpCode;
+        this.#elements.rdf_cell_expr.empty().text( RDFTransformCommon.shortenExpression(strExpCode) );
 
         //
         // Click Events...
@@ -435,7 +441,7 @@ class RDFTransformUINodeConfig {
         this.#elements.rdf_prefix_select
         .on("change",
             () => {
-
+                // NOP
             }
         );
 
@@ -509,7 +515,7 @@ class RDFTransformUINodeConfig {
                     // Get the column name from the value of the checked column radio...
                     // NOTE: An empty column name == a Row / Record Index (Constant is eliminated)
                     const strColumnName = $("input[name='rdf-column-radio']:checked").val();
-                    const strExpression = $("#rdf-cell-expr").text();
+                    const strExpression = this.#rdf_cell_expr;
                     const bIsResource = ( this.#eType === RDFTransformCommon.NodeType.Resource );
                     var strPrefix = null;
                     if (bIsResource) {
@@ -617,11 +623,12 @@ class RDFTransformUINodeConfig {
             objColumn.cellIndex = iColumnIndex;
             objColumn.columnName = strColumnName;
         }
-        const onDone = (strExp) => {
-            if (strExp !== null) {
-                strExp = strExp.substring(5); // ...remove "grel:"
+        const onDone = (strExpCode) => {
+            if (strExpCode !== null) {
+                strExpCode = strExpCode.substring(5); // ...remove "grel:"
             }
-            $("#rdf-cell-expr").empty().text(strExp);
+            this.#rdf_cell_expr = strExpCode;
+            this.#elements.rdf_cell_expr.empty().text( RDFTransformCommon.shortenExpression(strExpCode) );
         };
 
         // Data Preview: Resource or Literal...
@@ -813,9 +820,12 @@ class RDFTransformUINodeConfig {
             // For Resource or Literal (NOT Blank) Nodes,
             //  Get the Expression...
             //      (Blank Nodes don't use Expressions)
+            // TODO: Check for correctness--blank node expressions may eval:
+            //      True or False for variable blank node
+            //      calculated blank node name as per constant blank nodes
             if (this.#eType !== RDFTransformCommon.NodeType.Blank) {
                 // Set expression...
-                var strExpCode = $('#rdf-cell-expr').text();
+                var strExpCode = this.#rdf_cell_expr;
                 if ( strExpCode === null || strExpCode.length === 0 ) {
                     alert( $.i18n('rdft-dialog/alert-enter-exp') );
                     return null;

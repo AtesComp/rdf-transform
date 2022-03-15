@@ -59,14 +59,14 @@ class RDFDataTableView {
 		// of the parent data...
 		//	 FROM: OpenRefine/main/webapp/modules/core/scripts/views/data-table/data-table-view.js
 		//   NOTE: On objColumn === null, just return the rows (no column information)
-		const rows = DataTableView.sampleVisibleRows(objColumn);
+		const iRowLimit = DataTableView.sampleVisibleRows(objColumn);
 		var strColumnName = ""; // ...for row index processing (missing column information)
 		if (objColumn !== null) {
 			strColumnName = objColumn.columnName
 		}
 
 		const dlgRDFExpPreview = new RDFExpressionPreviewDialog(this, onDone);
-		dlgRDFExpPreview.preview(strColumnName, rows, strExpression, bIsIndex);
+		dlgRDFExpPreview.preview(strColumnName, iRowLimit, strExpression, bIsIndex);
 	}
 }
 
@@ -104,25 +104,18 @@ class RDFDataTableView {
  *
  * NOTE: As ExpressionPreviewDialog DOES NOT have any meaningful prototypes (except constructor
  *       which we don't need), ExpressionPreviewDialog is not required and
- *       RDFExpressionPreviewDialog is written as an independent class.
+ *       RDFExpressionPreviewDialog is written as an independent class.  However, OpenRefine's
+ *       ExpressionPreviewDialog.Widget is required and extended by our RDFExpPreviewDialogWidget.
+ *       Then, there are meaningful prototype functions from ExpressionPreviewDialog.Widget
+ *       that should be maintained.
+ *	     i.e., RDFExpPreviewDialogWidget extends ExpressionPreviewDialog.Widget
+ *	     i.e., RDFExpPreviewDialogWidget subclassOf ExpressionPreviewDialog.Widget
  *
- * NOTE: OpenRefine's ExpressionPreviewDialog.Widget is extended by our RDFWidget as
- *       there are meaningful prototype functions from the parent object that should be maintained.
- *		 i.e., RDFWidget extends ExpressionPreviewDialog.Widget
- *		 i.e., RDFWidget subclassOf ExpressionPreviewDialog.Widget
- *
- * OLD CODE:
- *       // ERRONIOUS Merge by $.extend()
- *       //$.extend(true, RDFWidget.prototype, ExpressionPreviewDialog.Widget.prototype);
- *       // CORRECTED Merge by $.extend()
- *       $.extend(true, RDFCopyWidget.prototype,
- *                      ExpressionPreviewDialog.Widget.prototype),
- *                      RDFWidget.prototype);
- *
- * MOVED: Moved code to global ExpressionPreviewDialog_WidgetCopy...
- *          See the ExpressionPreviewDialog_WidgetCopy object and RDFWidget class below.
- *          Changed $.extend() to Object.create() for copy.
- *          Use class 'extends".
+ * 	     The global ExpressionPreviewDialog_WidgetCopy Object manages transition to
+ *       RDFExpPreviewDialogWidget.  See the ExpressionPreviewDialog_WidgetCopy object and
+ *       RDFExpPreviewDialogWidget class below.
+ *           Uses Object.create() for copy.
+ *           Uses 'extends' class keyword.
  *
  ****************************************************************************************************/
 
@@ -143,6 +136,10 @@ class RDFExpressionPreviewDialog {
 	#level;
 	#previewWidget;
 
+	#iBaseFrameHeight;
+	#iDiffFrameHeight;
+	#iLastDiffFrameHeight;
+
 	static #generateWidgetHTMLforGREL() {
 		//
 		// As per OpenRefine's ExpressionPreviewDialog.generateWidgetHTML() with our modifications....
@@ -159,8 +156,9 @@ class RDFExpressionPreviewDialog {
 			info.name +
 			'</option>'
 		);
+		html = html.replace( "$LANGUAGE_OPTIONS$", languageOptions.join("") );
 
-		return html.replace("$LANGUAGE_OPTIONS$", languageOptions.join(""));
+		return html;
 	}
 
 	constructor(dtvManager, onDone)
@@ -172,10 +170,13 @@ class RDFExpressionPreviewDialog {
 		this.#onDone = onDone;
 
 		this.#frame = DialogSystem.createDialog();
+		this.#frame
+			.addClass("dialog-frame")
+			.addClass("rdf-transform-exp-preview-frame");
 
-		var header = $('<div></div>').addClass("dialog-header");
-		var body   = $('<div></div>').addClass("dialog-body");
-		var footer = $('<div></div>').addClass("dialog-footer");
+		var header = $('<div />').addClass("dialog-header");
+		var body   = $('<div />').addClass("dialog-body");
+		var footer = $('<div />').addClass("dialog-footer");
 		var html   = $( RDFExpressionPreviewDialog.#generateWidgetHTMLforGREL() );
 		this.#elements = DOM.bind(html);
 
@@ -196,31 +197,17 @@ class RDFExpressionPreviewDialog {
 
 		header.text( this.#dtvManager.getTitle() );
 
-		html.appendTo(body);
+		body.append(html);
 
-		buttonOK.appendTo(footer);
-		buttonCancel.appendTo(footer);
+		footer.append(buttonOK, buttonCancel);
 
-		footer.css(
-			{	"position" : "absolute",
-				"bottom" : "0px" }
-		);
-
-		header.appendTo(this.#frame);
-		body.appendTo(this.#frame);
-		footer.appendTo(this.#frame);
+		this.#frame
+			.append(header, body, footer)
+			.css({ "minWidth" : "700px" })
+			.resizable();
 	}
 
-	preview(strColumnName, rows, strExpression, bIsIndex) {
-		this.#frame
-		.css( { "minWidth" : "700px" } )
-		.resizable()
-		.position(
-		//	{	my: "center center",
-		//		at: "center center",
-		//		of: "#parent"	}
-		);
-
+	preview(strColumnName, iRowLimit, strExpression, bIsIndex) {
 		// TODO: Fix for Language on these strings...
         this.#elements.or_dialog_preview.text( "Preview" );
         this.#elements.or_dialog_history.text( "History" );
@@ -232,12 +219,34 @@ class RDFExpressionPreviewDialog {
 
 		// Substitute our widget for OpenRefine's ExpressionPreviewDialog widget...
 		this.#previewWidget =
-			new RDFWidget(
-				this.#dtvManager.getBaseIRI(), strColumnName, rows, strExpression,
+			new RDFExpPreviewDialogWidget(
+				this.#dtvManager.getBaseIRI(), strColumnName, iRowLimit, strExpression,
 				this.#dtvManager.isResource(), this.#dtvManager.getPrefix(),
 				bIsIndex, this.#elements
 			);
 		this.#previewWidget.preview();
+
+		const iFrameHeight = this.#frame.height();
+
+		this.#frame.css({ "minHeight" : "" + iFrameHeight + "px" });
+		this.#iBaseFrameHeight = iFrameHeight;
+        this.#iLastDiffFrameHeight = iFrameHeight;
+        this.#iDiffFrameHeight = 0;
+
+        // Hook up resize...
+		this.#frame
+			.on("resize",
+				(evt, ui) => {
+					this.#iDiffFrameHeight = ui.size.height - this.#iBaseFrameHeight;
+					// If there is a detected change...
+					if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
+						// ...update the tabs...
+						this.#previewWidget.resize(this.#iDiffFrameHeight);
+						this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
+					}
+				} 
+			);
+
 	}
 }
 
@@ -268,13 +277,13 @@ ExpressionPreviewDialog_WidgetCopy.prototype = Object.create(ExpressionPreviewDi
 ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDialog_WidgetCopy;
 
 /*
- *  CLASS RDFWidget
+ *  CLASS RDFExpPreviewDialogWidget
  *
  *	This class inherits from OpenRefine's ExpressionPreviewDialog.Widget modified to
  *	preview the RDF transform of a given element (subject, property, or object) selected
  *	in the RDF Transform editor.
  */
- class RDFWidget extends ExpressionPreviewDialog_WidgetCopy {
+ class RDFExpPreviewDialogWidget extends ExpressionPreviewDialog_WidgetCopy {
 	//
 	// As per OpenRefine's ExpressionPreviewDialog.Widget with our modifications...
 	//
@@ -298,20 +307,29 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	// --------------------------------------------------------------------------------
 
+	//
+	// Maintained OLD Variables:
+	//
 	// Public...
 	expression;
-
 	// Private...
 	_elmts;
+	_timerID;
+	//_tabContentWidth;
+
+	//
+	// New or Mod-able Dialog Variables:
+	//
+	// Private...
 	#bIsResource; // Resource OR Literal
 	#strPrefix;
 	#bIsIndex;
-	#baseIRI;
-	#columnName;
-	#rowIndices;
-	#rowValues;
-	_timerID;
-	_tabContentWidth;
+	#strBaseIRI;
+	#strColumnName;
+	#aiRowIndices;
+	#astrRowValues;
+
+	#iBaseTabHeight;
 
 	//
 	// Methods
@@ -325,14 +343,15 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 	//
 	// Method constructor(): OVERRIDE Base
 	//
-	constructor(strBaseIRI, strColumnName, rows, strExpression,	bIsResource, strPrefix, bIsIndex, elements)
+	constructor(strBaseIRI, strColumnName, rows, strExpression, bIsResource,
+		strPrefix, bIsIndex, elements)
 	{
-		super(); // ...empty constructor to get "this"
+		super(); // ...parent constructor to get "this"
 
-		this.#baseIRI = strBaseIRI;
-		this.#columnName = strColumnName;
-		this.#rowIndices = rows.rowIndices;
-		this.#rowValues = rows.values;
+		this.#strBaseIRI = strBaseIRI;
+		this.#strColumnName = strColumnName;
+		this.#aiRowIndices = rows.rowIndices;
+		this.#astrRowValues = rows.values;
 
 		this.expression = strExpression;
 		if (strExpression === null || strExpression.length === 0 ) {
@@ -356,17 +375,18 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//);
 
 		this._elmts.expressionPreviewTextarea
-		.val(this.expression)
-		.keyup( () => {	this._scheduleUpdate();	} )
-		.select()
-		.focus();
+			.val(this.expression)
+			.keyup( () => {	this._scheduleUpdate();	} )
+			.select()
+			.focus();
 
-		this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
+		//this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
 
 		// Skip unneeded Widget or_dialog_* elements
 
 		// Reset history to default display value...
 		$("#expression-preview-tabs-history").attr("display", "");
+
 		// Reset help to default display value...
 		$("#expression-preview-tabs-help").attr("display", "");
 	}
@@ -375,6 +395,19 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		this.update();
 		this._renderExpressionHistoryTab();
 		this._renderHelpTab();
+
+		this.#iBaseTabHeight = this._elmts.expressionPreviewPreviewContainer.height();
+		const objMinHeight = { "minHeight" : "" + this.#iBaseTabHeight + "px" };
+		this._elmts.expressionPreviewPreviewContainer.css(objMinHeight);
+		this._elmts.expressionPreviewHistoryContainer.css(objMinHeight);
+		this._elmts.expressionPreviewHelpTabBody.css(objMinHeight);
+	}
+
+	resize(iDiffHeight) {
+		const iDiff = this.#iBaseTabHeight + iDiffHeight;
+		this._elmts.expressionPreviewPreviewContainer.height(iDiff);
+		this._elmts.expressionPreviewHistoryContainer.height(iDiff);
+		this._elmts.expressionPreviewHelpTabBody.height(iDiff);
 	}
 
 	//
@@ -384,16 +417,15 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		// As per OpenRefine's ExpressionPreviewDialog.Widget.update() with our modifications...
 		//
-		this.expression =
-			this._elmts.expressionPreviewTextarea[0].value.trim();
+		this.expression = this._elmts.expressionPreviewTextarea[0].value.trim();
 		var params = {
 			"project"    : theProject.id,
 			"expression" : this.expression,
-			"rowIndices" : JSON.stringify(this.#rowIndices),
+			"rowIndices" : JSON.stringify(this.#aiRowIndices),
 			"isIRI"      : this.#bIsResource ? "1" : "0",
 			"prefix"     : this.#strPrefix === null ? "" : this.#strPrefix,
-			"columnName" : this.#bIsIndex ? "" : this.#columnName,
-			"baseIRI"    : this.#baseIRI
+			"columnName" : this.#bIsIndex ? "" : this.#strColumnName,
+			"baseIRI"    : this.#strBaseIRI
 		};
 		//this._prepareUpdate(params); // ...empty function, not overridden
 
@@ -456,18 +488,20 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 		//
 		// Set up data table...
 		//
-		this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
+		//this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
 		// Let the "expressionPreviewPreviewContainer" control the width of the table...
 		//var container = this._elmts.expressionPreviewPreviewContainer.empty().width(this._tabContentWidth);
-		var container = this._elmts.expressionPreviewPreviewContainer.empty();
+		this._elmts.expressionPreviewPreviewContainer.empty();
 
 		// Create data table...
 		/** @type {HTMLTableElement} */
 		// @ts-ignore
-		var table = $('<table width="100%" height="100%"></table>').appendTo(container)[0];
+		var table = $('<table width="100%" height="100%"></table>');
+		this._elmts.expressionPreviewPreviewContainer.append(table);
+		var tableBody = table[0];
 
 		// Create table column headings...
-		var tr = table.insertRow(0);
+		var tr = tableBody.insertRow(0);
 		var tdValue = (this.#bIsIndex ? "Index" : "Value");
 		$( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.gstrIndexTitle);
 		$( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
@@ -488,7 +522,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 			//   NOTE: Since "bResults", then "data.results" have a good index length.
 			for (var iIndex = 0; iIndex < data.results.length; iIndex++) {
 				// Create a row...
-				tr = table.insertRow(table.rows.length);
+				tr = tableBody.insertRow(tableBody.rows.length);
 
 				// Row is up to 4 cells...
 				// 0           | 1           | 2           | 3 (Optional)|
@@ -514,7 +548,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 				}
 				else {
 					// Row values (raw) for real column...
-					tdValue = this.#rowValues[iIndex];
+					tdValue = this.#astrRowValues[iIndex];
 				}
 				tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
 				tdElem.html( tdValue );

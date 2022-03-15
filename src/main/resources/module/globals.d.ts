@@ -29,7 +29,7 @@ declare var butterfly: any;
 //declare var RDFExportTemplate: class;
 //declare var RDFDataTableView: class;
 
-interface RDFWidget {
+interface RDFExpPreviewDialogWidget {
     _scheduleUpdate(): any;
     _renderExpressionHistoryTab(): any;
     _renderHelpTab(): any;
