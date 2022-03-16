@@ -155,6 +155,8 @@ class RDFTransformDialog {
     #panePreview;
     #tableNodes;
 
+    #bUpdatePreview;
+
     #iResize;
     #iDiffFrameHeight;
     #iLastDiffFrameHeight;
@@ -187,7 +189,7 @@ class RDFTransformDialog {
 
         // Initialize transform view...
         this.#processTransformTab();
-        this.#processPreviewTab();
+        this.#bUpdatePreview = true;
     }
 
     async #init(theTransform) {
@@ -437,84 +439,91 @@ class RDFTransformDialog {
 
     #functionalizeDialog() {
         // Hook up the Transform and Preview tabs...
-        this.#elements.rdftTabs.tabs();
+        this.#elements.rdftTabs
+            .tabs()
+            .on("tabsactivate",  (evt, ui ) => {
+                    if ( ui.newTab.is("#rdf-transform-tab-preview") ) {
+                        this.#processPreviewTab();
+                    }
+                }
+            );
 
         // Hook up the BaseIRI Editor...
         this.#elements.rdftEditBaseIRI
-        .on("click", (evt) => {
-                evt.preventDefault();
-                this.#editBaseIRI( $(evt.target) );
-            }
-        );
+            .on("click", (evt) => {
+                    evt.preventDefault();
+                    this.#editBaseIRI( $(evt.target) );
+                }
+            );
 
         // Hook up the Add New Root Node button...
         this.#elements.buttonAddRootNode
-        .on("click", (evt) => {
-                evt.preventDefault();
-                var nodeRoot = this.#createRootNode();
-                this.#theTransform.subjectMappings.push(nodeRoot);
-                var nodeUI = this.#createNewNodeIU(nodeRoot, null);
-                nodeUI.processView(this.#tableNodes);
-            }
-        );
+            .on("click", (evt) => {
+                    evt.preventDefault();
+                    var nodeRoot = this.#createRootNode();
+                    this.#theTransform.subjectMappings.push(nodeRoot);
+                    var nodeUI = this.#createNewNodeIU(nodeRoot, null);
+                    nodeUI.processView(this.#tableNodes);
+                }
+            );
 
         // Hook up the Import RDF Template button...
         this.#elements.buttonImpTemplate
-        .on("click", (evt) => {
-                evt.preventDefault();
-                this.#doImport();
-            }
-        );
+            .on("click", (evt) => {
+                    evt.preventDefault();
+                    this.#doImport();
+                }
+            );
 
         // Hook up the Export RDF Template button...
         this.#elements.buttonExpTemplate
-        .on("click", (evt) => {
-                evt.preventDefault();
-                this.#doExport();
-            }
-        );
+            .on("click", (evt) => {
+                    evt.preventDefault();
+                    this.#doExport();
+                }
+            );
 
         // Hook up the Save RDFTransform button...
         this.#elements.buttonSaveTransform
-        .on("click", (evt) => {
-                evt.preventDefault();
-                this.#doSave();
-            }
-        );
+            .on("click", (evt) => {
+                    evt.preventDefault();
+                    this.#doSave();
+                }
+            );
 
         this.#elements.buttonOK
-        .on("click", () => {
-                this.#doSave();
-                DialogSystem.dismissUntil(this.#level - 1);
-            }
-        );
+            .on("click", () => {
+                    this.#doSave();
+                    DialogSystem.dismissUntil(this.#level - 1);
+                }
+            );
         this.#elements.buttonCancel
-        .on("click", () => DialogSystem.dismissUntil(this.#level - 1) );
+            .on("click", () => DialogSystem.dismissUntil(this.#level - 1) );
 
         // Hook up resize...
         this.#iDiffFrameHeight = 0;
         this.#iLastDiffFrameHeight = 0;
         this.#iResize = 0;
         this.#dialog
-        .on("resize",
-            (evt, ui) => {
-                clearTimeout(this.#iResize);
-                this.#iResize = setTimeout(
-                    () => { // TODO: Vertical Resize Issue - OpenRefine Dialog Resizing is braindead on vertical!
-                        this.#iDiffFrameHeight = ui.size.height - 600;
-                        if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
-                            const iDiff = this.#iDiffFrameHeight +
-                                            ( this.#iBodyHeadInit - this.#elements.dialogBodyHead.height() );
-                            this.#paneTransform.height(this.#iBaseTransformPaneHeight + iDiff);
-                            this.#panePreview.height(this.#iBasePreviewPaneHeight + iDiff);
-                            this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
-                        }
-                    },
-                    100 // ...do it 1/10 second after no more resizing,
-                        //    otherwise, keep resetting timeout...
-                );
-            }
-        );
+            .on("resize",
+                (evt, ui) => {
+                    clearTimeout(this.#iResize);
+                    this.#iResize = setTimeout(
+                        () => { // TODO: Vertical Resize Issue - Resizing is braindead on vertical sizing!
+                            this.#iDiffFrameHeight = ui.size.height - 600;
+                            if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
+                                const iDiff = this.#iDiffFrameHeight +
+                                                ( this.#iBodyHeadInit - this.#elements.dialogBodyHead.height() );
+                                this.#paneTransform.height(this.#iBaseTransformPaneHeight + iDiff);
+                                this.#panePreview.height(this.#iBasePreviewPaneHeight + iDiff);
+                                this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
+                            }
+                        },
+                        100 // ...do it 1/10 second after no more resizing,
+                            //    otherwise, keep resetting timeout...
+                    );
+                }
+            );
     }
 
     async #doImport() {
@@ -610,6 +619,11 @@ class RDFTransformDialog {
     }
 
     #processPreviewTab() {
+        if (! this.#bUpdatePreview) {
+            return;
+        }
+        this.#bUpdatePreview = false;
+
         //
         // Process Preview Tab
         //
@@ -682,7 +696,15 @@ class RDFTransformDialog {
                 // All Good, set the project's BaseIRI...
                 MenuSystem.dismissAll();
                 this.#replaceBaseIRI(strIRI);
-                this.#processPreviewTab();
+                // If the Preview Tab is active...
+                if (this.#elements.rdftTabs.tabs('option', 'active') === 1) {
+                    // Process the Preview Tab...
+                    this.#processPreviewTab();
+                }
+                // Otherwise, reserve Preview Tab processing for later...
+                else {
+                    this.#bUpdatePreview = true;
+                }
             }
         );
 
@@ -738,7 +760,8 @@ class RDFTransformDialog {
     }
 
     updatePreview() {
-        this.#processPreviewTab();
+        // Set the Preview to update when we select the Preview Tab...
+        this.#bUpdatePreview = true;
     }
 
     getTransformExport() {

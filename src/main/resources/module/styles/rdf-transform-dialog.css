@@ -47,7 +47,8 @@ div.dialog-body-head,
 ul.rdf-transform-tab-titles,
 div.tab,
 div.rdf-transform-menu-search
-div.rdf-transform-detail-container
+div.rdf-transform-property-container
+div.rdf-transform-node-container
 .rdf-transform-iri-text
 #rdf-transform-base-iri-value {
 }
@@ -55,7 +56,7 @@ div.rdf-transform-detail-container
 
 table.rdf-transform-pane-table-layout,
 table.rdf-transform-property-table-layout,
-table.rdf-transform-details-table-layout {
+table.rdf-transform-node-table-layout {
     table-layout: fixed;
 }
 
