@@ -563,8 +563,8 @@ class RDFTransformUINodeConfig {
             .add(this.#elements.rdf_content_date_time_radio)
             .add(this.#elements.rdf_content_boolean_radio)
             .add(this.#elements.rdf_content_dtype_radio)
-            .prop(this.#disabledTrue);
-            // ...and never turn them on!
+            .prop(this.#disabledTrue); // ...and never turn them on!
+
             this.#elements.asText
             .add(this.#elements.asLang)
             .add(this.#elements.asInt)

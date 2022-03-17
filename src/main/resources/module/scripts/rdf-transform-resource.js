@@ -5,13 +5,15 @@
  */
 class RDFTransformResourceDialog {
     #element;
+    #strDefault;
     #strLookForType;
     #projectID;
     #dialog;
     #onDone;
 
-    constructor(element, strLookForType, projectID, dialog, onDone) {
+    constructor(element, strDefault, strLookForType, projectID, dialog, onDone) {
         this.#element = element;
+        this.#strDefault = strDefault;
         this.#strLookForType = strLookForType;
         this.#projectID = projectID;
         this.#dialog = dialog;
@@ -42,6 +44,7 @@ class RDFTransformResourceDialog {
 
         var elements = DOM.bind(menu);
         elements.rdftNewResourceIRI
+        .val(this.#strDefault)
         .suggestTerm(
             {	"project" : this.#projectID.toString(),
                 "type"    : this.#strLookForType,
@@ -106,15 +109,13 @@ class RDFTransformResourceDialog {
                         // Prefixed...
                         obj = {};
                         obj.prefix = strPrefix;
-                        obj.localPart = RDFTransformCommon.escapeLocalPart( strLocalPart );
+                        obj.localPart = strLocalPart;
                     }
                     else if (strNamespace != null) {
                         // Not Prefixed: Full IRI...
                         obj = {};
                         obj.prefix = null;
-                        obj.localPart =
-                            strNamespace +
-                            RDFTransformCommon.unescapeLocalPart( strLocalPart );
+                        obj.localPart = strNamespace + strLocalPart;
                     }
                 }
                 else if (strIRI) {
@@ -215,8 +216,8 @@ class RDFTransformResourceDialog {
                     if ( strPrefix === "" || this.#dialog.getNamespacesManager().hasPrefix(strPrefix) ) {
                         // ...yes (BaseIRI or already managed), add resource...
                         obj = {};
-                        obj.prefix = strPrefix;
-                        obj.localPart = RDFTransformCommon.escapeLocalPart( strLocalPart );
+                        obj.prefix    = strPrefix;
+                        obj.localPart = strLocalPart;
                     }
                     // No, then this prefix is not using the BaseIRI prefix and is not managed...
                     else if (strPrefix) {
@@ -236,9 +237,8 @@ class RDFTransformResourceDialog {
                                 if ( strPrefix.normalize() === strResPrefix.normalize() ) {
                                     // ...yes, set as before...
                                     obj = {};
-                                    obj.prefix = strPrefix; // Given Prefix
-                                    obj.localPart =         // Path portion of IRI
-                                        RDFTransformCommon.escapeLocalPart( strLocalPart );
+                                    obj.prefix    = strPrefix;    // Given Prefix
+                                    obj.localPart = strLocalPart; // Path portion of IRI
                                 }
                                 // No, then adjust...
                                 else {
@@ -248,9 +248,8 @@ class RDFTransformResourceDialog {
                                     // Ensure the prefix's IRI was added...
                                     if ( strResNamespace != null ) {
                                         obj = {};
-                                        obj.prefix = strResPrefix;    // New Prefix
-                                        obj.localPart =         // Path portion of IRI
-                                            RDFTransformCommon.escapeLocalPart( strLocalPart );
+                                        obj.prefix    = strResPrefix; // New Prefix
+                                        obj.localPart = strLocalPart; // Path portion of IRI
                                     }
                                     // If not, abort the resource addition with a null obj...
                                 }
@@ -270,12 +269,12 @@ class RDFTransformResourceDialog {
                     obj = {};
                     // If it has a Base IRI prefix...
                     if (strIRI[0] === ':') {
-                        obj.prefix = ""; // ...use Base IRI Prefix
-                        obj.localPart = RDFTransformCommon.escapeLocalPart( strIRI.substring(1) );
+                        obj.prefix    = ""; // ...use Base IRI Prefix
+                        obj.localPart = strIRI.substring(1);
                     }
                     // Otherwise, it's a Full IRI...
                     else {
-                        obj.prefix = null;      // No Prefix
+                        obj.prefix    = null;   // No Prefix
                         obj.localPart = strIRI; // Full IRI
                     }
                 }
@@ -353,9 +352,8 @@ class RDFTransformResourceDialog {
                 // IRI   = Namespace of Prefix + strLocalPart
                 // CIRIE = strResPrefix + ":" + strLocalPart
                 obj = {};
-                obj.prefix = strPrefix; // Given Prefix
-                obj.localPart =         // Path portion of IRI
-                    RDFTransformCommon.escapeLocalPart( strLocalPart );
+                obj.prefix    = strPrefix;    // Given Prefix
+                obj.localPart = strLocalPart; // Path portion of IRI
                 this.#onDone(obj);
             }
             // No, then this prefix is not using the BaseIRI prefix and is not managed...
@@ -378,9 +376,8 @@ class RDFTransformResourceDialog {
                             // IRI   = Namespace of Prefix + strLocalPart
                             // CIRIE = strResPrefix + ":" + strLocalPart
                             obj = {};
-                            obj.prefix = strPrefix; // Given Prefix
-                            obj.localPart =         // Path portion of IRI
-                                RDFTransformCommon.escapeLocalPart( strLocalPart );
+                            obj.prefix    = strPrefix;    // Given Prefix
+                            obj.localPart = strLocalPart; // Path portion of IRI
                         }
                         // No, then adjust...
                         else {
@@ -392,9 +389,8 @@ class RDFTransformResourceDialog {
                                 // IRI   = Namespace of Prefix + strLocalPart
                                 // CIRIE = strResPrefix + ":" + strLocalPart
                                 obj = {};
-                                obj.prefix = strResPrefix; // New Prefix
-                                obj.localPart =            // Path portion of IRI
-                                    RDFTransformCommon.escapeLocalPart( strLocalPart );
+                                obj.prefix    = strResPrefix; // New Prefix
+                                obj.localPart = strLocalPart; // Path portion of IRI
                             }
                             // If not, abort the resource addition with a null obj...
                         }

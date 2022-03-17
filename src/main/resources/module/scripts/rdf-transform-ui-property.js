@@ -19,7 +19,6 @@ class RDFTransformUIProperty {
 
     #imgExpand;
     #imgNone;
-    #imgDeleteProp;
     #imgArrowStart;
     #imgArrowEnd;
 
@@ -31,16 +30,17 @@ class RDFTransformUIProperty {
     static {
         this.#propObjectDefault.prefix    = null; // ...holds CIRIE Prefix (if used)
         this.#propObjectDefault.localPart = null; // ...holds CIRIE LocalPart (or Full IRI)
-        this.#propObjectDefault.theNodes = null; // ...hold's Object Nodes of Property
     }
 
     static getDefaultProperty(){
         return JSON.parse( JSON.stringify(RDFTransformUIProperty.#propObjectDefault) );
     }
 
-    constructor(theDialog, theProperty, bIsExpanded, theSubjectNodeUI) {
+    static #strEmptyProperty = "Property?";
+
+    constructor(theDialog, theProperty, theNodes, bIsExpanded, theSubjectNodeUI) {
         this.#dialog = theDialog;
-        this.#property = theProperty; // ...contains CIRIE (prefix, localPart) and Transform Node List (theNodes)
+        this.#property = theProperty; // ...contains CIRIE (prefix, localPart)
         this.#bIsExpanded = bIsExpanded;
         this.#nodeUISubject = theSubjectNodeUI;
 
@@ -51,30 +51,25 @@ class RDFTransformUIProperty {
         }
 
         //
-        // Properties will always have Object Nodes, even if a default.
-        //
-        // NOTES:
-        //      A property with a valid Object Node and null Object Node UI will create an
-        //      Object Node UI from the given Property's Object Node.
-        //      A Property with a null Object node indicates a valid Object Node UI will be
-        //      given later containing a valid Object Node to set in the Property.
-
-        //
         // Process any Properties for the Object Nodes...
         //
-        //      Nodes optionally have Properties.
+        //      Properties should always have Nodes but an RDF Transform may be
+        //      a work in progress.  Therefore, Properties optionally have Nodes.
         //
         this.#nodeUIs = null;
 
-        if (this.#property.theNodes !== null) {
-            this.#nodeUIs = [];
-            // ...create the Nodes' Object Node UIs and process their Property Mappings...
-            for (const theNode of this.#property.theNodes) {
-                this.#processObjectNodePropertyMappings(null, theNode);
+        if (theNodes !== null) {
+            // ...create each Node's Object Node UI and process its Property Mappings...
+            for (const theNode of theNodes) {
+                this.#processNode(null, theNode);
             }
         }
         // Otherwise, expect the Property's Object Nodes and Object Node UIs will be set later
         // by the setNodeUIs() method.
+
+        // A Property is always a Resource and has a Constant source value.
+        // TODO: Currently, all properties are "constant".  Change to allow
+        //      column with expression (Variable).
 
         this.#imgExpand =
             $('<img />')
@@ -90,35 +85,21 @@ class RDFTransformUIProperty {
                 }
             );
         this.#imgNone = $('<img />');
-        this.#imgDeleteProp = $('<img />')
-            .attr("title", $.i18n('rdft-dialog/remove-property'))
-            .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
-            .css("cursor", "pointer")
-            .on("click",
-                () => {
-                    setTimeout(
-                        () => {
-                            this.#tr.remove(); // ...first
-                            this.#nodeUISubject.removeProperty(this); // ...second, for view update
-                        },
-                        100
-                    );
-                }
-            );
         this.#imgArrowStart = $('<img />').attr("src", "images/arrow-start.png");
         this.#imgArrowEnd = $('<img />').attr("src", "images/arrow-end.png");
     }
 
-    #processObjectNodePropertyMappings(theNodeUI, theNode) {
-        var bIsExpanded = false; // ...no presumed Object Node Property Mappings to process.
+    #processNode(theNodeUI, theNode) {
+        var bIsExpanded = false; // ...no presumed Object's Property Mappings to process.
 
         // If Property Mappings exist (it's also a Resource Node)...
         if (RDFTransform.gstrPropertyMappings in theNode &&
             theNode.propertyMappings !== null &&
             theNode.propertyMappings.length > 0)
         {
-            // ...prepare to process Object Node Property Mappings...
+            // ...prepare to process Object's Property Mappings...
             bIsExpanded = true;
+            console.log("DEBUG DeadCode: #processNode: bIsExpanded = true");
         }
 
         // If we need to create a Node UI...
@@ -129,9 +110,12 @@ class RDFTransformUIProperty {
                 theNode,
                 false, // ...an Object Node (not Root)
                 null, // ...process and set properties below if expanded
-                bIsExpanded,
+                true, // ...expand new nodes for user convenience
                 this // ...Object Nodes require a Subject Property UI
             );
+            if (this.#nodeUIs === null) {
+                this.#nodeUIs = [];
+            }
             this.#nodeUIs.push(theNodeUI);
         }
 
@@ -141,14 +125,17 @@ class RDFTransformUIProperty {
             var theProperties = [];
             for (const theJSONProperty of theNode.propertyMappings) {
                 // Process the property for display...
-                var propertyUI =
+                var thePropertyUI =
                     RDFTransformUIProperty.getTransformImport(this.#dialog, theJSONProperty, theNodeUI);
-                if (propertyUI !== null) {
-                    theProperties.push(propertyUI);
+                if (thePropertyUI !== null) {
+                    theProperties.push(thePropertyUI);
                 }
             }
             // ...and set the Property UIs for the Node UI...
-            theNodeUI.setPropertyUIs(theProperties);
+            if (theProperties.length > 0) {
+                theNodeUI.setPropertyUIs(theProperties);
+                console.log("DEBUG DeadCode: #processNode: setPropertyUIs()");
+            }
         }
         // Otherwise, the Object Node is a Resource without Property Mappings or it's a Literal
 
@@ -165,17 +152,19 @@ class RDFTransformUIProperty {
         this.#nodeUIs = theNodeUIs;
 
         // Set the Property's Object Nodes from the Object Node UIs...
-        this.#property.theNodes = [];
         for (const theNodeUI of this.#nodeUIs) {
             var theNode = theNodeUI.getNode();
-            this.#property.theNodes.push(theNode);
-            // Process the Property's Object Node Property Mappings...
-            this.#processObjectNodePropertyMappings(theNodeUI, theNode);
+            // Process the Object Node's Property Mappings...
+            this.#processNode(theNodeUI, theNode);
         }
     }
 
+    #hasNodeUIs() {
+        return (this.#nodeUIs !== null && this.#nodeUIs.length > 0);
+    }
+
     processView(theTable) {
-        this.#tr = theTable.insertRow(); // ...the preperty's "tr" is removable, so preserve
+        this.#tr = theTable.insertRow(); // ...the property's "tr" is removable, so preserve
         this.#tdMain    = this.#tr.insertCell(); // 0
         this.#tdToggle  = this.#tr.insertCell(); // 1
         this.#tdDetails = this.#tr.insertCell(); // 2
@@ -219,16 +208,36 @@ class RDFTransformUIProperty {
         var refProperty =
             $('<a href="javascript:{}" />')
                 .addClass("rdf-transform-property")
-                .on("click", (evt) => { this.#editProperty(evt.target); } );
+                .on("click",
+                    (evt) => {
+                        this.#editProperty( $(evt.target) );
+                    }
+                );
         refProperty.append(
             $("<span />")
                 .addClass("rdf-transform-property-label")
                 .text( RDFTransformCommon.shortenResource( this.#getPropertyName(this.#property) ) )
         );
 
+        var imgDeleteProp = $('<img />')
+            .attr("title", $.i18n('rdft-dialog/remove-property'))
+            .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
+            .css("cursor", "pointer")
+            .on("click",
+                () => {
+                    setTimeout(
+                        () => {
+                            this.#tr.remove(); // ...first, for view update
+                            this.#nodeUISubject.removeProperty(this); // ...second, for management
+                        },
+                        100
+                    );
+                }
+            );
+
         $(this.#tdMain)
             .empty()
-            .append(this.#imgDeleteProp, this.#imgArrowStart, refProperty, this.#imgArrowEnd);
+            .append(imgDeleteProp, this.#imgArrowStart, refProperty, this.#imgArrowEnd);
     }
 
     #renderDetails() {
@@ -238,7 +247,7 @@ class RDFTransformUIProperty {
         this.#tableDetails = $('<table />').addClass("rdf-transform-node-table-layout");
         this.#expandedDetailDiv.append(this.#tableDetails);
 
-        if (this.#nodeUIs !== null && this.#nodeUIs.length > 0) {
+        if ( this.#hasNodeUIs() ) {
             for (const theNodeUI of this.#nodeUIs) {
                 theNodeUI.processView(this.#tableDetails[0]);
             }
@@ -252,27 +261,22 @@ class RDFTransformUIProperty {
             .text( $.i18n('rdft-dialog/add-object') + '...' )
             .on("click",
                 () => {
-                    if (this.#nodeUIs === null) {
-                        this.#nodeUIs = [];
-                    }
-
                     // Default Object Node (clone default)...
                     var theNode = RDFTransformUINode.getDefaultNode();
 
                     // Set up the Node UI...
-                    var theNodeUI = this.#processObjectNodePropertyMappings(null, theNode);
+                    var theNodeUI = this.#processNode(null, theNode);
                     theNodeUI.processView(this.#tableDetails[0]); // ...and view the new Node
-                    // If a Subject has this Property AND
-                    //      this Property has just added it's 1st Node...
-                    if (this.#nodeUISubject !== null && this.#nodeUIs.length === 1) {
-                        this.#nodeUISubject.render(); // ...update the Subject's Node view (expandable)
+                    // If this Property has just added it's 1st Node AND
+                    //    a Subject Node has this Property...
+                    if (this.#nodeUIs.length === 1 && this.#nodeUISubject !== null) {
+                        this.#nodeUISubject.render(); // ...update the Subject Node's view (expandable)
                     }
                 }
             );
         var divNodeDetail = $('<div />').addClass("padded");
         divNodeDetail.append(refAddObjNode);
         this.#expandedDetailDiv.append(divNodeDetail);
-
     }
 
     #show() {
@@ -286,8 +290,8 @@ class RDFTransformUIProperty {
         }
     }
 
-    #isExpandable() {
-        return (this.#nodeUIs !== null && this.#nodeUIs.length > 0);
+    #isExpandable() { // ...always expand properties
+        return true; //( this.#hasNodeUIs() );
     }
 
     #showExpandable() {
@@ -300,27 +304,20 @@ class RDFTransformUIProperty {
         $(this.#imgNone).show();
     }
 
-    removeNode(nodeUI) {
+    removeNode(theNodeUI) {
         // Get last matching Node...
-        var iNodeIndex = this.#nodeUIs.lastIndexOf(nodeUI);
+        var iNodeIndex = this.#nodeUIs.lastIndexOf(theNodeUI);
         // If found...
         if (iNodeIndex >= 0) {
             this.#nodeUIs.splice(iNodeIndex, 1); // ...remove Node from this Property...
-            var bRenderSubjectNode = false;
-            if (this.#nodeUIs.length === 0) {
-                // Default Object Node (clone default)...
-                var theNode = RDFTransformUINode.getDefaultNode();
-
-                // Set up the Node UI...
-                var theNodeUI = this.#processObjectNodePropertyMappings(null, theNode);
-                theNodeUI.processView(this.#tableDetails[0]); // ...and view the new Node
-                bRenderSubjectNode = true;
-            }
             this.render(); // ...and update the Property's view
-            // If a Subject Node has this Property AND
-            //      this Property has just removed it's last Node Object...
-            if (this.#nodeUISubject !== null && bRenderSubjectNode) {
-                this.#nodeUISubject.render();
+            // If this Property has just removed it's last Node Object AND
+            //    a Subject Node has this Property...
+            if (this.#nodeUIs.length === 0) {
+                this.#nodeUIs = null;
+                if (this.#nodeUISubject !== null) {
+                    this.#nodeUISubject.render(); // ...update the Subject Node's view (expandable)
+                }
             }
             this.#dialog.updatePreview();
         }
@@ -339,14 +336,17 @@ class RDFTransformUIProperty {
             return theProperty.localPart;
         }
         else { // Property exists but doesn't have "the juice"...
-            return "Property?";
+            return RDFTransformUIProperty.#strEmptyProperty;
         }
     }
 
     #editProperty(element) {
+        var strDefault =
+            ( RDFTransformUIProperty.#strEmptyProperty === element.text() ?
+                "" : element.text() );
         var theDialog =
             new RDFTransformResourceDialog(
-                element, 'property', theProject.id, this.#dialog,
+                element, strDefault, 'property', theProject.id, this.#dialog,
                 (theProperty) => { this.#editPropertyInfo(theProperty); }
             )
         theDialog.show();
@@ -371,7 +371,15 @@ class RDFTransformUIProperty {
             return null;
         }
 
-        /** @type {{prefix?: string, valueSource?: {source?: string, constant?: string}, objectMappings?: any[]}} */
+        /** @type {{
+         *      prefix?: string,
+         *      valueSource?: {
+         *          source?: string,
+         *          constant?: string
+         *      },
+         *      objectMappings?: [ ...any ]
+         * }}
+         */
         var theProperty = {};
 
         if (RDFTransform.gstrPrefix in this.#property && this.#property.prefix !== null) {
@@ -388,12 +396,13 @@ class RDFTransformUIProperty {
         theProperty.valueSource.source = RDFTransform.gstrConstant;
         theProperty.valueSource.constant = this.#property.localPart;
 
-        if (this.#nodeUIs !== null) {
+        // Object Mappings...
+        if ( this.#hasNodeUIs() ) {
+            theProperty.objectMappings = [];
             for (const theNodeUI of this.#nodeUIs) {
-                var nodeObjectJSON = theNodeUI.getTransformExport();
-                if (nodeObjectJSON !== null) {
-                    theProperty.objectMappings = [];
-                    theProperty.objectMappings.push(nodeObjectJSON);
+                const theNode = theNodeUI.getTransformExport();
+                if (theNode !== null) {
+                    theProperty.objectMappings.push(theNode);
                 }
             }
         }
@@ -409,24 +418,39 @@ class RDFTransformUIProperty {
         //
         // Prepare theProperty for the Property UI...
         //
-        var theProperty = {};
-        theProperty.prefix = null;
-        if (RDFTransform.gstrPrefix in theJSONProperty && theJSONProperty.prefix !== null) {
-            theProperty.prefix = theJSONProperty.prefix;
+        //      The structure is a hacked, condensed representation from the store
+        //      designed for ease of use.
+        //
+        /** @type {{
+         *      prefix?: string,
+         *      localPart?: string
+         *      objectMappings?: [ ...any ]
+         *  }}
+         */
+        var theProperty = null;
+
+        if ( ! (RDFTransform.gstrValueSource in theJSONProperty) ) {
+            theProperty = RDFTransformUIProperty.getDefaultProperty(); // ...default property
         }
-        // TODO: Currently, all properties are "constant".  Change to allow
-        //      column with expression.
-        theProperty.localPart = null;
-        if (RDFTransform.gstrValueSource in theJSONProperty &&
-            theJSONProperty.valueSource !== null &&
-            RDFTransform.gstrConstant in theJSONProperty.valueSource &&
-            theJSONProperty.valueSource.constant !== null )
-        {
-            theProperty.localPart = theJSONProperty.valueSource.constant;
+        else {
+            theProperty = {};
+
+            // Prefix...
+            theProperty.prefix = null;
+            if (RDFTransform.gstrPrefix in theJSONProperty) {
+                theProperty.prefix = theJSONProperty.prefix;
+            }
+
+            // Value Source (we know exists)...
+            // Value Source Constant...
+            // TODO: Currently, all properties are "constant".  Change to allow
+            //      column with expression.
+            theProperty.localPart = null;
+            if (RDFTransform.gstrConstant in theJSONProperty.valueSource)
+            {
+                theProperty.localPart = theJSONProperty.valueSource.constant;
+            }
         }
-        theProperty.theNodes = null; // ...default: no Nodes list
-        // NOTE: A null Nodes list is a hint to create it from the Object Node UIs list to the
-        //      Property UI during the Object Mapping process below.
 
         //
         // Set up the Property UI...
@@ -435,45 +459,31 @@ class RDFTransformUIProperty {
             new RDFTransformUIProperty(
                 theDialog,
                 theProperty,
-                true,
+                null, // ...process and set nodes later
+                true, // ...always expand Property UIs
                 theSubjectNodeUI // ...Subject Node UI
-                // ...Object Node UI is set below and is used to set theProperty's Object Node
+                // ...Object Node UIs are set below and are used to set theProperty's Object Nodes
             );
 
         // Object Mappings...
-        var nodeUIs = [];
         if (RDFTransform.gstrObjectMappings in theJSONProperty &&
             theJSONProperty.objectMappings !== null &&
             Array.isArray(theJSONProperty.objectMappings) &&
             theJSONProperty.objectMappings.length > 0)
         {
+            var theNodeUIs = [];
             for (const theJSONNode of theJSONProperty.objectMappings) {
                 // Process the Object Node for display...
                 var theNodeUI =
                     RDFTransformUINode.getTransformImport(theDialog, theJSONNode, false, thePropertyUI);
                 if (theNodeUI !== null) {
-                    nodeUIs.push(theNodeUI);
+                    theNodeUIs.push(theNodeUI);
                 }
             }
-        }
-        else { // ...there is no Object Mappings for the Property, so create an unconfigured Node...
-            var theNodeUI =
-                new RDFTransformUINode(
-                    theDialog,
-                    null, // ...get the default node
-                    false,
-                    null,
-                    false,
-                    thePropertyUI
-                );
-            if (theNodeUI !== null) {
-                nodeUIs.push(theNodeUI);
+            if (theNodeUIs.length > 0) {
+                thePropertyUI.setNodeUIs(theNodeUIs);
             }
         }
-        thePropertyUI.setNodeUIs(nodeUIs);
-        // NOTE: theProperty with a null theNodes list informs the setNodeUIs() 
-        //      method to create theNodes list with the Nodes imported in each
-        //      Node UI.  If a Node UI has a null Node, use the default Node.
 
         return thePropertyUI;
     }

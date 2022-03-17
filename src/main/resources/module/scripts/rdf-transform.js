@@ -24,6 +24,8 @@ class RDFTransform {
     static gstrIndexTitle;                              // ...the column title for the index: "Row" or "Record"
     static gbRowBased = true;                           // ...the type of indexing used: Row (true) or Record (false)
 
+    // subjectMappings
+    static gstrSubjectMappings = "subjectMappings";
     // prefix
     static gstrPrefix = "prefix";
     static gstrLocalPart = "localPart";
@@ -129,16 +131,6 @@ class RDFTransform {
  *  The RDF Transform dialog class for transforming data to RDF
  */
 class RDFTransformDialog {
-    // Setup Root's default Object Node (copy as needed)...
-    static #nodeObjectDefault = {};
-    static {
-        this.#nodeObjectDefault.valueType = {};
-        this.#nodeObjectDefault.valueType.type = RDFTransform.gstrLiteral;
-        this.#nodeObjectDefault.valueSource = {};
-        this.#nodeObjectDefault.valueSource.source = RDFTransform.gstrColumn;
-        this.#nodeObjectDefault.valueSource.columnName = null; // ...to be replaced with column.name
-    }
-
     iSampleLimit = 20; // TODO: Modify for user input
 
     #namespacesManager;
@@ -189,7 +181,7 @@ class RDFTransformDialog {
 
         // Initialize transform view...
         this.#processTransformTab();
-        this.#bUpdatePreview = true;
+        this.updatePreview();
     }
 
     async #init(theTransform) {
@@ -223,8 +215,9 @@ class RDFTransformDialog {
         // --------------------------------------------------------------------------------
 
         // Does the transform have a Subject Mappings array?  No, then set an array...
-        if ( ! (    "subjectMappings" in this.#theTransform &&
-                    Array.isArray(this.#theTransform.subjectMappings) ) ) {
+        if ( ! (    RDFTransform.gstrSubjectMappings in this.#theTransform &&
+                    Array.isArray(this.#theTransform.subjectMappings) ) )
+        {
             this.#theTransform.subjectMappings = [];
         }
 
@@ -233,7 +226,7 @@ class RDFTransformDialog {
         if ( this.#theTransform.subjectMappings.length === 0) {
             // Get the new node...
             nodeUI = await this.#createInitialRootNodeUI();
-            this.#theTransform.subjectMappings.push( nodeUI.getNode() );
+            this.#theTransform.subjectMappings.push( nodeUI.getTransformExport() );
         }
         // Otherwise, use the existing Transform data...
         else {
@@ -297,23 +290,20 @@ class RDFTransformDialog {
      */
     async #createInitialRootNodeUI() {
         // Get a new root node...
-        var nodeRoot = this.#createRootNode();
+        var theRootNode = this.#createRootNode();
+        var theRootNodeUI = this.#createNewNodeIU(theRootNode, null);
 
         // Add default properties to default root node...
-        var properties = [];
+        var thePropertyUIs = [];
         // Construct properties as "column name" IRIs connected to "column name" literal objects
         var iColumnCount = 0;
         for (const column of theProject.columnModel.columns) {
             if (column) {
                 iColumnCount++;
-                // Default Object of the Property (new Object for each Property)...
-                var nodeObject = JSON.parse(JSON.stringify(RDFTransformDialog.#nodeObjectDefault));
-                nodeObject.valueSource.columnName = column.name;
 
-                // Default property...
+                // Set up the Property values...
                 var strPrefix = ""; // ...use BaseIRI prefix
                 var strIRI = await RDFTransformCommon.toIRIString(column.name);
-                var bEscape = true;
                 if (strIRI === null || strIRI.length === 0) {
                     // Use baseIRI prefix and set Local Part to default column name...
                     strIRI = "column_" + iColumnCount.toString();
@@ -350,36 +340,89 @@ class RDFTransformDialog {
                 else { // Found Within...iIndexProto > 0 and it's an IRI, so it's a Full IRI
                     // Use no prefix, i.e., take the IRI as a Full IRI...
                     strPrefix = null;
-                    bEscape = false;
                 }
+
+                // Set a new Property...
                 var theProperty = {};
                 theProperty.prefix = strPrefix;
-                theProperty.localPart = (bEscape ? RDFTransformCommon.escapeLocalPart(strIRI) : strIRI);
-                theProperty.nodeObject = nodeObject;
-                properties.push(theProperty);
+                theProperty.localPart = strIRI;
+                // Get a new PropertyUI...
+                var thePropertyUI = this.#createNewPropertyIU(theProperty, theRootNodeUI);
+
+                // Set a new Object Node based on the column for the Property...
+                var theNode = JSON.parse( JSON.stringify( RDFTransformUINode.getDefaultNode() ) );
+                theNode.valueSource.source = RDFTransform.gstrColumn;
+                theNode.valueSource.columnName = column.name;
+                // Get a new NodeUI...
+                var theNodeUI = this.#createNewNodeIU(theNode, thePropertyUI);
+                // Create a NodeUIs array of one NodeUI...
+                var theNodeUIs = [];
+                theNodeUIs.push(theNodeUI); // ...only one Node per Property!
+
+                // Update the PropertyUI with the NodeUIs array...
+                thePropertyUI.setNodeUIs(theNodeUIs);
+
+                // Add the PropertyUI to the PropertyUIs array...
+                thePropertyUIs.push(thePropertyUI);
             }
         }
+        // Update the RootNodeUI with the PropertyUIs array...
+        theRootNodeUI.setPropertyUIs(thePropertyUIs);
 
-        return this.#createNewNodeIU(nodeRoot, properties);
+        return theRootNodeUI;
     }
 
     #createRootNode() {
         // Retrieve a copy of the Master Root Node...
-        return JSON.parse(JSON.stringify(RDFTransform.gnodeMasterRoot));
+        return JSON.parse( JSON.stringify( RDFTransform.gnodeMasterRoot ) );
     }
 
-    #createNewNodeIU(node, properties) {
+    removeRootNode(theNodeUI) {
+        // Get last matching Node...
+        var iNodeIndex = this.#nodeUIs.lastIndexOf(theNodeUI);
+        // If found...
+        if (iNodeIndex >= 0) {
+            this.#nodeUIs.splice(iNodeIndex, 1); // ...remove Node from this Property...
+            this.#refreshSubjectMappings();
+            this.updatePreview();
+        }
+
+    }
+
+    #refreshSubjectMappings() {
+        this.#theTransform.subjectMappings = [];
+
+        for (const nodeUI of this.#nodeUIs) {
+            this.#theTransform.subjectMappings.push( nodeUI.getTransformExport() );
+        }
+    }
+
+    #createNewPropertyIU(theProperty, theSubjectNodeUI) {
         // Store the node data for the UI...
-        var nodeUI = new RDFTransformUINode(
+        var thePropUI = new RDFTransformUIProperty(
             this,
-            node,
-            true, // ...a Root Node
-            properties,
-            true
-            // No Subject Property since the Node is a Root
+            theProperty,
+            null,
+            true, // ...expand new property for user convenience
+            theSubjectNodeUI
         );
-        this.#nodeUIs.push(nodeUI);
-        return nodeUI;
+        return thePropUI;
+    }
+
+    #createNewNodeIU(theNode, theSubjectPropUI) {
+        // Store the node data for the UI...
+        var theNodeUI = new RDFTransformUINode(
+            this,
+            theNode,
+            true, // ...a Root Node
+            null,
+            true, // ...expand new nodes for user convenience
+            theSubjectPropUI // ...null for Root Nodes
+        );
+        if (theSubjectPropUI === null) { // ...a Root Node
+            this.#nodeUIs.push(theNodeUI); // ...store it
+        }
+        return theNodeUI;
     }
 
     #buildBody() {
@@ -425,6 +468,10 @@ class RDFTransformDialog {
             $('<img />')
                 .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/line_bounce.gif');
 
+        // Set Description box height to min max...
+        const iDescHeight = this.#elements.rdftDescription.height();
+        this.#elements.rdftDescription.css({ "minHeight" : "" + iDescHeight + "px" });
+
         // Get transform pane as element with class "rdf-transform-data-transform"...
         this.#paneTransform = $(".rdf-transform-data-transform");
         this.#iBaseTransformPaneHeight = this.#paneTransform.height();
@@ -440,10 +487,14 @@ class RDFTransformDialog {
     #functionalizeDialog() {
         // Hook up the Transform and Preview tabs...
         this.#elements.rdftTabs
-            .tabs()
-            .on("tabsactivate",  (evt, ui ) => {
-                    if ( ui.newTab.is("#rdf-transform-tab-preview") ) {
-                        this.#processPreviewTab();
+            .tabs(
+                { activate :
+                    (evt, ui ) => {
+                        // If Preview tab activation...
+                        if ( ui.newPanel.is("#rdf-transform-tab-preview") ) {
+                            // Process any outstanding preview updates...
+                            this.#processPreviewTab();
+                        }
                     }
                 }
             );
@@ -461,8 +512,8 @@ class RDFTransformDialog {
             .on("click", (evt) => {
                     evt.preventDefault();
                     var nodeRoot = this.#createRootNode();
+                    var nodeUI = this.#createNewNodeIU(nodeRoot, null); // ...adds to #nodeUIs
                     this.#theTransform.subjectMappings.push(nodeRoot);
-                    var nodeUI = this.#createNewNodeIU(nodeRoot, null);
                     nodeUI.processView(this.#tableNodes);
                 }
             );
@@ -606,7 +657,7 @@ class RDFTransformDialog {
         //
         // Process Transform Tab
         //
-        this.#paneTransform.empty()
+        this.#paneTransform.empty();
 
         var table = $('<table />').addClass("rdf-transform-pane-table-layout");
         this.#tableNodes = table[0];
@@ -703,7 +754,7 @@ class RDFTransformDialog {
                 }
                 // Otherwise, reserve Preview Tab processing for later...
                 else {
-                    this.#bUpdatePreview = true;
+                    this.updatePreview();
                 }
             }
         );

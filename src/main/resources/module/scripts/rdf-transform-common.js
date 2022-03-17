@@ -368,24 +368,6 @@ class RDFTransformCommon {
 	}
 
 	/*
-	 * Method escapeLocalPart(strLocalPart)
-	 *
-	 *	Escapes forward slashes in the Local Part
-	 */
-	 static escapeLocalPart(strLocalPart) {
-		return RDFTransformCommon.unescapeLocalPart(strLocalPart).replace(/\//g, "\\/");
-	}
-
-	/*
-	 * Method unescapeLocalPart(strLocalPart)
-	 *
-	 *	Unescapes forward slashes in the Local Part
-	 */
-	 static unescapeLocalPart(strLocalPart) {
-		return strLocalPart.replace(/\\\//g, "/");
-	}
-
-	/*
 	 * Method toHTMLBreaks(strText)
 	 *
 	 *	Converts all line terminals to HTML breaks
@@ -627,7 +609,7 @@ class RDFTransformCommon {
 			return strBaseIRI + objIRIParts.localPart;
 		}
 		// ...as Unknown Namespace treated as Full IRI...
-		return objIRIParts.prefix + ":" + RDFTransformCommon.escapeLocalPart(objIRIParts.localPart);
+		return objIRIParts.prefix + ":" + objIRIParts.localPart;
 	}
 
 	static #deAssembleQName(strQName) {
@@ -640,7 +622,7 @@ class RDFTransformCommon {
 		}
 		else { // ...otherwise, divide into Prefix and Local Part...
 			obj.prefix = strQName.substring(0, iIndex);
-			obj.localPart = RDFTransformCommon.unescapeLocalPart( strQName.substring(iIndex + 1) );
+			obj.localPart = strQName.substring(iIndex + 1);
 		}
 		return obj;
 	}

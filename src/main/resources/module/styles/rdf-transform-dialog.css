@@ -80,9 +80,11 @@ div.rdf-transform-data-transform {
     flex: 1 1 auto;
 }
 
+/*
 table.rdf-transform-pane-table-layout > tbody > tr > td.padded {
 	padding: 2px 2px;
 }
+*/
 
 div.rdf-transform-tab-footer {
 	background: none repeat scroll 0 0 #E0EDFE;
@@ -242,7 +244,6 @@ td.rdf-transform-property-details {
 
 td.rdf-transform-node-toggle,
 td.rdf-transform-property-toggle {
-    width: 20px;
     padding: 2px 4px;
 }
 
