@@ -643,7 +643,7 @@ class RDFTransformUINode {
     #addRDFType(element) {
         var theDialog =
             new RDFTransformResourceDialog(
-                element, 'class', theProject.id, this.#dialog,
+                element, "", 'class', theProject.id, this.#dialog,
                 (theCIRIE) => { this.#addNodeRDFType(theCIRIE); }
             );
         theDialog.show();

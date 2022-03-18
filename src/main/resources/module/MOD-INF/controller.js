@@ -203,7 +203,7 @@ function processPreferences() {
 		if (prefDebug != null) {
 			var bDebug = (prefDebug.toLowerCase() == 'true');
 			logger.info("DebugMode Test: " + prefDebug + " " + bDebug);
-			RDFTransformPrefs["DebugMode"] = bDebug;
+			RDFTransformPrefs.DebugMode = bDebug;
 		}
 
 		//
@@ -265,13 +265,32 @@ function process(path, request, response) {
 		//   context.someString = "foo";
 		//   context.someInt = RefineBase.sampleExtension.SampleUtil.stringArrayLength(context.someList);
 		//
-		context.RDFTransform_protocol = request.url.protocol;
-		context.RDFTransform_host = request.url.host;
-		context.RDFTransform_path = request.url.pathname;
-		context.RDFTransform_search = request.url.search;
-		context.RDFTransform_href = request.url.href;
+		//context.RDFTransform_protocol = request.url.protocol;
+		//context.RDFTransform_host = request.url.host;
+		//context.RDFTransform_path = request.url.pathname;
+		//context.RDFTransform_search = request.url.search;
+		//context.RDFTransform_href = request.url.href;
 
-		send(request, response, "index.vt", context);
+		//var paramsReq = new Packages.java.util.Properties();
+		//paramsReq.put( "uri",    request.getRequestURI() );
+		//paramsReq.put( "path",   request.getPathInfo() );
+		//paramsReq.put( "host",   request.getServerName() );
+		//paramsReq.put( "port",   request.getServerPort() );
+		//paramsReq.put( "prot",   request.getProtocol() );
+		//paramsReq.put( "scheme", request.getScheme() );
+		//paramsReq.put( "method", request.getMethod() );
+
+		var paramsReq = {};
+		paramsReq.uri    = request.getRequestURI();
+		paramsReq.path   = request.getPathInfo();
+		paramsReq.host   = request.getServerName();
+		paramsReq.port   = request.getServerPort();
+		paramsReq.prot   = request.getProtocol();
+		paramsReq.scheme = request.getScheme();
+		paramsReq.method = request.getMethod();
+		context.RDFTRequest = paramsReq;
+
+		send(request, response, "website/index.html", context);
     }
 }
 
