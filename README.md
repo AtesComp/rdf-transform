@@ -153,9 +153,9 @@ The structure of the RDF Transform template is stored in a uniform JSON format. 
          ],
          "typeMappings" : [
             {
-               "prefix" : "ioc",
+               "prefix" : "myp",
                "valueSource" : {
-                  "constant" : "Indicator",
+                  "constant" : "Classy",
                   "source" : "constant"
                }
             }
