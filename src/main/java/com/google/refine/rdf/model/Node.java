@@ -299,7 +299,7 @@ abstract public class Node {
                                 }
                             }
                         }
-                        strDataType = Util.getDataType(iriNamespace, strDatatypeValue);
+                        strDataType = Util.getDataType(iriNamespace, strDatatypePrefix, strDatatypeValue);
                         if ( ! ( strDataType == null || strDataType.isEmpty() ) ) {
                             // Set the Datatype to the CIRIE (Prefix + Datatype)...
                             //strDataType = strDatatypePrefix + ":" + strDatatypeValue;

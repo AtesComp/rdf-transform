@@ -20,9 +20,9 @@ class RDFTransformNamespacesManager {
 		this.#dialog.waitOnNamespaces();
 
 		// Get existing namespaces (clone namespaces)...
-		this.#theNamespaces = JSON.parse( JSON.stringify( this.#dialog.getNamespaces() ) );
+		var theNamespaces = this.#dialog.getNamespaces();
 
-		if ( ! this.#theNamespaces ) {
+		if ( ! theNamespaces ) {
 			var data = null;
 			this.#theNamespaces = {} // ...empty object, no namespaces
 			try {
@@ -44,6 +44,7 @@ class RDFTransformNamespacesManager {
 			}
 		}
 		else {
+			this.#theNamespaces = JSON.parse( JSON.stringify( theNamespaces ) );
 			this.#saveNamespaces();
 		}
 		this.#renderNamespaces();

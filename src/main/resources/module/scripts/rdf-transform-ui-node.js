@@ -128,7 +128,7 @@ class RDFTransformUINode {
             for (const theJSONNode of theProperty.objectMappings) {
                 // Process the node for display...
                 var theNodeUI =
-                    RDFTransformUINode.getTransformImport(this.#dialog, theJSONNode, thePropertyUI);
+                    RDFTransformUINode.getTransformImport(this.#dialog, theJSONNode, false, thePropertyUI);
                 if (theNodeUI !== null) {
                     theNodes.push(theNodeUI);
                 }

@@ -350,9 +350,13 @@ public class Util {
 		return iIndex;
     }
 
-	public static String getDataType(ParsedIRI baseIRI, String strDataType) {
-		if (strDataType == null) {
-			return strDataType;
+	public static String getDataType(ParsedIRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
+		if (strDataTypeValue == null) {
+			return strDataTypeValue;
+		}
+		String strDataType = strDatatypePrefix + ":" + strDataTypeValue;
+		if (strDatatypePrefix == null) {
+			strDataType = strDataTypeValue;
 		}
 		if ( Util.XML_SCHEMA_DEFS.contains(strDataType) ) {
 			return strDataType;

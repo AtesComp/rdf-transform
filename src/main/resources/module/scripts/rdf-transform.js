@@ -414,7 +414,7 @@ class RDFTransformDialog {
         var theNodeUI = new RDFTransformUINode(
             this,
             theNode,
-            true, // ...a Root Node
+            (theSubjectPropUI === null),
             null,
             true, // ...expand new nodes for user convenience
             theSubjectPropUI // ...null for Root Nodes

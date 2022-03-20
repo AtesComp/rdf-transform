@@ -13,7 +13,7 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
 * Transform Tab:
   * RDF Node Editor: Added Prefix selection to the editor with Prefix and LocalPart management throughout the code
     * Preview Expression Editor:
-      * Added two GREL functions:
+      * Two new GREL functions:
         * toIRIString() - transforms and properly validates a string as an IRI component (replaces urlify())
         * toStrippedLiteral() - end trims a string with all known Unicode whitespace and non-breaking space characters
   * Property Editor: Initializes with the existing property in the textbox instead of blank text
@@ -79,6 +79,7 @@ The structure of the RDF Transform template is stored in a uniform JSON format. 
       "owl" : "http://www.w3.org/2002/07/owl#",
       "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
       "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+      "xsd" : "http://www.w3.org/2001/XMLSchema#",
       "vcard" : "http://www.w3.org/2006/vcard/ns#"
    },
    "subjectMappings" : [
