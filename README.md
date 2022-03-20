@@ -2,8 +2,6 @@
 
 ![Build Status](https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-"A mo' betta' RDF extension"
-
 ## Introduction ##
 
 This project uses a graphical user interface (GUI) for transforming OpenRefine project data to RDF-based formats. The transform maps the data with a template graph using the GUI.
