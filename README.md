@@ -1,9 +1,16 @@
 # RDF Transform #
+
 ![Build Status](https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-This project adds a graphical user interface (GUI) for transforming OpenRefine project data to RDF-based formats. The transform maps the data with a template graph using the GUI.
+"A mo' betta' RDF extension"
+
+## Introduction ##
+
+This project uses a graphical user interface (GUI) for transforming OpenRefine project data to RDF-based formats. The transform maps the data with a template graph using the GUI.
 
 RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been throughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
+
+## Features, Changes, and Enhancements
 
 * Transform Tab:
   * RDF Node Editor: Added Prefix selection to the editor with Prefix and LocalPart management throughout the code
@@ -29,6 +36,7 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
   * Loops use iterators whenever possible
   * RDF Export capabilities have been expanded to all known RDF4J formats
   * Properly recognize the Row verses Record parameters and processing (row and record visitors)
+  * (FUTURE) Process inner record groupings as sub-records
   * Properly parse IRIs for valid structure, prefix and local part, absolute and relative, using the base IRI as needed
   * Properly process an IRI's Condensed IRI Expression (CIRIE, a.k.a., Prefix + LocalPart) for output / export
   * Reserve flushing of scaled statements buffers to speed exports (user definable--see "RDFTransform.exportLimit" below)
@@ -53,7 +61,7 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
       * The 100 byte statement size is likely large as the average statement size is likely smaller
       * Regardless, this keeps memory usage to about 1GiB or less and a user can set the preference to optimize for a given memory footprint and data size
     * Then, the buffered statements optimize the creation and flush processes to speed the disk write
-    * A future enhancement may examine the project data size and system memory to determine an optimize buffer size and allocations
+    * (FUTURE) An enhancement may examine the project data size and system memory to determine an optimize buffer size and allocations
   * Added "RDFTransform.debug" preference (see OpenRefine preferences) to aid debugging
     * Controls the output of specifically marked "DEBUG" messages
     * Includes many verbose output messages as well
@@ -221,7 +229,7 @@ git clone https://github.com/AtesComp/rdf-transform
 cd rdf-transform
 mvn clean compile
 mvn assembly:single
-rm -rf ~/.local/share/openrefine/extensions/rdf-transform* 
+rm -rf ~/.local/share/openrefine/extensions/rdf-transform*
 unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/.local/share/openrefine/extensions
 ~/path/to/openrefine/refine
 ```
@@ -237,7 +245,7 @@ cd ../rdf-transform
 mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
 mvn clean compile
 mvn assembly:single
-rm -rf ~/.local/share/openrefine/extensions/rdf-transform* 
+rm -rf ~/.local/share/openrefine/extensions/rdf-transform*
 unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/.local/share/openrefine/extensions
 cd ../OpenRefine
 ./refine
@@ -317,7 +325,7 @@ Use the built-in Developer Tools in your perferred browser.
 #### HTML Web Pages ####
 If you need to test or debug the HTML web pages, you'll need to set up a "server".
 
-Change directories to project's website source: 
+Change directories to project's website source:
 `cd rdf-transform/website`
 
 Start the simple python HTTP server:
