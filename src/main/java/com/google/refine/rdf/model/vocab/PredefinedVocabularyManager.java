@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 public class PredefinedVocabularyManager implements IPredefinedVocabularyManager{
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:PredefVocabMgr");
 
-	private final static String PREDEFINED_VOCABS_FILE_NAME = "/files/predefined_vocabs";
-	private final static String SAVED_VOCABS_FILE_NAME = "vocabularies_meta.json";
+	private final static String PREDEFINED_VOCABS_FILE_NAME = "/files/PredefinedVocabs";
+	private final static String SAVED_VOCABS_FILE_NAME = "VocabulariesMeta.json";
 
 	private ApplicationContext context;
 	private final File workingDir;

@@ -38,7 +38,7 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
   * Properly parse IRIs for valid structure, prefix and local part, absolute and relative, using the base IRI as needed
   * Properly process an IRI's Condensed IRI Expression (CIRIE, a.k.a., Prefix + LocalPart) for output / export
   * Reserve flushing of scaled statements buffers to speed exports (user definable--see "RDFTransform.exportLimit" below)
-  * The "namespaces" and "predefined_vocabs" support files are processed using general whitespace separation (not strictly tab delimited)
+  * The "Namespaces" and "PredefinedVocabs" support files are processed using general whitespace separation (not strictly tab delimited)
   * The code differentiates between "namespace" (Prefix and IRI) versus "prefix" use
   * General cleanup and verbose commenting throughout the code
 * Preferences: Three preferences were added to manage server output

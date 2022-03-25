@@ -14,20 +14,20 @@
                 <exclude>module/**</exclude>
             </excludes>
         </fileSet>
-        <!-- fileSet> <!- Zip other non-java files from the source (src/main/java) ->
-            <directory>src/main/java</directory>
-            <outputDirectory>rdf-transform/module/MOD-INF/classes</outputDirectory>
-            <excludes>
-                <exclude>**/*.java</exclude>
-            </excludes>
-        </fileSet -->
-		<fileSet> <!-- Zip the module for the resourcees (src/main/resources/module) -->
+		<fileSet> <!-- Zip the module for the resources (src/main/resources/module) -->
             <directory>target/classes/module</directory>
             <outputDirectory>rdf-transform/module</outputDirectory>
             <excludes>
                 <exclude>node_modules/**</exclude>
                 <exclude>*.json</exclude>
                 <exclude>*.ts</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet> <!-- Zip other non-java files from the source (website) -->
+            <directory>website</directory>
+            <outputDirectory>rdf-transform/module/website</outputDirectory>
+            <excludes>
+                <exclude>**/*.java</exclude>
             </excludes>
         </fileSet>
     </fileSets>

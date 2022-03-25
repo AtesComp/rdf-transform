@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespacesGetDefaultCommand extends RDFTransformCommand {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxsGetDefaultCmd");
+	private final static Logger logger = LoggerFactory.getLogger("RDFT:NSGetDefaultCmd");
 
 	public NamespacesGetDefaultCommand() {
 		super();

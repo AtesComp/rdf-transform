@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationContext {
 	private final static Logger logger = LoggerFactory.getLogger("RDFT:AppContext");
 
-	private final static String CURATED_VOCABS_FILE_NAME = "/files/namespaces";
+	private final static String CURATED_VOCABS_FILE_NAME = "/files/Namespaces";
 	private final static String DEFAULT_SITE = "http://localhost:3333/";
 
 	private String strPort;
@@ -26,7 +26,7 @@ public class ApplicationContext {
 	private File fileWorkingDir;
 	private IPredefinedVocabularyManager predefinedVocabularyManager;
 	private IVocabularySearcher vocabularySearcher;
-	private NamespaceManager prefixManager;
+	private NamespaceManager nsManager;
 
 	public IPredefinedVocabularyManager getPredefinedVocabularyManager() {
 		return predefinedVocabularyManager;
@@ -50,7 +50,7 @@ public class ApplicationContext {
 		this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
 		this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
 		InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
-		this.prefixManager = new NamespaceManager(inStream);
+		this.nsManager = new NamespaceManager(inStream);
 		if (Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Init: Completed");
 	}
 
@@ -62,8 +62,8 @@ public class ApplicationContext {
 		this.vocabularySearcher = vocabularySearcher;
 	}
 
-	public NamespaceManager getPrefixManager() {
-		return prefixManager;
+	public NamespaceManager getNSManager() {
+		return nsManager;
 	}
 
 	public String getDefaultBaseIRI() {

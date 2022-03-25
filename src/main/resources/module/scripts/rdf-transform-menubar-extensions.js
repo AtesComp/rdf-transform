@@ -175,8 +175,7 @@ $( function() { // ...load all DOM elements before executing the following...
 					"id"    : "rdf/edit-rdf-transform",
 					"label" : $.i18n('rdft-menu/edit') + "...",
 					"click" : () => {
-                        const theDialog = new RDFTransformDialog();
-                        theDialog.initTransform(theProject.overlayModels.RDFTransform);
+                        const theDialog = new RDFTransformDialog(theProject.overlayModels.RDFTransform);
                     }
 				},
 				{
@@ -184,7 +183,6 @@ $( function() { // ...load all DOM elements before executing the following...
 					"label" : $.i18n('rdft-menu/reset') + "...",
 					"click" : () => {
                         const theDialog = new RDFTransformDialog();
-                        theDialog.initTransform();
                     }
 				}
             ]

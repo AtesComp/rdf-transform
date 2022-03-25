@@ -156,28 +156,53 @@ class RDFTransformDialog {
     #iBaseTransformPaneHeight;
     #iBasePreviewPaneHeight;
 
-    constructor() {
+    constructor(theTransform) {
         // The transform defaults are set here since "theProject" is not completely
         // populated until after the main OpenRefine display is active and a project
         // is selected.  Since we only have one RDFTransformDialog per project. the
         // defaults can be safely set during the one and only RDFTransform construction...
         RDFTransform.setDefaults();
 
-        // The RDFTransform has not been initialized...
+        this.#imgLargeSpinner =
+            $('<img />')
+                .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/large_spinner.gif')
+                .attr('title', $.i18n('rdft-dialog/loading') + '...');
+
+        this.#imgLineBounce =
+            $('<img />')
+                .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/line_bounce.gif');
+
+        this.#buildBody();
+        this.#paneTransform.empty().append(this.#imgLargeSpinner);
+
+        this.#nodeUIs = [];
+        // The RDFTransformDialog has not been fully initialized...
 		// Initialize after construction!
+
+        this.#dialog.on('loadTransform',
+            (evt, theTransformParam) => {
+                this.loadTransform(theTransformParam)
+            }
+        );
+        this.#dialog.trigger( 'loadTransform', [ theTransform ] );
     }
 
-    async initTransform(theTransform) {
-        this.#nodeUIs = [];
+    loadTransform(theTransform) {
+        this.#initTransform(theTransform);
+    }
 
+    async #initTransform(theTransform) {
+        // Setup the underlying data...
         await this.#init(theTransform);
-        this.#buildBody();
 
         // Initialize baseIRI...
         this.#replaceBaseIRI(this.#theTransform.baseIRI || location.origin + '/', false);
 
         // Initialize namespaces...
         await this.#processNamespaces();
+
+        // Remove the temporary "loading" screen...
+        //divLoading.remove();
 
         // Initialize transform view...
         this.#processTransformTab();
@@ -435,7 +460,7 @@ class RDFTransformDialog {
         this.#elements.rdftDescription.text(      $.i18n('rdft-dialog/desc')                   );
         this.#elements.rdftBaseIRIText.text(      $.i18n('rdft-dialog/base-iri') + ':'         );
         this.#elements.rdftEditBaseIRI.text(      $.i18n('rdft-dialog/edit')                   );
-        this.#elements.rdftBaseIRIValue.text(     this.#theTransform.baseIRI                   );
+        //this.#elements.rdftBaseIRIValue.text(     this.#theTransform.baseIRI                   );
         this.#elements.rdftTabTransformText.text( $.i18n('rdft-dialog/tab-transform')          );
         this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview')            );
         this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
@@ -451,22 +476,13 @@ class RDFTransformDialog {
             ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") );
         this.#elements.rdftSampleTurtleText.html( strSample );
 
-        this.#functionalizeDialog();
-
         this.#level = DialogSystem.showDialog(this.#dialog);
+
+        this.#functionalizeDialog();
 
         //
         //   AFTER show...
         //
-
-        this.#imgLargeSpinner =
-            $('<img />')
-                .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/large_spinner.gif')
-                .attr('title', $.i18n('rdft-dialog/loading') + '...');
-
-        this.#imgLineBounce =
-            $('<img />')
-                .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/line_bounce.gif');
 
         // Set Description box height to min max...
         const iDescHeight = this.#elements.rdftDescription.height();
@@ -586,7 +602,8 @@ class RDFTransformDialog {
             return;
         }
         DialogSystem.dismissUntil(this.#level - 1);
-        this.initTransform(theTransform);
+        this.#paneTransform.empty().append(this.#imgLargeSpinner);
+        this.loadTransform(theTransform);
     }
 
     #doExport() {
@@ -657,7 +674,7 @@ class RDFTransformDialog {
         //
         // Process Transform Tab
         //
-        this.#paneTransform.empty();
+        this.#paneTransform.empty().append(this.#imgLargeSpinner);
 
         var table = $('<table />').addClass("rdf-transform-pane-table-layout");
         this.#tableNodes = table[0];
@@ -666,7 +683,7 @@ class RDFTransformDialog {
             nodeUI.processView(this.#tableNodes);
         }
 
-        this.#paneTransform.append(table);
+        this.#paneTransform.empty().append(table);
     }
 
     #processPreviewTab() {
@@ -707,9 +724,7 @@ class RDFTransformDialog {
                     }
                     // Otherwise, data.code === "error"
 
-                    this.#panePreview.empty();
-                    //this.#panePreview.html( RDFTransformCommon.toIRIProperty(strPreview) );
-                    this.#panePreview.html("<pre>" + strPreview + "</pre>");
+                    this.#panePreview.empty().html("<pre>" + strPreview + "</pre>");
                 }
             }
         );
