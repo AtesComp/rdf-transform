@@ -29,21 +29,6 @@ pre {
 }
 
 /*
-div.rdf-transform-loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 9999;
-    background: center / 50% auto no-repeat url('../images/large_spinner.gif');
-    filter: alpha(opacity=60); 
-    opacity: .6;
-    visibility: visible;
-}
-*/
-
-/*
  * RDF Transform Dialog
  */
 
