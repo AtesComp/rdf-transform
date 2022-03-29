@@ -3,14 +3,23 @@
   <li>
     <p class="question">Having performance issues?</p>
     <p class="answer">
-    See your doctor--ED is treatable.<br />
-    OR<br />
-    Try using namespaces and shorten resource IDs. However, performance is usually related to memory constraints.
-    Modify the OpenRefine memory allocation parameters in its refine.ini. The vaiable "REFINE_MEMORY" controls
-    the maximum memory allocation pool. The variable "REFINE_MIN_MEMORY" controls the initial memory allocation.
-    These variables correspond to the JVM -Xmx and -Xms parameters and may be too small for your use.<br />
-    Additionally, consider slicing your data file into smaller chunks. An RDF Transform can be applied to multiple
-    files of the same structure.</p>
+      See your doctor--ED is treatable.<br />
+      OR<br />
+      Try using namespaces and shorten resource IDs. However, performance is usually related to memory constraints.
+      Modify the OpenRefine memory allocation parameters in its refine.ini. The variable "REFINE_MEMORY" controls
+      the maximum memory allocation pool. The variable "REFINE_MIN_MEMORY" controls the initial memory allocation.
+      These variables correspond to the JVM -Xmx and -Xms parameters. The defaults may be too small for your use.<br />
+      Additionally, consider slicing your data file into smaller chunks. An RDF Transform can be applied to multiple
+      files of the same structure:<br />
+      <ol>
+        <li>
+          Export the RDF Transform from the first file's work.
+        </li>
+        <li>
+          Importing the RDF Transform for the successive files.
+        </li>
+      </ol>
+    </p>
   </li>
   <li>
     <p class="question">

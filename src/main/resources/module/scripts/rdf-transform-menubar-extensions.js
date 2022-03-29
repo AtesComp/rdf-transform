@@ -175,14 +175,17 @@ $( function() { // ...load all DOM elements before executing the following...
 					"id"    : "rdf/edit-rdf-transform",
 					"label" : $.i18n('rdft-menu/edit') + "...",
 					"click" : () => {
-                        const theDialog = new RDFTransformDialog(theProject.overlayModels.RDFTransform);
+                        const theTransform = theProject.overlayModels.RDFTransform;
+                        // Use setTimeout() to end menuitem and display dialog...
+                        setTimeout( () => { new RDFTransformDialog(theTransform); } );
                     }
 				},
 				{
 					"id"    : "rdf/reset-rdf-transform",
 					"label" : $.i18n('rdft-menu/reset') + "...",
 					"click" : () => {
-                        const theDialog = new RDFTransformDialog();
+                        // Use setTimeout() to end menuitem and display dialog...
+                        setTimeout( () => { new RDFTransformDialog(); } );
                     }
 				}
             ]
