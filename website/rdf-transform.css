@@ -1,87 +1,92 @@
-div.code{
+div.code {
   border:solid 1px #C5A584;
   background-color:#F8EFE0;
   margin-bottom:0.5em;
 }
 
-div.code  pre, div.code div.input{
+div.code  pre, div.code div.input {
   border:dashed 1px #CCCCCC;
   background-color:#FFFFFF;
   margin:0.5em;
 }
 
-div.code div.code-header{
+div.code div.code-header {
   font-family:Georgia,Times,"Times New Roman",serif;
   font-size:1.4em;
   color:#3C3020;
 }
 
-ul.steps li{
+ul.steps > li {
   background-repeat:no-repeat;
   list-style:none outside none;
   margin:0 0 0.8em -2px;
   padding:1px 0 0 40px;
 }
 
-.step1{
+.step1 {
   background-image: url("images/number1.png");
 }
 
-.step2{
+.step2 {
   background-image: url("images/number2.png");
 }
 
-.step3{
+.step3 {
   background-image: url("images/number3.png");
 }
 
-.step4{
+.step4 {
   background-image: url("images/number4.png");
 }
 
-.step5{
+.step5 {
   background-image: url("images/number5.png");
 }
 
-.step6{
+.step6 {
   background-image: url("images/number6.png");
 }
 
-.note{
+ol > li {
+  display: list-item;
+  list-style-position: outside;
+}
+
+.note {
 	background-image: url("images/info.png");
 	background-repeat:no-repeat;
   margin:0 0 0.8em -2px;
 	padding:1px 0 0 40px;
 }
 
-.attention{
+.attention {
 	background-image: url("images/icon_attention.png");
 	background-repeat:no-repeat;
   margin:0 0 0.8em -2px;
 	padding:1px 0 0 40px;
 }
 
-span.instruction{
+span.instruction {
   font-size:120%;
   font-family:monospace;
   font-weight:bold;
 }
 
-ul.features{
+ul.features {
   margin-top:0px;
   /*margin-left: 460px;*/
   padding-left: 3.2em;
   list-style:none;
 }
 
-.subheader{
+.subheader {
   margin-bottom:6px;
   /*margin-left: 460px;*/
   padding-left: 3.2em;
   font-family: Georgia, Times, "Times New Roman", serif;
 }
 
-#features_blog{
+#features_blog {
   float: left;
   /*margin-left: 460px;*/
   margin-top: 0em;
@@ -92,7 +97,7 @@ ul.features{
   max-width: 31em;
 }
 
-#features_title{
+#features_title {
   /*margin-left: 460px;*/
   /*margin-bottom:0;*/
   /*padding-left: 3.2em;*/

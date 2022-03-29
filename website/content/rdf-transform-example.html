@@ -40,46 +40,51 @@ choc:0
     <p>
       <img src="images/screenshots/rdf-transform.png" alt="RDF Transform Dialog Example" border="1" />
     </p>
-    <ul>
-      <li>
+    <ol type="1">
+      <li>Base IRI
         <div>
-          Set the base IRI at the top of the dialog to http://cocoa/info/ or any other IRI that
+          Set the base IRI at the top of the dialog to "http://cocoa/info/"" or any other IRI that
           suits your taste.
         </div>
       </li>
-      <li>
+      <li>Namespaces
         <div>
-          Namespaces can be managed by the <em>+ Add</em> and <em>* Manage</em> buttons on the
-        <em>Available Namespaces:</em> line.  Add a namespace http://cocoa/ with the prefix
-        <em>choc</em>.
+          Namespaces can be managed by the <em>[+ Add]</em> and <em>[* Manage]</em> buttons on the
+          <em>Available Namespaces:</em> line.  Add a namespace "http://cocoa/" with the prefix
+          "choc".
         </div>
       </li>
-      <li>
+      <li>Transform
         <div>
-          Create the transform by repeatedly using <em>Add type...</em> and <em>Add property...</em>
-          commands in the main window.
+          In the <em>Transform</em> tab window, create the transform by modifying exsting nodes and
+          properties and adding new new nodes, types, and properties by using <em>Add type...</em>,
+          <em>Add property...</em>, and <em>Add object...</em> commands as needed. Use the
+          <em>[Add Root Node]</em> button to manage additional root nodes as needed. Root nodes may
+          be IRIs copied from inner objects to manage substructures for specific purposes.  Constant
+          IRIs and blank nodes are applied project-wide (not restricted to a row or record). 
         </div>
-      </li>
+        <ol type="1">
+          <li>Create
+            <div>
+              For example, create a new type <em>EntryGroup</em> with the "choc" prefixed namespace on
+              the <em>REF</em> object node.
+            </div>
+          </li>
+          <li>Edit
+            <div>
+              Edit any existing node or property as needed to adjust or refine your results.
+            </div>
+          </li>
+          <li>Delete
+            <div>
+              Delete any node or property as needed. Deleteing an entity also deletes any
+              related subentities.
+            </div>
+          </li>
+        </ol>
       <li>
         <div>
-          For example, create a new type <em>EntryGroup</em> which will be defined by the
-        <em>choc</em> prefixed namespace.
-        </div>
-      </li>
-      <li>
-        <div>
-          Edit any existing node or property as needed to adjust or refine your results.
-        </div>
-      </li>
-      <li>
-        <div>
-          Delete any node or property as needed. Deleteing an entity also deletes any
-          related subentity.
-        </div>
-      </li>
-      <li>
-        <div>
-          Use the "Preview" tab to check your resultsfor correctness.
+          Use the "Preview" tab to check your results for correctness.
         </div>
       </li>
       <li>
@@ -90,7 +95,7 @@ choc:0
           DBpedia, or any other favored location).
         </div>
       </li>
-    </ul>
+    </ol>
     <p>
       The figure below shows an example of a RDF Node dialog (the <em>Bean Type IRI</em> resource):
       <div class="image">
@@ -99,7 +104,7 @@ choc:0
     </p>
     <div class="note">
       Notice the custom expression used to define the IRI. The <em>Edit & Preview</em> command displays
-      the "Preview Expresssion: IRI" dialog allowing edits and showing sample values from the first 10
+      the "Preview Expression: IRI" dialog allowing edits and showing sample values from the first 10
       rows:
       <p>
         <img src="images/example/edit_grel.png" alt="Preview Expression Dialog Example" border="1" />

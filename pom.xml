@@ -552,6 +552,20 @@
                         <descriptor>src/assembly/module.xml</descriptor>
                     </descriptors>
                 </configuration>
+                <executions>
+                    <execution>
+                    <id>zip-assembly</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                    <configuration>
+                        <descriptors>
+                        <descriptor>src/assembly/module.xml</descriptor>
+                        </descriptors>
+                    </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

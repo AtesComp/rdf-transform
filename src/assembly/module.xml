@@ -33,6 +33,7 @@
     </fileSets>
     <dependencySets>
         <dependencySet>  <!-- Zip the dependencies -->
+            <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>rdf-transform/module/MOD-INF/lib</outputDirectory>
         </dependencySet>
     </dependencySets>
