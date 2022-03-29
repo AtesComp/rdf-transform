@@ -38,47 +38,56 @@ choc:0
     Using <em>Edit RDF Transform...</em> command available under the <em>RDF Transform</em>
     extension menu, design the following transform:
     <p>
-      <img src="images/example/rdf-transform.png" alt="RDF Transform Dialog Example" border="1" />
+      <img src="images/screenshots/rdf-transform.png" alt="RDF Transform Dialog Example" border="1" />
     </p>
     <ul>
       <li>
         <div>
-          Set the base IRI at the top of the dialog to http://cocoa/info/ or anthing other IRI that
-          suits your taste
+          Set the base IRI at the top of the dialog to http://cocoa/info/ or any other IRI that
+          suits your taste.
         </div>
       </li>
       <li>
         <div>
           Namespaces can be managed by the <em>+ Add</em> and <em>* Manage</em> buttons on the
-          "Available Namespaces:" line
+        <em>Available Namespaces:</em> line.  Add a namespace http://cocoa/ with the prefix
+        <em>choc</em>.
         </div>
       </li>
       <li>
         <div>
-          Created the transform by repeatedly using <em>Add type...</em> and <em>Add property...</em>
-          commands in the main window
+          Create the transform by repeatedly using <em>Add type...</em> and <em>Add property...</em>
+          commands in the main window.
         </div>
       </li>
       <li>
         <div>
-          For example, created a new property <em>annualPayRate</em> which will be defined by the
-          default namespace specified by the "Base IRI"
+          For example, create a new type <em>EntryGroup</em> which will be defined by the
+        <em>choc</em> prefixed namespace.
         </div>
       </li>
       <li>
         <div>
-          Edit any existing node or property as needed to adjust or refine your results
+          Edit any existing node or property as needed to adjust or refine your results.
         </div>
       </li>
       <li>
         <div>
           Delete any node or property as needed. Deleteing an entity also deletes any
-          related subentity
+          related subentity.
         </div>
       </li>
       <li>
         <div>
           Use the "Preview" tab to check your resultsfor correctness.
+        </div>
+      </li>
+      <li>
+        <div>
+          As an additional exercise, you can use GREL to breakdown the ingredience string
+          into actual ingredience resource IRIs and add those IRIs as new root nodes
+          referenceing actual Internet resources for those ingredience (see Wikidata,
+          DBpedia, or any other favored location).
         </div>
       </li>
     </ul>
@@ -89,7 +98,7 @@ choc:0
       </div>
     </p>
     <div class="note">
-      Notice the custom expression used to define the IRI. The <em>Edit & Preview</em> comman displays
+      Notice the custom expression used to define the IRI. The <em>Edit & Preview</em> command displays
       the "Preview Expresssion: IRI" dialog allowing edits and showing sample values from the first 10
       rows:
       <p>
@@ -106,7 +115,7 @@ choc:0
     </p>
   </li>
   <li class="step step4">
-    Export RDF data in many different RDF formats from the <em>Export</em> menu:
+    You can export RDF data in many different RDF formats from the <em>Export</em> menu:
     <p>
       <img src="images/example/rdf_export.png" alt="Export RDF Menu Item Example" border="1" />
     </p>
