@@ -54,7 +54,7 @@
 						$("<label></label>")
 						.append(
 							$.suggest
-							.strongify(data.prefix + ':' + data.localPart, response.prefix)
+							.strongify(data.prefix + ":" + data.localPart, response.prefix)
 						);
 
 					//data.label = nameText.text();

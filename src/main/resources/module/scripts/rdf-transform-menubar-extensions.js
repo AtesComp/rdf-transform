@@ -177,7 +177,11 @@ $( function() { // ...load all DOM elements before executing the following...
 					"click" : () => {
                         const theTransform = theProject.overlayModels.RDFTransform;
                         // Use setTimeout() to end menuitem and display dialog...
-                        setTimeout( () => { new RDFTransformDialog(theTransform); } );
+                        setTimeout(
+                            () => {
+                                new RDFTransformDialog(theTransform);
+                            }
+                        );
                     }
 				},
 				{
@@ -185,7 +189,11 @@ $( function() { // ...load all DOM elements before executing the following...
 					"label" : $.i18n('rdft-menu/reset') + "...",
 					"click" : () => {
                         // Use setTimeout() to end menuitem and display dialog...
-                        setTimeout( () => { new RDFTransformDialog(); } );
+                        setTimeout(
+                            () => {
+                                new RDFTransformDialog();
+                            }
+                        );
                     }
 				}
             ]

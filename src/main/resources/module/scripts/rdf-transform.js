@@ -317,19 +317,19 @@ class RDFTransformDialog {
                 var strPrefix = ""; // ...use BaseIRI prefix
                 var strIRI = await RDFTransformCommon.toIRIString(column.name);
                 if (strIRI === null || strIRI.length === 0) {
-                    // Use baseIRI prefix and set Local Part to default column name...
+                    // Use BaseIRI prefix and set Local Part to default column name...
                     strIRI = "column_" + iColumnCount.toString();
                 }
                 const iIndexProto = strIRI.indexOf("://");
                 if (iIndexProto === -1) { // ...Not Found
                     const iIndexPrefix = strIRI.indexOf(":");
                     if (iIndexPrefix === 0) { // ...begins with ':'
-                        // Use baseIRI prefix and set Local Part (chop 1st)...
+                        // Use BaseIRI prefix and set Local Part (chop 1st)...
                         strIRI = strIRI.substring(1);
                     }
                     else if (iIndexPrefix > 0) { // ...somewhere past beginning...
                         if (iIndexPrefix + 1 === strIRI.length) { // ...ends with ':'
-                            // Use baseIRI prefix and set Local Part (chop last)...
+                            // Use BaseIRI prefix and set Local Part (chop last)...
                             strIRI = strIRI.substring(0, strIRI.length - 1);
                         }
                         else { // ...in the middle
@@ -343,10 +343,10 @@ class RDFTransformDialog {
                         }
                     }
                     // Otherwise, iIndexPrefix === -1
-                    //      Then, we use baseIRI prefix and take the IRI as the local part
+                    //      Then, we use BaseIRI prefix and take the IRI as the local part
                 }
                 else if (iIndexProto === 0) { // Found at Start...should never occur
-                    // Use baseIRI prefix and set Local Part (chop 1st 3)...
+                    // Use BaseIRI prefix and set Local Part (chop 1st 3)...
                     strIRI = strIRI.substring(3);
                 }
                 else { // Found Within...iIndexProto > 0 and it's an IRI, so it's a Full IRI
@@ -584,11 +584,16 @@ class RDFTransformDialog {
         this.#elements.buttonOK
             .on("click", () => {
                     this.#doSave();
+                    $(document).off("keydown", this.#doKeypress);
                     DialogSystem.dismissUntil(this.#level - 1);
                 }
             );
         this.#elements.buttonCancel
-            .on("click", () => DialogSystem.dismissUntil(this.#level - 1) );
+            .on("click", () => {
+                $(document).off("keydown", this.#doKeypress);
+                DialogSystem.dismissUntil(this.#level - 1);
+            }
+        );
 
         // Hook up resize...
         this.#iDiffFrameHeight = 0;
@@ -614,6 +619,17 @@ class RDFTransformDialog {
                     );
                 }
             );
+
+        // Prevent OpenRefine from processing ESC and closing 
+        $(document).on("keydown", this.#doKeypress);
+    }
+
+    #doKeypress(evt) {
+        // Catch "ESC" key...
+        if (evt.key == "Escape") {
+            evt.preventDefault();
+            return false;
+        }
     }
 
     async #doImport() {

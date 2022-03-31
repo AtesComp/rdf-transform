@@ -280,7 +280,7 @@ class RDFTransformUINode {
       '<tr bind="rdftAddTypeTR">' +
         '<td>' +
           '<div class="padded">' +
-            '<a href="#" class="action" bind="rdftAddType">&nbsp;&nbsp;' + $.i18n('rdft-dialog/add-type') + '...' + '</a>' +
+            '<a href="javascript:{}" class="action" bind="rdftAddType">&nbsp;&nbsp;' + $.i18n('rdft-dialog/add-type') + '...' + '</a>' +
           '</div>' +
         '</td>' +
       '</tr>' +
@@ -480,7 +480,9 @@ class RDFTransformUINode {
             .on("click",
                 (evt) => {
                     evt.preventDefault();
-                    this.#addRDFType(evt.currentTarget);
+                    this.#addRDFType(
+                        evt.currentTarget // ...for popup menu position
+                    );
                 }
             );
     }
@@ -640,10 +642,10 @@ class RDFTransformUINode {
         }
     }
 
-    #addRDFType(element) {
+    #addRDFType(elemPosition) {
         var theDialog =
             new RDFTransformResourceDialog(
-                element, "", 'class', theProject.id, this.#dialog,
+                "", elemPosition, "", 'class', theProject.id, this.#dialog,
                 (theCIRIE) => { this.#addNodeRDFType(theCIRIE); }
             );
         theDialog.show();

@@ -4,15 +4,17 @@
  *  The resource manager for the RDF Transform dialog
  */
 class RDFTransformResourceDialog {
-    #element;
+    #strText;
+    #elemPosition;
     #strDefault;
     #strLookForType;
     #projectID;
     #dialog;
     #onDone;
 
-    constructor(element, strDefault, strLookForType, projectID, dialog, onDone) {
-        this.#element = element;
+    constructor(strText, elemPosition, strDefault, strLookForType, projectID, dialog, onDone) {
+        this.#strText = strText;
+        this.#elemPosition = elemPosition;
         this.#strDefault = strDefault;
         this.#strLookForType = strLookForType;
         this.#projectID = projectID;
@@ -40,7 +42,7 @@ class RDFTransformResourceDialog {
         );
 
         MenuSystem.showMenu(menu, () => {} );
-        MenuSystem.positionMenuLeftRight(menu, $(this.#element));
+        MenuSystem.positionMenuLeftRight(menu, $(this.#elemPosition));
 
         var elements = DOM.bind(menu);
         elements.rdftNewResourceIRI
@@ -154,11 +156,22 @@ class RDFTransformResourceDialog {
                 // If there is a possible IRI...
                 if ( data !== null && typeof data === 'string' ) {
                     strIRI = data;
+                    // A leading ':' for Base IRI encoding is an invalid IRI, so remove for test...
+                    const bBaseIRI = (strIRI[0] === ':');
+                    var strTestIRI = strIRI;
+                    if (bBaseIRI) {
+                        strTestIRI = strIRI.substring(1);
+                    }
                     // Does the IRI look like a prefixed IRI?
-                    var iPrefixedIRI = await RDFTransformCommon.isPrefixedQName(strIRI);
+                    var iPrefixedIRI = await RDFTransformCommon.isPrefixedQName(strTestIRI);
                     // Is it a good IRI?
                     if ( iPrefixedIRI >= 0 ) {
                         MenuSystem.dismissAll();
+
+                        // If it's a good BaseIRI prefixed IRI...
+                        if (bBaseIRI) {
+                            iPrefixedIRI = 0; // ...then it's otherwise not prefixed, just good
+                        }
 
                         // Is it a prefixed IRI?
                         if ( iPrefixedIRI === 1 ) {
@@ -172,14 +185,14 @@ class RDFTransformResourceDialog {
                                 RDFTransformCommon.getFullIRIFromQName(
                                     strIRI,
                                     this.#dialog.getBaseIRI(),
-                                    this.#dialog.getNamespaceManager().getNamespaces()
+                                    this.#dialog.getNamespacesManager().getNamespaces()
                                 );
                             strLabel = strIRI;
                         }
                         // Is it a good IRI?
                         else if ( iPrefixedIRI === 0 ) {
                             // Does it have a Base IRI prefix?  Yes...
-                            if (strIRI[0] === ':') {
+                            if (bBaseIRI) {
                                 strPrefix = ""; // ...use Base IRI Prefix
                                 strNamespace = this.#dialog.getBaseIRI();
                                 strLocalPart = strIRI.substring(1);

@@ -49,10 +49,7 @@ public class ToIRIString implements Function {
             switch (iTry) {
                 case 0:
                     // Replace whitespace and unallowed characters with underscores...
-                    strConvert =
-                        strConvert.
-                            replaceAll("\uC2A0", " ").replaceAll("\\h", " ").
-                            replaceAll("[\\p{Whitespace}" + Pattern.quote("<>\"{}|\\^`") + "]+", "_");
+                    strConvert = strConvert.replaceAll("[\uC2A0\\p{C}\\p{Z}" + Pattern.quote("<>\"{}|\\^`") + "]+", "_");
                     break;
                 case 1:
                     // Replace any unsupported characters with underscores...
@@ -78,7 +75,7 @@ public class ToIRIString implements Function {
                     // Replace ":" characters with underscores...
                     strConvert = strConvert.replaceAll(":+", "_");
                     break;
-                default:
+                default: //...should not occur but here for completeness...
                     // Replace all but Unreserved characters with underscores...
                     strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~]+", "_");
                     break;

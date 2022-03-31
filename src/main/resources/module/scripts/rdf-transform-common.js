@@ -253,8 +253,7 @@ class RDFTransformCommon {
 			switch (iTry) {
                 case 1:
                     // Replace whitespace and unallowed characters with underscores...
-					strReplace = strConvert.replace(/\u{C2A0}/gu, " ");
-					strReplace = strReplace.replace(/[\p{White_Space}<>"{}|^`]+/gu, "_");
+					strReplace = strConvert.replace(/[\u{C2A0}\p{C}\p{Z}<>"{}|^`]+/gu, "_");
 					break;
                 case 2:
                     // Replace any unsupported characters with underscores...
@@ -585,7 +584,7 @@ class RDFTransformCommon {
 		if (iIndex === -1) {
 			return null;
 		}
-		// NOTE: Same start and end === "" (baseIRI)
+		// NOTE: Same start (0) and end (0) === "" (baseIRI)
 		return strQName.substring(0, iIndex);
 	}
 

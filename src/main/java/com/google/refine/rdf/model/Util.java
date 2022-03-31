@@ -561,7 +561,7 @@ public class Util {
 		if (obj == null) {
 			return null;
 		}
-		return obj.toString().replaceAll("\uC2A0", " ").replaceAll("\\h", " ").strip();
+		return obj.toString().replaceAll("[\uC2A0\\p{C}\\p{Z}]+", "").strip();
 	}
 
 	public static String toNodeTypeString(NodeType eNodeType) {

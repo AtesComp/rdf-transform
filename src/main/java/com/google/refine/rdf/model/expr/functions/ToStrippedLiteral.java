@@ -29,7 +29,7 @@ public class ToStrippedLiteral implements Function {
             return new EvalError("empty string");
         }
 
-        strConvert = strConvert.replaceAll("\uC2A0", " ").replaceAll("\\h", " ").strip();
+        strConvert = strConvert.replaceAll("[\uC2A0\\p{C}\\p{Z}]+", "").strip();
 
         return strConvert;
     }

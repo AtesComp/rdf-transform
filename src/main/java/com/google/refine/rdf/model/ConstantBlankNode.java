@@ -41,7 +41,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 		//
 		// Validate the supplied constant value as a BNode ID based on Turtle limits...
 		//
-		String strBNodeValue = Util.toSpaceStrippedString(strConstant).replaceAll("[\\p{Whitespace}", "_");
+		String strBNodeValue = Util.toSpaceStrippedString(strConstant);
 		String strBNodeValueBegin;
 		do {
 			strBNodeValueBegin = strBNodeValue;

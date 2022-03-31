@@ -210,7 +210,10 @@ class RDFTransformUIProperty {
                 .addClass("rdf-transform-property")
                 .on("click",
                     (evt) => {
-                        this.#editProperty( $(evt.target) );
+                        this.#editProperty(
+                            this.#getPropertyName(this.#property),
+                            evt.currentTarget // ...for popup memu position
+                        );
                     }
                 );
         refProperty.append(
@@ -340,13 +343,13 @@ class RDFTransformUIProperty {
         }
     }
 
-    #editProperty(element) {
+    #editProperty(strProperty, elemPosition) {
         var strDefault =
-            ( RDFTransformUIProperty.#strEmptyProperty === element.text() ?
-                "" : element.text() );
+            ( RDFTransformUIProperty.#strEmptyProperty === strProperty ?
+                "" : strProperty );
         var theDialog =
             new RDFTransformResourceDialog(
-                element, strDefault, 'property', theProject.id, this.#dialog,
+                strProperty, elemPosition, strDefault, 'property', theProject.id, this.#dialog,
                 (theProperty) => { this.#editPropertyInfo(theProperty); }
             )
         theDialog.show();
