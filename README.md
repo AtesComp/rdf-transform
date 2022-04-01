@@ -10,18 +10,6 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
 
 ## Features, Changes, and Enhancements
 
-* Transform Tab:
-  * RDF Node Editor: Added Prefix selection to the editor with Prefix and LocalPart management throughout the code
-    * Preview Expression Editor:
-      * Two new GREL functions:
-        * toIRIString() - transforms and properly validates a string as an IRI component (replaces urlify())
-        * toStrippedLiteral() - end trims a string with all known Unicode whitespace and non-breaking space characters
-  * Property Editor: Initializes with the existing property in the textbox instead of blank text
-  * Added universal Expand (>) and Collapse (v) control on all nodes and properties
-  * Added universal delete (x) control on all nodes and properties
-* Preview Tab:
-  * All changes made in the Transform tab are reserved until the user switches to the Preview tab
-  * (FUTURE) Editable sample record / row count for preview
 * User Inferface:
   * Cleaned and refactored UI elements (but it still looks mostly like the original RDF extension)
   * Resizable dialogs
@@ -29,6 +17,18 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
     * The template is stored as a JSON formatted structure
     * The structure, while similar to OntoRefine, uniformly normalizes key names and substructures
     * The same structure is used within the native OpenRefine data store for project and change management
+  * Transform Tab:
+    * RDF Node Editor: Added Prefix selection to the editor with Prefix and LocalPart management throughout the code
+      * Preview Expression Editor:
+        * Two new GREL functions:
+        * toIRIString() - transforms and properly validates a string as an IRI component (replaces urlify())
+        * toStrippedLiteral() - end trims a string with all known Unicode whitespace and non-breaking space characters
+    * RDF Property Editor: Initializes with the existing property in the textbox instead of blank text
+    * Added universal Expand (>) and Collapse (v) control on all nodes and properties
+    * Added universal delete (x) control on all nodes, properties, and types
+  * Preview Tab:
+    * All changes made in the Transform tab are reserved until the user switches to the Preview tab
+    * (FUTURE) Editable sample record / row count for preview
 * Code:
   * JavaScript code has been updated to use "classified" coding
   * Loops use iterators whenever possible
@@ -75,7 +75,7 @@ The structure of the RDF Transform template is stored in a uniform JSON format. 
    "extension" : "RDFTransform",
    "namespaces" : {
       "foaf" : "http://xmlns.com/foaf/0.1/",
-      "myp" : "some://Example/namspace/",
+      "myp" : "some://Example/namespace/",
       "owl" : "http://www.w3.org/2002/07/owl#",
       "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
       "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
@@ -174,7 +174,6 @@ The structure of the RDF Transform template is stored in a uniform JSON format. 
    ],
    "version" : "2.0.0"
 }
-
 ```
 
 ## DOWNLOAD ##
