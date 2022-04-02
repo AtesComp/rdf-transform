@@ -180,7 +180,7 @@ The structure of the RDF Transform template is stored in a uniform JSON format. 
 
 ### Latest Release ###
 
-[RDF Transform v2.0.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0/rdf-transform-2.0.0.zip)
+[RDF Transform v2.0.0-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0-alpha/rdf-transform-2.0.0.zip)
 
 ### Previous Releases - for earlier versions of OpenRefine ###
 
