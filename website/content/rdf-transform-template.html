@@ -290,7 +290,7 @@
   as the type.
 </p>
 <p>
-  The remaining resource mapping elements are:
+  The various property mapping elements are:
   <ol>
     <li>
       The "objectMappings" key describes the list of object maps as discussed previously.
@@ -329,7 +329,7 @@
 </pre>
 <p>
   A type map currently always specifies a constant resource. The constant resource may be
-  a prefixed IRI (a CIRIE) or a fully specified IRI. If prefexed, the prefix is harvested
+  a prefixed IRI (a CIRIE) or a fully specified IRI. If prefixed, the prefix is harvested
   from the constant and mapped in the JSON structure.  If there is no suitable prefix,
   the "prefix" key is not used and the constant remains as entered.
 </p>
@@ -457,8 +457,8 @@ The "valueType" key container elements are:
       </ol>
     </li>
     <li>
-      The "(type key)" key identifies the (type structure) used for the type. The
-      (type key) may be:
+      <b>DEPENDENT</b> The "(type key)" key identifies the (type structure) used for the
+      type. The (type key) may be:
       <ol>
         <li>
           <b>language</b> - the (type structure) is a simple string consisting of an ISO
@@ -470,7 +470,6 @@ The "valueType" key container elements are:
           mapping as previously dicsussed (see "type maps" above).
         </li>
       </ol>
-      <b>DEPENDENT</b>
     </li>
   </ol>
 </p>
