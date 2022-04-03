@@ -64,7 +64,7 @@ cd rdf-transform
 mvn clean compile
 mvn assembly:single
 rm -rf ~/.local/share/openrefine/extensions/rdf-transform*
-unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/.local/share/openrefine/extensions
+unzip target/rdf-transform-2.0.0.zip -d ~/.local/share/openrefine/extensions
 ~/path/to/openrefine/refine
 ```
 Long:
@@ -80,7 +80,7 @@ mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -D
 mvn clean compile
 mvn assembly:single
 rm -rf ~/.local/share/openrefine/extensions/rdf-transform*
-unzip target/rdf-transform-3.6-SNAPSHOT.zip -d ~/.local/share/openrefine/extensions
+unzip target/rdf-transform-2.0.0.zip -d ~/.local/share/openrefine/extensions
 cd ../OpenRefine
 ./refine
 ```
