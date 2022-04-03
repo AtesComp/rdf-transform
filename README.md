@@ -8,64 +8,6 @@ This project uses a graphical user interface (GUI) for transforming OpenRefine p
 
 RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been throughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
 
-## Features, Changes, and Enhancements
-
-* User Inferface:
-  * Cleaned and refactored UI elements (but it still looks mostly like the original RDF extension)
-  * Resizable dialogs
-  * Uses a template system that is exportable / importable (like OntoRefine) for use between different (but similar data structure) projects
-    * The template is stored as a JSON formatted structure
-    * The structure, while similar to OntoRefine, uniformly normalizes key names and substructures
-    * The same structure is used within the native OpenRefine data store for project and change management
-  * Transform Tab:
-    * RDF Node Editor: Added Prefix selection to the editor with Prefix and LocalPart management throughout the code
-      * Preview Expression Editor:
-        * Two new GREL functions:
-        * toIRIString() - transforms and properly validates a string as an IRI component (replaces urlify())
-        * toStrippedLiteral() - end trims a string with all known Unicode whitespace and non-breaking space characters
-    * RDF Property Editor: Initializes with the existing property in the textbox instead of blank text
-    * Added universal Expand (>) and Collapse (v) control on all nodes and properties
-    * Added universal delete (x) control on all nodes, properties, and types
-  * Preview Tab:
-    * All changes made in the Transform tab are reserved until the user switches to the Preview tab
-    * (FUTURE) Editable sample record / row count for preview
-* Code:
-  * JavaScript code has been updated to use "classified" coding
-  * Loops use iterators whenever possible
-  * RDF Export capabilities have been expanded to all known RDF4J formats
-  * Properly recognize the Row verses Record parameters and processing (row and record visitors)
-  * (FUTURE) Process inner record groupings as sub-records
-  * Properly parse IRIs for valid structure, prefix and local part, absolute and relative, using the base IRI as needed
-  * Properly process an IRI's Condensed IRI Expression (CIRIE, a.k.a., Prefix + LocalPart) for output / export
-  * Reserve flushing of scaled statements buffers to speed exports (user definable--see "RDFTransform.exportLimit" below)
-  * The "Namespaces" and "PredefinedVocabs" support files are processed using general whitespace separation (not strictly tab delimited)
-  * The code differentiates between "namespace" (Prefix and IRI) versus "prefix" use
-  * General cleanup and verbose commenting throughout the code
-* Preferences: Three preferences were added to manage server output
-  * "RDFTransform.verbose" preference (see OpenRefine preferences) aids with process feedback and debugging
-    * A general "verbose" preference is rcognized as a default (HINT: OpenRefine might use it as a base preference)
-    * 0 == no verbosity and unknown, uncaught errors (stack traces, of course)
-    * 1 == basic functional information and all unknown, caught errors
-    * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
-    * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
-    * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
-    * A missing verbose preference defaults to 0
-  * "RDFTransform.exportLimit" preference (see OpenRefine preferences) limits the statement buffer and optimizes output
-    * The statement buffer (i.e., an internal memory RDF repository) stores statements created from the data
-    * The old system created one statement in the buffer, then flushed the buffer to disk--very inefficient
-    * The new system holds many statement before before flushing to disk.
-    * This buffer can become large if the data is large and produces many statements, so it is somewhat optimized:
-      * Given a default statement size of 100 bytes, the default buffer is limited to 1024 * 1024 * 1024 / 100 = 1GiB / 100 = 10737418 statements
-      * The 100 byte statement size is likely large as the average statement size is likely smaller
-      * Regardless, this keeps memory usage to about 1GiB or less and a user can set the preference to optimize for a given memory footprint and data size
-    * Then, the buffered statements optimize the creation and flush processes to speed the disk write
-    * (FUTURE) An enhancement may examine the project data size and system memory to determine an optimize buffer size and allocations
-  * Added "RDFTransform.debug" preference (see OpenRefine preferences) to aid debugging
-    * Controls the output of specifically marked "DEBUG" messages
-    * Includes many verbose output messages as well
-
-NOTE: To streamline RDF Transform, the RDF reconcile functionality has been removed from this project.  The reconcile code is intended to be recreated as a separate project.
-
 ## RDF Transform Template ##
 
 The structure of the RDF Transform template is stored in a uniform JSON format.  The following example illustrates the template.
