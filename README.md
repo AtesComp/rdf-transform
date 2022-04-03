@@ -4,9 +4,9 @@
 
 ## Introduction ##
 
-This project uses a graphical user interface (GUI) for transforming OpenRefine project data to RDF-based formats. The transform maps the data with a template graph using the GUI.
+This project uses a graphical user interface (GUI) for transforming OpenRefine project data to RDF-based formats. The transform maps the data with a template graph designed using the GUI.
 
-RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been throughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
+RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been thoroughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
 
 ## Wiki ##
 
