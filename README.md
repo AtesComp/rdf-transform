@@ -16,11 +16,11 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 
 ### Latest Release ###
 
-[RDF Transform v2.0.0-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0-alpha/rdf-transform-2.0.0.zip)
+[RDF Transform v2.0.1-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.1-alpha/rdf-transform-2.0.1.zip)
 
 ### Previous Releases - for earlier versions of OpenRefine ###
 
-None
+[RDF Transform v2.0.0-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0-alpha/rdf-transform-2.0.0.zip)
 
 ## Install ##
 
