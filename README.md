@@ -25,3 +25,7 @@ None
 ## Install ##
 
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for more information.
+
+## Issues ##
+
+None, currently.
