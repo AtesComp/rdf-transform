@@ -36,8 +36,8 @@ function registerClientSide() {
 		module,
 		// Script files to inject into /project page...
 		[	"scripts/rdf-transform-menubar-extensions.js",	// 1. must be first: language and menu load
-			"scripts/rdf-transform.js",
 			"scripts/rdf-transform-common.js",
+			"scripts/rdf-transform.js",
 			"scripts/rdf-transform-resource.js",
 			"scripts/rdf-transform-ui-node.js",
 			"scripts/rdf-transform-ui-node-config.js",
@@ -49,7 +49,8 @@ function registerClientSide() {
 			"scripts/rdf-transform-import-template.js",
 			"scripts/rdf-transform-export-template.js",
 			"scripts/rdf-data-table-view.js",
-			//"scripts/externals/jquery.form.min.js",
+			// JQuery is required and provided by OpenRefine...
+			// "scripts/externals/jquery.form.min.js"
 		]
 	);
 

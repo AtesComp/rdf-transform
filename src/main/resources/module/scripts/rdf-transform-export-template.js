@@ -20,7 +20,7 @@ class RDFExportTemplate
         //        await RDFTransformCommon.saveFile(
         //            strTemplate, strFilename, "json",
         //            "application/json",
-        //            "RDF Template (.json)"
+        //            "RDF Transform (.json)"
         //        );
         //    };
         try {
@@ -28,7 +28,7 @@ class RDFExportTemplate
             RDFTransformCommon.saveFile(
                 strTemplate, strFilename, "json",
                 "application/json",
-                "RDF Template (.json)"
+                "RDF Transform (.json)"
             );
         }
         catch (evt) {

@@ -32,7 +32,7 @@ class RDFTransform {
     // valueType.type
     static gstrValueType = "valueType";
     static gstrIRI = "iri";
-    static gstrLiteral = "literal";
+    static gstrLiteral = RDFTransformCommon.gstrLiteral;
     static gstrLanguageLiteral = "language_literal";
     static gstrDatatypeLiteral = "datatype_literal";
     static gstrBNode = "bnode";

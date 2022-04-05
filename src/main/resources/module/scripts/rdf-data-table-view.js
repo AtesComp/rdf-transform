@@ -75,8 +75,8 @@ class RDFDataTableView {
  *   FROM: OpenRefine/main/webapp/modules/core/scripts/dialogs/expression-preview-dialog.js
  ****************************************************************************************************
  *
- * NOTE: In the event OpenRefine modifies ExpressionPreviewDialog and the associated
- *       ExpressionPreviewDialog.Widget, RDFExpressionPreviewDialog and its associated
+ * NOTE: If OpenRefine modifies ExpressionPreviewDialog and the associated
+ *       ExpressionPreviewDialog.Widget, then RDFExpressionPreviewDialog and its associated
  *       WidgetDescendant may need to be modified as well!
  *
  * NOTE: $.extend() is a JQuery mechanism for applying a type of inheritance for "non-class"
@@ -208,10 +208,9 @@ class RDFExpressionPreviewDialog {
 	}
 
 	preview(strColumnName, iRowLimit, strExpression, bIsIndex) {
-		// TODO: Fix for Language on these strings...
-        this.#elements.or_dialog_preview.text( "Preview" );
-        this.#elements.or_dialog_history.text( "History" );
-        this.#elements.or_dialog_help.text( "Help" );
+        this.#elements.or_dialog_preview.text( $.i18n('rdft-dialog/tab-preview') );
+        this.#elements.or_dialog_history.text( $.i18n('rdft-dialog/tab-history') );
+        this.#elements.or_dialog_help.text( $.i18n('rdft-dialog/tab-help') );
 
         $( "#expression-preview-tabs", this.#frame ).tabs();
 

@@ -171,20 +171,20 @@ class RDFTransformUINode {
         if ( ! (RDFTransform.gstrValueType in this.#node) ||
             this.#node.valueType.type === RDFTransform.gstrIRI )
         {
-            strNodeType = "resource";
+            strNodeType = RDFTransformCommon.gstrResource;
         }
         else if (
             this.#node.valueType.type === RDFTransform.gstrLiteral ||
             this.#node.valueType.type === RDFTransform.gstrLanguageLiteral ||
             this.#node.valueType.type === RDFTransform.gstrDatatypeLiteral )
         {
-            strNodeType = RDFTransform.gstrLiteral;
+            strNodeType = RDFTransformCommon.gstrLiteral;
         }
         else if (
             this.#node.valueType.type === RDFTransform.gstrBNode ||
             this.#node.valueType.type === RDFTransform.gstrValueBNode )
         {
-            strNodeType = "blank";
+            strNodeType = RDFTransformCommon.gstrBlank;
         }
         this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
 

@@ -14,7 +14,7 @@ class RDFImportTemplate
         //        await RDFTransformCommon.openFile(
         //            "json",
         //            "application/json",
-        //            "RDF Template (.json)"
+        //            "RDF Transform (.json)"
         //        );
         //    };
         try {
@@ -23,7 +23,7 @@ class RDFImportTemplate
                 await RDFTransformCommon.readFile(
                     "json",
                     "application/json",
-                    "RDF Template (.json)"
+                    "RDF Transform (.json)"
                 );
         }
         catch (evt) {

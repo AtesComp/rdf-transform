@@ -75,6 +75,8 @@
     "rdft-dialog/search-for": "Search for",
     "rdft-dialog/tab-preview": "Preview",
     "rdft-dialog/tab-transform": "Transform",
+    "rdft-dialog/tab-history": "History",
+    "rdft-dialog/tab-help": "Help",
     "rdft-dialog/title-rec": "Record",
     "rdft-dialog/title-row": "Row",
     "rdft-dialog/unknown-pref": "Unknown prefix",
