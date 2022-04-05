@@ -9,7 +9,7 @@ class RDFTransform {
     static get KEY() { return "rdf-transform"; }
 
     static get strExtension() { return "RDFTransform"; }
-    static strVersion = "2.0.0";
+    static strVersion = "2.0.1";
 
     // NOTE: Even though the expression is currently 'only GREL', we allow for future change
     //      by a setDefaults() modification.

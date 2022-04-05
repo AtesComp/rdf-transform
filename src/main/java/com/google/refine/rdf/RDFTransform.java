@@ -56,7 +56,7 @@ public class RDFTransform implements OverlayModel {
     static public final String EXTENSION = "RDFTransform";
     static public final String VERSION_MAJOR = "2";
     static public final String VERSION_MINOR = "0";
-    static public final String VERSION_MICRO = "0";
+    static public final String VERSION_MICRO = "1";
     static public final String VERSION =
         RDFTransform.VERSION_MAJOR + "." +
         RDFTransform.VERSION_MINOR + "." +
