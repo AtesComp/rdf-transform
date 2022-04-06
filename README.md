@@ -20,7 +20,7 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for more information.
 
 ## Issues
-_General interaction issue with OpenRefine versions, Web Browsers, OSes, etc., not specifically code related._
+***General interaction issue with OpenRefine versions, Web Browsers, OSes, etc., not specifically code related.***
 
 RDF Transform has been tested on a modern Debian-based OS (Ubuntu derivative) using Chrome. No issue were found under these conditions.
 
