@@ -4,7 +4,7 @@
 
 .emphasized,
 .rdf-header-text {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .view-disabled {
@@ -13,7 +13,7 @@
 }
 
 p.rdf-transform-base-iri {
-	margin: 6px 0 4px 0;
+    margin: 6px 0 4px 0;
 }
 
 input[type="radio"] {
@@ -66,8 +66,8 @@ div.tabcontent {
 }
 
 div.rdf-transform-tab-header {
-	background: none repeat scroll 0 0 #E0EDFE;
-	padding: 2px;
+    background: none repeat scroll 0 0 #E0EDFE;
+    padding: 2px;
 }
 
 div.rdf-transform-data-transform {
@@ -82,13 +82,13 @@ div.rdf-transform-data-transform {
 
 /*
 table.rdf-transform-pane-table-layout > tbody > tr > td.padded {
-	padding: 2px 2px;
+    padding: 2px 2px;
 }
 */
 
 div.rdf-transform-tab-footer {
-	background: none repeat scroll 0 0 #E0EDFE;
-	padding: 2px;
+    background: none repeat scroll 0 0 #E0EDFE;
+    padding: 2px;
 }
 
 div.rdf-transform-tab-footer > table {
@@ -133,20 +133,20 @@ div.rdf-transform-data-preview pre {
 
 div.rdf-transform-prefixes {
     /*
-	width: 100%;
+    width: 100%;
     */
 }
 
 span.rdf-transform-prefix-box {
-	padding: 0 4px;
-	font-family: monospace;
-	float: left;
+    padding: 0 4px;
+    font-family: monospace;
+    float: left;
     line-height: 21px;
     vertical-align: middle;
 }
 
 a.add-namespace-box {
-	background-image: url(../images/add.png);
+    background-image: url(../images/add.png);
     background-repeat: no-repeat;
     background-position: 0px 0px;
     padding-left: 14px;
@@ -155,7 +155,7 @@ a.add-namespace-box {
 }
 
 a.manage-vocabularies-box {
-	background-image: url(../images/configure.png);
+    background-image: url(../images/configure.png);
     background-repeat: no-repeat;
     background-position: 0px 0px;
     padding-left: 14px;
@@ -168,21 +168,21 @@ a.manage-vocabularies-box {
  */
 
 .rdf-transform-node-dialog-step {
-	margin: 0 5px 5px 5px;
-	border: 1px solid #DDDDDD;
+    margin: 0 5px 5px 5px;
+    border: 1px solid #DDDDDD;
 }
 
 .rdf-transform-node-dialog-step-header {
-	margin: 1px 5px 1px 0;
-	padding: 2px;
+    margin: 1px 5px 1px 0;
+    padding: 2px;
     background: #DDDDFF;
     -moz-border-radius: 6px;
-	border-radius: 6px;
+    border-radius: 6px;
 }
 
 /* NOT USED */
 .rdf-transform-node-dialog-column-list {
-	height: 300px;
+    height: 300px;
     width: 230px;
     overflow: auto;
 }
@@ -206,11 +206,11 @@ a.manage-vocabularies-box {
 }
 
 span.rdf-node-info {
-	font-size: 80%;
+    font-size: 80%;
 }
 
 span.rdf-value-expression {
-	font-family: monospace;
+    font-family: monospace;
     vertical-align: top;
 }
 
@@ -252,13 +252,13 @@ td.rdf-transform-property-toggle {
  */
 
 div.rdf-flyout-content {
-	color: Black;
+    color: Black;
 }
 
 div.rdf-flyout-content div.rdf-header {
-	overflow-wrap: break-word;
-	font-weight: bold;
-	margin: 4px;
+    overflow-wrap: break-word;
+    font-weight: bold;
+    margin: 4px;
 }
 
 /*
@@ -266,41 +266,41 @@ div.rdf-flyout-content div.rdf-header {
  */
 
 img.vocab-action-icon {
-	padding: 1px;
+    padding: 1px;
 }
 
 div.vocabulary-container {
-	height: 300px;
-	overflow: auto;
+    height: 300px;
+    overflow: auto;
 }
 
 div.vocabulary-manager-list {
-	height: 64%;
-	overflow: auto;
+    height: 64%;
+    overflow: auto;
 }
 
 div.vocabulary-manager-footer {
-	height: 31%;
+    height: 31%;
 }
 
 div.vocabulary-manager-footer h2 {
-	margin: 0;
+    margin: 0;
 }
 
 
 a#add-namespace-link,
 a#add-namespace-link:HOVER,
 a#add-namespace-link:VISITED {
-	font-size: 120%;
-	color: #0000FF;
+    font-size: 120%;
+    color: #0000FF;
 }
 
 table.rdf-transform-types-table {
-	margin: 2px 0 2px 0;
+    margin: 2px 0 2px 0;
 }
 
 table.rdf-transform-indented-table {
-	margin: 0 0 0 24px;
+    margin: 0 0 0 24px;
 }
 
 table.rdf-transform-namespaces-table {
@@ -309,31 +309,31 @@ table.rdf-transform-namespaces-table {
 
 table.rdf-transform-namespaces-table,
 table.rdf-transform-namespaces-table > tbody > tr > td {
-	border: 1px dotted #DDDDDD;
-	border-collapse: collapse;
-	margin: 2px;
+    border: 1px dotted #DDDDDD;
+    border-collapse: collapse;
+    margin: 2px;
 }
 
 tr.rdf-transform-table-even {
-	background-color: #F2F2F2;
+    background-color: #F2F2F2;
 }
 
 tr.rdf-transform-table-odd {
-	background-color: #DDDDDD;
+    background-color: #DDDDDD;
 }
 
 /*
  * RDF Transform Dialog Prefix Management
  */
 div.rdf-transform-prefix-note {
-	font-size: 14px;
-	color: #333333;/*#FF6A00;*/
+    font-size: 14px;
+    color: #333333;/*#FF6A00;*/
 }
 
 fieldset.rdf-transform-prefix-fieldset {
-	border: 1px solid #BBCCFF;
-	padding: 2px 0 6px 2px;
-	margin-top: 6px;
+    border: 1px solid #BBCCFF;
+    padding: 2px 0 6px 2px;
+    margin-top: 6px;
 }
 
 /*

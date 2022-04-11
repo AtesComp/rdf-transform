@@ -17,7 +17,7 @@ $.ajax(
         async: false, // ...wait on results...
         data: { module: "rdf-transform" },
         success: (data) => {
-		    dict = data['dictionary'];
+            dict = data['dictionary'];
             lang = data['lang'];
         }
     }
@@ -168,13 +168,13 @@ ExporterManager.MenuItems.push(
 $( function() { // ...load all DOM elements before executing the following...
     ExtensionBar.addExtensionMenu(
         {
-			"id"        : "rdf-transform",
-			"label"     : $.i18n('rdft'),
-			"submenu"   : [
-				{
-					"id"    : "rdf/edit-rdf-transform",
-					"label" : $.i18n('rdft-menu/edit') + "...",
-					"click" : () => {
+            "id"        : "rdf-transform",
+            "label"     : $.i18n('rdft'),
+            "submenu"   : [
+                {
+                    "id"    : "rdf/edit-rdf-transform",
+                    "label" : $.i18n('rdft-menu/edit') + "...",
+                    "click" : () => {
                         const theTransform = theProject.overlayModels.RDFTransform;
                         // Use setTimeout() to end menuitem and display dialog...
                         setTimeout(
@@ -183,11 +183,11 @@ $( function() { // ...load all DOM elements before executing the following...
                             }
                         );
                     }
-				},
-				{
-					"id"    : "rdf/reset-rdf-transform",
-					"label" : $.i18n('rdft-menu/reset') + "...",
-					"click" : () => {
+                },
+                {
+                    "id"    : "rdf/reset-rdf-transform",
+                    "label" : $.i18n('rdft-menu/reset') + "...",
+                    "click" : () => {
                         // Use setTimeout() to end menuitem and display dialog...
                         setTimeout(
                             () => {
@@ -195,7 +195,7 @@ $( function() { // ...load all DOM elements before executing the following...
                             }
                         );
                     }
-				}
+                }
             ]
         }
     )

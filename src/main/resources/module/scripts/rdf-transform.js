@@ -175,7 +175,7 @@ class RDFTransformDialog {
         this.#nodeUIs = [];
 
         // The RDFTransformDialog has not been fully initialized!
-		// Initialize by asynchronous setTimeout() for:
+        // Initialize by asynchronous setTimeout() for:
         //  1. server-side required processing (i.e., after construction)
         //  2. 0.5 second wait for dialog to fully display
         setTimeout( () => { this.#initTransform(theTransform); }, 500 );
@@ -458,23 +458,23 @@ class RDFTransformDialog {
         this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok')                    );
         this.#elements.buttonCancel.text(         $.i18n('rdft-buttons/cancel')                );
 
-		var imgAddPrefix =
-			$('<img />')
-			.attr('src', ModuleWirings[RDFTransform.KEY] + 'images/add.png')
-			.css('cursor', 'pointer');
+        var imgAddPrefix =
+            $('<img />')
+            .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/add.png')
+            .css('cursor', 'pointer');
         this.#elements.buttonAddPrefix
-			.append(imgAddPrefix)
-			.append(" " + $.i18n('rdft-prefix/add'));
+            .append(imgAddPrefix)
+            .append(" " + $.i18n('rdft-prefix/add'));
 
         var imgManagePrefixes =
-			$('<img />')
-			.attr('src', ModuleWirings[RDFTransform.KEY] + 'images/configure.png')
-			.css('cursor', 'pointer');
+            $('<img />')
+            .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/configure.png')
+            .css('cursor', 'pointer');
         this.#elements.buttonManagePrefixes
             .append(imgManagePrefixes)
             .append(" " + $.i18n('rdft-prefix/manage'));
 
-		// TODO: Add refresh all button
+        // TODO: Add refresh all button
 
         const strSample =
             $.i18n('rdft-dialog/sample-turtle', this.iSampleLimit) +
@@ -539,12 +539,12 @@ class RDFTransformDialog {
 
         // Hook up the Manage Prefix button...
         this.#elements.buttonManagePrefixes
-			.on("click",
-				(evt) => {
-					evt.preventDefault();
-					this.#namespacesManager.showManageWidget();
-				}
-			);
+            .on("click",
+                (evt) => {
+                    evt.preventDefault();
+                    this.#namespacesManager.showManageWidget();
+                }
+            );
 
         // Hook up the Add New Root Node button...
         this.#elements.buttonAddRootNode
@@ -822,15 +822,15 @@ class RDFTransformDialog {
     }
 
     updateNamespaces(theNamespaces) {
-		this.#elements.rdftPrefixesContainer.empty();
-		for (const strPrefix in theNamespaces) {
-			this.#elements.rdftPrefixesContainer.append(
-				$('<span/>')
+        this.#elements.rdftPrefixesContainer.empty();
+        for (const strPrefix in theNamespaces) {
+            this.#elements.rdftPrefixesContainer.append(
+                $('<span/>')
                     .addClass('rdf-transform-prefix-box')
                     .attr('title', theNamespaces[strPrefix])
                     .text(strPrefix)
-			);
-		}
+            );
+        }
     }
 
     updatePreview() {

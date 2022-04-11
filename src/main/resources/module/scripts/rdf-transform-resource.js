@@ -48,7 +48,7 @@ class RDFTransformResourceDialog {
         elements.rdftNewResourceIRI
         .val(this.#strDefault)
         .suggestTerm(
-            {	"project" : this.#projectID.toString(),
+            {   "project" : this.#projectID.toString(),
                 "type"    : this.#strLookForType,
                 "parent"  : '.rdf-transform-menu-search'
             }
