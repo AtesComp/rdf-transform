@@ -1,7 +1,10 @@
 <project>
     <!--
-		To include OpenRefine:
-			mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
+        To include OpenRefine:
+            In OpenRefine project directory:
+                ./refine dist 3.6-SNAPSHOT
+            Then, in rdf-transform extension project directory:
+                mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
 	-->
     <modelVersion>4.0.0</modelVersion>
 
@@ -436,7 +439,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- 
+        <!--
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
