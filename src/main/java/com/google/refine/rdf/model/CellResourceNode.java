@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class CellResourceNode extends ResourceNode implements CellNode {
     static private final Logger logger = LoggerFactory.getLogger("RDFT:CellResNode");
 
-	static private final String strNODETYPE = "cell-as-resource";
+    static private final String strNODETYPE = "cell-as-resource";
 
     private final String strColumnName;
     private final String strPrefix;
@@ -29,7 +29,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     @JsonCreator
     public CellResourceNode(String strColumnName, String strPrefix, String strExp, boolean bIsIndex, Util.NodeType eNodeType)
     {
-    	this.strColumnName = strColumnName;
+        this.strColumnName = strColumnName;
         this.strPrefix     = Util.toSpaceStrippedString(strPrefix);
         this.strExpression = ( strExp == null ? "value" : strExp );
         this.bIsIndex = bIsIndex;
@@ -40,34 +40,34 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         return CellResourceNode.strNODETYPE;
     }
 
-	@Override
-	public String getNodeName() {
+    @Override
+    public String getNodeName() {
         String strSubType = Util.toNodeTypeString(eNodeType);
         return "Cell IRI: <" + this.strPrefix + ":[" +
             ( this.bIsIndex ? "Index#" : this.strColumnName ) +
             "] (" + strSubType +
             ") on [" + this.strExpression + "]>";
-	}
+    }
 
-	@Override
-	public String getNodeType() {
-		return CellResourceNode.strNODETYPE;
-	}
+    @Override
+    public String getNodeType() {
+        return CellResourceNode.strNODETYPE;
+    }
 
-	@JsonProperty("columnName")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public String getColumnName() {
-		return this.strColumnName;
-	}
+    @JsonProperty("columnName")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getColumnName() {
+        return this.strColumnName;
+    }
 
-	@JsonProperty("prefix")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public String getPrefix() {
-		return this.strPrefix;
-	}
+    @JsonProperty("prefix")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getPrefix() {
+        return this.strPrefix;
+    }
 
     @JsonProperty("expression")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getExpression() {
         return this.strExpression;
     }
@@ -79,7 +79,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         this.listValues = null;
         Object results = null;
         try {
-        	results =
+            results =
                 Util.evaluateExpression( this.theProject, this.strExpression, this.strColumnName, this.theRec.row() );
         }
         catch (ParsingException ex) {
@@ -119,38 +119,38 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         }
     }
 
-	@Override
-	protected void writeNode(JsonGenerator writer, boolean isRoot)
+    @Override
+    protected void writeNode(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException {
-		// Prefix
+        // Prefix
         //      null means Raw (Full) IRI
         //      "" means baseIRI + Local Part
         if (this.strPrefix != null) {
             writer.writeStringField(Util.gstrPrefix, this.strPrefix);
         }
 
-		// Source
+        // Source
         writer.writeObjectFieldStart(Util.gstrValueSource);
-		String strType = Util.toNodeSourceString(this.eNodeType);
-		writer.writeStringField(Util.gstrSource, strType);
+        String strType = Util.toNodeSourceString(this.eNodeType);
+        writer.writeStringField(Util.gstrSource, strType);
         if ( ! ( this.bIsIndex || this.strColumnName == null ) ) {
-        	writer.writeStringField(Util.gstrColumnName, this.strColumnName);
+            writer.writeStringField(Util.gstrColumnName, this.strColumnName);
         }
-		writer.writeEndObject();
+        writer.writeEndObject();
 
-		// Expression
+        // Expression
         if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
-			writer.writeObjectFieldStart(Util.gstrExpression);
-			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeObjectFieldStart(Util.gstrExpression);
+            writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);
-			writer.writeEndObject();
+            writer.writeEndObject();
         }
 
-		// Value Type
-		if (! isRoot) {
+        // Value Type
+        if (! isRoot) {
             writer.writeObjectFieldStart(Util.gstrValueType);
             writer.writeStringField(Util.gstrType, Util.gstrIRI);
             writer.writeEndObject();
         }
-	}
+    }
 }

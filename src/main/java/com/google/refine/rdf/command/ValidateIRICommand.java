@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 public class ValidateIRICommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:ValidIRICmd");
     
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         if ( Util.isVerbose(3) ) logger.info("Validating IRI...");
         // NOTE: No CSRFToken required for this command.
 
@@ -34,16 +34,16 @@ public class ValidateIRICommand extends Command {
 
             String strIRI = request.getParameter("iri").strip();
             try {
-            	new ParsedIRI(strIRI);
+                new ParsedIRI(strIRI);
                 //if ( Util.isDebugMode() ) logger.info("Validating IRI: Success");
             }
             catch (URISyntaxException ex) {
                 if ( Util.isDebugMode() ) logger.info("Validating IRI: Failure [" + strIRI + "]");
-            	ValidateIRICommand.respond(response, "{ \"good\" : \"0\" }");
+                ValidateIRICommand.respond(response, "{ \"good\" : \"0\" }");
                 return;
             }
         }
-		catch (Exception ex) {
+        catch (Exception ex) {
             if ( Util.isDebugMode() ) logger.info("Validating IRI: ExceptionError");
             ValidateIRICommand.respondException(response, ex);
             return;

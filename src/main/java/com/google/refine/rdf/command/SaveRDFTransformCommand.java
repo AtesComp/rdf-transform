@@ -23,10 +23,10 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:SaveRDFTransCmd");
 
     public SaveRDFTransformCommand() {
-		super();
-	}
+        super();
+    }
 
-	@Override
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing for Save...");

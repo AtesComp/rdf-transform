@@ -39,10 +39,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
     private JsonGenerator theWriter = null;
 
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		try {
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
             //
             // Set up response...
             //   ...cause we're hand-jamming JSON responses directly...
@@ -76,10 +76,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
             String strBaseIRI = request.getParameter("baseIRI");
             try {
-            	this.baseIRI = new ParsedIRI(strBaseIRI);
+                this.baseIRI = new ParsedIRI(strBaseIRI);
             }
             catch (URISyntaxException ex) {
-            	PreviewRDFExpressionCommand.respond(response, "{ \"code\" : \"error\", \"message\" : \"Invalid Base IRI\" }");
+                PreviewRDFExpressionCommand.respond(response, "{ \"code\" : \"error\", \"message\" : \"Invalid Base IRI\" }");
                 return;
             }
             // ...end Parameters
@@ -94,10 +94,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             // Process the command...
             //
             if (bIsIRI) {
-            	this.respondIRIPreview();
+                this.respondIRIPreview();
             }
             else {
-            	this.respondLiteralPreview();
+                this.respondLiteralPreview();
             }
 
             //
@@ -109,10 +109,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
         catch (Exception ex) {
             PreviewRDFExpressionCommand.respondException(response, ex);
         }
-	}
+    }
 
-	private void respondIRIPreview() throws IOException {
-		int iRows = this.theRowIndices.size();
+    private void respondIRIPreview() throws IOException {
+        int iRows = this.theRowIndices.size();
 
         this.theWriter.writeStartObject();
 
@@ -227,7 +227,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             this.theWriter.writeEndArray();
         }
         catch (Exception ex) {
-        	this.theWriter.writeEndArray();
+            this.theWriter.writeEndArray();
             // Parsing errors will always occur, so move on...
 
             String strTypeEx = "other";
@@ -266,7 +266,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             this.theWriter.writeEndArray();
         }
         catch (Exception ex) {
-        	this.theWriter.writeEndArray();
+            this.theWriter.writeEndArray();
             if (bGood) { // ...some other error has NOT already happened...
                 this.theWriter.writeStringField("type", "absolute");
                 this.theWriter.writeStringField("message", ex.getMessage());
@@ -284,10 +284,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
         }
         this.theWriter.writeStringField("code", strCode);
         this.theWriter.writeEndObject();
-	}
+    }
 
-	private void respondLiteralPreview() throws IOException {
-		int iRows = this.theRowIndices.size();
+    private void respondLiteralPreview() throws IOException {
+        int iRows = this.theRowIndices.size();
 
         this.theWriter.writeStartObject();
 
@@ -384,7 +384,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             this.theWriter.writeEndArray();
         }
         catch (Exception ex) {
-        	this.theWriter.writeEndArray();
+            this.theWriter.writeEndArray();
             // Parsing errors will always occur, so move on...
 
             String strTypeEx = "other";
@@ -409,5 +409,5 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
         }
         this.theWriter.writeStringField("code", strCode);
         this.theWriter.writeEndObject();
-	}
+    }
 }

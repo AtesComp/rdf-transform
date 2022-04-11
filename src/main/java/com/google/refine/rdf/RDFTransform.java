@@ -51,7 +51,7 @@ public class RDFTransform implements OverlayModel {
      ****************************************************************************************************
      ****************************************************************************************************/
 
-	static private final Logger logger = LoggerFactory.getLogger("RDFT:RDFTransform");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:RDFTransform");
 
     static public final String EXTENSION = "RDFTransform";
     static public final String VERSION_MAJOR = "2";
@@ -86,19 +86,19 @@ public class RDFTransform implements OverlayModel {
     }
 
     static public RDFTransform getRDFTransform(Project theProject) {
-		synchronized(theProject) {
+        synchronized(theProject) {
             // Get the project's existing RDFTransform, if it exists...
-			RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
-			if (theTransform == null) {
+            RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
+            if (theTransform == null) {
                 // Create a new RDFTransform for the project...
-				theTransform = new RDFTransform(theProject);
+                theTransform = new RDFTransform(theProject);
 
-				theProject.overlayModels.put(RDFTransform.EXTENSION, theTransform);
-				theProject.getMetadata().updateModified();
-			}
+                theProject.overlayModels.put(RDFTransform.EXTENSION, theTransform);
+                theProject.getMetadata().updateModified();
+            }
             return theTransform;
-		}
-	}
+        }
+    }
 
     static public RDFTransform load(Project theProject, JsonNode jnodeTransform) {
         if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: load(): Reconstructing...");
@@ -559,7 +559,7 @@ public class RDFTransform implements OverlayModel {
     @JsonIgnore
     public void setNamespaces(VocabularyList listNamespaces) {
         this.theNamespaces = listNamespaces;
-	}
+    }
 
     @JsonProperty(Util.gstrNamespaces)
     public void setNamespaces(JsonNode jnodeNamespaces) {
@@ -611,7 +611,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-	public List<ResourceNode> getRoots() {
+    public List<ResourceNode> getRoots() {
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting root nodes: size = " + this.theRootNodes.size());
         return this.theRootNodes;
     }
@@ -649,7 +649,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-	public void setRoots(List<ResourceNode> listRootNodes) {
+    public void setRoots(List<ResourceNode> listRootNodes) {
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting root nodes...");
         this.theRootNodes = listRootNodes;
     }
@@ -705,15 +705,15 @@ public class RDFTransform implements OverlayModel {
     @Override
     @JsonIgnore
     public void dispose(Project theProject) {
-	   /*try {
-			ApplicationContext.instance().getVocabularySearcher().deleteProjectVocabularies(String.valueOf(theProject.id));
-		}
+       /*try {
+            ApplicationContext.instance().getVocabularySearcher().deleteProjectVocabularies(String.valueOf(theProject.id));
+        }
         catch (ParseException ex) {
-			RDFTransform.logger.error("ERROR: Unable to delete index for project " + theProject.id, ex);
-		}
+            RDFTransform.logger.error("ERROR: Unable to delete index for project " + theProject.id, ex);
+        }
         catch (IOException ex) {
-			RDFTransform.logger.error("ERROR: Unable to delete index for project " + theProject.id, ex);
-		}*/
+            RDFTransform.logger.error("ERROR: Unable to delete index for project " + theProject.id, ex);
+        }*/
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Disposed overlay");
     }
 

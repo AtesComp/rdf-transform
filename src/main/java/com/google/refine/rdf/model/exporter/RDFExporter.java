@@ -27,32 +27,32 @@ public class RDFExporter implements WriterExporter, StreamExporter {
 
     private RDFFormat format;
 
-	public RDFExporter(RDFFormat format) {
+    public RDFExporter(RDFFormat format) {
         this.format = format;
     }
 
     public void export(Project theProject, Properties options, Engine theEngine,
                         OutputStream outputStream)
             throws IOException {
-	    this.export(theProject, options, theEngine, Rio.createWriter(this.format, outputStream));
+        this.export(theProject, options, theEngine, Rio.createWriter(this.format, outputStream));
     }
 
-	public void export(Project theProject, Properties options, Engine theEngine,
-					    Writer theWriter)
+    public void export(Project theProject, Properties options, Engine theEngine,
+                        Writer theWriter)
              throws IOException {
         this.export(theProject, options, theEngine, Rio.createWriter(this.format, theWriter));
-	}
+    }
 
-	private void export(Project theProject, Properties options, Engine theEngine,
-					    RDFWriter theWriter)
+    private void export(Project theProject, Properties options, Engine theEngine,
+                        RDFWriter theWriter)
             throws IOException {
-    	RDFTransform theTransform;
-    	theTransform = RDFTransform.getRDFTransform(theProject);
+        RDFTransform theTransform;
+        theTransform = RDFTransform.getRDFTransform(theProject);
         try {
-			theWriter.startRDF();
+            theWriter.startRDF();
 
             // Process all records/rows of data for statements...
-	        RDFVisitor theVisitor = null;
+            RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 theVisitor = new ExportRDFRecordVisitor(theTransform, theWriter);
             }
@@ -61,18 +61,18 @@ public class RDFExporter implements WriterExporter, StreamExporter {
             }
             theVisitor.buildModel(theProject, theEngine);
 
-			theWriter.endRDF();
-		}
-		catch (RDFHandlerException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
+            theWriter.endRDF();
+        }
+        catch (RDFHandlerException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     public String getContentType() {
         if (this.format != null) {
             return this.format.getDefaultMIMEType();
         }
-		else { // ...export as Turtle...
+        else { // ...export as Turtle...
             return RDFFormat.TURTLE.getDefaultMIMEType();
         }
     }

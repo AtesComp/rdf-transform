@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 public class NodeResolver extends TypeIdResolverBase  {
     protected TypeFactory factory = TypeFactory.defaultInstance();
 
-	private static Map<String, Class<? extends Node>> registry =
+    private static Map<String, Class<? extends Node>> registry =
         new HashMap<String, Class<? extends Node>>() {{
             put( ConstantLiteralNode.getNODETYPE(),     ConstantLiteralNode.class  );
             put( ConstantBlankNode.getNODETYPE(),       ConstantBlankNode.class    );

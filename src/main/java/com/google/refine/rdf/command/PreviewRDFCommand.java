@@ -31,8 +31,8 @@ public class PreviewRDFCommand extends Command {
 
     public String strStatements;
 
-	public PreviewRDFCommand() {
-	}
+    public PreviewRDFCommand() {
+    }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -40,7 +40,7 @@ public class PreviewRDFCommand extends Command {
         // No CSRF Token required for this command.
 
         if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing Transform for Preview...");
-		try {
+        try {
             Project theProject = this.getProject(request);
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
 
@@ -87,14 +87,14 @@ public class PreviewRDFCommand extends Command {
 
             // Setup writer for output...
             StringWriter strwriterBase = new StringWriter();
-	        RDFWriter theWriter = Rio.createWriter(RDFFormat.TURTLE, strwriterBase);
+            RDFWriter theWriter = Rio.createWriter(RDFFormat.TURTLE, strwriterBase);
 
             // Start writing...
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Starting RDF...");
-			theWriter.startRDF();
+            theWriter.startRDF();
 
             // Process sample records/rows of data for statements...
-	        RDFVisitor theVisitor = null;
+            RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("    Process by Record Visitor...");
                 theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
@@ -115,7 +115,7 @@ public class PreviewRDFCommand extends Command {
             // Send back to client...
             PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );
         }
-		catch (Exception ex) {
+        catch (Exception ex) {
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.error("DEBUG: Error constructing preview", ex);
             ex.printStackTrace();
             PreviewRDFCommand.respondJSON(response, CodeResponse.error);

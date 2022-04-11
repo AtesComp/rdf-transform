@@ -369,14 +369,14 @@ abstract public class Node {
         return theProject;
     }
 
-	@JsonProperty("isIndex")
-	public boolean isIndexNode() {
-		return this.bIsIndex;
-	}
+    @JsonProperty("isIndex")
+    public boolean isIndexNode() {
+        return this.bIsIndex;
+    }
 
-	public Util.NodeType getNodeSubType() {
-		return eNodeType;
-	}
+    public Util.NodeType getNodeSubType() {
+        return eNodeType;
+    }
 
     protected String expandPrefixedIRI(String strObjectIRI) {
         String strExpanded = strObjectIRI;
@@ -408,7 +408,7 @@ abstract public class Node {
      *
      */
     @JsonIgnore
-	protected void setObjectParameters(ResourceNode nodeProperty) {
+    protected void setObjectParameters(ResourceNode nodeProperty) {
         this.baseIRI = nodeProperty.baseIRI;
         this.theFactory = nodeProperty.theFactory;
         this.theConnection = nodeProperty.theConnection;

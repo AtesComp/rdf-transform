@@ -43,12 +43,12 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     @Override
     @JsonIgnore
     public String getJsonDescription() {
-    	return SaveRDFTransformOperation.strSaveRDFTransform;
+        return SaveRDFTransformOperation.strSaveRDFTransform;
     }
 
     @JsonProperty(RDFTransform.KEY)
     public RDFTransform getTransform() {
-    	return this.theTransform;
+        return this.theTransform;
     }
 
     @JsonProperty(RDFTransform.KEY)

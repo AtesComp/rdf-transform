@@ -33,15 +33,15 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         return ConstantResourceNode.strNODETYPE;
     }
 
-	@Override
-	public String getNodeName() {
-		return "Constant IRI: <" + this.strPrefix + ":[" + this.strConstant +  "]>";
-	}
+    @Override
+    public String getNodeName() {
+        return "Constant IRI: <" + this.strPrefix + ":[" + this.strConstant +  "]>";
+    }
 
-	@Override
-	public String getNodeType() {
-		return ConstantResourceNode.strNODETYPE;
-	}
+    @Override
+    public String getNodeType() {
+        return ConstantResourceNode.strNODETYPE;
+    }
 
     public String getConstant() {
         return this.strConstant;
@@ -58,14 +58,14 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         this.createRowResources();
     }
 
-	@Override
-	protected void createRecordResources() {
+    @Override
+    protected void createRecordResources() {
         // NOT USED!
         this.listValues = null;
     }
 
-	@Override
-	protected void createRowResources() {
+    @Override
+    protected void createRowResources() {
         this.listValues = null;
 
         // If there is no value to work with...
@@ -130,35 +130,35 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         return strIRI;
     }
 
-	@Override
-	protected void writeNode(JsonGenerator writer, boolean isRoot)
+    @Override
+    protected void writeNode(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException {
-		// Prefix
+        // Prefix
         //      null means Raw (Full) IRI
         //      "" means baseIRI + Local Part
         if (this.strPrefix != null) {
             writer.writeStringField(Util.gstrPrefix, this.strPrefix);
         }
 
-		// Source
+        // Source
         writer.writeObjectFieldStart(Util.gstrValueSource);
-		writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+        writer.writeStringField(Util.gstrSource, Util.gstrConstant);
         writer.writeStringField(Util.gstrConstant, this.strConstant);
-		writer.writeEndObject();
+        writer.writeEndObject();
 
-		// Expression
+        // Expression
         if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
-			writer.writeObjectFieldStart(Util.gstrExpression);
-			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeObjectFieldStart(Util.gstrExpression);
+            writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);
-			writer.writeEndObject();
+            writer.writeEndObject();
         }
 
-		// Value Type
-		if (! isRoot) {
+        // Value Type
+        if (! isRoot) {
             writer.writeObjectFieldStart(Util.gstrValueType);
             writer.writeStringField(Util.gstrType, Util.gstrIRI);
             writer.writeEndObject();
         }
-	}
+    }
 }

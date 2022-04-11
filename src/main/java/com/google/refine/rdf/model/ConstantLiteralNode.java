@@ -32,8 +32,8 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
         return ConstantLiteralNode.strNODETYPE;
     }
 
-	@Override
-	public String getNodeName() {
+    @Override
+    public String getNodeName() {
         String strName = "Constant Literal: <[" + this.strConstant +  "]";
 
         // If there is a datatype...
@@ -46,20 +46,20 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
             strName += "@" + strLanguage;
         }
 
-		return strName + ">";
-	}
+        return strName + ">";
+    }
 
-	@Override
-	public String getNodeType() {
-		return ConstantLiteralNode.strNODETYPE;
-	}
+    @Override
+    public String getNodeType() {
+        return ConstantLiteralNode.strNODETYPE;
+    }
 
     public String getConstant() {
         return this.strConstant;
     }
 
     @Override
-	protected void createRecordLiterals() {
+    protected void createRecordLiterals() {
         // For a Constant Literal Node, we only need one constant literal per record,
         // so process as a row...
         this.createRowLiterals();
@@ -70,10 +70,10 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
      *  from this node on a Row.
      */
     @Override
-	protected void createRowLiterals() {
-		if (Util.isDebugMode()) ConstantLiteralNode.logger.info("DEBUG: createRowLiterals...");
+    protected void createRowLiterals() {
+        if (Util.isDebugMode()) ConstantLiteralNode.logger.info("DEBUG: createRowLiterals...");
 
-		this.listValues = null;
+        this.listValues = null;
 
         // If there is no value to work with...
         if ( this.strConstant == null || this.strConstant.isEmpty() ) {
@@ -84,66 +84,66 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
         this.normalizeLiteral(this.strConstant);
     }
 
-	@Override
+    @Override
     public void writeNode(JsonGenerator writer)
             throws JsonGenerationException, IOException {
-		// Prefix
-		//	N/A
+        // Prefix
+        //  N/A
 
-		// Source
+        // Source
         writer.writeObjectFieldStart(Util.gstrValueSource);
-		writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+        writer.writeStringField(Util.gstrSource, Util.gstrConstant);
         writer.writeStringField(Util.gstrConstant, this.strConstant);
-		writer.writeEndObject();
+        writer.writeEndObject();
 
-		// Expression
+        // Expression
         if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
-			writer.writeObjectFieldStart(Util.gstrExpression);
-			writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+            writer.writeObjectFieldStart(Util.gstrExpression);
+            writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);
-			writer.writeEndObject();
+            writer.writeEndObject();
         }
 
-		// Value Type
+        // Value Type
         writer.writeObjectFieldStart(Util.gstrValueType);
-		if (this.nodeDatatype != null) {
-			// Datatype Literal
-			writer.writeStringField(Util.gstrType, Util.gstrDatatypeLiteral);
+        if (this.nodeDatatype != null) {
+            // Datatype Literal
+            writer.writeStringField(Util.gstrType, Util.gstrDatatypeLiteral);
 
-			// Datatype
-			writer.writeObjectFieldStart(Util.gstrDatatype);
+            // Datatype
+            writer.writeObjectFieldStart(Util.gstrDatatype);
 
-			// Datatype: Prefix
-			String strPrefix = this.nodeDatatype.getPrefix();
-			if (strPrefix != null) {
-				writer.writeStringField( Util.gstrPrefix, strPrefix );
-			}
+            // Datatype: Prefix
+            String strPrefix = this.nodeDatatype.getPrefix();
+            if (strPrefix != null) {
+                writer.writeStringField( Util.gstrPrefix, strPrefix );
+            }
 
-			// Datatype: Source
-			writer.writeObjectFieldStart(Util.gstrValueSource);
-			writer.writeStringField(Util.gstrSource, Util.gstrConstant);
-			writer.writeStringField( Util.gstrConstant, this.nodeDatatype.getConstant() );
-			writer.writeEndObject();
+            // Datatype: Source
+            writer.writeObjectFieldStart(Util.gstrValueSource);
+            writer.writeStringField(Util.gstrSource, Util.gstrConstant);
+            writer.writeStringField( Util.gstrConstant, this.nodeDatatype.getConstant() );
+            writer.writeEndObject();
 
-			// Datatype: Expression
-			if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals("value") ) ) {
-				writer.writeObjectFieldStart(Util.gstrExpression);
-				writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
-				writer.writeStringField(Util.gstrCode, this.nodeDatatype.strExpression);
-				writer.writeEndObject();
-			}
+            // Datatype: Expression
+            if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals("value") ) ) {
+                writer.writeObjectFieldStart(Util.gstrExpression);
+                writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
+                writer.writeStringField(Util.gstrCode, this.nodeDatatype.strExpression);
+                writer.writeEndObject();
+            }
 
-			writer.writeEndObject();
-		}
-		else if (this.strLanguage != null) {
-			// Language Literal
-			writer.writeStringField(Util.gstrType, Util.gstrLanguageLiteral);
-			// Language (2 char code)
-			writer.writeStringField(Util.gstrLanguage, this.strLanguage);
-		}
-		else {
-			writer.writeStringField(Util.gstrType, Util.gstrLiteral);
-		}
-		writer.writeEndObject();
+            writer.writeEndObject();
+        }
+        else if (this.strLanguage != null) {
+            // Language Literal
+            writer.writeStringField(Util.gstrType, Util.gstrLanguageLiteral);
+            // Language (2 char code)
+            writer.writeStringField(Util.gstrLanguage, this.strLanguage);
+        }
+        else {
+            writer.writeStringField(Util.gstrType, Util.gstrLiteral);
+        }
+        writer.writeEndObject();
     }
 }

@@ -17,20 +17,20 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 public class SuggestNamespaceCommand extends RDFTransformCommand {
 
-	public SuggestNamespaceCommand() {
-		super();
-	}
+    public SuggestNamespaceCommand() {
+        super();
+    }
 
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String strPrefix = request.getParameter(Util.gstrPrefix);
-		String strNamespace = RDFTransform.getGlobalContext().getNSManager().getNamespace(strPrefix);
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String strPrefix = request.getParameter(Util.gstrPrefix);
+        String strNamespace = RDFTransform.getGlobalContext().getNSManager().getNamespace(strPrefix);
 
-		try {
-			response.setCharacterEncoding("UTF-8");
-	        response.setHeader("Content-Type", "application/json");
-	        Writer writer = response.getWriter();
-	        JsonGenerator jgWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
+        try {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Type", "application/json");
+            Writer writer = response.getWriter();
+            JsonGenerator jgWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
             jgWriter.writeStartObject();
             jgWriter.writeStringField("code", "ok");
             jgWriter.writeStringField(Util.gstrNamespace, strNamespace);
@@ -39,10 +39,10 @@ public class SuggestNamespaceCommand extends RDFTransformCommand {
             jgWriter.close();
             writer.flush();
             writer.close();
-		}
-		catch (Exception ex) {
-			respondException(response, ex);
-		}
-	}
+        }
+        catch (Exception ex) {
+            respondException(response, ex);
+        }
+    }
 
 }

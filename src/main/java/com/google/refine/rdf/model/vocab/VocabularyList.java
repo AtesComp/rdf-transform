@@ -60,14 +60,14 @@ public class VocabularyList extends ArrayList<Vocabulary> {
 
     @Override
     public VocabularyList clone() {
-    	VocabularyList listVocabsCopy = new VocabularyList();
+        VocabularyList listVocabsCopy = new VocabularyList();
 
         for ( Vocabulary entryVocab : this ) {
-    		listVocabsCopy.add( new Vocabulary( entryVocab.getPrefix(), entryVocab.getNamespace() )
+            listVocabsCopy.add( new Vocabulary( entryVocab.getPrefix(), entryVocab.getNamespace() )
             );
-    	}
+        }
 
-    	return listVocabsCopy;
+        return listVocabsCopy;
     }
 
 }

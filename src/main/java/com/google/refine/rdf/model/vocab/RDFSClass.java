@@ -8,7 +8,7 @@ public class RDFSClass extends RDFNode{
     }
 
     public RDFSClass(String strIRI) {
-    	super(strIRI);
+        super(strIRI);
     }
 
     @Override

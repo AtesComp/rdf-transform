@@ -27,14 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class ResourceNode extends Node {
-	static private final Logger logger = LoggerFactory.getLogger("RDFT:ResNode");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:ResNode");
 
     static protected final String strBNodePrefix = "_:";
 
     @JsonProperty(Util.gstrPropertyMappings)
     private List<Property> listProperties = new ArrayList<Property>();
 
-	@JsonProperty(Util.gstrTypeMappings)
+    @JsonProperty(Util.gstrTypeMappings)
     private List<RDFType> listTypes = new ArrayList<RDFType>();
 
     @JsonIgnore
@@ -54,8 +54,8 @@ abstract public class ResourceNode extends Node {
 
     @JsonProperty(Util.gstrPropertyMappings)
     public List<Property> getProperties() {
-		return this.listProperties;
-	}
+        return this.listProperties;
+    }
 
     /*
      *  Method processResultsAsArray() for results to Resources
@@ -283,12 +283,12 @@ abstract public class ResourceNode extends Node {
         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createRecordResources...");
         // TODO: For blank nodes, one per Record+Column is enough?  Review to limit! HINT: see createResources() -> (! this.bIsIndex)
         List<Value> listResources = new ArrayList<Value>();
-		while ( this.theRec.rowNext() ) {
-			this.createRowResources();
+        while ( this.theRec.rowNext() ) {
+            this.createRowResources();
             if ( this.listValues != null ) {
-				listResources.addAll(this.listValues);
-			}
-		}
+                listResources.addAll(this.listValues);
+            }
+        }
         if ( listResources.isEmpty() ) {
             listResources = null;
         }
@@ -377,8 +377,8 @@ abstract public class ResourceNode extends Node {
                 catch (IRIParsingException | IllegalArgumentException ex) {
                     logger.error( "ERROR: Bad Type IRI: " + strType, ex);
                 }
-    		}
-    	}
+            }
+        }
 
         //
         // Process statements...
@@ -525,22 +525,22 @@ abstract public class ResourceNode extends Node {
 
         // TODO: Create process for Sub-Records
 
-		this.listValues = null;
+        this.listValues = null;
 
         //
         // Record Mode...
-		//
+        //
         if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based,
-			// ...set to Row Mode and process on current row as set by rowNext()...
-			this.theRec.setMode(nodeProperty, true);
+            // ...set to Row Mode and process on current row as set by rowNext()...
+            this.theRec.setMode(nodeProperty, true);
         }
 
         //
         // Row Mode...
         //
         else {
-			// ...process on current row as set by rowNext()...
-			this.theRec.setMode(nodeProperty);
+            // ...process on current row as set by rowNext()...
+            this.theRec.setMode(nodeProperty);
         }
 
         this.createStatementsWorker();

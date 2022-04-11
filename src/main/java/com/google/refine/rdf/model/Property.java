@@ -21,20 +21,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // Class Link: A Predicate-Object collection
-//		The Predicate is stored as:
-//			Absolute IRI
-//			Prefixed IRI
-//		The Object is stored as:
-//			a data strucure defining the object node:
-//				a Column Value, natural or calculated, resource or literal
-//				a Constant Value, natural or calculated, resource or literal
+//      The Predicate is stored as:
+//          Absolute IRI
+//          Prefixed IRI
+//      The Object is stored as:
+//          a data strucure defining the object node:
+//              a Column Value, natural or calculated, resource or literal
+//              a Constant Value, natural or calculated, resource or literal
 //
-//		NOTE: Blank node resources have distinct processing requirements
-//				not found here.
+//      NOTE: Blank node resources have distinct processing requirements
+//              not found here.
 //
 @JsonIgnoreType
 public class Property {
-	static private final Logger logger = LoggerFactory.getLogger("RDFT:Property");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:Property");
 
     static public final class PropertyReconstructor {
         private PropertyReconstructor() {};
@@ -54,18 +54,18 @@ public class Property {
      *      for regular statements (Subject, Property, Object).
      */
     static public void reconstructProperties(
-							Node.NodeReconstructor theNodeReconstructor,
-							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
+                            Node.NodeReconstructor theNodeReconstructor,
+                            ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
                             VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
-		Property.reconstructProperties(rnodeParent, jnodeParent, baseIRI, theNamespaces);
-	}
+        Property.reconstructProperties(rnodeParent, jnodeParent, baseIRI, theNamespaces);
+    }
 
     static private void reconstructProperties(
-							ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
+                            ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
                             VocabularyList theNamespaces) {
-		if ( ! jnodeParent.has(Util.gstrPropertyMappings) ) {
+        if ( ! jnodeParent.has(Util.gstrPropertyMappings) ) {
             return;
         }
 
@@ -89,7 +89,7 @@ public class Property {
             //      Based on Source, get source information
             //
             //  TODO NOTE: All property sources are currently "constant"
-			//		Future support for other sources
+            //      Future support for other sources
             //
             String strSource = "";
             JsonNode jnodeValueSrc = null;
@@ -108,7 +108,7 @@ public class Property {
             //boolean bIsExpression = false;
 
             //  TODO NOTE: All property sources are currently "constant"
-			//		Future support for other sources
+            //      Future support for other sources
             //
             if ( strSource.equals(Util.gstrRowIndex) ) {
                 // A Row Index based node...
@@ -215,14 +215,14 @@ public class Property {
         }
     }
 
-	// The Property: A Prefix for the LocalPart
-	//		(to create a CIRIE: Condensed IRI Expression)
+    // The Property: A Prefix for the LocalPart
+    //      (to create a CIRIE: Condensed IRI Expression)
     private final String strPrefix;
 
-	// The Property: The Local Part of the IRI (or a Full IRI when Prefix is null)
+    // The Property: The Local Part of the IRI (or a Full IRI when Prefix is null)
     private final String strLocalPart;
 
-	// The Target: A source's target "node" connected via this Property
+    // The Target: A source's target "node" connected via this Property
     // TODO: Future multiple targets need adjustment on listNodeObject throughout this class
     private final Node nodeObject;
 
@@ -232,52 +232,52 @@ public class Property {
         this.nodeObject = nodeObject;
     }
 
-	public String getPrefix() {
-		return this.strPrefix;
-	}
+    public String getPrefix() {
+        return this.strPrefix;
+    }
 
-	public String getPathProperty() {
-		return this.strLocalPart;
-	}
+    public String getPathProperty() {
+        return this.strLocalPart;
+    }
 
     public String getPrefixedProperty() {
         if (this.strPrefix != null) {
-		    return this.strPrefix + ":" + this.strLocalPart;
+            return this.strPrefix + ":" + this.strLocalPart;
         }
         return this.strLocalPart;
-	}
+    }
 
-	public Node getObject() {
-		return this.nodeObject;
-	}
+    public Node getObject() {
+        return this.nodeObject;
+    }
 
-	public void write(JsonGenerator writer)
-			throws JsonGenerationException, IOException {
-		writer.writeStartObject();
+    public void write(JsonGenerator writer)
+            throws JsonGenerationException, IOException {
+        writer.writeStartObject();
 
         if (this.strPrefix != null) {
-		    writer.writeStringField(Util.gstrPrefix, this.strPrefix);
+            writer.writeStringField(Util.gstrPrefix, this.strPrefix);
         }
 
         // TODO: Modify for Future Non-Constant Value Source...
-		writer.writeObjectFieldStart(Util.gstrValueSource);
+        writer.writeObjectFieldStart(Util.gstrValueSource);
         writer.writeStringField(Util.gstrSource, Util.gstrConstant);
         writer.writeStringField(Util.gstrConstant, this.strLocalPart);
-		writer.writeEndObject();
+        writer.writeEndObject();
 
-		// TODO: Future Expression Store...
-		//writer.writeFieldName(Util.gstrExpression);
+        // TODO: Future Expression Store...
+        //writer.writeFieldName(Util.gstrExpression);
         //writer.writeStartObject();
         //writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
         //writer.writeStringField(Util.gstrCode, this.strExpCode);
-		//writer.writeEndObject();
+        //writer.writeEndObject();
 
-		if (this.nodeObject != null) {
-			writer.writeArrayFieldStart(Util.gstrObjectMappings);
-			this.nodeObject.write(writer, false);
-			writer.writeEndArray();
-		}
+        if (this.nodeObject != null) {
+            writer.writeArrayFieldStart(Util.gstrObjectMappings);
+            this.nodeObject.write(writer, false);
+            writer.writeEndArray();
+        }
 
-		writer.writeEndObject();
-	}
+        writer.writeEndObject();
+    }
 }

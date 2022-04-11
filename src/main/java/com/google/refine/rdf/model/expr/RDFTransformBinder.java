@@ -28,40 +28,40 @@ import org.slf4j.LoggerFactory;
  *   method to perform any additional work concerning the added "baseIRI" binding.
  */
 public class RDFTransformBinder implements Binder {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFBinder");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFBinder");
 
-	private Project theProject;
-	private String strLastBoundBaseIRI;
-	//private final String strBindError = "Unable to bind baseIRI.";
+    private Project theProject;
+    private String strLastBoundBaseIRI;
+    //private final String strBindError = "Unable to bind baseIRI.";
 
-	public RDFTransformBinder() {
-		super();
-		this.strLastBoundBaseIRI = null;
-	}
+    public RDFTransformBinder() {
+        super();
+        this.strLastBoundBaseIRI = null;
+    }
 
     @Override
     public void initializeBindings(Properties theBindings, Project theProject) {
-		this.theProject = theProject;
-		if ( Util.isVerbose(3) ) RDFTransformBinder.logger.info("Bind baseIRI...");
-		this.strLastBoundBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
-		theBindings.put("baseIRI", this.strLastBoundBaseIRI);
+        this.theProject = theProject;
+        if ( Util.isVerbose(3) ) RDFTransformBinder.logger.info("Bind baseIRI...");
+        this.strLastBoundBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
+        theBindings.put("baseIRI", this.strLastBoundBaseIRI);
     }
 
-	@Override
-	public void bind(Properties theBindings, Row theRow, int iRowIndex, String strColumnName, Cell theCell) {
-		//
-		// Update the baseIRI
-		//
-		// The baseIRI is already added by the initializeBindings() above.
-		// The put() call replaces it.
-	
-		// Get the current baseIRI...
-		String strCurrentBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
-		// If the current baseIRI is new...
-		if ( ! this.strLastBoundBaseIRI.equals(strCurrentBaseIRI) ) {
-			// Replace the bound baseIRI...
-			theBindings.put("baseIRI", strCurrentBaseIRI);
-			strLastBoundBaseIRI = strCurrentBaseIRI;
-		}
-	}
+    @Override
+    public void bind(Properties theBindings, Row theRow, int iRowIndex, String strColumnName, Cell theCell) {
+        //
+        // Update the baseIRI
+        //
+        // The baseIRI is already added by the initializeBindings() above.
+        // The put() call replaces it.
+    
+        // Get the current baseIRI...
+        String strCurrentBaseIRI = RDFTransform.getRDFTransform(this.theProject).getBaseIRIAsString();
+        // If the current baseIRI is new...
+        if ( ! this.strLastBoundBaseIRI.equals(strCurrentBaseIRI) ) {
+            // Replace the bound baseIRI...
+            theBindings.put("baseIRI", strCurrentBaseIRI);
+            strLastBoundBaseIRI = strCurrentBaseIRI;
+        }
+    }
 }

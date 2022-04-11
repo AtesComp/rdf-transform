@@ -14,76 +14,76 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceRefreshCommand extends RDFTransformCommand {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRefreshCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRefreshCmd");
 
-	public NamespaceRefreshCommand() {
-		super();
-	}
+    public NamespaceRefreshCommand() {
+        super();
+    }
 
-	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		response.setCharacterEncoding("UTF-8");
-		response.setHeader("Content-Type", "application/json");
-		if ( ! this.hasValidCSRFToken(request) ) {
-			NamespaceRefreshCommand.respondCSRFError(response);
-			return;
-		}
-		// For Project, DO NOT USE this.getProject(request) as we only need the string...
-		String strProjectID = request.getParameter(Util.gstrProject);
-
-		String strPrefix    = request.getParameter(Util.gstrPrefix);
-		String strNamespace = request.getParameter(Util.gstrNamespace);
-
-		RDFTransform theTransform = this.getRDFTransform(request);
-
-		// Remove the namespace...
-		theTransform.removeNamespace(strPrefix);
-
-		Exception except = null;
-		boolean bError = false;
-		String strError = null;
-		try{
-			// Remove related vocabulary...
-			RDFTransform.getGlobalContext().
-				getVocabularySearcher().
-					deleteTermsOfVocab(strPrefix, strProjectID);
-
-			// Re-add related vocabulary...
-			RDFTransform.getGlobalContext().
-				getVocabularySearcher().
-					importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Content-Type", "application/json");
+        if ( ! this.hasValidCSRFToken(request) ) {
+            NamespaceRefreshCommand.respondCSRFError(response);
+            return;
         }
-		catch (VocabularyImportException ex) {
-			bError = true;
-			strError = "Importing";
-			except = ex;
-		}
-		catch (Exception ex) {
-			bError = true;
-			strError = "Processing";
-			except = ex;
-		}
+        // For Project, DO NOT USE this.getProject(request) as we only need the string...
+        String strProjectID = request.getParameter(Util.gstrProject);
 
-		// Some problem occurred....
-		if (except != null) {
-			if (bError) {// ...error...
-				NamespaceRefreshCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
-				if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
-			}
-			else { // ...warning...
-				if ( Util.isVerbose() ) NamespaceRefreshCommand.logger.warn("Prefix exists: ", except);
-			}
+        String strPrefix    = request.getParameter(Util.gstrPrefix);
+        String strNamespace = request.getParameter(Util.gstrNamespace);
 
-			NamespaceRefreshCommand.respondJSON(response, CodeResponse.error);
-			return;
-		}
+        RDFTransform theTransform = this.getRDFTransform(request);
 
-		// Otherwise, all good...
+        // Remove the namespace...
+        theTransform.removeNamespace(strPrefix);
 
-		// Re-add the namespace...
-		theTransform.addNamespace(strPrefix, strNamespace);
+        Exception except = null;
+        boolean bError = false;
+        String strError = null;
+        try{
+            // Remove related vocabulary...
+            RDFTransform.getGlobalContext().
+                getVocabularySearcher().
+                    deleteTermsOfVocab(strPrefix, strProjectID);
 
-		NamespaceRefreshCommand.respondJSON(response, CodeResponse.ok);
-	}
+            // Re-add related vocabulary...
+            RDFTransform.getGlobalContext().
+                getVocabularySearcher().
+                    importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
+        }
+        catch (VocabularyImportException ex) {
+            bError = true;
+            strError = "Importing";
+            except = ex;
+        }
+        catch (Exception ex) {
+            bError = true;
+            strError = "Processing";
+            except = ex;
+        }
+
+        // Some problem occurred....
+        if (except != null) {
+            if (bError) {// ...error...
+                NamespaceRefreshCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
+                if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
+            }
+            else { // ...warning...
+                if ( Util.isVerbose() ) NamespaceRefreshCommand.logger.warn("Prefix exists: ", except);
+            }
+
+            NamespaceRefreshCommand.respondJSON(response, CodeResponse.error);
+            return;
+        }
+
+        // Otherwise, all good...
+
+        // Re-add the namespace...
+        theTransform.addNamespace(strPrefix, strNamespace);
+
+        NamespaceRefreshCommand.respondJSON(response, CodeResponse.ok);
+    }
 }

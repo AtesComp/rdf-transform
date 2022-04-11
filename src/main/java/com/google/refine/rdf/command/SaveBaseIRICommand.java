@@ -14,10 +14,10 @@ import com.google.refine.model.Project;
 public class SaveBaseIRICommand extends RDFTransformCommand {
 
     public SaveBaseIRICommand() {
-		super();
-	}
+        super();
+    }
 
-	@Override
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if ( ! this.hasValidCSRFToken(request) ) {
@@ -29,11 +29,11 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
             String strIRI = request.getParameter("baseIRI");
             ParsedIRI baseIRI;
             try {
-            	baseIRI = Util.buildIRI(strIRI);
+                baseIRI = Util.buildIRI(strIRI);
             }
             catch (RuntimeException ex) {
-            	SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
-            	return;
+                SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
+                return;
             }
             RDFTransform.getRDFTransform(theProject).setBaseIRI(baseIRI);
 

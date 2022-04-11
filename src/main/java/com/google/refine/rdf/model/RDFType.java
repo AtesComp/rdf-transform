@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 @JsonIgnoreType
 public class RDFType {
-	static private final Logger logger = LoggerFactory.getLogger("RDFT:RDFType");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:RDFType");
 
     /*
      * Method reconstructTypes()
@@ -89,7 +89,7 @@ public class RDFType {
     }
 
     private String strLocalPart;
-	private String strPrefix;
+    private String strPrefix;
 
     public RDFType(String strPrefix, String strLocalPart) {
         this.strPrefix  = Util.toSpaceStrippedString(strPrefix);
@@ -97,19 +97,19 @@ public class RDFType {
     }
 
     public String getPrefix() {
-    	return this.strPrefix;
+        return this.strPrefix;
     }
 
     public String getLocalPart() {
-		return this.strLocalPart;
-	}
+        return this.strLocalPart;
+    }
 
     public String getPrefixedIRI() {
         if (this.strPrefix != null) {
-		    return this.strPrefix + ":" + this.strLocalPart;
+            return this.strPrefix + ":" + this.strLocalPart;
         }
         return this.strLocalPart;
-	}
+    }
 
     public String getFullIRI(VocabularyList theNamespaces, String strBaseIRI) {
         if (this.strPrefix == null) {
@@ -123,7 +123,7 @@ public class RDFType {
             return strBaseIRI + this.strLocalPart;
         }
         return this.strPrefix + ":" + this.strLocalPart;
-	}
+    }
 
     public void write(JsonGenerator writer)
             throws JsonGenerationException, IOException {
@@ -138,12 +138,12 @@ public class RDFType {
         writer.writeStringField(Util.gstrConstant, this.strLocalPart);
         writer.writeEndObject();
 
-		// TODO: Future Expression Store...
-		//writer.writeFieldName(Util.gstrExpression);
+        // TODO: Future Expression Store...
+        //writer.writeFieldName(Util.gstrExpression);
         //writer.writeStartObject();
         //writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
         //writer.writeStringField(Util.gstrCode, this.strExpCode);
-		//writer.writeEndObject();
+        //writer.writeEndObject();
 
         writer.writeEndObject();
     }

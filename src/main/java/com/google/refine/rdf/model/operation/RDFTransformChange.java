@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RDFTransformChange implements Change {
-	private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFTransChange");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFTransChange");
     private final static String strNew = "new";
     private final static String strOld = "old";
 

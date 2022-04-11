@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class LiteralNode extends Node {
-	static private final Logger logger = LoggerFactory.getLogger("RDFT:LitNode");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:LitNode");
 
     protected ConstantResourceNode nodeDatatype;
     protected String strLanguage;
@@ -40,29 +40,29 @@ abstract public class LiteralNode extends Node {
      *  from this node on Rows / Records.
      */
     @Override
-	protected List<Value> createObjects(ResourceNode nodeProperty) {
-		if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createObjects...");
+    protected List<Value> createObjects(ResourceNode nodeProperty) {
+        if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createObjects...");
 
         this.setObjectParameters(nodeProperty);
 
         // TODO: Create process for Sub-Records
 
-		this.listValues = null;
+        this.listValues = null;
 
-		//
+        //
         // Record Mode...
         //
-		if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based,
-			// ...set to Row Mode and process on current row as set by rowNext()...
-			this.theRec.setMode(nodeProperty, true);
+        if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based,
+            // ...set to Row Mode and process on current row as set by rowNext()...
+            this.theRec.setMode(nodeProperty, true);
             this.createRecordLiterals();
         }
         //
         // Row Mode...
         //
         else {
-			// ...process on current row as set by rowNext()...
-			this.theRec.setMode(nodeProperty);
+            // ...process on current row as set by rowNext()...
+            this.theRec.setMode(nodeProperty);
             this.createRowLiterals();
         }
 
@@ -78,21 +78,21 @@ abstract public class LiteralNode extends Node {
      *  from this node on Records
      */
     protected void createRecordLiterals() {
-		if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createRecordLiterals...");
+        if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createRecordLiterals...");
 
         List<Value> listLiterals = new ArrayList<Value>();
-		while ( this.theRec.rowNext() ) {
-			this.createRowLiterals();
-			if (this.listValues != null) {
-				listLiterals.addAll(this.listValues);
-			}
-		}
+        while ( this.theRec.rowNext() ) {
+            this.createRowLiterals();
+            if (this.listValues != null) {
+                listLiterals.addAll(this.listValues);
+            }
+        }
         if ( listLiterals.isEmpty() ) {
-			listLiterals = null;
-		}
+            listLiterals = null;
+        }
 
-		this.listValues = listLiterals;
-	}
+        this.listValues = listLiterals;
+    }
 
     abstract protected void createRowLiterals();
 

@@ -171,7 +171,7 @@ public class RDFNode {
     // }
 
     public String getType() {
-    	//throw new UnsupportedOperationException();
+        //throw new UnsupportedOperationException();
         return this.getClass().getSimpleName();
     }
 

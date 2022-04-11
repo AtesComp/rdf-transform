@@ -14,41 +14,41 @@ import org.slf4j.LoggerFactory;
 
 @JsonIgnoreType
 public class Vocabulary {
-	static private final Logger logger = LoggerFactory.getLogger("RDFT:Vocabulary");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:Vocabulary");
 
-	private String strPrefix;		// Short name that represents the Namespace
-	private String strNamespace;	// The fully qualified Namespace
+    private String strPrefix;       // Short name that represents the Namespace
+    private String strNamespace;    // The fully qualified Namespace
 
     public Vocabulary(String strPrefix, String strNamespace )
-	{
-    	this.strPrefix = strPrefix;
-    	this.strNamespace = strNamespace;
-		if ( Util.isDebugMode() ) Vocabulary.logger.info("DEBUG: Prefix:[{}] Namespace:[{}]", strPrefix, strNamespace);
+    {
+        this.strPrefix = strPrefix;
+        this.strNamespace = strNamespace;
+        if ( Util.isDebugMode() ) Vocabulary.logger.info("DEBUG: Prefix:[{}] Namespace:[{}]", strPrefix, strNamespace);
     }
 
-	public String getPrefix() {
-		return this.strPrefix;
-	}
+    public String getPrefix() {
+        return this.strPrefix;
+    }
 
-	public String getNamespace() {
-		return this.strNamespace;
-	}
+    public String getNamespace() {
+        return this.strNamespace;
+    }
 
-	@Override
-	public int hashCode() {
-		return this.strPrefix.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return this.strPrefix.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object object) {
-		if ( object != null && object.getClass().equals( this.getClass() ) ) {
-			return this.strPrefix.equals( ( (Vocabulary) object).getPrefix());
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object object) {
+        if ( object != null && object.getClass().equals( this.getClass() ) ) {
+            return this.strPrefix.equals( ( (Vocabulary) object).getPrefix());
+        }
+        return false;
+    }
 
     public void write(JsonGenerator theWriter)
-			throws JsonGenerationException, IOException {
+            throws JsonGenerationException, IOException {
         theWriter.writeStringField(this.strPrefix, this.strNamespace);
-	}
+    }
 }
