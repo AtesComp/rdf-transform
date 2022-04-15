@@ -10,10 +10,13 @@ RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension]
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
 
 ## Download
+[comment]: # RDF Transform Version Control
+
 ### Latest Release
-[RDF Transform v2.0.1-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.1-alpha/rdf-transform-2.0.1.zip)
+[RDF Transform v2.0.2-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.2-alpha/rdf-transform-2.0.2.zip)
 
 ### Previous Releases
+[RDF Transform v2.0.1-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.1-alpha/rdf-transform-2.0.1.zip)
 [RDF Transform v2.0.0-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0-alpha/rdf-transform-2.0.0.zip)
 
 ## Install
