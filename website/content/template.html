@@ -1,0 +1,477 @@
+<p>
+  The RDF Tranform can be exported as a JSON template. The JSON structure is use internally
+  to manage the RDF Transform elements. The JSON structure is shown below. This structure is
+  further dissected and discussed.
+</p>
+<pre>
+{
+    "baseIRI" : "some://Example/iri",
+    "extension" : "RDFTransform",
+    "namespaces" : {
+       "(prefix)" : "some://Example/namespace",
+       ...
+    },
+    "subjectMappings" : [
+        {
+            "expression" : {
+                "code" : "(some expression code)",
+                "language" : "grel"
+            },
+            "prefix" : "(prefix)",
+            "propertyMappings" : [
+                {
+                    "objectMappings" : [
+                        {
+                            "expression" : {
+                                "code" : "(some expression code)",
+                                "language" : "grel"
+                            },
+                            "prefix" : "(prefix)",
+                            "valueSource" : {
+                                "columnName" : "(some column name)",
+                                "source" : "column"
+                            },
+                            "valueType" : {
+                                "type" : "iri"
+                            }
+                        },
+                        ...
+                    ],
+                    "prefix" : "(prefix)",
+                    "valueSource" : {
+                        "constant" : "(some constant)",
+                        "source" : "constant"
+                    }
+                },
+                {
+                    "objectMappings" : [
+                        {
+                            "valueSource" : {
+                                "columnName" : "(some column name)",
+                                "source" : "column"
+                            },
+                            "valueType" : {
+                                "datatype" : {
+                                    "prefix" : "(prefix)",
+                                    "valueSource" : {
+                                    "constant" : "(some constant)",
+                                    "source" : "constant"
+                                    }
+                                },
+                                "type" : "datatype_literal"
+                            }
+                        },
+                        ...
+                    ],
+                    "prefix" : "(prefix)",
+                    "valueSource" : {
+                        "constant" : "(some constant)",
+                        "source" : "constant"
+                    }
+                },
+                {
+                    "objectMappings" : [
+                        {
+                            "valueSource" : {
+                                "columnName" : "(some column name)",
+                                "source" : "column"
+                            },
+                            "valueType" : {
+                                "language" : "(some language value)",
+                                "type" : "language_literal"
+                            }
+                        },
+                        ...
+                    ],
+                    "prefix" : "(prefix)",
+                    "valueSource" : {
+                        "constant" : "(some constant)",
+                        "source" : "constant"
+                    }
+                },
+                ...
+            ],
+            "typeMappings" : [
+                {
+                    "prefix" : "(prefix)",
+                    "valueSource" : {
+                    "constant" : "(some constant)",
+                    "source" : "constant"
+                    }
+                }
+            ],
+            "valueSource" : {
+                "source" : "(some source)"
+            }
+        },
+        ...
+    ],
+    "version" : "(some version id)"
+ }
+</pre>
+<h2>Header...</h2>
+<p>
+  The Header section consists of the following:
+</p>
+<pre>
+{
+    "baseIRI" : "some://Example/iri",
+    "extension" : "RDFTransform",
+    "namespaces" : {
+        "(prefix)" : "some://Example/namespace/",
+        ...
+    },
+    ...
+    "version" : "(some version id)"
+}
+</pre>
+<p>
+  The various Header elements are:
+  <ol>
+    <li>
+      The "baseIRI" key describes the default namespace when a prefix is not given.
+    </li>
+    <li>
+      The "extension" key identifies the RDF Transform extension as the generating
+      origin.
+    </li>
+    <li>
+      The "namespace" key describes a container of key:values pairs for the embedded
+      namespaces where the key is the short prefix identifier and the value is the
+      related IRI namespace.
+    </li>
+    <li>
+      The "version" key is the extension version used to generate the JSON.
+    </li>
+  </ol>
+</p>
+<h2>Triple Template...</h2>
+<p>
+  The template is a mapping used to process triples from the data and contains elements
+  that match up to the triple components: subject, property, and object.  The initial
+  subjects are found in the Triple Mapping section designated by the "subjectMappings"
+  key. The "subjectMappings" key holds a list of subject maps.  The properties are
+  found in each subject map designated by the "propertyMappings" key. The
+  "propertyMappings" key holds a list of property maps. The objects are
+  found in each property map designated by the "objectMappings" key. The
+  "objectMappings" key holds a list of object maps.  An object map may, in turn, be
+  a subject for another triple holding its own "propertyMappings" key and so on.
+</p>
+<h3>Triple Mapping...</h3>
+<p>
+  The Triple Mapping section consists of the following:
+</p>
+<pre>
+    "subjectMappings" : [
+        {
+            ...
+            "propertyMappings" : [
+                {
+                    ...
+                    "objectMappings" : [
+                        {
+                            ...
+                        },
+                        ...
+                    ],
+                    ...
+                },
+                ...
+            ],
+            ...
+        },
+        ...
+    ],
+</pre>
+<p>
+  The "subjectMappings" key describes a list of Root Node subject (resource) maps that
+  start a triple expression. The "propertyMappings" key describes a list of property
+  (resource) maps. The "objectMappings" key describes a list of object (resource or
+  literal) maps.
+</p>
+<p class="note">
+  An incomplete Triple Mapping section may exist with only partially complete triple
+  maps as the JSON represents the work in the Transform Tab which may be a
+  work-in-progress.
+</p>
+<h2>Subject and Object Maps...</h2>
+<p>
+  The subject and object maps have a similar structure for resource and literal mapping:
+</p>
+<pre>
+    ...
+    {
+        "expression" : {
+            "code" : "(some expression code)",
+            "language" : "grel"
+        },
+        "prefix" : "(some prefix value)",
+        "propertyMappings" : [
+            ...
+        ],
+        "typeMappings" : [
+            ...
+        ],
+        "valueSource" : {
+            ...
+        },
+        "valueType" : {
+            ...
+        }
+    }.
+    ...
+</pre>
+<p>
+  The various resource and literal mapping elements are:
+  <ol>
+    <li><b>OPTIONAL</b>
+      The "expression" key describes the expression container. Expressions are used
+      to calculate some result that can be used as a resource or literal. The expression
+      container holds a "code" key that has the coding language statements as its value.
+      It also holds a "language" key that has the coding language value. Currently, GREL
+      ("grel") is the only coding language recognized. Resources and literals have a
+      default expression as the source "value" (see "valueSource" below).
+    </li>
+    <li><b>OPTIONAL</b>
+      The "prefix" key identifies the prefixed namespace used for an IRI and is appended
+      to the Local Part of the IRI to form a Condensed IRI Expression (CIRIE). Resources
+      may have prefixes. Literals do not have prefixes.
+    </li>
+    <li>
+      The "propertyMappings" key describes the list of property maps as discussed
+      previously.
+    </li>
+    <li><b>OPTIONAL</b>
+      The "typeMappings" key describes a specialized list of type maps. Type maps always
+      use an "rdf:type" (or "a") property with the given type information as the object
+      to produce "type" triples for a resource. The "typeMappings" key is discussed in
+      more detail later.
+    </li>
+    <li>
+      The "valueSource" key describes the node's source information for a resource or
+      literal and is discussed in more detail later.
+    </li>
+    <li><b>OPTIONAL</b>
+      The "valueType" key describes the node's type information for a resource or literal
+      and is discussed in more detail later.<br />
+      For <b>Root Node subject maps</b>, the "valueType" key section is optional as all
+      Root Nodes subjects are always resource IRIs and, therefore, have a default "iri"
+      type value. Root Nodes subject maps may also be specified as Blank Nodes. For
+      object maps, objects may be either resources or literals.  Then, the "valueType"
+      key section is used to designate resource or literal type values.
+    </li>
+  </ol>
+</p>
+<h2>Property Maps...</h2>
+<p>
+  The property maps have a reduced structure for resource mapping:
+</p>
+<pre>
+    ...
+    {
+        "objectMappings" : [
+            ...
+        ]
+        "prefix" : "(prefix)",
+        "valueSource" : {
+            ...
+        },
+    }.
+    ...
+</pre>
+<p>
+  Since all properties are resource IRIs, the "valueType" key is not needed.
+  Additionally, the "valueSource" key currently always specifies a constant resource.
+  Then, the "expression" key is also not needed.
+</p>
+<p class="note">
+  As properties are not normally typed, the "typeMappings" key is not needed. To type a
+  property, create a new Root Node designed to be equal to the property IRI and use the
+  "Add type..." feature or designate a "rdf:type" property map and an object map to use
+  as the type.
+</p>
+<p>
+  The various property mapping elements are:
+  <ol>
+    <li>
+      The "objectMappings" key describes the list of object maps as discussed previously.
+    </li>
+    <li><b>OPTIONAL</b>
+      The "prefix" key identifies the prefixed namespace used for an IRI as discussed
+      previously. It is harvested from the source information if present.
+    </li>
+    <li>
+      The "valueSource" key describes the property's source information for a resource.
+      It currently always specifies a constant resource and is discussed in more detail
+      later.
+    </li>
+  </ol>
+</p>
+<h2>Type Maps...</h2>
+<p>
+  The type maps have a reduced structure for resource mapping:
+</p>
+<pre>
+    ...
+    {
+        "prefix" : "(prefix)",
+        "valueSource" : {
+            "constant" : "(IRI Local Part)",
+            "source" : "constant"
+        }
+    },
+    {
+        "valueSource" : {
+            "constant" : "(Full IRI)",
+            "source" : "constant"
+        }
+    },
+    ...
+</pre>
+<p>
+  A type map currently always specifies a constant resource. The constant resource may be
+  a prefixed IRI (a CIRIE) or a fully specified IRI. If prefixed, the prefix is harvested
+  from the constant and mapped in the JSON structure.  If there is no suitable prefix,
+  the "prefix" key is not used and the constant remains as entered.
+</p>
+<p>
+  The various type mapping elements are:
+  <ol>
+    <li><b>OPTIONAL</b>
+      The "prefix" key identifies the prefixed namespace used for an IRI as discussed
+      previously. It is harvested from the source information if present.
+    </li>
+    <li>
+      The "valueSource" key describes the type's source information for a resource.
+      It currently always specifies a constant resource and is discussed in more detail
+      later.
+    </li>
+  </ol>
+</p>
+<h2>The "valueSource" key container...</h2>
+<p>
+  The "valueSource" key container consists of the following:
+</p>
+<pre>
+    ...
+    "valueSource" : {
+        "source" : "(source type)",
+        "(source key)" : "(source value)"
+    },
+    ...
+</pre>
+<p>
+  The "valueSource" key container elements are:
+  <ol>
+    <li>
+      The "source" key identifies some (source type).  The (source type) corresponds to
+      the (source key). The (source type) may be:
+      <ol>
+        <li>
+          <b>row_index</b> - a row index type, use the row index for the value. In this
+          case, the (source key) is not needed.
+        </li>
+        <li>
+          <b>record_id</b> - a record index type, use the record index for the value.
+          In this case, the (source key) is not needed.
+        </li>
+        <li>
+          <b>column</b> - a data column type, use a data column name cell for the
+          value. The (source key) is specified as "columnName".
+        </li>
+        <li>
+          <b>constant</b> - a constant type, use the user enter constant value for the
+          value. The (source key) is specified as "constant".
+        </li>
+        <li>
+          <b>expression</b> - <b>(UNUSED)</b> an expression type, use the value derived
+          from the user enter expression. The (source key) is specified as
+          "expression".
+        </li>
+      </ol>
+    </li>
+    <li><b>DEPENDENT</b>
+      The "(source key)" key identifies the (source value) used for the source. The
+      (source key) may be:
+      <ol>
+        <li>
+          <b>columnName</b> - the (source value) is a data column name use to retreive
+          cell values.
+        </li>
+        <li>
+          <b>constant</b> - the (source value) is a user entered constant used as the
+          value.  Constant values result in a singleton value used throughout the
+          transform.
+        </li>
+        <li>
+          <b>expression</b> - <b>(UNUSED)</b> the (source value) is an expression to
+          evaluate as the value.  The resulting value may be constant or variable.
+        </li>
+      </ol>
+    </li>
+  </ol>
+</p>
+<h2>The "valueType" key container...</h2>
+<p>
+  The "valueType" key container consists of the following:
+</p>
+<pre>
+    ...
+    "valueType" : {
+        "type" : "(value type)",
+        "(type key)" : (type structure)
+    },
+    ...
+</pre>
+<p>
+The "valueType" key container elements are:
+  <ol>
+    <li>
+      The "type" key identifies some (value type).  The (value type) corresponds to
+      the (type key). The (value type) may be:
+      <ol>
+        <li>
+          <b>iri</b> - an IRI is generated from the source value. In this case, the (type
+          key) is not needed.
+        </li>
+        <li>
+          <b>bnode</b> - a variable Blank Node resource is generated from the
+          source value. The Blank Node is generated, one per row as needed. In this case,
+          the (type key) is not needed.
+        </li>
+        <li>
+          <b>value_bnode</b> - a constant value Blank Node resource is generated from the
+          constant value. The constant value Blank Node is a singleton node used throughout
+          the transform. In this case, the (type key) is not needed.
+        </li>
+        <li>
+          <b>literal</b> - a generic literal is generated from the source value. In this
+          case, the (type key) is not needed.
+        </li>
+        <li>
+          <b>language_literal</b> - a language tagged literal is generated from the
+          source value. The (type key) is specified as "language".
+        </li>
+        <li>
+          <b>datatype_literal</b> - a datatyped literal is generated from the source
+          value. The (type key) is specified as "datatype".
+        </li>
+      </ol>
+    </li>
+    <li>
+      <b>DEPENDENT</b> The "(type key)" key identifies the (type structure) used for the
+      type. The (type key) may be:
+      <ol>
+        <li>
+          <b>language</b> - the (type structure) is a simple string consisting of an ISO
+          639-1 two character language code that identified the language of the literal.
+          Examples: "en", "es", "ja", "it", "de", etc.
+        </li>
+        <li>
+          <b>datatype</b> - the (type structure) is a type map structure for resource
+          mapping as previously dicsussed (see "type maps" above).
+        </li>
+      </ol>
+    </li>
+  </ol>
+</p>

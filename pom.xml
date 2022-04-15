@@ -2,13 +2,14 @@
     <!--
         To include OpenRefine:
             In OpenRefine project directory:
+                ./refine build
                 ./refine dist 3.6-SNAPSHOT
             Then, in rdf-transform extension project directory:
                 mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
-	-->
+    -->
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.google.refine</groupId>
+    <groupId>org.openrefine</groupId>
     <artifactId>rdf-transform</artifactId>
     <version>2.0.1</version>
     <packaging>jar</packaging>
@@ -16,42 +17,38 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Maven Build -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <!-- Maven Build -->
+        <java.minversion>11</java.minversion>
+        <java.maxversion>17</java.maxversion>
+        <maven.compiler.source>${java.minversion}</maven.compiler.source>
+        <maven.compiler.target>${java.minversion}</maven.compiler.target>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
 
-		<!--
+        <!--
              OpenRefine Dependent: 3.4.1, 3.5-beta1, 3.6-SNAPSHOT, etc.
         -->
         <openrefine.version>3.6-SNAPSHOT</openrefine.version>
-		<!--<butterfly.version>1.1.1</butterfly.version>-->
-		<butterfly.version>1.2.0</butterfly.version><!-- matches 3.6-SNAPSHOT -->
-        <!--slf4j.version>1.7.30</slf4j.version-->
-        <slf4j.version>1.7.32</slf4j.version><!-- matches 3.6-SNAPSHOT -->
+        <butterfly.version>1.2.3</butterfly.version><!-- matches 3.6-SNAPSHOT -->
+        <slf4j.version>1.7.36</slf4j.version><!-- matches 3.6-SNAPSHOT -->
 
-        <!--jena.version>3.9.0</jena.version-->
-        <!--jena.version>3.17.0</jena.version--><!-- matches 3.6-SNAPSHOT -->
-        <jena.version>4.2.0</jena.version>
-        <!--javax.version>3.1.0</javax.version-->
-        <javax.version>4.0.1</javax.version><!-- matches 3.6-SNAPSHOT -->
+        <jena.version>4.4.0</jena.version><!-- matches 3.6-SNAPSHOT -->
+        <javax.version>4.0.1</javax.version><!-- matches 3.6-SNAPSHOT for servlet-api -->
         <!--<velocity.version>1.5</velocity.version>--><!-- matches 3.6-SNAPSHOT -->
         <velocity.version>1.6.3</velocity.version>
-		<httpclient5.version>5.1</httpclient5.version><!-- matches 3.6-SNAPSHOT -->
+        <httpclient5.version>5.1.3</httpclient5.version><!-- matches 3.6-SNAPSHOT -->
         <commons-fileupload.version>1.4</commons-fileupload.version><!-- matches 3.6-SNAPSHOT -->
         <commons-io.version>2.11.0</commons-io.version><!-- matches 3.6-SNAPSHOT -->
-        <!--guava.version>22.0</guava.version-->
-        <guava.version>31.0-jre</guava.version><!-- matches 3.6-SNAPSHOT -->
+        <guava.version>31.1-jre</guava.version><!-- matches 3.6-SNAPSHOT -->
         <jaxb-api.version>2.3.1</jaxb-api.version><!-- matches 3.6-SNAPSHOT -->
 
-		<!--
+        <!--
              RDF Transform Dependent
         -->
         <rdf4j.version>3.7.6</rdf4j.version>
         <any23.version>2.7</any23.version>
         <lucene.version>8.10.0</lucene.version>
 
-		<!--
+        <!--
              Unused
         -->
         <!--simmetrics.version>1.6.2</simmetrics.version-->
@@ -66,18 +63,18 @@
             <id>central</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository-->
-		<repository>
-			<id>project-repository</id>
-			<url>file://${project.basedir}/project-repository</url>
-		</repository>
-		<repository>
-			<id>user-repository</id>
-			<url>file://${settings.localRepository}/</url>
-		</repository>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
+        <repository>
+            <id>project-repository</id>
+            <url>file://${project.basedir}/project-repository</url>
+        </repository>
+        <repository>
+            <id>user-repository</id>
+            <url>file://${settings.localRepository}/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -465,22 +462,22 @@
 
 
 
-		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
-		<dependency>
-			<groupId>org.apache.httpcomponents.client5</groupId>
-			<artifactId>httpclient5</artifactId>
-			<version>${httpclient5.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-codec</groupId>
-					<artifactId>commons-codec</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>${httpclient5.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
 
 

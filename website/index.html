@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
-    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd" />
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
@@ -8,10 +7,12 @@
     <base id="base_iri" href="" />
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="stylesheet" type="text/css" href="rdf-transform.css" />
-    <link rel="shortcut icon" type="image/png" id="favicon" href="images/favicon.png" />
+    <link rel="shortcut icon" type="image/x-icon" id="favicon" href="images/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png" />
   </head>
   <body>
     <div id="header">
+      <div id="header-title"></div>
       <ul id="main-nav"></ul>
     </div>
     <div id="title-stripe">
@@ -24,7 +25,10 @@
           <li><a href="#about">About</a></li>
           <li class="last"><a href="#gpl">GPL</a></li>
         </ul>
-        <div id="tagline">Transform your life with another quality Linked Data project</div>
+        <div id="tagline">
+          <img src="images/favicon-32.png" alt="Motorcycle" style="vertical-align: middle;" />
+          <span style="vertical-align: middle;"> Transform your life with another quality Linked Data project.</span>
+        </div>
       </div>
     </div>
 
@@ -61,23 +65,19 @@
             window.location.href = evt.target.href;
             window.location.reload();
         }
-            
+
         function theLoader() {
-            /*
-            TODO
-            - Tons of content missing!
-            - Layout for Showcase page
-            - Better screenshot for homepage
-            - Improve screenshot display on homepage
-            */
-            
-            // ============= SITE STRUCTURE AND PAGES  ==========================================
-            
+            // ==========================================
+            //
+            //  SITE STRUCTURE AND PAGES
+            // 
+            // ==========================================
+
             const listMainLinks = {
                 'Home' : '',
                 'Showcases' : 'showcases',
                 'Docs' : 'docs',
-                'Support & Devel' : 'support-dev'
+                'Support' : 'support-dev'
             };
             
             const listSectionLinks = {
@@ -91,63 +91,77 @@
                 },
                 'support-dev' : {
                     'Overview' : 'support-dev',
-                    'Issue tracker' : 'issues',
-                    'Source code' : 'source'
+                    'Issue Tracker' : 'issues',
+                    'Source Code' : 'source'
                 },
                 'showcases' : {
                     'Overview' : 'showcases',
-                    'RDF Transform Example' : 'exampleDoc'
+                    'RDF Transform' : 'example'
                 }
             };
-            
+
             const listPages = {
                 '' : {
-                    'head_title' : 'OpenRefine',
+                    'head_title' : 'Home',
                     'title_content' : 'home-intro',
                     'content' : 'home-text',
                 },
                 'docs' : {
+                    'head_title' : 'Docs',
                     'title' : 'Documentation',
                     'text' : 'docs',
                 },
                 'support-dev' : {
+                    'head_title' : 'Support',
                     'title' : 'Support and Development',
                     'text' : 'support-dev',
                     'sidebar' : 'team',
                 },
                 'showcases' : {
+                    'head_title' : 'Showcase',
                     'title' : 'Showcases',
                     'text' : 'showcases',
                 },
                 'installationDoc' : {
+                    'head_title' : 'Install',
                     'title' : 'Installation Guide',
                     'section' : 'docs',
                     'text' : 'installation',
                 },
                 'reviewDoc' : {
+                    'head_title' : 'Review',
                     'title' : 'Review',
                     'section' : 'docs',
-                    'text' : 'rdf-transform-review',
+                    'text' : 'review',
                 },
                 'transformJSON' : {
-                    'title' : 'Transform Template',
+                    'head_title' : 'Transform',
+                    'title' : 'RDF Transform Template',
                     'section' : 'docs',
-                    'text' : 'rdf-transform-template',
-                },
-                'exampleDoc' : {
-                    'title' : 'Example',
-                    'section' : 'showcases',
-                    'text' : 'rdf-transform-example',
+                    'text' : 'template',
                 },
                 'faq' : {
+                    'head_title' : 'FAQ',
                     'title' : 'Frequently Asked Questions',
                     'section' : 'docs',
                     'text' : 'faq',
                 },
                 'publications' : {
+                    'head_title' : 'Publications',
                     'title' : 'Related Publications',
                     'section' : 'docs',
                     'text' : 'publications',
+                },
+                'example' : {
+                    'head_title' : 'Example',
+                    'title' : 'RDF Transform Example',
+                    'section' : 'showcases',
+                    'text' : 'example',
+                },
+                'about' : {
+                    'head_title' : 'About',
+                    'title' : 'About',
+                    'text' : 'about',
                 },
                 'gpl' : {
                     'title' : 'GNU Public License',
@@ -162,7 +176,7 @@
                     'redirect' : 'https://github.com/AtesComp/rdf-transform/releases/download/v2.0.1-alpha/rdf-transform-2.0.1.zip'
                 },
                 'issues' : {
-                    'title' : 'Issues',
+                    'title' : 'Issue Tracker',
                     'redirect' : 'https://github.com/AtesComp/rdf-transform/issues'
                 },
                 'source' : {
@@ -170,9 +184,13 @@
                     'redirect' : 'https://github.com/AtesComp/rdf-transform'
                 },
             };
-            
-            // ============= BEHAVIOUR CODE ==========================================
-            
+
+            // ==========================================
+            //
+            //  SITE CODE
+            // 
+            // ==========================================
+
             var strURI = window.location.href;
             if (strURI.substring(strURI.length - 1) === '#') {
                 strURI = strURI.substring(0, strURI.length - 1);
@@ -192,12 +210,12 @@
             var strText = null;
             var strTextHtml = null;
             var strHtml = null;
-            
+
             var strPage = '';
             if ( strHash.length > 0 ) {
                 strPage = strHash.substr(1);
             }
-            
+
             if ( ! (strPage in listPages) ) {
                 strSection = 'none';
                 strHeadTitle = '404 Not Found';
@@ -210,11 +228,11 @@
                 strTarget = listPage['redirect'];
                 strHeadTitle = 'Redirect';
                 strTextHtml =
-                    '<p>The requested content is found at the following location: <a href="' +
+                    '<p>The requested content is found at: <a href="' +
                     strTarget + '">' + strTarget + '</a></p>';
                     if ( 'title' in listPage) {
-                    strTitle = listPage.title;
-                }
+                        strTitle = listPage.title;
+                    }
             }
             else {
                 strSection = strPage;
@@ -239,25 +257,25 @@
                     strText = listPage.text;
                 }
             }
-            
-            // ============= BEGIN TEMPLATE ==============================================
-            
+
+            // ==========================================
+            //
+            //  SITE TEMPLATE
+            // 
+            // ==========================================
+
             const elemHeadTitle = document.getElementById("head_title");
             if (strHeadTitle != null) {
                 elemHeadTitle.innerHTML = strHeadTitle + ' | RDF Transform';
             }
-            
+
             document.getElementById("base_iri").setAttribute("href", strAbsBase);
 
-            var strHeader = document.getElementById("header").innerHTML;
-            var strHeaderHtml = ' id="logo">RDF Transform for OpenRefine';
-            var strTag = 'div';
-            if ( strPage.length === 0) {
-                strTag = 'h1';
-            }
-            document.getElementById("header").innerHTML =
-                '<' + strTag + strHeaderHtml + '</' + strTag + '>' + strHeader;
-            
+            var strHeaderTitle = 'RDF Transform for OpenRefine';
+            document.getElementById("header-title").innerHTML =
+                '<img src="images/sw-cube.png" id="logo-img" />' +
+                '<span id="logo-span">' + strHeaderTitle + '</span>';
+
             var strNav = '';
             for (const [strKey, strValue] of Object.entries(listMainLinks)) {
                 if (strSection === strValue) {
@@ -269,7 +287,7 @@
             }
             strNav += '<li class="download"><a href="#download">Download</a></li>';
             document.getElementById("main-nav").innerHTML = strNav;
-            
+
             const elemTitle = document.getElementById("title");
             if (strTitle != null) {
                 elemTitle.innerHTML = "<h1>" + strTitle + "</h1>";
@@ -280,7 +298,7 @@
             else {
                 elemTitle.innerHTML = '<h1>No title</h1>';
             }
-            
+
             strHtml = '';
             var bLoadSidebar = false;
             var bLoadContent = false;
@@ -341,6 +359,5 @@
 
         window.addEventListener( "load", theLoader );
     </script>
-
   </body>
 </html>

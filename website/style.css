@@ -63,23 +63,25 @@ p.big {
   
 #header, #content, #title, #footer-text {
     margin: 0 auto;
-    width: 66em;
+    padding: 0 1em;
+    max-width: 1000px;
 }
 
-#logo {
-    float: left;
-    height: 62px;
-    font-size: 22pt;
-    margin: 0.5em 0 0 -5px;
-    padding: 0;
-    width: 300px;
+#header-title {
+    display: flex;
 }
-#logo a {
-    border-bottom: none;
+
+#logo-img {
+    margin: auto 15px 0 0;
+}
+
+#logo-span {
+    font-size: 22pt;
+    font-weight: bold;
+    margin: auto 0;
 }
 
 #main-nav {
-    padding: 3.2em 0 0.4em 0;
     margin: 0 0 0 300px;
 }
 #main-nav li {
@@ -320,6 +322,10 @@ small.date {
 #main h2 {
     font-size: 13pt;
     margin: 1.6em 0 0;
+}
+#main h3 {
+    font-size: 10pt;
+    margin: 1em 0 0;
 }
 #main p {
     margin: 0 0 1em;

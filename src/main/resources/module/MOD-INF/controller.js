@@ -7,7 +7,7 @@
 //   processor, so many functions taken for granted in modern JavaScript
 //   processors may not be present in this implementation.
 //
-importPackage(com.google.refine.rdf.commands);
+importPackage(org.openrefine.rdf.commands);
 
 // Client side preferences mirror Server side...
 var RDFTransformPrefs = {
@@ -71,7 +71,7 @@ function registerClientSide() {
 function registerServerSide() {
 	var RefineServlet = RefineBase.RefineServlet;
 
-	var RDFTBase = RefineBase.rdf;
+	var RDFTBase = Packages.org.openrefine.rdf;
 	var RDFTCmd = RDFTBase.command;
 	var RDFTModel = RDFTBase.model;
 
@@ -113,11 +113,12 @@ function registerServerSide() {
      *  Server-side Custom Change Class...
      */
 	var strRefineBase = "com.google.refine";
+	var strRDFTransformBase = "org.openrefine.rdf";
 	RefineServlet.registerClassMapping(
 		// Non-existent name--we are adding, not renaming...
 		strRefineBase + ".model.changes.DataExtensionChange",
 		// Added Change Class name...
-		strRefineBase + ".rdf.model.operation.RDFTransformChange"
+		strRDFTransformBase + ".model.operation.RDFTransformChange"
 	);
 	RefineServlet.cacheClass(RDFTModel.operation.RDFTransformChange);
 

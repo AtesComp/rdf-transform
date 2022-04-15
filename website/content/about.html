@@ -1,0 +1,96 @@
+<h1>RDF Transform</h1>
+<p>
+  RDF Transform is an <a href="https://openrefine.org/">OpenRefine</a> extension that maps project data
+  into an RDF representation using a mapping structure (i.e., the "transform") designed by the user.
+</p>
+<h2>The Transform</h2>
+<p>
+  The transform has a well defined structure using root nodes (a.k.a., resources, subjects) connecting
+  through properties (a special resource describing a context), generally defined by data column names,
+  to objects (either another resource or a literal--a typed or untyped string), generally defined by a
+  column's cell data.  Then, the mapping decribes a set of triples of the form:
+</p>
+<p style="text-align: center">
+  subject --- property ---> object
+</p>
+<p>
+  where the triple is a simple graph with subject and object nodes connected by a property edge. If an
+  object is a resource, then it may also be a subject (or object) in another triple. Then, any given
+  subject may also be an object in some other triple.  If an object is a literal, then it represents a
+  "leaf" node in a graph and is a data value that (partially) describes a subject.
+</p>
+<h2>Resources</h2>
+<p>
+  Resources are described by the Resource Description Framework (RDF) and include so called "blank
+  nodes"--a unnamed node used to hold a connection to other relevent data. Resources must be described
+  for "Root Nodes" as they are the primary subjects for a set of triples.
+</p>
+<p>
+  RDF Transform allows a resource object to serve as a subject to other objects by directly adding
+  properties to the object. This extends the user dialog "rightward" as new properties and objects are
+  added. A far right resource object may be "duplicated" as a root node to assist with some kinds of
+  transforms.
+</p>
+<h3>Root Nodes</h3>
+<p>
+  An RDF Transform mapping must have at lease one root node. A root node can be thought of as a record
+  index or some other similar construct. Project data occasionally have readily defined root node
+  elements like a U. S. Social Security number for a person or a VIN for a vehicle.  If not, a reference
+  to the given row or record number may be used (however that would not be unique for similar data
+  projects that would latter be combined) or a blank node may suffice as they may be universally unique.
+  Constant UUIDs in cast in a resource format may also serve this purpose.
+</p>
+<p>
+  A new root node may also be added. Root nodes might be "constant" and, therefore, not bound
+  specifically to rows or records.  This also allows for "constant" subjects not connected to any
+  project data used to define singleton triples or well-known constant subgraphs.
+</p>
+<p>
+  Deleteing all root nodes is one way to reset a transform to its initial state.
+</p>
+<h3>Resource Types</h3>
+<p>
+  Resources may be typed as to belong to (or be an instance of) a class. Therefore, a type feature is
+  built into RDF Transform. These are triples just like the others of the form:
+</p>
+<p style="text-align: center">
+  subject --- rdf:type ---> type
+</p>
+<p>
+  where "rdf:type" may also be represented as "a" (as in "is a") in the common Turtle transport format.
+</p>
+<h2>Properties</h2>
+<p>
+  Properties are the contextual "connective tissue" that bind subjects to their objects. Using a
+  database analogy, each field (or column) name in a table can be characterized as a property for a
+  table. The key field cell data (the keys) serves as a subject, the other field names serve as
+  properties, and the cell data for a property column are objects for the respective subjects. Then, the
+  RDF representation is a highly normalized form for a tradiftional RDBMS.  Foreign keys are objects
+  used as subjects for the joined table a foreign key represents. Therefore, properties are defined as
+  specialied resources used to connect subjects to objects. Properties are free text declarations but
+  have suggested elements from the namespaces.  Default properties are auto-generated from the Base IRI
+  and the project's column names.
+</p>
+<h2>Literals</h2>
+<p>
+  Literals are object elements related to its subject--the property values for a subject. They may
+  contain additional datatype information such as "date", "integer", or "boolean" or language
+  identifiers such as "en", "it", "es". Some common datatypes are provided. The user may specify any
+  "custom" datatype or any acceptable language identifier. Example literals are the weight, length,
+  name, color, cost, etc., values of some thing. They may (or may not) have datatypes or language
+  decorators directly attached to the literal string.  For example:
+</p>
+<p style="margin-left: 2em">
+  "1.32"^^xsd:double<br />
+  "632"^^xsd:integer<br />
+  "cat"@en<br />
+  "gato"@es<br />
+  "some interesting string"
+</p>
+<p>
+  Default literals are auto-generated as objects of the default properties from the project's column
+  names.
+</p>
+<p class="note">
+  For a detailed example and screenshots see <a href="#rdfTransformExample">RDF Transform example</a>
+</p>
