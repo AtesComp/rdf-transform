@@ -23,5 +23,7 @@ jobs:
       run: mvn dependency:purge-local-repository
     - name: Reload Maven Dependencies
       run: mvn clean install -U
+    - name: Delete JONLD repository files
+      run: rm -r ~/.m2/repository/com/github/jsonld-java/*
     - name: Build with Maven
       run: mvn -B package --file pom.xml

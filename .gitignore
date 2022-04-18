@@ -2,6 +2,7 @@
 *.class
 *.lock
 *.DS_Store
+*.kate-swp
 target
 tmp
 .classpath
