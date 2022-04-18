@@ -8,9 +8,15 @@ class RDFTransform {
     // NOTE: "get KEY()" sets "KEY" for retrieval.
     static get KEY() { return "rdf-transform"; }
 
-    static get strExtension() { return "RDFTransform"; }
+    static get strEXTENSION() { return "RDFTransform"; }
     // RDF Transform Version Control
-    static strVersion = "2.0.2";
+    static strVERSION_MAJOR = "2";
+    static strVERSION_MINOR = "0";
+    static strVERSION_MICRO = "3";
+    static strVERSION =
+        RDFTransform.strVERSION_MAJOR + "." +
+        RDFTransform.strVERSION_MINOR + "." +
+        RDFTransform.strVERSION_MICRO;
 
     // NOTE: Even though the expression is currently 'only GREL', we allow for future change
     //      by a setDefaults() modification.
@@ -841,8 +847,8 @@ class RDFTransformDialog {
 
     getTransformExport() {
         var theTransform = {};
-        theTransform.extension = RDFTransform.strExtension;
-        theTransform.version   = RDFTransform.strVersion;
+        theTransform.extension = RDFTransform.strEXTENSION;
+        theTransform.version   = RDFTransform.strVERSION;
 
         // Get the current base IRI...
         theTransform.baseIRI = this.#theTransform.baseIRI;
