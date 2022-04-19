@@ -5,6 +5,7 @@ import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.operation.PreviewRDFRecordVisitor;
 import org.openrefine.rdf.model.operation.PreviewRDFRowVisitor;
 import org.openrefine.rdf.model.operation.RDFVisitor;
+
 import com.google.refine.browsing.Engine;
 import com.google.refine.commands.Command;
 import com.google.refine.model.Project;
@@ -37,13 +38,15 @@ public class PreviewRDFCommand extends Command {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing Transform for Preview...");
         // No CSRF Token required for this command.
 
-        if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG: Reconstructing Transform for Preview...");
         try {
+            // Get the project and engine...
             Project theProject = this.getProject(request);
             Engine theEngine = PreviewRDFCommand.getEngine(request, theProject);
 
+            // Get the RDF Transform...
             String strTransform = request.getParameter(RDFTransform.KEY);
             if (strTransform == null) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  No Transform JSON.");
@@ -51,7 +54,7 @@ public class PreviewRDFCommand extends Command {
                 return;
             }
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
-            if (jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty()  ) {
+            if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  No Transform.");
                 PreviewRDFCommand.respondJSON(response, CodeResponse.error);
                 return;
@@ -93,7 +96,9 @@ public class PreviewRDFCommand extends Command {
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Starting RDF...");
             theWriter.startRDF();
 
+            //
             // Process sample records/rows of data for statements...
+            //
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("    Process by Record Visitor...");

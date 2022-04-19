@@ -659,6 +659,11 @@ class RDFTransformDialog {
 
     #doSave() {
         const theTransform = this.getTransformExport();
+        /* DEBUG
+        console.log(theTransform);
+        */
+
+        // Update the oracle on the RDF Transform...
         Refine.postProcess(
             RDFTransform.KEY,       // module
             'save-rdf-transform',   // command
@@ -718,7 +723,7 @@ class RDFTransformDialog {
 
         // Consult the oracle on the RDF Preview...
         Refine.postProcess(
-            "rdf-transform",        // module
+            RDFTransform.KEY,       // module
             "preview-rdf",          // command
             {},                     // params
             {   [RDFTransform.KEY] : JSON.stringify( theTransform ),

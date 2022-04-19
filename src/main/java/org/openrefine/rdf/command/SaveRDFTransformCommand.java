@@ -29,7 +29,7 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing for Save...");
+        if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing Transform for Save...");
         if ( ! this.hasValidCSRFToken(request) ) {
             if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No CSRF Token.");
             SaveRDFTransformCommand.respondCSRFError(response);
@@ -54,6 +54,7 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
                 return;
             }
             RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
+            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  Transform reconstructed.");
 
             // Process the "save" operations...
             SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theTransform);

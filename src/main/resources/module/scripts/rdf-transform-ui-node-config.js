@@ -4,6 +4,11 @@
  *  The Configuration UI for the Node Manager UI
  */
 class RDFTransformUINodeConfig {
+    #strRadioIndex = "rdf-radio-row-index";
+    #strRadioColumn = "rdf-radio-column";
+    #strRadioConstant = "rdf-constant-value-radio";
+    #strInputConstant = "rdf-constant-value-input";
+
     #dialog;
     #nodeUI;
     #eType;
@@ -14,6 +19,9 @@ class RDFTransformUINodeConfig {
 
     #elements;
     #rdf_cell_expr;
+    #rdf_cell;
+    #rdf_cell_orig;
+    #rdf_cell_expr_orig;
 
     #level;
 
@@ -191,28 +199,50 @@ class RDFTransformUINodeConfig {
         var tr = tableColumns.insertRow();
 
         var td;
-        var strID = "rdf-radio-row-index";
 
         // Radio Control...
         td = tr.insertCell();
         $(td).addClass('rdf-transform-node-bottom-separated');
-        var radio = $('<input />')
+        var tdRadio = $('<input />')
             .attr("type", "radio").val("") // ...== not a Column Node, an Index
             .attr("name", "rdf-column-radio")
-            .attr("id", strID)
-            .prop("checked", this.#bIsVarNodeConfig)
+            .attr("id", this.#strRadioIndex)
             .on("click",
                 () => {
                     $("#rdf-constant-value-input").prop(this.#disabledTrue);
+                    // If the recorded cell type is NOT the same as the current...
+                    if (this.#rdf_cell !== this.#strRadioIndex) {
+                        // ...change the cell type to the current...
+                        this.#rdf_cell = this.#strRadioIndex;
+                        // If the cell type is the same as the original...
+                        if (this.#rdf_cell === this.#rdf_cell_orig) {
+                            // ...change the expression back to the original expression...
+                            this.#rdf_cell_expr = this.#rdf_cell_expr_orig;
+                        }
+                        // Otherwise...
+                        else {
+                            // ...change the expression to the default for this type...
+                            this.#rdf_cell_expr = RDFTransform.gstrExpressionIndex; // row or record
+                        }
+                        // ...change the expression displayed to the current expression...
+                        this.#elements.rdf_cell_expr
+                        .empty()
+                        .text( RDFTransformCommon.shortenExpression(this.#rdf_cell_expr) );
+                    }
                 }
             );
-        $(td).append(radio);
+        if (this.#bIsVarNodeConfig) {
+            tdRadio.prop(this.#checkedTrue);
+            this.#rdf_cell = this.#strRadioIndex;
+            this.#rdf_cell_orig = this.#strRadioIndex;
+        }
+        $(td).append(tdRadio);
 
         // Label for Radio...
         td = tr.insertCell();
         $(td).addClass('rdf-transform-node-bottom-separated');
         var label = $('<label />')
-            .attr("for", strID)
+            .attr("for", this.#strRadioIndex)
             .text('[' + $.i18n('rdft-dialog/index') + ']')
             .attr("bind", "asIndex");
         this.#elements.asIndex = label;
@@ -224,7 +254,7 @@ class RDFTransformUINodeConfig {
         var tr = tableColumns.insertRow();
 
         var td;
-        var strID = "rdf-radio-column" + column.cellIndex;
+        var strID = this.#strRadioColumn + column.cellIndex;
 
         // Radio Control...
         td = tr.insertCell();
@@ -234,19 +264,51 @@ class RDFTransformUINodeConfig {
         if (iPad < 0 || iPad > 1) { // ...Last Row Padding for Separator
             $(td).addClass('rdf-transform-node-bottom-padded');
         }
-        var radio = $('<input />')
+        var tdRadio = $('<input />')
             .attr("type", "radio").val(column.name) // ...== a Column Node
             .attr("name", "rdf-column-radio")
             .attr("id", strID)
             .on("click",
                 () => {
                     $("#rdf-constant-value-input").prop(this.#disabledTrue);
+
+                    // If the recorded cell+column type is NOT the same as the current...
+                    if (this.#rdf_cell != this.#strRadioColumn) {
+                        // Determine if the recorded cell type is the same as the current...
+                        var bSameOldType = ( this.#rdf_cell.indexOf(this.#strRadioColumn) === 0 );
+                        // ...change the cell+column type to the current...
+                        this.#rdf_cell = this.#strRadioColumn;
+                        // Determine if the current cell type is the same as the original...
+                        var bSameOrigType = ( this.#rdf_cell_orig.indexOf(this.#strRadioColumn) === 0 );
+
+                        // If the recorded cell type was NOT the same as the current...
+                        if ( ! bSameOldType ) {
+                            // If the current cell type is the same as the original...
+                            if (bSameOrigType) {
+                                // ...change the expression back to the original expression...
+                                this.#rdf_cell_expr = this.#rdf_cell_expr_orig;
+                            }
+                            // Otherwise...
+                            else {
+                                // ...change the expression to the default for this type...
+                                this.#rdf_cell_expr = RDFTransform.gstrDefaultExpCode;
+                            }
+                            // ...change the expression displayed to the current expression...
+                            this.#elements.rdf_cell_expr
+                            .empty()
+                            .text( RDFTransformCommon.shortenExpression(this.#rdf_cell_expr) );
+                        }
+                        // Otherwise, the recorded cell type is the same as the current...
+                        //  ...so keep the recorded column expression (try to use it)...
+                    }
                 }
             );
         if ("columnName" in this.#node.valueSource && column.name === this.#node.valueSource.columnName) {
-            radio.prop(this.#checkedTrue);
+            tdRadio.prop(this.#checkedTrue);
+            this.#rdf_cell = this.#strRadioColumn;
+            this.#rdf_cell_orig = this.#strRadioColumn;
         }
-        $(td).append(radio);
+        $(td).append(tdRadio);
 
         // Label for Radio...
         td = tr.insertCell();
@@ -269,7 +331,6 @@ class RDFTransformUINodeConfig {
         var tr = tableColumns.insertRow();
 
         var td;
-        var strID = "rdf-constant-value-radio";
 
         // Radio Control...
         td = tr.insertCell();
@@ -277,20 +338,43 @@ class RDFTransformUINodeConfig {
         var tdRadio = $('<input />')
             .attr("type", "radio").val("")  // ...== not a Column Node, a Constant
             .attr("name", "rdf-column-radio")
-            .attr("id", strID)
-            .prop("checked", ! this.#bIsVarNodeConfig)
+            .attr("id", this.#strRadioConstant)
             .on("click",
                 () => {
                     $("#rdf-constant-value-input").prop(this.#disabledFalse);
+                    // If the recorded cell type is NOT the same as the current...
+                    if (this.#rdf_cell !== this.#strRadioConstant) {
+                        // ...change the cell type to the current...
+                        this.#rdf_cell = this.#strRadioConstant;
+                        // If the cell type is the same as the original...
+                        if (this.#rdf_cell === this.#rdf_cell_orig) {
+                            // ...change the expression back to the original expression...
+                            this.#rdf_cell_expr = this.#rdf_cell_expr_orig;
+                        }
+                        // Otherwise...
+                        else {
+                            // ...change the expression to the default for this type...
+                            this.#rdf_cell_expr = RDFTransform.gstrDefaultExpCode;
+                        }
+                        // ...change the expression displayed to the current expression...
+                        this.#elements.rdf_cell_expr
+                        .empty()
+                        .text( RDFTransformCommon.shortenExpression(this.#rdf_cell_expr) );
+                    }
                 }
             );
+        if (! this.#bIsVarNodeConfig) {
+            tdRadio.prop(this.#checkedTrue);
+            this.#rdf_cell = this.#strRadioConstant;
+            this.#rdf_cell_orig = this.#strRadioConstant;
+        }
         $(td).append(tdRadio);
 
         // Label for Radio...
         td = tr.insertCell();
         $(td).addClass('rdf-transform-node-top-separated');
         var label = $('<label />')
-            .attr("for", strID)
+            .attr("for", this.#strRadioConstant)
             .text( $.i18n('rdft-dialog/constant-val') )
             .attr("bind", "asConstant");
         this.#elements.asConstant = label;
@@ -307,10 +391,12 @@ class RDFTransformUINodeConfig {
             ( (RDFTransform.gstrConstant in this.#node.valueSource &&
                this.#node.valueSource.constant !== null) ? this.#node.valueSource.constant : '');
         var tdInput = $('<input />')
-            .attr("id", "rdf-constant-value-input")
+            .attr("id", this.#strInputConstant)
             .attr("type", "text").val(strConstVal)
-            .attr("size", "25")
-            .prop("disabled", this.#bIsVarNodeConfig);
+            .attr("size", "25");
+        if (this.#bIsVarNodeConfig) {
+            tdInput.prop(this.#disabledTrue);
+        }
         $(td).append(tdInput);
     }
 
@@ -430,6 +516,7 @@ class RDFTransformUINodeConfig {
         if (RDFTransform.gstrExpression in this.#node && "code" in this.#node.expression ) {
             strExpCode = this.#node.expression.code;
         }
+        this.#rdf_cell_expr_orig = strExpCode;
         this.#rdf_cell_expr = strExpCode;
         this.#elements.rdf_cell_expr.empty().text( RDFTransformCommon.shortenExpression(strExpCode) );
 
@@ -629,6 +716,11 @@ class RDFTransformUINodeConfig {
             }
             this.#rdf_cell_expr = strExpCode;
             this.#elements.rdf_cell_expr.empty().text( RDFTransformCommon.shortenExpression(strExpCode) );
+            // If the new cell type is the same as the original cell type...
+            if (this.#rdf_cell === this.#rdf_cell_orig) {
+                // ...update the original expression to the new expression...
+                this.#rdf_cell_expr_orig = strExpCode;
+            }
         };
 
         // Data Preview: Resource or Literal...
