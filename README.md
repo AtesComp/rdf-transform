@@ -14,9 +14,10 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 <!-- RDF Transform Version Control -->
 
 ### Latest Release
-[RDF Transform v2.0.2-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.2-alpha/rdf-transform-2.0.2.zip)
+[RDF Transform v2.0.3-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.3-alpha/rdf-transform-2.0.3.zip)
 
 ### Previous Releases
+[RDF Transform v2.0.2-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.2-alpha/rdf-transform-2.0.2.zip)<br />
 [RDF Transform v2.0.1-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.1-alpha/rdf-transform-2.0.1.zip)<br />
 [RDF Transform v2.0.0-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0-alpha/rdf-transform-2.0.0.zip)
 
