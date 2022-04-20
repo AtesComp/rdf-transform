@@ -1,3 +1,4 @@
+<pre>
 import requests
 from bs4 import BeautifulSoup
 import csv
@@ -11,3 +12,4 @@ with open('foc.csv', 'w', newline='', encoding='utf-8') as f_output:
 
     for tr in soup.table.find_all("tr")[1:]:
         csv_output.writerow([td.get_text(strip=True) for td in tr.find_all('td')])
+</pre>
