@@ -11,7 +11,7 @@
 
     <groupId>org.openrefine</groupId>
     <artifactId>rdf-transform</artifactId>
-    <version>2.0.3</version><!-- RDF Transform Version Control -->
+    <version>2.0.4</version><!-- RDF Transform Version Control -->
     <!--packaging>jar</packaging--><!--We don't need no stink'n JAR file-->
 
     <properties>
