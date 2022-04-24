@@ -17,11 +17,11 @@ import org.slf4j.LoggerFactory;
 
 public class ValidateIRICommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:ValidIRICmd");
-    
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isVerbose(3) ) logger.info("Validating IRI...");
+        if ( Util.isVerbose(3) ) ValidateIRICommand.logger.info("Validating IRI...");
         // NOTE: No CSRFToken required for this command.
 
         try {
@@ -33,21 +33,22 @@ public class ValidateIRICommand extends Command {
             response.setHeader("Content-Type", "application/json");
 
             String strIRI = request.getParameter("iri").strip();
+
             try {
                 new ParsedIRI(strIRI);
-                //if ( Util.isDebugMode() ) logger.info("Validating IRI: Success");
             }
             catch (URISyntaxException ex) {
-                if ( Util.isDebugMode() ) logger.info("Validating IRI: Failure [" + strIRI + "]");
+                if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: Failure [" + strIRI + "]", ex);
                 ValidateIRICommand.respond(response, "{ \"good\" : \"0\" }");
                 return;
             }
         }
-        catch (Exception ex) {
-            if ( Util.isDebugMode() ) logger.info("Validating IRI: ExceptionError");
+        catch (Exception ex) { // ...any other exception...
+            if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: ExceptionError", ex);
             ValidateIRICommand.respondException(response, ex);
             return;
         }
+        if ( Util.isVerbose(3) ) ValidateIRICommand.logger.info("...IRI validated.");
         ValidateIRICommand.respond(response, "{ \"good\" : \"1\" }");
     }
 }

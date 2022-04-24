@@ -17,18 +17,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InitializationCommand extends Command {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:AppContext");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:InitCmd");
 
     private ApplicationContext theContext;
 
     public InitializationCommand(ApplicationContext theContext) {
         this.theContext = theContext;
         RDFTransform.setGlobalContext(theContext);
-
     }
 
     @Override
     public void init(RefineServlet servlet) {
+        InitializationCommand.logger.info("Initializing...");
         super.init(servlet);
 
         // Set the RDF Transform preferences via the OpenRefine Preference Store...
@@ -50,9 +50,10 @@ public class InitializationCommand extends Command {
             this.theContext.init(strHost, strIFace, strPort, fileWorkingDir);
         }
         catch (IOException ex) {
-            InitializationCommand.logger.error("ERROR: Initialize Context: ", ex);
+            InitializationCommand.logger.error("ERROR: App Context Init: " + ex.getMessage(), ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
         }
+        InitializationCommand.logger.info("...initialized.");
     }
 
     @Override

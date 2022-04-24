@@ -37,21 +37,23 @@ public class ApplicationContext {
     }
 
     public void init(String strHost, String strIFace, String strPort, File fileWorkingDir) throws IOException {
+        if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("Initializing Context...");
         this.strHost =  ( strHost  == null || strHost.isEmpty()  ) ? null : strHost;
         this.strIFace = ( strIFace == null || strIFace.isEmpty() ) ? null : strIFace;
         this.strPort =  ( strPort  == null || strPort.isEmpty()  ) ? null : strPort;
         this.fileWorkingDir = fileWorkingDir;
         if ( Util.isDebugMode() ) {
-            logger.info( "Init: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
-                              "IFace=" + ( this.strIFace == null ? "<undef>" : this.strIFace ) + ", " +
-                               "Port=" + ( this.strPort  == null ? "<undef>" : this.strPort ) );
+            ApplicationContext.logger.info(
+                "Init: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
+                "IFace=" + ( this.strIFace == null ? "<undef>" : this.strIFace ) + ", " +
+                "Port=" + ( this.strPort  == null ? "<undef>" : this.strPort ) );
         }
 
         this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
         this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
         InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
         this.nsManager = new NamespaceManager(inStream);
-        if (Util.isVerbose(3) || Util.isDebugMode() ) logger.info("Init: Completed");
+        if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("...Context initialized.");
     }
 
     public void setPredefinedVocabularyManager(IPredefinedVocabularyManager predefinedVocabularyManager) {

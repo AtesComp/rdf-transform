@@ -235,12 +235,14 @@ function processPreferences() {
  * Initialization Function for RDF Transform Extension.
  */
 function init() {
-	logger.info("Initializing RDFTransform Extension...");
+	logger.info("Initializing RDF Transform Extension...");
 	logger.info("  Ext Mount Point: " + module.getMountPoint() );
 
 	registerClientSide();
 	registerServerSide();
 	processPreferences();
+
+	logger.info("...RDF Transform Extension initialized.");
 }
 
 /*
