@@ -29,7 +29,7 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("Getting default namespaces...");
+        if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("DEBUG: Getting default namespaces...");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
         try {
@@ -48,13 +48,13 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
         // Get vocabularies...
         //
         VocabularyList listVocabs = this.getRDFTransform(request).getNamespaces();
-        if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("Existing namespaces: size=" + listVocabs.size());
+        if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("DEBUG: Existing namespaces: size=" + listVocabs.size());
         if ( listVocabs == null || listVocabs.isEmpty() ) {
             listVocabs =
                 RDFTransform.getGlobalContext().
                     getPredefinedVocabularyManager().
                         getPredefinedVocabularies().clone();
-            if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("Predefined namespaces: size=" + listVocabs.size());
+            if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("DEBUG: Predefined namespaces: size=" + listVocabs.size());
         }
 
         //
@@ -85,7 +85,7 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
                 strError = "Importing";
                 except = ex;
             }
-            catch (Exception ex) {
+            catch (Exception ex) { // ...all other exceptions...
                 bError = true;
                 strError = "Processing";
                 except = ex;
@@ -100,7 +100,7 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
                     if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
                 }
                 else { // ...warning...
-                    if ( Util.isVerbose() ) NamespacesGetDefaultCommand.logger.warn("Prefix exists: ", except);
+                    if ( Util.isVerbose() || Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.warn("Prefix exists: ", except);
                 }
                 // ...continue processing the other vocabularies...
             }

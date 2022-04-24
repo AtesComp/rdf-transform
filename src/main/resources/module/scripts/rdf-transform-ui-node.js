@@ -4,6 +4,7 @@
  *  The Node Manager UI for the RDF Transform Dialog
  */
 class RDFTransformUINode {
+    /** @type RDFTransformDialog */
     #dialog;
     #node;
     #bIsRoot;

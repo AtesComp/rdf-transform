@@ -4,6 +4,7 @@
  *  The Property Manager UI for the RDF Transform Dialog
  */
 class RDFTransformUIProperty {
+    /** @type RDFTransformDialog */
     #dialog;
     #property;
     #bIsExpanded;

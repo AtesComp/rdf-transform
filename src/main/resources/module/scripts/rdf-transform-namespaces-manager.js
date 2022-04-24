@@ -5,9 +5,10 @@
  */
 
 class RDFTransformNamespacesManager {
-    #theNamespaces;
-
+    /** @type RDFTransformDialog */
     #dialog;
+
+    #theNamespaces;
 
     constructor(dialog) {
         this.#dialog = dialog;
@@ -40,7 +41,7 @@ class RDFTransformNamespacesManager {
             }
             // We might have namespace errors...
             if (bError) {
-                alert("ERROR: Could not retrieve default namespaces!"); // TODO: $.i18n()
+                alert( $.i18n('rdft-vocab/error-retrieve-default') );
             }
         }
         else {

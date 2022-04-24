@@ -1,4 +1,5 @@
 class RDFTransformVocabManager {
+    /** @type RDFTransformNamespacesManager */
     #namespacesManager;
 
     #level;

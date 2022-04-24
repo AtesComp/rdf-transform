@@ -9,6 +9,7 @@ class RDFTransformResourceDialog {
     #strDefault;
     #strLookForType;
     #projectID;
+    /** @type RDFTransformDialog */
     #dialog;
     #onDone;
 

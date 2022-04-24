@@ -60,8 +60,8 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             catch (Exception ex2) {
                 // Predefined vocabularies are not defined properly...
                 //   Ignore the exception, but log it...
-                if ( Util.isVerbose() ) {
-                    PredefinedVocabularyManager.logger.warn("Loading predefined vocabularies failed: ", ex2);
+                if ( Util.isVerbose() || Util.isDebugMode() ) {
+                    PredefinedVocabularyManager.logger.warn("Loading predefined vocabularies failed: " + ex2.getMessage(), ex2);
                     if ( Util.isVerbose(2) || Util.isDebugMode() ) ex2.printStackTrace();
                 }
             }
@@ -71,7 +71,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             catch (Exception ex2) {
                 // Saving predefined vocabularies failed...
                 //   Ignore the exception, but log it...
-                if ( Util.isVerbose() ) {
+                if ( Util.isVerbose() || Util.isDebugMode() ) {
                     PredefinedVocabularyManager.logger.warn("Saving local Vocabulary failed: ", ex2);
                     if ( Util.isVerbose(2) || Util.isDebugMode() ) ex2.printStackTrace();
                 }
@@ -189,24 +189,26 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             File fileOld = new File(this.workingDir, "vocabs.old.json");
 
             if ( fileNew.exists() ) {
-                fileNew.renameTo(fileOld);
+                if ( ! fileNew.renameTo(fileOld) ) {
+                    PredefinedVocabularyManager.logger.error("ERROR: Could not archive existing Project metadata!");
+                }
             }
-            fileTemp.renameTo(fileNew);
+            if ( ! fileTemp.renameTo(fileNew) ) {
+                PredefinedVocabularyManager.logger.error("ERROR: Could not create Project metadata!");
+            }
             if ( fileOld.exists() ) {
-                fileOld.delete();
+                if ( ! fileOld.delete() ) {
+                    PredefinedVocabularyManager.logger.error("ERROR: Could not remove archived Project metadata!");
+                }
             }
         }
     }
 
     private void saveToFile(File fileVocab) throws Exception {
         Writer writer = new OutputStreamWriter(new FileOutputStream(fileVocab));
-        try {
-            JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
-            write(jsonWriter);
-        }
-        finally {
-            writer.close();
-        }
+        JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
+        write(jsonWriter);
+        writer.close();
     }
 
     private void write(JsonGenerator writer) throws JsonGenerationException, IOException {

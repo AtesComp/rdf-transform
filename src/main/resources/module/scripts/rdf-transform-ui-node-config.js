@@ -9,6 +9,7 @@ class RDFTransformUINodeConfig {
     #strRadioConstant = "rdf-constant-value-radio";
     #strInputConstant = "rdf-constant-value-input";
 
+    /** @type RDFTransformDialog */
     #dialog;
     #nodeUI;
     #eType;
