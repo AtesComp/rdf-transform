@@ -34,7 +34,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     {
         this.strColumnName    = strColumnName;
         // Prefix not required for blank nodes
-        this.strExpression    = ( strExp == null ? "value" : strExp );
+        this.strExpression    = ( strExp == null ? Util.gstrCodeValue : strExp );
         this.bIsIndex = bIsIndex;
         this.eNodeType = eNodeType;
     }
@@ -64,8 +64,6 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     @JsonProperty("expression")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getExpression() {
-        // TODO: Add prefix "\"_:\" + " here or elsewhere in the class?
-        //      ( see createRowResources() and normalizeBNodeResource() )
         return this.strExpression;
     }
 
@@ -117,8 +115,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     private void normalizeBNodeResource(Object objResult) {
         String strResult = objResult.toString();
         // NOTE: The prefix "_:" is auto-added by createBNode()
-        // TODO: Use strResult or just "true" or "false"?
-        // Currently, "true" or "false"
+        // TODO: Use strResult or just "true" or "false"?  Currently, "true" or "false".
         // If we have a good result...
         if ( ! ( strResult == null || strResult.isEmpty() ) ) {
             BNode bnode = null;
@@ -166,7 +163,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
         writer.writeEndObject();
 
         // Expression
-        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+        if ( ! ( this.strExpression == null || this.strExpression.equals(Util.gstrCodeValue) ) ) {
             writer.writeObjectFieldStart(Util.gstrExpression);
             writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);

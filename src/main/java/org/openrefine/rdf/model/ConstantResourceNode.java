@@ -147,7 +147,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         writer.writeEndObject();
 
         // Expression
-        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+        if ( ! ( this.strExpression == null || this.strExpression.equals(Util.gstrCodeValue) ) ) {
             writer.writeObjectFieldStart(Util.gstrExpression);
             writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);

@@ -52,6 +52,7 @@ class RDFTransform {
     static gstrExpression = "expression";
     static gstrLanguage = "language";
     static gstrCode = "code";
+    static gstrCodeValue = "value";
     // typeMappings
     static gstrTypeMappings = "typeMappings";
     // propertyMappings
@@ -627,7 +628,7 @@ class RDFTransformDialog {
                 }
             );
 
-        // Prevent OpenRefine from processing ESC and closing 
+        // Prevent OpenRefine from processing ESC and closing
         $(document).on("keydown", this.#doKeypress);
     }
 

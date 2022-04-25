@@ -67,6 +67,7 @@ public class Util {
     static public final String gstrLanguage = "language";     // also type key
     static public final String gstrGREL = "grel";
     static public final String gstrCode = "code";
+    static public final String gstrCodeValue = "value";
 
     static public final String gstrNamespace = "namespace";
     static public final String gstrLabel = "label";

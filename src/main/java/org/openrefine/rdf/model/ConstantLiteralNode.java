@@ -97,7 +97,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
         writer.writeEndObject();
 
         // Expression
-        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+        if ( ! ( this.strExpression == null || this.strExpression.equals(Util.gstrCodeValue) ) ) {
             writer.writeObjectFieldStart(Util.gstrExpression);
             writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);
@@ -126,7 +126,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
             writer.writeEndObject();
 
             // Datatype: Expression
-            if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals("value") ) ) {
+            if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals(Util.gstrCodeValue) ) ) {
                 writer.writeObjectFieldStart(Util.gstrExpression);
                 writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
                 writer.writeStringField(Util.gstrCode, this.nodeDatatype.strExpression);

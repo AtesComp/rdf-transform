@@ -34,7 +34,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     {
         this.strColumnName    = strColumnName;
         // Prefix not required for literal nodes
-        this.strExpression    = ( strExp == null ? "value" : strExp );
+        this.strExpression    = ( strExp == null ? Util.gstrCodeValue : strExp );
         this.bIsIndex = bIsIndex;
         this.nodeDatatype = nodeDatatype;
         this.strLanguage = strLanguage;
@@ -104,7 +104,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
             // Eat the exception...
             return;
         }
-    
+
         // Results cannot be classed...
         if ( results == null || ExpressionUtils.isError(results) ) {
             return;
@@ -147,7 +147,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
         writer.writeEndObject();
 
         // Expression
-        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+        if ( ! ( this.strExpression == null || this.strExpression.equals(Util.gstrCodeValue) ) ) {
             writer.writeObjectFieldStart(Util.gstrExpression);
             writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);
@@ -176,7 +176,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
             writer.writeEndObject();
 
             // Datatype: Expression
-            if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals("value") ) ) {
+            if ( ! ( this.nodeDatatype.strExpression == null || this.nodeDatatype.strExpression.equals(Util.gstrCodeValue) ) ) {
                 writer.writeObjectFieldStart(Util.gstrExpression);
                 writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
                 writer.writeStringField(Util.gstrCode, this.nodeDatatype.strExpression);

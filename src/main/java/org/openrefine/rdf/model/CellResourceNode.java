@@ -31,7 +31,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     {
         this.strColumnName = strColumnName;
         this.strPrefix     = Util.toSpaceStrippedString(strPrefix);
-        this.strExpression = ( strExp == null ? "value" : strExp );
+        this.strExpression = ( strExp == null ? Util.gstrCodeValue : strExp );
         this.bIsIndex = bIsIndex;
         this.eNodeType = eNodeType;
     }
@@ -139,7 +139,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         writer.writeEndObject();
 
         // Expression
-        if ( ! ( this.strExpression == null || this.strExpression.equals("value") ) ) {
+        if ( ! ( this.strExpression == null || this.strExpression.equals(Util.gstrCodeValue) ) ) {
             writer.writeObjectFieldStart(Util.gstrExpression);
             writer.writeStringField(Util.gstrLanguage, Util.gstrGREL);
             writer.writeStringField(Util.gstrCode, this.strExpression);

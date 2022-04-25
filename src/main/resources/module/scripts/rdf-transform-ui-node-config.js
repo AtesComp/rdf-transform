@@ -925,7 +925,7 @@ class RDFTransformUINodeConfig {
                 }
                 //  We don't need "value" expressions as they are common.
                 //  Store all others...
-                if ( strExpCode !== "value" ) {
+                if ( strExpCode !== RDFTransform.gstrCodeValue ) {
                     theNode.expression = {};
                     theNode.expression.language = RDFTransform.gstrDefaultExpLang;
                     theNode.expression.code = strExpCode;

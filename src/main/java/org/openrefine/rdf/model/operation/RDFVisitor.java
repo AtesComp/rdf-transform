@@ -110,12 +110,12 @@ public abstract class RDFVisitor {
 
     protected void flushStatements() throws RepositoryException, RDFHandlerException {
         // TODO: Reserve this commented code for future context upgrade (quads)
-        //List<Resource> resourceList = Iterations.asList( this.connection.getContextIDs() );
+        //List<Resource> resourceList = Iterations.asList( this.theConnection.getContextIDs() );
         //Resource[] resources = resourceList.toArray( new Resource[ resourceList.size() ] );
 
         // Export statements...
         RepositoryResult<Statement> stmtIter =
-            //this.connection.getStatements(null, null, null, false, resources);
+            //this.theConnection.getStatements(null, null, null, false, resources);
             this.theConnection.getStatements(null, null, null, false);
 
         try {
