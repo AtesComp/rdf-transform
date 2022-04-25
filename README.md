@@ -1,5 +1,5 @@
 # RDF Transform
-| ![Build Status](https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg) | On failed builds, Maven repositories may need to be reset. Review Actions tab<br />for issues. If needed, run the "Maven Reset Dependencies" workflow. |
+| ![Build Status](https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg) | On failed builds, Maven repositories may need to be reset. Review Actions<br />tab for issues. If needed, run the "Maven Reset Dependencies" workflow. |
 | - | - |
 
 ## Introduction
