@@ -1,6 +1,11 @@
 # RDF Transform
-| ![Build Status](https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg) | On failed builds, Maven repositories may need to be reset. Review Actions<br />tab for issues. If needed, run the "Maven Reset Dependencies" workflow. |
-| - | - |
+<div align="left">
+  <a target="_blank" rel="noopener noreferrer" href="https://github.com/AtesComp/rdf-transform/actions/workflows/maven.yml">
+    <img align="left" width="200px" src="https://github.com/AtesComp/rdf-transform/workflows/Java%20CI%20with%20Maven/badge.svg" />
+  </a>
+  <img align="left" height="30px" />
+</div>
+On failed builds, Maven repositories may need to be reset. Review Actions tab for issues. If needed, run the "Maven Reset Dependencies" workflow.
 
 ## Introduction
 This project uses a graphical user interface (GUI) for transforming OpenRefine project data to RDF-based formats. The transform maps the data with a template graph designed using the GUI.
