@@ -19,6 +19,7 @@ var RDFTransformPrefs = {
 var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 
 var RefineBase = Packages.com.google.refine;
+var RDFTBase = Packages.org.openrefine.rdf;
 
 function registerClientSide() {
 	var ClientSideResourceManager = RefineBase.ClientSideResourceManager;
@@ -30,8 +31,7 @@ function registerClientSide() {
     /*
 	 *  Client-side Javascript...
 	 */
-	ClientSideResourceManager
-	.addPaths(
+	ClientSideResourceManager.addPaths(
 		"project/scripts",
 		module,
 		// Script files to inject into /project page...
@@ -57,8 +57,7 @@ function registerClientSide() {
     /*
 	 *  Client-side CSS...
 	 */
-	ClientSideResourceManager
-	.addPaths(
+	ClientSideResourceManager.addPaths(
 		"project/styles",
 		module,
 		// Style files to inject into /project page...
@@ -71,7 +70,6 @@ function registerClientSide() {
 function registerServerSide() {
 	var RefineServlet = RefineBase.RefineServlet;
 
-	var RDFTBase = Packages.org.openrefine.rdf;
 	var RDFTCmd = RDFTBase.command;
 	var RDFTModel = RDFTBase.model;
 
@@ -235,11 +233,13 @@ function processPreferences() {
  * Initialization Function for RDF Transform Extension.
  */
 function init() {
-	logger.info("Initializing RDF Transform Extension...");
+	logger.info("Initializing RDF Transform Extension " + RDFTBase.RDFTransform.VERSION + "...");
 	logger.info("  Ext Mount Point: " + module.getMountPoint() );
-
+	logger.info("  Client Side...");
 	registerClientSide();
+	logger.info("  Server Side...");
 	registerServerSide();
+	logger.info("  Preferences...");
 	processPreferences();
 
 	logger.info("...RDF Transform Extension initialized.");

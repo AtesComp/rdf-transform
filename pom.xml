@@ -19,7 +19,7 @@
 
         <!-- Maven Build -->
         <java.minversion>11</java.minversion>
-        <java.maxversion>17</java.maxversion>
+        <java.maxversion>16</java.maxversion>
         <maven.compiler.source>${java.minversion}</maven.compiler.source>
         <maven.compiler.target>${java.minversion}</maven.compiler.target>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>

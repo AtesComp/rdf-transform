@@ -31,20 +31,20 @@ public class RDFExporter implements WriterExporter, StreamExporter {
 
     public RDFExporter(RDFFormat format) {
         this.format = format;
-        if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Exporting Transform...");
+        if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Preparing exporter " + format.getName() + "...");
     }
 
     public void export(Project theProject, Properties options, Engine theEngine,
                         OutputStream outputStream)
             throws IOException {
-        if ( Util.isDebugMode() ) RDFExporter.logger.info("  via OutputStream.");
+        if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Exporting " + format.getName() + " via OutputStream");
         this.export(theProject, options, theEngine, Rio.createWriter(this.format, outputStream));
     }
 
     public void export(Project theProject, Properties options, Engine theEngine,
                         Writer theWriter)
              throws IOException {
-        if ( Util.isDebugMode() ) RDFExporter.logger.info("  via Writer");
+        if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Exporting " + format.getName() + " via Writer");
         this.export(theProject, options, theEngine, Rio.createWriter(this.format, theWriter));
     }
 
@@ -73,7 +73,7 @@ public class RDFExporter implements WriterExporter, StreamExporter {
             if ( Util.isDebugMode() ) RDFExporter.logger.info("  ...Ended RDF.");
         }
         catch (RDFHandlerException ex) {
-            if ( Util.isDebugMode() ) RDFExporter.logger.error("DEBUG: Error exporting", ex);
+            if ( Util.isDebugMode() ) RDFExporter.logger.error("DEBUG: Error exporting " + format.getName(), ex);
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
