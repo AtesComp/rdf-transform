@@ -162,7 +162,7 @@
     "rdft-vocab/error-adding": "Errore durante l'aggiunta del prefisso",
     "rdft-vocab/error-deleting": "Errore durante la rimozione del prefisso",
     "rdft-vocab/error-retrieve-default": "Errore durante il recupero degli spazi dei nomi predefiniti!",
-    "rdft-vocab/header": "Lista di Prefissi Definiti",
+    "rdft-vocab/header": "Prefissi Definiti Lista",
     "rdft-vocab/iri": "IRI",
     "rdft-vocab/prefix": "Prefisso",
     "rdft-vocab/refresh-pref": "Riaggiornando i prefissi",

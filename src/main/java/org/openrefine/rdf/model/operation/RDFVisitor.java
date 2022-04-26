@@ -44,13 +44,30 @@ public abstract class RDFVisitor {
         // Populate the namespaces in the repository...
         //
 
-        // Set Base Namespace...
+        // Prepare Namespaces...
         String strBaseIRI = this.theTransform.getBaseIRIAsString();
-        if ( ! strBaseIRI.isEmpty() ) {
+        Collection<Vocabulary> collVocab = this.theTransform.getNamespaces();
+
+        // Check for the BaseIRI (default namespace) in the Prefixed Namespaces...
+        boolean bUseBaseIRI = true; // ...default: use the BaseIRI
+        for (Vocabulary vocab : collVocab) {
+            // If the BaseIRI is in the Prefixed Namespace...
+            if ( vocab.getNamespace().equals(strBaseIRI) ) {
+                bUseBaseIRI = false; // ...don't use the BaseIRI!
+                break;
+            }
+        }
+
+        // Set Default Namespace for repository...
+        if ( bUseBaseIRI && ! strBaseIRI.isEmpty() ) {
+            if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Using BaseIRI");
             this.theConnection.setNamespace("", strBaseIRI);
         }
-        // Set Prefix Namespaces...
-        Collection<Vocabulary> collVocab = this.theTransform.getNamespaces();
+        else {
+            if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Not using BaseIRI");
+        }
+
+        // Set Prefix Namespaces for repository...
         for (Vocabulary vocab : collVocab) {
             this.theConnection.setNamespace( vocab.getPrefix(), vocab.getNamespace() );
         }
@@ -67,7 +84,7 @@ public abstract class RDFVisitor {
     abstract public void buildModel(Project theProject, Engine theEngine);
 
     public void start(Project theProject) {
-        if ( Util.isVerbose(3) ) logger.info("Starting Visitation...");
+        if ( Util.isVerbose(3) ) RDFVisitor.logger.info("Starting Visitation...");
 
         try {
             // Export namespace information previously populated in the repository...
@@ -76,7 +93,7 @@ public abstract class RDFVisitor {
                 while ( nsIter.hasNext() ) {
                     Namespace ns = nsIter.next();
                     this.theWriter.handleNamespace( ns.getPrefix(), ns.getName() );
-                    if ( Util.isDebugMode() ) logger.info("DEBUG: Prefix: " + ns.getPrefix() + " : " + ns.getName());
+                    if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Prefix: " + ns.getPrefix() + " : " + ns.getName());
                 }
             }
             finally {
@@ -93,7 +110,7 @@ public abstract class RDFVisitor {
     }
 
     public void end(Project theProject) {
-        if ( Util.isVerbose(3) ) logger.info("...Ending Visitation");
+        if ( Util.isVerbose(3) ) RDFVisitor.logger.info("...Ending Visitation");
 
         try {
             if (this.theConnection.isOpen()) {

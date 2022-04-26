@@ -162,7 +162,7 @@
     "rdft-vocab/error-adding": "Error while adding prefix",
     "rdft-vocab/error-deleting": "Error while removing prefix",
     "rdft-vocab/error-retrieve-default": "Error while retrieving default namespaces!",
-    "rdft-vocab/header": "List of Defined Namespaces",
+    "rdft-vocab/header": "Defined Namespaces List",
     "rdft-vocab/iri": "IRI",
     "rdft-vocab/prefix": "Prefix",
     "rdft-vocab/refresh-pref": "Refresh namespaces",
