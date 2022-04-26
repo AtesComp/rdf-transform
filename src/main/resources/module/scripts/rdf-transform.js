@@ -12,7 +12,7 @@ class RDFTransform {
     // RDF Transform Version Control
     static strVERSION_MAJOR = "2";
     static strVERSION_MINOR = "0";
-    static strVERSION_MICRO = "4";
+    static strVERSION_MICRO = "5";
     static strVERSION =
         RDFTransform.strVERSION_MAJOR + "." +
         RDFTransform.strVERSION_MINOR + "." +
