@@ -1,0 +1,49 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "java",
+			"targetPath": "${workspaceFolder}/${workspaceFolderBasename}.jar",
+			"elements": [
+				"${compileOutput}",
+				"${dependencies}"
+			],
+			"problemMatcher": [],
+			"label": "java: exportjar:rdf-transform"
+		},
+		{
+			"label": "build project",
+			"type": "shell",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"clean",
+				"compile",
+				"package"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "clean",
+			"type": "shell",
+			"command": "mvn clean",
+			"group": "build"
+		},
+		{
+			"label": "compile",
+			"type": "shell",
+			"command": "mvn compile",
+			"group": "build"
+		},
+		{
+			"label": "package",
+			"type": "shell",
+			"command": "mvn package",
+			"group": "build",
+			"problemMatcher": []
+		}
+	]
+}

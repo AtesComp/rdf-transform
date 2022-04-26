@@ -1,0 +1,5 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.dependency.packagePresentation": "flat",
+    "java.project.sourcePaths": [ "src/main/java" ]
+}
