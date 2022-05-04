@@ -10,7 +10,10 @@ import com.google.refine.model.Row;
 import com.google.refine.preference.PreferenceStore;
 import com.google.refine.ProjectManager;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
+import org.apache.jena.iri.IRI;
+import org.apache.jena.iri.IRIFactory;
+import org.apache.jena.iri.IRIException;
+import org.apache.jena.irix.SetupJenaIRI;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,13 +30,15 @@ import org.slf4j.LoggerFactory;
  *  The Util class is a convenience class holding common values and functions used by others.
  */
 public class Util {
-    public static enum NodeType {
+    static public enum NodeType {
         ROW,
         RECORD,
         COLUMN,
         CONSTANT,
         EXPRESSION
     }
+
+    static public final IRIFactory iriFactory = SetupJenaIRI.iriCheckerFactory();
 
     // RDF Transform JSON Strings
     // --------------------------------------------------------------------------------
@@ -77,56 +82,56 @@ public class Util {
 
     // XML Schema Strings
     // --------------------------------------------------------------------------------
-    private final static String XSD_PREFIX        = "xsd:"; // for namespace http://www.w3.org/2001/XMLSchema#
+    static private final String XSD_PREFIX        = "xsd:"; // for namespace http://www.w3.org/2001/XMLSchema#
 
-    private final static String XSD_DUR_IRI      = XSD_PREFIX + "duration";
-    private final static String XSD_DT_IRI       = XSD_PREFIX + "dateTime";
-    private final static String XSD_TIME_IRI     = XSD_PREFIX + "time";
-    private final static String XSD_DATE_IRI     = XSD_PREFIX + "date";
-    private final static String XSD_GYM_IRI      = XSD_PREFIX + "gYearMonth";
-    private final static String XSD_GYEAR_IRI    = XSD_PREFIX + "gYear";
-    private final static String XSD_GMD_IRI      = XSD_PREFIX + "gMonthDay";
-    private final static String XSD_GDAY_IRI     = XSD_PREFIX + "gDay";
-    private final static String XSD_GMONTH_IRI   = XSD_PREFIX + "gMonth";
-    private final static String XSD_BOOL_IRI     = XSD_PREFIX + "boolean";
-    private final static String XSD_B64BIN_IRI   = XSD_PREFIX + "base64Binary";
-    private final static String XSD_XBIN_IRI     = XSD_PREFIX + "hexBinary";
-    private final static String XSD_FLOAT_IRI    = XSD_PREFIX + "float";
-    private final static String XSD_DOUBLE_IRI   = XSD_PREFIX + "double";
-    private final static String XSD_ANY_IRI      = XSD_PREFIX + "anyURI";
-    private final static String XSD_QNAME_IRI    = XSD_PREFIX + "QName";
-    private final static String XSD_NOTATION_IRI = XSD_PREFIX + "NOTATION";
+    static private final String XSD_DUR_IRI      = XSD_PREFIX + "duration";
+    static private final String XSD_DT_IRI       = XSD_PREFIX + "dateTime";
+    static private final String XSD_TIME_IRI     = XSD_PREFIX + "time";
+    static private final String XSD_DATE_IRI     = XSD_PREFIX + "date";
+    static private final String XSD_GYM_IRI      = XSD_PREFIX + "gYearMonth";
+    static private final String XSD_GYEAR_IRI    = XSD_PREFIX + "gYear";
+    static private final String XSD_GMD_IRI      = XSD_PREFIX + "gMonthDay";
+    static private final String XSD_GDAY_IRI     = XSD_PREFIX + "gDay";
+    static private final String XSD_GMONTH_IRI   = XSD_PREFIX + "gMonth";
+    static private final String XSD_BOOL_IRI     = XSD_PREFIX + "boolean";
+    static private final String XSD_B64BIN_IRI   = XSD_PREFIX + "base64Binary";
+    static private final String XSD_XBIN_IRI     = XSD_PREFIX + "hexBinary";
+    static private final String XSD_FLOAT_IRI    = XSD_PREFIX + "float";
+    static private final String XSD_DOUBLE_IRI   = XSD_PREFIX + "double";
+    static private final String XSD_ANY_IRI      = XSD_PREFIX + "anyURI";
+    static private final String XSD_QNAME_IRI    = XSD_PREFIX + "QName";
+    static private final String XSD_NOTATION_IRI = XSD_PREFIX + "NOTATION";
 
-    private final static String XSD_STR_IRI      = XSD_PREFIX + "string";
-    private final static String XSD_NSTR_IRI     = XSD_PREFIX + "normalizedString";
-    private final static String XSD_TOKEN_IRI    = XSD_PREFIX + "token";
-    private final static String XSD_LANG_IRI     = XSD_PREFIX + "language";
-    private final static String XSD_NAME_IRI     = XSD_PREFIX + "Name";
-    private final static String XSD_NCNAME_IRI   = XSD_PREFIX + "NCName";
-    private final static String XSD_ID_IRI       = XSD_PREFIX + "ID";
-    private final static String XSD_IDREF_IRI    = XSD_PREFIX + "IDREF";
-    private final static String XSD_IDREFS_IRI   = XSD_PREFIX + "IDREFS";
-    private final static String XSD_ENITY_IRI    = XSD_PREFIX + "ENTITY";
-    private final static String XSD_ENITIES_IRI  = XSD_PREFIX + "ENTITIES";
-    private final static String XSD_NMTOKEN_IRI  = XSD_PREFIX + "NMTOKEN";
-    private final static String XSD_NMTOKENS_IRI = XSD_PREFIX + "NMTOKENS";
+    static private final String XSD_STR_IRI      = XSD_PREFIX + "string";
+    static private final String XSD_NSTR_IRI     = XSD_PREFIX + "normalizedString";
+    static private final String XSD_TOKEN_IRI    = XSD_PREFIX + "token";
+    static private final String XSD_LANG_IRI     = XSD_PREFIX + "language";
+    static private final String XSD_NAME_IRI     = XSD_PREFIX + "Name";
+    static private final String XSD_NCNAME_IRI   = XSD_PREFIX + "NCName";
+    static private final String XSD_ID_IRI       = XSD_PREFIX + "ID";
+    static private final String XSD_IDREF_IRI    = XSD_PREFIX + "IDREF";
+    static private final String XSD_IDREFS_IRI   = XSD_PREFIX + "IDREFS";
+    static private final String XSD_ENITY_IRI    = XSD_PREFIX + "ENTITY";
+    static private final String XSD_ENITIES_IRI  = XSD_PREFIX + "ENTITIES";
+    static private final String XSD_NMTOKEN_IRI  = XSD_PREFIX + "NMTOKEN";
+    static private final String XSD_NMTOKENS_IRI = XSD_PREFIX + "NMTOKENS";
 
-    private final static String XSD_DEC_IRI      = XSD_PREFIX + "decimal";
-    private final static String XSD_INTEGER_IRI  = XSD_PREFIX + "integer";
-    private final static String XSD_NPINT_IRI    = XSD_PREFIX + "nonPositiveInteger";
-    private final static String XSD_NINT_IRI     = XSD_PREFIX + "negativeInteger";
-    private final static String XSD_LONG_IRI     = XSD_PREFIX + "long";
-    private final static String XSD_INT_IRI      = XSD_PREFIX + "int";
-    private final static String XSD_SHORT_IRI    = XSD_PREFIX + "short";
-    private final static String XSD_BYTE_IRI     = XSD_PREFIX + "byte";
-    private final static String XSD_NNINT_IRI    = XSD_PREFIX + "nonNegativeInteger";
-    private final static String XSD_ULONG_IRI    = XSD_PREFIX + "unsignedLong";
-    private final static String XSD_UINT_IRI     = XSD_PREFIX + "unsignedInt";
-    private final static String XSD_USHORT_IRI   = XSD_PREFIX + "unsignedShort";
-    private final static String XSD_UBYTE_IRI    = XSD_PREFIX + "unsignedByte";
-    private final static String XSD_PINT_IRI     = XSD_PREFIX + "positiveInteger";
+    static private final String XSD_DEC_IRI      = XSD_PREFIX + "decimal";
+    static private final String XSD_INTEGER_IRI  = XSD_PREFIX + "integer";
+    static private final String XSD_NPINT_IRI    = XSD_PREFIX + "nonPositiveInteger";
+    static private final String XSD_NINT_IRI     = XSD_PREFIX + "negativeInteger";
+    static private final String XSD_LONG_IRI     = XSD_PREFIX + "long";
+    static private final String XSD_INT_IRI      = XSD_PREFIX + "int";
+    static private final String XSD_SHORT_IRI    = XSD_PREFIX + "short";
+    static private final String XSD_BYTE_IRI     = XSD_PREFIX + "byte";
+    static private final String XSD_NNINT_IRI    = XSD_PREFIX + "nonNegativeInteger";
+    static private final String XSD_ULONG_IRI    = XSD_PREFIX + "unsignedLong";
+    static private final String XSD_UINT_IRI     = XSD_PREFIX + "unsignedInt";
+    static private final String XSD_USHORT_IRI   = XSD_PREFIX + "unsignedShort";
+    static private final String XSD_UBYTE_IRI    = XSD_PREFIX + "unsignedByte";
+    static private final String XSD_PINT_IRI     = XSD_PREFIX + "positiveInteger";
 
-    private final static List<String> XML_SCHEMA_DEFS = Arrays.asList(
+    static private final List<String> XML_SCHEMA_DEFS = Arrays.asList(
         XSD_DUR_IRI, XSD_DT_IRI, XSD_TIME_IRI, XSD_DATE_IRI,
         XSD_GYM_IRI, XSD_GYEAR_IRI, XSD_GMD_IRI, XSD_GDAY_IRI, XSD_GMONTH_IRI,
         XSD_BOOL_IRI, XSD_B64BIN_IRI, XSD_XBIN_IRI, XSD_FLOAT_IRI,
@@ -142,7 +147,7 @@ public class Util {
         XSD_PINT_IRI
     );
 
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:Util" );
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:Util" );
 
     //
     // Preference Setting Defaults (see setPreferencesByPreferenceStore)...
@@ -167,7 +172,7 @@ public class Util {
         }
     }
 
-    public static String resolveIRI(ParsedIRI baseIRI, String strIRI) throws IRIParsingException {
+    public static String resolveIRI(IRI baseIRI, String strIRI) throws IRIParsingException {
         String strError = "ERROR: resolveIRI: ";
         String strErrMsg = null;
         String strAbsoluteIRI = null;
@@ -181,12 +186,12 @@ public class Util {
 
         // Create Absolute IRI without Base IRI...
         try {
-            ParsedIRI absoluteIRI = new ParsedIRI(strIRI);
+            IRI absoluteIRI = Util.iriFactory.construct(strIRI);
             if ( absoluteIRI.isAbsolute() ) {
                 strAbsoluteIRI = absoluteIRI.toString();
             }
         }
-        catch (Exception ex) {
+        catch (IRIException ex) {
             strErrMsg = ex.getMessage();
             // ...continue in case we can resolve as a Relative IRI...
         }
@@ -195,9 +200,9 @@ public class Util {
         if (strAbsoluteIRI == null && baseIRI != null) {
             // Create Absolute IRI with Relative IRI using Base IRI...
             try {
-                strAbsoluteIRI = baseIRI.resolve(strIRI);
+                strAbsoluteIRI = baseIRI.construct(strIRI).toString();
             }
-            catch (Exception ex) {
+            catch (IRIException ex) {
                 strErrMsg = ex.getMessage();
                 // ...continue in case it needs a little adjusting...
             }
@@ -207,7 +212,7 @@ public class Util {
             {
                 try {
                     if ( ! strIRI.startsWith("/") ) {
-                        strAbsoluteIRI = baseIRI.resolve("/" + strIRI);
+                        strAbsoluteIRI = baseIRI.construct("/" + strIRI).toString();
                     }
                 }
                 catch (Exception ex) {
@@ -308,10 +313,10 @@ public class Util {
                 //    Is there anything after...
                 if (strIRI.length() > iIndex + 1) {
                     try {
-                        ParsedIRI tempIRI = new ParsedIRI(strIRI);
+                        IRI tempIRI = Util.iriFactory.construct(strIRI);
                         // ...it parsed as an IRI...
                         // If a scheme is present, but a host is not present...
-                        if (tempIRI.getScheme() != null && tempIRI.getHost() == null) {
+                        if (tempIRI.getScheme() != null && tempIRI.getRawHost() == null) {
                             // There is no authority component:
                             //    i.e., there was no "schema://...", just "schema:...", so
                             //    the authority parsing that contains the host parsing was not
@@ -351,7 +356,7 @@ public class Util {
         return iIndex;
     }
 
-    public static String getDataType(ParsedIRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
+    public static String getDataType(IRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
         if (strDataTypeValue == null) {
             return strDataTypeValue;
         }
@@ -365,7 +370,7 @@ public class Util {
 
         String strResolvedDatatype = null;
         try {
-            strResolvedDatatype = resolveIRI(baseIRI, strDataType);
+            strResolvedDatatype = Util.resolveIRI(baseIRI, strDataType);
         }
         catch (IRIParsingException ex) {
             // strResolvedDatatype is still null...
@@ -374,18 +379,18 @@ public class Util {
         return strResolvedDatatype;
     }
 
-    public static ParsedIRI buildIRI(String strIRI) {
+    public static IRI buildIRI(String strIRI) {
         if (strIRI == null) {
             if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error("ERROR: buildIRI(): Null IRI");
             return null;
         }
 
-        ParsedIRI iriNew = null;
+        IRI iriNew = null;
         try {
-            iriNew = new ParsedIRI(strIRI);
+            iriNew = Util.iriFactory.construct(strIRI);
         }
         catch (Exception ex) {
-            Util.logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
+            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
             iriNew = null;
         }
 

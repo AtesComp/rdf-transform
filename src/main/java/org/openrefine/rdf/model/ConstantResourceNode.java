@@ -3,10 +3,9 @@ package org.openrefine.rdf.model;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.eclipse.rdf4j.model.Value;
+import org.apache.jena.rdf.model.RDFNode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-//import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
@@ -61,19 +60,19 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
     @Override
     protected void createRecordResources() {
         // NOT USED!
-        this.listValues = null;
+        this.listNodes = null;
     }
 
     @Override
     protected void createRowResources() {
-        this.listValues = null;
+        this.listNodes = null;
 
         // If there is no value to work with...
         if ( this.strConstant == null || this.strConstant.isEmpty() ) {
             return;
         }
 
-        this.listValues = new ArrayList<Value>();
+        this.listNodes = new ArrayList<RDFNode>();
         var bDone = false;
         if (this.strPrefix == null) {
             bDone = this.processResultsAsSingle(this.strConstant);
@@ -82,8 +81,8 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
             this.normalizeResource(this.strPrefix, this.strConstant);
         }
 
-        if ( this.listValues.isEmpty() ) {
-            this.listValues = null;
+        if ( this.listNodes.isEmpty() ) {
+            this.listNodes = null;
         }
     }
 

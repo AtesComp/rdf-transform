@@ -2,21 +2,21 @@ package org.openrefine.rdf.command;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.net.URISyntaxException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.openrefine.rdf.model.Util;
 
 import com.google.refine.commands.expr.PreviewExpressionCommand;
 import com.google.refine.expr.EvalError;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
 import com.google.refine.model.Project;
-import org.openrefine.rdf.model.Util;
 import com.google.refine.util.ParsingUtilities;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
+import org.apache.jena.iri.IRI;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +35,7 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
     private JsonNode theRowIndices = null;
     private String strPrefix = ""; // No Prefix, Base IRI == ":", all others are "ccc:"
     private String strColumnName = null;
-    private ParsedIRI baseIRI = null;
+    private IRI baseIRI = null;
 
     private JsonGenerator theWriter = null;
 
@@ -59,7 +59,8 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
 
             String strRowIndices = request.getParameter("rowIndices");
             if (strRowIndices == null) {
-                PreviewRDFExpressionCommand.respond(response, "{ \"code\" : \"error\", \"message\" : \"No row / record indices specified\" }");
+                CodeResponse crErr = new CodeResponse("No row / record indices specified", true);
+                PreviewRDFExpressionCommand.respondJSON(response, crErr);
                 return;
             }
             this.theRowIndices = ParsingUtilities.evaluateJsonStringToArrayNode(strRowIndices);
@@ -75,11 +76,10 @@ public class PreviewRDFExpressionCommand extends PreviewExpressionCommand {
             this.strColumnName = request.getParameter("columnName");
 
             String strBaseIRI = request.getParameter("baseIRI");
-            try {
-                this.baseIRI = new ParsedIRI(strBaseIRI);
-            }
-            catch (URISyntaxException ex) {
-                PreviewRDFExpressionCommand.respond(response, "{ \"code\" : \"error\", \"message\" : \"Invalid Base IRI\" }");
+            this.baseIRI = Util.buildIRI(strBaseIRI);
+            if (this.baseIRI == null) {
+                CodeResponse crErr = new CodeResponse("Invalid Base IRI", true);
+                PreviewRDFExpressionCommand.respondJSON(response, crErr);
                 return;
             }
             // ...end Parameters

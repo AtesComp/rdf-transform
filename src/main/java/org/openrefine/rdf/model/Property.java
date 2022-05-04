@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import org.openrefine.rdf.model.vocab.VocabularyList;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
+import org.apache.jena.iri.IRI;
 
 //import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
@@ -55,7 +55,7 @@ public class Property {
      */
     static public void reconstructProperties(
                             Node.NodeReconstructor theNodeReconstructor,
-                            ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
+                            ResourceNode rnodeParent, JsonNode jnodeParent, final IRI baseIRI,
                             VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
@@ -63,7 +63,7 @@ public class Property {
     }
 
     static private void reconstructProperties(
-                            ResourceNode rnodeParent, JsonNode jnodeParent, final ParsedIRI baseIRI,
+                            ResourceNode rnodeParent, JsonNode jnodeParent, final IRI baseIRI,
                             VocabularyList theNamespaces) {
         if ( ! jnodeParent.has(Util.gstrPropertyMappings) ) {
             return;

@@ -102,7 +102,11 @@ ExporterManager.MenuItems.push(
             },
             {   "id"    : "exportRDFNTriples",
                 "label" : $.i18n("rdft-menu/rdf-n-triples"),
-                "click" : () => RDFExporterMenuBar.exportRDF("N-Triples", "nt")
+                "click" : () => RDFExporterMenuBar.exportRDF("NTriples", "nt")
+            },
+            {   "id"    : "exportRDFNTriplesStar",
+                "label" : $.i18n("rdft-menu/rdf-n-triples-star"),
+                "click" : () => RDFExporterMenuBar.exportRDF("NTriples*", "nts")
             },
             {   "id"    : "exportRDFTurtle",
                 "label" : $.i18n("rdft-menu/rdf-turtle"),
@@ -110,12 +114,12 @@ ExporterManager.MenuItems.push(
             },
             {   "id"    : "exportRDFTurtleStar",
                 "label" : $.i18n("rdft-menu/rdf-turtle-star"),
-                "click" : () => RDFExporterMenuBar.exportRDF("Turtle-star", "ttls")
+                "click" : () => RDFExporterMenuBar.exportRDF("Turtle*", "ttls")
             },
-            {   "id"    : "exportRDFNotation3",
-                "label" : $.i18n("rdft-menu/rdf-n3"),
-                "click" : () => RDFExporterMenuBar.exportRDF("N3", "n3")
-            },
+            //{   "id"    : "exportRDFNotation3",
+            //    "label" : $.i18n("rdft-menu/rdf-n3"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("N3", "n3")
+            //},
             {   "id"    : "exportRDFTriX",
                 "label" : $.i18n("rdft-menu/rdf-trix"),
                 "click" : () => RDFExporterMenuBar.exportRDF("TriX", "xml")
@@ -126,36 +130,60 @@ ExporterManager.MenuItems.push(
             },
             {   "id"    : "exportRDFTriGStar",
                 "label" : $.i18n("rdft-menu/rdf-trig-star"),
-                "click" : () => RDFExporterMenuBar.exportRDF("TriG-star", "trigs")
+                "click" : () => RDFExporterMenuBar.exportRDF("TriG*", "trigs")
             },
-            {   "id"    : "exportRDFBinaryRDF",
-                "label" : $.i18n("rdft-menu/rdf-binary"),
-                "click" : () => RDFExporterMenuBar.exportRDF("BinaryRDF", "brf")
-            },
+            //{   "id"    : "exportRDFBinaryRDF",
+            //    "label" : $.i18n("rdft-menu/rdf-binary"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("BinaryRDF", "brf")
+            //},
             {   "id"    : "exportRDFNQuads",
                 "label" : $.i18n("rdft-menu/rdf-nquads"),
-                "click" : () => RDFExporterMenuBar.exportRDF("N-Quads", "nq")
+                "click" : () => RDFExporterMenuBar.exportRDF("NQuads", "nq")
+            },
+            {   "id"    : "exportRDFNQuadsStar",
+                "label" : $.i18n("rdft-menu/rdf-nquads-star"),
+                "click" : () => RDFExporterMenuBar.exportRDF("NQuads*", "nqs")
             },
             {   "id"    : "exportRDFJSONLD",
                 "label" : $.i18n("rdft-menu/rdf-jsonld"),
-                "click" : () => RDFExporterMenuBar.exportRDF("JSON-LD", "jsonld")
+                "click" : () => RDFExporterMenuBar.exportRDF("JSONLD-1.0", "jsonld")
             },
-            {   "id"    : "exportRDFNDJSONLD",
-                "label" : $.i18n("rdft-menu/rdf-ndjsonld"),
-                "click" : () => RDFExporterMenuBar.exportRDF("NDJSON-LD", "ndjsonld")
+            {   "id"    : "exportRDFJSONLD11",
+                "label" : $.i18n("rdft-menu/rdf-jsonld11"),
+                "click" : () => RDFExporterMenuBar.exportRDF("JSONLD-1.1", "jsonld11")
             },
+            //{   "id"    : "exportRDFNDJSONLD",
+            //    "label" : $.i18n("rdft-menu/rdf-ndjsonld"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("NDJSONLD", "ndjsonld")
+            //},
             {   "id"    : "exportRDFJSON",
                 "label" : $.i18n("rdft-menu/rdf-json"),
                 "click" : () => RDFExporterMenuBar.exportRDF("RDF/JSON", "rj")
             },
-            {   "id"    : "exportRDFa",
-                "label" : $.i18n("rdft-menu/rdf-a"),
-                "click" : () => RDFExporterMenuBar.exportRDF("RDFa", "xhtml")
+            //{   "id"    : "exportRDFa",
+            //    "label" : $.i18n("rdft-menu/rdf-a"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("RDFa", "xhtml")
+            //},
+            //{   "id"    : "exportRDFHDT",
+            //    "label" : $.i18n("rdft-menu/rdf-hdt"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("HDT", "hdt")
+            //},
+            //{   "id"    : "exportRDFNull",
+            //    "label" : $.i18n("rdft-menu/rdf-null"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("RDFNull", "rn")
+            //},
+            //{   "id"    : "exportRDFProto",
+            //    "label" : $.i18n("rdft-menu/rdf-proto"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("RDFProto", "rp")
+            //},
+            {   "id"    : "exportRDFThrift",
+                "label" : $.i18n("rdft-menu/rdf-thrift"),
+                "click" : () => RDFExporterMenuBar.exportRDF("RDFThrift", "rt")
             },
-            {   "id"    : "exportRDFHDT",
-                "label" : $.i18n("rdft-menu/rdf-hdt"),
-                "click" : () => RDFExporterMenuBar.exportRDF("HDT", "hdt")
-            }
+            //{   "id"    : "exportRDFSHACLC",
+            //    "label" : $.i18n("rdft-menu/rdf-shaclc"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("SHACLC", "sc")
+            //},
         ]
     }
 );

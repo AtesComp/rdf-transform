@@ -1,19 +1,19 @@
 package org.openrefine.rdf.model.vocab;
 
 
-public class RDFSClass extends RDFNode{
+public class RDFTClass extends RDFTNode{
 
-    public RDFSClass(String[] astrLoader) {
+    public RDFTClass(String[] astrLoader) {
         super(astrLoader);
     }
 
-    public RDFSClass(String strIRI) {
+    public RDFTClass(String strIRI) {
         super(strIRI);
     }
 
     @Override
     public String getType() {
-        //return RDFSClass.class.getSimpleName();
+        //return RDFTClass.class.getSimpleName();
         return "class";
     }
 }

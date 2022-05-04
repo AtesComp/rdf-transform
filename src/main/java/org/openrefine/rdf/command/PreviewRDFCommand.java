@@ -1,5 +1,13 @@
 package org.openrefine.rdf.command;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
+
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.operation.PreviewRDFRecordVisitor;
@@ -11,17 +19,10 @@ import com.google.refine.commands.Command;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFWriter;
-import org.eclipse.rdf4j.rio.Rio;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFWriter;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.StringWriter;
-
-//import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.slf4j.Logger;
@@ -29,8 +30,6 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewRDFCommand extends Command {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
-
-    public String strStatements;
 
     public PreviewRDFCommand() {
     }
@@ -89,12 +88,12 @@ public class PreviewRDFCommand extends Command {
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Sample Limit processed.");
 
             // Setup writer for output...
-            StringWriter strwriterBase = new StringWriter();
-            RDFWriter theWriter = Rio.createWriter(RDFFormat.TURTLE, strwriterBase);
+            ByteArrayOutputStream osOut = new ByteArrayOutputStream();
+            StreamRDF theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
 
             // Start writing...
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Starting RDF...");
-            theWriter.startRDF();
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Starting RDF Processing...");
+            theWriter.start();
 
             //
             // Process sample records/rows of data for statements...
@@ -110,19 +109,19 @@ public class PreviewRDFCommand extends Command {
             }
             theVisitor.buildModel(theProject, theEngine);
 
-            theWriter.endRDF();
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  ...Ended RDF.");
+            theWriter.finish();
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  ...Ended RDF Processing.");
             // ...end writing
 
-            this.strStatements = strwriterBase.getBuffer().toString();
+            String strStatements = osOut.toString(StandardCharsets.UTF_8);
             if ( Util.isVerbose(4) || Util.isDebugMode() ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
 
             // Send back to client...
             PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );
         }
         catch (Exception ex) {
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.error("DEBUG: Error constructing preview", ex);
-            ex.printStackTrace();
+            PreviewRDFCommand.logger.error("ERROR: Constructing Preview:" + ex.getMessage(), ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             PreviewRDFCommand.respondJSON(response, CodeResponse.error);
         }
     }

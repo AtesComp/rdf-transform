@@ -38,7 +38,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.document.StringField;
-import org.eclipse.rdf4j.repository.Repository;
+
+import org.apache.jena.rdf.model.Model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,23 +50,22 @@ public class VocabularySearcher implements IVocabularySearcher {
     public static final String LUCENE_DIR = "luceneIndex";
     public static final String LUCENE_DIR_OLD = "luceneIndex_OLD";
 
-    private static final String CLASS_TYPE = "class";
-    private static final String PROPERTY_TYPE = "property";
+    static private final String CLASS_TYPE = "class";
+    static private final String PROPERTY_TYPE = "property";
     // "type": vocabulary AND "project": projectID AND "name": name
     // ("type": (class OR property) ) AND "project": strProjectID AND "prefix": prefix
-    private static final BooleanQuery TYPE_QUERY =
+    static private final BooleanQuery TYPE_QUERY =
             new BooleanQuery.Builder().
-                add(new TermQuery(new Term(Util.gstrType, CLASS_TYPE)), Occur.SHOULD).
-                add(new TermQuery(new Term(Util.gstrType, PROPERTY_TYPE)), Occur.SHOULD).
+                add( new TermQuery( new Term(Util.gstrType, CLASS_TYPE) ), Occur.SHOULD ).
+                add( new TermQuery( new Term(Util.gstrType, PROPERTY_TYPE) ), Occur.SHOULD ).
                 build();
 
     // Since the Project ID is always a number, it is safe to use "g" as the global marker placeholder...
-    private static final String GLOBAL_VOCABULARY_PLACE_HOLDER = "g";
+    static private final String GLOBAL_VOCABULARY_PLACE_HOLDER = "g";
 
     private Directory dirLucene;
     private IndexWriter writer;
     private IndexSearcher searcher;
-    //private IndexReader reader;
     private DirectoryReader reader;
 
     public VocabularySearcher(File dir)
@@ -89,8 +89,6 @@ public class VocabularySearcher implements IVocabularySearcher {
             this.writer = new IndexWriter(this.dirLucene, new IndexWriterConfig(analyzer));
             this.writer.commit();
         }
-        //this.reader = DirectoryReader.open( FSDirectory.open( new File(dir, LUCENE_DIR).toPath() ) );
-        //this.reader = DirectoryReader.open(this.dirLucene);
         this.reader = DirectoryReader.open(this.writer);
         this.searcher = new IndexSearcher(this.reader);
         if ( Util.isVerbose(3) ) VocabularySearcher.logger.info("...created vocabulary searcher");
@@ -108,8 +106,8 @@ public class VocabularySearcher implements IVocabularySearcher {
                                             String strProjectID)
             throws VocabularyImportException, IOException {
         VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
-        List<RDFSClass> classes = new ArrayList<RDFSClass>();
-        List<RDFSProperty> properties = new ArrayList<RDFSProperty>();
+        List<RDFTClass> classes = new ArrayList<RDFTClass>();
+        List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
 
         // Import classes & properties from Namespace at URL...
         if ( Util.isDebugMode() ) {
@@ -121,19 +119,18 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, Repository repository,
-                                            String strProjectID)
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, Model theModel, String strProjectID)
             throws VocabularyImportException, IOException {
         VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
-        List<RDFSClass> classes = new ArrayList<RDFSClass>();
-        List<RDFSProperty> properties = new ArrayList<RDFSProperty>();
+        List<RDFTClass> classes = new ArrayList<RDFTClass>();
+        List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
 
         // Import classes & properties from Namespace in Repository...
         if ( Util.isDebugMode() ) {
             VocabularySearcher.logger.info("DEBUG: Import And Index vocabulary " +
                     strPrefix + ": <" + strNamespace + ">");
         }
-        importer.importVocabulary(repository, classes, properties);
+        importer.importVocabulary(theModel, classes, properties);
         this.indexTerms(strProjectID, classes, properties);
     }
 
@@ -229,18 +226,18 @@ public class VocabularySearcher implements IVocabularySearcher {
         this.writer.deleteDocuments(termsQuery);
     }
 
-    private void indexTerms(String strProjectID, List<RDFSClass> classes, List<RDFSProperty> properties)
+    private void indexTerms(String strProjectID, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws IOException {
-        for (RDFSClass c : classes) {
+        for (RDFTClass c : classes) {
             this.indexRDFNode(c, CLASS_TYPE, strProjectID);
         }
-        for (RDFSProperty p : properties) {
+        for (RDFTProperty p : properties) {
             this.indexRDFNode(p, PROPERTY_TYPE, strProjectID);
         }
         this.update();
     }
 
-    private void indexRDFNode(RDFNode node, String strNodeType, String strProjectID)
+    private void indexRDFNode(RDFTNode node, String strNodeType, String strProjectID)
             throws IOException {
         /*
          * Create a new lucene document to store and index the related content

@@ -7,21 +7,22 @@ import java.io.IOException;
 
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
+
 import org.openrefine.rdf.model.Util.IRIParsingException;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
+import org.apache.jena.iri.IRI;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.impl.PropertyImpl;
+import org.apache.jena.rdf.model.impl.ResourceImpl;
+import org.apache.jena.vocabulary.RDF;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,11 +86,11 @@ abstract public class ResourceNode extends Node {
         String strEmbeddedPrefix = null;
         String strLocalPart = objResult.toString();
         try {
-            ParsedIRI tempIRI = new ParsedIRI(strLocalPart);
+            IRI tempIRI = Util.buildIRI(strLocalPart);
             // ...it parsed as an IRI...
             // If a scheme is present, but a host is not present...
             strEmbeddedPrefix = tempIRI.getScheme();
-            if (strEmbeddedPrefix != null && tempIRI.getHost() == null) {
+            if (strEmbeddedPrefix != null && tempIRI.getRawHost() == null) {
                 // There is no authority component:
                 //    i.e., there was no "schema://...", just "schema:...", so
                 //    the authority parsing that contains the host parsing was not
@@ -121,7 +122,7 @@ abstract public class ResourceNode extends Node {
         String strLocalPart = strIRI; // ...for "prefix:localPart" IRI
         if (strPrefix != null) { // ...on prefix, attempt namespace...
             strIRI = strPrefix + ":" + strLocalPart;
-            strNamespace = this.theConnection.getNamespace(strPrefix);
+            strNamespace = this.theModel.getNsPrefixURI(strPrefix);
         }
         if ( Util.isDebugMode() ) {
             String strDebug = "DEBUG: normalizeResource: Given: ";
@@ -139,16 +140,16 @@ abstract public class ResourceNode extends Node {
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Resolved IRI: " + strResolvedIRI);
             if (strResolvedIRI != null) { // ...at least it's a good, basic IRI...
                 String strFullIRI = strResolvedIRI; // ...Default: Full IRI
-                IRI iriResource;
+                ResourceImpl nodeResource;
                 if (strNamespace == null) { // ...and both strPrefix == null and != null
-                    iriResource = this.theFactory.createIRI(strFullIRI);
+                    nodeResource = new ResourceImpl(strFullIRI);
                 }
                 else {
                     strFullIRI = strNamespace + strLocalPart;
-                    iriResource = this.theFactory.createIRI(strNamespace, strLocalPart);
+                    nodeResource = new ResourceImpl(strNamespace, strLocalPart);
                 }
                 if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
-                this.listValues.add( iriResource );
+                this.listNodes.add( nodeResource );
             }
         }
         //catch (IRIParsingException | IllegalArgumentException ex) {
@@ -163,14 +164,11 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatements() for Root Resource Node types on OpenRefine Rows
      */
-    public void createStatements(
-                        ParsedIRI baseIRI, ValueFactory theFactory, RepositoryConnection theConnection,
-                        Project theProject, int iRowIndex )
+    public void createStatements(IRI baseIRI, Model theModel, Project theProject, int iRowIndex)
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
-        this.theFactory = theFactory;
-        this.theConnection = theConnection;
+        this.theModel = theModel;
         this.theProject = theProject;
 
         this.theRec.setRootRow(iRowIndex);
@@ -181,14 +179,11 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatements() for Root Resource Node types on OpenRefine Records
      */
-    public void createStatements(
-                        ParsedIRI baseIRI, ValueFactory theFactory, RepositoryConnection theConnection,
-                        Project theProject, Record theRecord )
+    public void createStatements(IRI baseIRI, Model theModel, Project theProject, Record theRecord)
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
-        this.theFactory = theFactory;
-        this.theConnection = theConnection;
+        this.theModel = theModel;
         this.theProject = theProject;
 
         this.theRec.setRootRecord(theRecord);
@@ -212,18 +207,18 @@ abstract public class ResourceNode extends Node {
         // Transition from Record to Row processing...
         //
         if ( this.theRec.isRecordPerRow() ) {
-            List<Value> listResourcesAll = new ArrayList<Value>();
+            List<RDFNode> listResourcesAll = new ArrayList<RDFNode>();
             while ( this.theRec.rowNext() ) {
                 this.createRowResources(); // ...Row only
-                if ( ! ( this.listValues == null || this.listValues.isEmpty() ) ) {
+                if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
                     this.createResourceStatements(); // ...relies on this.listResources iteration
-                    listResourcesAll.addAll(this.listValues);
+                    listResourcesAll.addAll(this.listNodes);
                 }
             }
             if ( listResourcesAll.isEmpty() ) {
                 listResourcesAll = null;
             }
-            this.listValues = listResourcesAll;
+            this.listNodes = listResourcesAll;
         }
 
         //
@@ -231,11 +226,11 @@ abstract public class ResourceNode extends Node {
         //
         else {
             this.createResources(); // ...Record or Row
-            if ( ! ( this.listValues == null || this.listValues.isEmpty() ) ) {
+            if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
                 this.createResourceStatements();
             }
             else {
-                this.listValues = null;
+                this.listNodes = null;
             }
         }
     }
@@ -281,18 +276,18 @@ abstract public class ResourceNode extends Node {
      */
     protected void createRecordResources() {
         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createRecordResources...");
-        List<Value> listResources = new ArrayList<Value>();
+        List<RDFNode> listResources = new ArrayList<RDFNode>();
         while ( this.theRec.rowNext() ) {
             this.createRowResources();
-            if ( this.listValues != null ) {
-                listResources.addAll(this.listValues);
+            if ( this.listNodes != null ) {
+                listResources.addAll(this.listNodes);
             }
         }
         if ( listResources.isEmpty() ) {
             listResources = null;
         }
 
-        this.listValues = listResources;
+        this.listNodes = listResources;
     }
 
     abstract protected void createRowResources();
@@ -309,7 +304,7 @@ abstract public class ResourceNode extends Node {
             this.createTypeStatements();
             this.createPropertyStatements();
         }
-        catch (RepositoryException ex) {
+        catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -320,8 +315,7 @@ abstract public class ResourceNode extends Node {
      *    Given a set of source resources, create the (source, rdf:type, object) triple statements
      *    for each of the sources.
      */
-    private void createTypeStatements()
-            throws RepositoryException {
+    private void createTypeStatements() {
         if ( Util.isDebugMode() ) {
             String strPropertyCount = "DEBUG: Type Count: {}";
             int iPropertyCount = 0;
@@ -340,12 +334,12 @@ abstract public class ResourceNode extends Node {
         String strNamespace;
         String strLocalPart;
         String strFullType;
-        IRI iriType;
+        ResourceImpl nodeType;
 
         //
         // Process one set of types
         //
-        List<IRI> listTypesForStmts = new ArrayList<IRI>();
+        List<RDFNode> listTypesForStmts = new ArrayList<RDFNode>();
         for ( RDFType typeItem : this.listTypes ) {
             strPrefix = typeItem.getPrefix(); // Null indicated FULL IRI, Empty indicate BaseIRI
             strType = typeItem.getLocalPart(); // ...assume FULL IRI
@@ -354,7 +348,7 @@ abstract public class ResourceNode extends Node {
             if (strPrefix != null) { // ...prefixed...
                 strLocalPart = strType;
                 strType = strPrefix + ":" + strLocalPart; // ...CIRIE
-                strNamespace = this.theConnection.getNamespace(strPrefix);
+                strNamespace = this.theModel.getNsPrefixURI(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
 
@@ -365,12 +359,12 @@ abstract public class ResourceNode extends Node {
                     if (strFullType != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: [" + strFullType + "]");
                         if (strNamespace != null) {
-                            iriType = this.theFactory.createIRI(strNamespace, strLocalPart);
+                            nodeType = new ResourceImpl(strNamespace, strLocalPart);
                         }
                         else { // ...on no prefix or missing namespace, treat as Full...
-                            iriType = this.theFactory.createIRI(strFullType);
+                            nodeType = new ResourceImpl(strFullType);
                         }
-                        listTypesForStmts.add(iriType);
+                        listTypesForStmts.add(nodeType);
                     }
                 }
                 catch (IRIParsingException | IllegalArgumentException ex) {
@@ -382,13 +376,9 @@ abstract public class ResourceNode extends Node {
         //
         // Process statements...
         //
-        for (Value valSource : this.listValues) {
-            for (IRI iriTypeItem : listTypesForStmts) {
-                this.theConnection.add(
-                    this.theFactory.createStatement(
-                        (Resource) valSource, RDF.TYPE, iriTypeItem
-                    )
-                );
+        for (RDFNode theSource : this.listNodes) {
+            for (RDFNode theType : listTypesForStmts) {
+                this.theModel.add( (Resource) theSource, RDF.type, (RDFNode) theType );
             }
         }
     }
@@ -399,8 +389,7 @@ abstract public class ResourceNode extends Node {
      *    Given a set of source resources, create the (source, property, object) triple statements
      *    for each of the sources.
      */
-    private void createPropertyStatements()
-            throws RepositoryException {
+    private void createPropertyStatements() {
         if ( Util.isDebugMode() ) {
             String strPropertyCount = "DEBUG: Property Count: {}";
             int iPropertyCount = 0;
@@ -419,23 +408,23 @@ abstract public class ResourceNode extends Node {
         String strNamespace;
         String strLocalName;
         Node nodeObject;
-        List<Value> listObjects;
+        List<RDFNode> listObjects;
         String strFullProperty;
-        IRI iriProperty;
+        PropertyImpl theProperty;
 
         @JsonIgnoreType
         class PropertyObjectList {
-            private IRI iriProp;
-            private List<Value> listObjs;
+            private PropertyImpl nodeProp;
+            private List<RDFNode> listObjs;
 
-            PropertyObjectList(IRI iriProp, List<Value> listObjs) {
-                this.iriProp = iriProp;
+            PropertyObjectList(PropertyImpl nodeProp, List<RDFNode> listObjs) {
+                this.nodeProp = nodeProp;
                 this.listObjs = listObjs;
             }
-            public IRI getProperty() {
-                return this.iriProp;
+            public PropertyImpl getProperty() {
+                return this.nodeProp;
             }
-            public List<Value> getObjects() {
+            public List<RDFNode> getObjects() {
                 return this.listObjs;
             }
         }
@@ -455,7 +444,7 @@ abstract public class ResourceNode extends Node {
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
                 strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
-                strNamespace = this.theConnection.getNamespace(strPrefix);
+                strNamespace = this.theModel.getNsPrefixURI(strPrefix);
             }
 
             //
@@ -478,12 +467,12 @@ abstract public class ResourceNode extends Node {
                     if (strFullProperty != null) {
                         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: [" + strFullProperty + "]");
                         if (strNamespace != null) {
-                            iriProperty = this.theFactory.createIRI(strNamespace, strLocalName);
+                            theProperty = new PropertyImpl(strNamespace, strLocalName);
                         }
                         else { // ...on no prefix or missing namespace, treat as Full...
-                            iriProperty = this.theFactory.createIRI(strFullProperty);
+                            theProperty = new PropertyImpl(strFullProperty);
                         }
-                        listPropsForStmts.add( new PropertyObjectList(iriProperty, listObjects) );
+                        listPropsForStmts.add( new PropertyObjectList(theProperty, listObjects) );
                     }
                 }
                 catch (IRIParsingException | IllegalArgumentException ex) {
@@ -495,14 +484,16 @@ abstract public class ResourceNode extends Node {
         //
         // Process statements...
         //
-        for (Value valSource : this.listValues) {
+        for (RDFNode theSource : this.listNodes) {
             for ( PropertyObjectList polPropItem : listPropsForStmts )
             {
-                iriProperty = polPropItem.getProperty();
+                theProperty = polPropItem.getProperty();
                 listObjects = polPropItem.getObjects();
-                for (Value valObject : listObjects) {
-                    this.theConnection.add(
-                        this.theFactory.createStatement( (Resource) valSource, iriProperty, valObject )
+                for (RDFNode theObject : listObjects) {
+                    this.theModel.add(
+                        (Resource) theSource,
+                        (org.apache.jena.rdf.model.Property) theProperty,
+                        (RDFNode) theObject
                     );
                 }
             }
@@ -512,11 +503,11 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createObjects() for Resource Node types on OpenRefine Rows
      *
-     *  Return: List<Value>
+     *  Return: List<RDFNode>
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
-    protected List<Value> createObjects(ResourceNode nodeProperty)
+    protected List<RDFNode> createObjects(ResourceNode nodeProperty)
             throws RuntimeException {
         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createObjects...");
 
@@ -524,7 +515,7 @@ abstract public class ResourceNode extends Node {
 
         // TODO: Create process for Sub-Records
 
-        this.listValues = null;
+        this.listNodes = null;
 
         //
         // Record Mode...
@@ -547,7 +538,7 @@ abstract public class ResourceNode extends Node {
 
         // Return the collected resources from the statement processing as Objects
         // to the given Property...
-        return this.listValues;
+        return this.listNodes;
     }
 
     abstract protected void writeNode(JsonGenerator writer, boolean isRoot)

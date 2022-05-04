@@ -10,8 +10,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RDFNode {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFNode");
+public class RDFTNode {
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFTNode");
 
     public static final int
         iIRI       = 0,
@@ -28,9 +28,9 @@ public class RDFNode {
     private String strNamespace;
     private String strLocalPart;
 
-    public RDFNode() {}
+    public RDFTNode() {}
 
-    public RDFNode(String strIRI) {
+    public RDFTNode(String strIRI) {
         this.strIRI         = strIRI;
         this.strLabel       = strIRI;
         this.strDescription = null;
@@ -40,7 +40,7 @@ public class RDFNode {
         this.extractLocalPart();
     }
 
-    public RDFNode(String[] astrLoader) {
+    public RDFTNode(String[] astrLoader) {
         this.load(astrLoader);
     }
 
@@ -83,7 +83,7 @@ public class RDFNode {
                     // Also, the Prefix may be related to the Namespace.
                     //
                     // Report an error and continue...
-                    RDFNode.logger.error(
+                    RDFTNode.logger.error(
                         "ERROR: extractLocalPart(): Namespace is not in IRI!\n" +
                         "             IRI: " + this.strIRI + "\n" +
                         "       Namespace: " + this.strNamespace
@@ -190,8 +190,8 @@ public class RDFNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (! (obj instanceof RDFNode) ) return false;
-        RDFNode node = (RDFNode) obj;
+        if (! (obj instanceof RDFTNode) ) return false;
+        RDFTNode node = (RDFTNode) obj;
         if (node.getIRI() == null || this.strIRI == null) {
             return false;
         }

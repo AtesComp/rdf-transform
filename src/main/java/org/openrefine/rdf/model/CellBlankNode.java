@@ -10,8 +10,10 @@ import org.openrefine.rdf.model.expr.functions.ToIRIString;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.expr.ParsingException;
 
-import org.eclipse.rdf4j.model.BNode;
-import org.eclipse.rdf4j.model.Value;
+import org.apache.jena.rdf.model.AnonId;
+import org.apache.jena.rdf.model.impl.ResourceImpl;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -71,7 +73,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     protected void createRowResources() {
         if (Util.isDebugMode()) CellBlankNode.logger.info("DEBUG: createRowResources...");
 
-        this.listValues = null;
+        this.listNodes = null;
         Object results = null;
         try {
             // NOTE: Currently, the expression just results in a "true" (some non-empty string is evaluated)
@@ -91,7 +93,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
             return;
         }
 
-        this.listValues = new ArrayList<Value>();
+        this.listNodes = new ArrayList<RDFNode>();
 
         // Results are an array...
         if ( results.getClass().isArray() ) {
@@ -107,8 +109,8 @@ public class CellBlankNode extends ResourceNode implements CellNode {
             this.normalizeBNodeResource(results);
         }
 
-        if ( this.listValues.isEmpty() ) {
-            this.listValues = null;
+        if ( this.listNodes.isEmpty() ) {
+            this.listNodes = null;
         }
     }
 
@@ -118,11 +120,11 @@ public class CellBlankNode extends ResourceNode implements CellNode {
         // TODO: Use strResult or just "true" or "false"?  Currently, "true" or "false".
         // If we have a good result...
         if ( ! ( strResult == null || strResult.isEmpty() ) ) {
-            BNode bnode = null;
+            Resource bnode = null;
             // If this is a row / record index-based Blank Node...
             if (this.bIsIndex) {
                 // ...produce a regular blank node...
-                bnode = this.theFactory.createBNode();
+                bnode = new ResourceImpl( new AnonId() );
             }
             // Otherwise, it's a column-based Blank Node...
             else {
@@ -130,19 +132,19 @@ public class CellBlankNode extends ResourceNode implements CellNode {
                 // If the ColumnName does not produce a good IRI string...
                 if (strIRIColumnName == null) {
                     // ...produce a regular blank node...
-                    bnode = this.theFactory.createBNode();
+                    bnode = new ResourceImpl( new AnonId() );
                 }
                 // Otherwise, produce an Blank Node based on the ColumnName...
                 else {
                     // Since we are processing by row (even in record mode for columns),
                     // the row number is set and we can use it with the ColumnName
                     String strIndex = Integer.toString( this.theRec.row() );
-                    bnode = this.theFactory.createBNode( strIRIColumnName + "_" + strIndex );
+                    bnode = new ResourceImpl( new AnonId( strIRIColumnName + "_" + strIndex ) );
                 }
             }
 
             if (bnode != null) {
-                this.listValues.add(bnode);
+                this.listNodes.add(bnode);
             }
         }
     }

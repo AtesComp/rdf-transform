@@ -15,12 +15,9 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import org.openrefine.rdf.RDFTransform;
 
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 
 import com.google.refine.ProjectManager;
 import com.google.refine.model.Project;
@@ -33,7 +30,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
 
     String strPrefix;
     String strNamespace;
-    RDFFormat theRDFFormat;
+    Lang theRDFLang;
     String strProjectID;
     String strFilename;
     InputStream instreamFile;
@@ -44,7 +41,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         this.strProjectID = null;
         this.strPrefix = null;
         this.strNamespace = null;
-        this.theRDFFormat = null;
+        this.theRDFLang = null;
         this.strFilename = "";
         this.instreamFile = null;
     }
@@ -59,7 +56,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         Project theProject = this.getProject(request);
         FileItemFactory factory = new DiskFileItemFactory();
 
-        Repository theRepository = null;
+        Model theModel = null;
         try {
             // Create a new file upload handler...
             ServletFileUpload upload = new ServletFileUpload(factory);
@@ -68,16 +65,18 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             List<FileItem> items = upload.parseRequest(request);
             this.parseUploadItems(items);
 
-            theRepository =
-                new SailRepository(
-                    new SchemaCachingRDFSInferencer( new MemoryStore() )
-                );
-
-            RepositoryConnection theRepoConnection = theRepository.getConnection();
-            theRepoConnection.add(this.instreamFile, "", this.theRDFFormat);
-            theRepoConnection.close();
+            // NOTE: use createOntologyModel() to do ontology include processing.
+            //      createDefaultModel() just processes the given file without incluing.
+            theModel = ModelFactory.createDefaultModel();
+            if (this.theRDFLang != null) {
+                theModel.read(this.instreamFile, "", this.theRDFLang.getName());
+            }
+            else {
+                theModel.read(this.instreamFile, "");
+            }
         }
         catch (Exception ex) {
+            NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
             NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
             return;
         }
@@ -87,7 +86,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
 
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
-                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, theRepository, this.strProjectID);
+                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, theModel, this.strProjectID);
         }
         catch (Exception ex) {
             NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
@@ -121,92 +120,95 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             }
         }
 
-        this.theRDFFormat = RDFFormat.TURTLE;
+        this.theRDFLang = Lang.TURTLE;
         if (strFormat != null) {
             //
             // NOTE: See file "rdf-transform-prefix-add.html" for
             //      matching values.
             //
             if (strFormat.equals("auto-detect")) {
-                this.theRDFFormat = this.guessFormat(strFilename);
+                this.theRDFLang = this.guessFormat(strFilename);
             }
             else if (strFormat.equals("RDF/XML")) {
-                this.theRDFFormat = RDFFormat.RDFXML;
+                this.theRDFLang = Lang.RDFXML;
             }
             else if (strFormat.equals("TTL")) {
-                this.theRDFFormat = RDFFormat.TURTLE;
+                this.theRDFLang = Lang.TURTLE;
             }
             else if (strFormat.equals("N3")) {
-                this.theRDFFormat = RDFFormat.N3;
+                this.theRDFLang = Lang.N3;
             }
             else if (strFormat.equals("NTRIPLE")) {
-                this.theRDFFormat = RDFFormat.NTRIPLES;
+                this.theRDFLang = Lang.NTRIPLES;
             }
             else if (strFormat.equals("JSON-LD")) {
-                this.theRDFFormat = RDFFormat.JSONLD;
+                this.theRDFLang = Lang.JSONLD;
             }
             else if (strFormat.equals("NQUADS")) {
-                this.theRDFFormat = RDFFormat.NQUADS;
+                this.theRDFLang = Lang.NQUADS;
             }
             else if (strFormat.equals("RDF/JSON")) {
-                this.theRDFFormat = RDFFormat.RDFJSON;
+                this.theRDFLang = Lang.RDFJSON;
             }
             else if (strFormat.equals("TRIG")) {
-                this.theRDFFormat = RDFFormat.TRIG;
+                this.theRDFLang = Lang.TRIG;
             }
             else if (strFormat.equals("TRIX")) {
-                this.theRDFFormat = RDFFormat.TRIX;
+                this.theRDFLang = Lang.TRIX;
             }
             else if (strFormat.equals("BINARY")) {
-                this.theRDFFormat = RDFFormat.BINARY;
+                this.theRDFLang = Lang.RDFTHRIFT;
             }
         }
     }
 
-    private RDFFormat guessFormat(String strFilename) {
+    private Lang guessFormat(String strFilename) {
         if (strFilename.lastIndexOf('.') != -1) {
             String strExtension = strFilename.substring(strFilename.lastIndexOf('.') + 1).toLowerCase();
             if (strExtension.equals("rdf")) {
-                return RDFFormat.RDFXML;
+                return Lang.RDFXML;
             }
             else if (strExtension.equals("rdfs")) {
-                return RDFFormat.RDFXML;
+                return Lang.RDFXML;
             }
             else if (strExtension.equals("owl")) {
-                return RDFFormat.RDFXML;
+                return Lang.RDFXML;
             }
             else if (strExtension.equals("ttl")) {
-                return RDFFormat.TURTLE;
+                return Lang.TURTLE;
             }
             else if (strExtension.equals("n3")) {
-                return RDFFormat.N3;
+                return Lang.N3;
             }
             else if (strExtension.equals("nt")) {
-                return RDFFormat.NTRIPLES;
+                return Lang.NTRIPLES;
             }
             else if (strExtension.equals("jsonld")) {
-                return RDFFormat.JSONLD;
+                return Lang.JSONLD;
             }
             else if (strExtension.equals("nq")) {
-                return RDFFormat.NQUADS;
+                return Lang.NQUADS;
             }
             else if (strExtension.equals("rj")) {
-                return RDFFormat.RDFJSON;
+                return Lang.RDFJSON;
             }
             else if (strExtension.equals("trig")) {
-                return RDFFormat.TRIG;
+                return Lang.TRIG;
             }
             else if (strExtension.equals("trix")) {
-                return RDFFormat.TRIX;
+                return Lang.TRIX;
             }
             else if (strExtension.equals("xml")) {
-                return RDFFormat.TRIX;
+                return Lang.TRIX;
             }
-            else if (strExtension.equals("brf")) {
-                return RDFFormat.BINARY;
+            else if (strExtension.equals("trdf")) {
+                return Lang.RDFTHRIFT;
+            }
+            else if (strExtension.equals("rt")) {
+                return Lang.RDFTHRIFT;
             }
         }
-        return RDFFormat.TURTLE;
+        return Lang.TURTLE;
     }
 
     private RDFTransform getTransform(Project theDefaultProject)

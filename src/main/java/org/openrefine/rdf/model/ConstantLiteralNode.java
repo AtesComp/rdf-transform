@@ -3,7 +3,7 @@ package org.openrefine.rdf.model;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.eclipse.rdf4j.model.Value;
+import org.apache.jena.rdf.model.RDFNode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -73,14 +73,14 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
     protected void createRowLiterals() {
         if (Util.isDebugMode()) ConstantLiteralNode.logger.info("DEBUG: createRowLiterals...");
 
-        this.listValues = null;
+        this.listNodes = null;
 
         // If there is no value to work with...
         if ( this.strConstant == null || this.strConstant.isEmpty() ) {
             return;
         }
 
-        this.listValues = new ArrayList<Value>();
+        this.listNodes = new ArrayList<RDFNode>();
         this.normalizeLiteral(this.strConstant);
     }
 

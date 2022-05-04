@@ -4,12 +4,13 @@ import java.util.ArrayList;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
-import org.eclipse.rdf4j.model.BNode;
-import org.eclipse.rdf4j.model.Value;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import org.apache.jena.rdf.model.AnonId;
+import org.apache.jena.rdf.model.impl.ResourceImpl;
+import org.apache.jena.rdf.model.RDFNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
     static private final String strNotLast = "[\\.]+";
     static private final String strNotFirst = "[-\\.\\u00B7\\u0300\\u036F\\u203F\\u2040]+";
 
-    private BNode bnode;
+    private RDFNode bnode;
     private final String strConstant;
 
     @JsonCreator
@@ -38,7 +39,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
     @Override
     public String getNodeName() {
-        return "Constant BNode: <[" + this.strConstant + "]" + this.bnode.getID() + ">";
+        return "Constant BNode: <[" + this.strConstant + "]" + this.bnode.asNode().getBlankNodeLabel() + ">";
     }
 
     @Override
@@ -67,7 +68,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
     protected void createRowResources() {
         if ( Util.isDebugMode() ) ConstantBlankNode.logger.info("DEBUG: createRowResources...");
 
-        this.listValues = new ArrayList<Value>();
+        this.listNodes = new ArrayList<RDFNode>();
         this.normalizeBNodeResource();
     }
 
@@ -82,7 +83,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
             if ( strConstant == null || strConstant.isEmpty() ) {
                 // ...produce a generic blank node...
                 ConstantBlankNode.logger.warn("WARNING: The ConstantBlankNode constant is empty! Creating generic BNode.");
-                this.bnode = this.theFactory.createBNode();
+                this.bnode = new ResourceImpl( new AnonId() );
             }
             else {
                 //
@@ -108,19 +109,19 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
                 // When there is nothing to evaluate...
                 if ( strBNodeValue == null || strBNodeValue.isEmpty() ) {
                     ConstantBlankNode.logger.error("ERROR: The ConstantBlankNode constant evaluates to nothing! Creating generic BNode.");
-                    this.bnode = this.theFactory.createBNode();
+                    this.bnode = new ResourceImpl( new AnonId() );
                 }
                 else {
                     if ( Util.isDebugMode() ) ConstantBlankNode.logger.info("DEBUG:  Pre-Create: " + strBNodeValue);
                     // NOTE: The prefix "_:" is auto-added by createBNode()
-                    this.bnode = this.theFactory.createBNode(strBNodeValue);
+                    this.bnode = new ResourceImpl( new AnonId(strBNodeValue) );
                     if ( Util.isDebugMode() ) ConstantBlankNode.logger.info("DEBUG: Post-Create: " + this.bnode.toString());
                 }
             }
         }
         // Otherwise, reuse as needed.
 
-        this.listValues.add(bnode);
+        this.listNodes.add(bnode);
     }
 
     @Override

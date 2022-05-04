@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Objects;
 
 import com.google.refine.model.Project;
+
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.utils.RecordModel;
 import org.openrefine.rdf.model.vocab.VocabularyList;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.apache.jena.iri.IRI;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,7 +52,7 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             RDFTransform.Reconstructor theNodeReconstructor,
-                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces) {
+                            JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, theNamespaces);
@@ -60,13 +60,13 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             Property.PropertyReconstructor thePropReconstructor,
-                            JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces) {
+                            JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces) {
         Objects.requireNonNull(thePropReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, theNamespaces);
     }
 
-    static private Node reconstructNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces) {
+    static private Node reconstructNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces) {
         Node nodeElement = null;
         if (jnodeSubject == null) {
             Node.logger.warn("WARNING: Missing Subject for Node");
@@ -213,7 +213,7 @@ abstract public class Node {
         return nodeElement;
     }
 
-    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces,
+    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces,
             String strType, boolean bValueNode, boolean bConstNode, String strValue, String strPrefix, String strSource, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
         ResourceNode rnodeResource = null;
@@ -255,7 +255,7 @@ abstract public class Node {
         return rnodeResource;
     }
 
-    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final ParsedIRI baseIRI, VocabularyList theNamespaces,
+    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces,
             String strType, JsonNode jnodeValueType, boolean bValueNode, boolean bConstNode, String strValue, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
         LiteralNode lnodeLiteral = null;
@@ -286,16 +286,15 @@ abstract public class Node {
                         strDatatypeValue = jnodeDatatypeConstant.asText();
 
                         // Validate the full IRI (Namespace + Datatype)...
-                        ParsedIRI iriNamespace = baseIRI; // ...default
+                        IRI iriNamespace = baseIRI; // ...default
                         if ( theNamespaces.containsPrefix(strDatatypePrefix) ) {
                             String strDatatypeNamespace = theNamespaces.findByPrefix(strDatatypePrefix).getNamespace();
                             if (strDatatypeNamespace != null) {
-                                try {
-                                    iriNamespace = new ParsedIRI( strDatatypeNamespace );
-                                }
-                                catch (Exception ex) {
-                                    Node.logger.error("ERROR: Bad Namespace in Namespaces: " + strDatatypeNamespace, ex);
+                                iriNamespace = Util.buildIRI( strDatatypeNamespace );
+                                if (iriNamespace == null) {
+                                    Node.logger.error("ERROR: Bad Namespace in Namespaces: " + strDatatypeNamespace);
                                     // ...given Namespace doesn't parse, so use baseIRI...
+                                    iriNamespace = baseIRI; // ...default
                                 }
                             }
                         }
@@ -327,13 +326,10 @@ abstract public class Node {
     }
 
     @JsonIgnore
-    protected ParsedIRI baseIRI = null;
+    protected IRI baseIRI = null;
 
     @JsonIgnore
-    protected ValueFactory theFactory = null;
-
-    @JsonIgnore
-    protected RepositoryConnection theConnection = null;
+    protected Model theModel = null;
 
     @JsonIgnore
     protected Project theProject = null;
@@ -348,7 +344,7 @@ abstract public class Node {
     protected boolean bIsIndex = false;
 
     @JsonIgnore
-    protected List<Value> listValues = null;
+    protected List<RDFNode> listNodes = null;
 
     @JsonIgnore
     protected Util.NodeType eNodeType = null;
@@ -389,8 +385,8 @@ abstract public class Node {
                 String strPrefix = strObjectIRI.substring(0, iIndex); // ...including blank ("") prefix...
                 if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: strPrefix = " + strPrefix);
                 if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: connection = " +
-                                                    ( this.theConnection == null ? "null" : "connected" ) );
-                String strNamespace = this.theConnection.getNamespace(strPrefix);
+                                                    ( this.theModel == null ? "null" : "connected" ) );
+                String strNamespace = this.theModel.getNsPrefixURI(strPrefix);
                 if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: strNamespace = " + strNamespace);
                 if (strNamespace != null) {
                      // Get the string just beyond the first ':'...
@@ -410,8 +406,7 @@ abstract public class Node {
     @JsonIgnore
     protected void setObjectParameters(ResourceNode nodeProperty) {
         this.baseIRI = nodeProperty.baseIRI;
-        this.theFactory = nodeProperty.theFactory;
-        this.theConnection = nodeProperty.theConnection;
+        this.theModel = nodeProperty.theModel;
         this.theProject = nodeProperty.theProject;
     }
 
@@ -420,7 +415,7 @@ abstract public class Node {
      *
      *    Creates the object list for triple statements from this node.
      */
-    abstract protected List<Value> createObjects(ResourceNode nodeProperty);
+    abstract protected List<RDFNode> createObjects(ResourceNode nodeProperty);
 
     abstract public void write(JsonGenerator writer, boolean isRoot)
             throws JsonGenerationException, IOException;

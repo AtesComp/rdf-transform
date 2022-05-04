@@ -8,7 +8,7 @@ import com.google.refine.browsing.RowVisitor;
 import com.google.refine.model.Project;
 import com.google.refine.model.Row;
 
-import org.eclipse.rdf4j.rio.RDFWriter;
+import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public abstract class RDFRowVisitor extends RDFVisitor implements RowVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFRowVisitor" );
 
-    public RDFRowVisitor(RDFTransform theTransform, RDFWriter theWriter) {
+    public RDFRowVisitor(RDFTransform theTransform, StreamRDF theWriter) {
         super(theTransform, theWriter);
     }
 

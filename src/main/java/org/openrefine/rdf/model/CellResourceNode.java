@@ -9,7 +9,7 @@ import com.google.refine.expr.ParsingException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.eclipse.rdf4j.model.Value;
+import org.apache.jena.rdf.model.RDFNode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -76,7 +76,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
     protected void createRowResources() {
         if (Util.isDebugMode()) CellResourceNode.logger.info("DEBUG: createRowResources...");
 
-        this.listValues = null;
+        this.listNodes = null;
         Object results = null;
         try {
             results =
@@ -93,7 +93,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
             return;
         }
 
-        this.listValues = new ArrayList<Value>();
+        this.listNodes = new ArrayList<RDFNode>();
 
         // Results are an array...
         if ( results.getClass().isArray() ) {
@@ -114,8 +114,8 @@ public class CellResourceNode extends ResourceNode implements CellNode {
             }
         }
 
-        if ( this.listValues.isEmpty() ) {
-            this.listValues = null;
+        if ( this.listNodes.isEmpty() ) {
+            this.listNodes = null;
         }
     }
 

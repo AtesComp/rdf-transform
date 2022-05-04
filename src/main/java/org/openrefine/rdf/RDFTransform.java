@@ -17,7 +17,7 @@ import com.google.refine.util.ParsingUtilities;
 import com.google.refine.model.OverlayModel;
 import com.google.refine.model.Project;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
+import org.apache.jena.iri.IRI;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -290,7 +290,7 @@ public class RDFTransform implements OverlayModel {
      *      http://example.com/first_name
      */
     @JsonIgnore
-    private ParsedIRI theBaseIRI;
+    private IRI theBaseIRI;
 
     /*
      * Prefix Mapping to Namespace
@@ -415,7 +415,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore // ...see getBaseIRIAsString()
-    public ParsedIRI getBaseIRI() {
+    public IRI getBaseIRI() {
         return this.theBaseIRI;
     }
 
@@ -438,7 +438,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore // ...see setBaseIRI(JsonNode)
-    public void setBaseIRI(ParsedIRI iriBase)  {
+    public void setBaseIRI(IRI iriBase)  {
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting BaseIRI from ParsedIRI...");
         if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI set to:" + iriBase.toString());
         this.theBaseIRI = iriBase;
@@ -460,7 +460,7 @@ public class RDFTransform implements OverlayModel {
         //   "opaque"   : false if there is no "//", just :string
         // }
 
-        ParsedIRI iriBase = null;
+        IRI iriBase = null;
         String strBaseIRI = null;
         if ( jnodeBaseIRI == null || jnodeBaseIRI.isNull() ) {
             // Get Default BaseIRI...
@@ -484,8 +484,6 @@ public class RDFTransform implements OverlayModel {
             String  strPath     = jnodeBaseIRI.get("path"    ).asText();
             String  strQuery    = jnodeBaseIRI.get("query"   ).asText();
             String  strFragment = jnodeBaseIRI.get("fragment").asText();
-            boolean bAbsolute   = jnodeBaseIRI.get("absolute").asBoolean();
-            boolean bOpaque     = jnodeBaseIRI.get("opaque"  ).asBoolean();
 
             // Construct the Base IRI string from the components...
             strBaseIRI = "";
@@ -508,18 +506,6 @@ public class RDFTransform implements OverlayModel {
 
             // Realize the Base IRI...
             iriBase = Util.buildIRI( strBaseIRI );
-
-            // Sanity check the Base IRI against remaining components...
-            if ( Util.isVerbose() || Util.isDebugMode() ) {
-                if (iriBase != null) {
-                    if (iriBase.isAbsolute() != bAbsolute) {
-                        RDFTransform.logger.warn("Mismatch reconstructing BaseIRI: Absolute Value");
-                    }
-                    if (iriBase.isOpaque() != bOpaque) {
-                        RDFTransform.logger.warn("Mismatch reconstructing BaseIRI: Opaque Value");
-                    }
-                }
-            }
         }
 
         if (iriBase != null) {

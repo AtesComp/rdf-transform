@@ -37,5 +37,5 @@ public class CodeResponse {
     };
     
     public static final CodeResponse ok = new CodeResponse("ok");
-    public static final CodeResponse error = new CodeResponse("error");
+    public static final CodeResponse error = new CodeResponse("error", true);
 }

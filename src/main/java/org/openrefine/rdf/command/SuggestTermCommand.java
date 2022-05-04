@@ -5,22 +5,24 @@ package org.openrefine.rdf.command;
 import com.google.refine.util.ParsingUtilities;
 
 import org.openrefine.rdf.RDFTransform;
+import org.openrefine.rdf.model.Util;
 //import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.SearchResultItem;
 import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyList;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
+import org.apache.jena.iri.IRI;
 
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -141,11 +143,11 @@ public class SuggestTermCommand extends RDFTransformCommand {
                 //    iIndex + 1 = the length of strQuery to the ':' inclusive
                 //    Is there anything after...
                 if (strIRI.length() > iIndex + 1) {
-                    try {
-                        ParsedIRI tempIRI = new ParsedIRI(strIRI);
+                    IRI tempIRI = Util.buildIRI(strIRI);
+                    if (tempIRI != null) {
                         // ...it parsed as an IRI...
                         // If a scheme is present, but a host is not present...
-                        if (tempIRI.getScheme() != null && tempIRI.getHost() == null) {
+                        if (tempIRI.getScheme() != null && tempIRI.getRawHost() == null) {
                             // There is no authority component:
                             //    i.e., there was no "schema://...", just "schema:...", so
                             //    the authority parsing that contains the host parsing was not
@@ -153,9 +155,6 @@ public class SuggestTermCommand extends RDFTransformCommand {
                             // Then, the schema is a prefix and that is enough...
                             bIsPrefixed = true; // ...accept it
                         }
-                    }
-                    catch (Exception ex) {
-                        // ...continue: strQuery is NOT an IRI...yet...
                     }
                 }
                 // Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
@@ -168,16 +167,13 @@ public class SuggestTermCommand extends RDFTransformCommand {
             /*
             else if (iIndex == 0 && strIRI.length() > 1) {
                 // Create Absolute IRI with Relative IRI using Base IRI...
-                try {
-                    Project theProject = this.getProject(this.theRequest);
-                    String strBaseIRI =
-                        RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
-                    ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strIRI.substring(1));
+                Project theProject = this.getProject(this.theRequest);
+                String strBaseIRI =
+                    RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
+                IRI tempIRI = Util.buildIRI(strBaseIRI + strIRI.substring(1));
+                if (tempIRI != null) {
                     // It parses with the Base IRI...
                     bIsPrefixed = true; // ...accept it
-                }
-                catch (Exception ex) {
-                    // ...continue...
                 }
             }
             */

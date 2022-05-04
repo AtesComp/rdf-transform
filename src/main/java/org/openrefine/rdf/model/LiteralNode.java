@@ -4,15 +4,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Value;
-
-//import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
+
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.BaseDatatype;
+import org.apache.jena.datatypes.DatatypeFormatException;
+import org.apache.jena.rdf.model.impl.LiteralImpl;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.graph.NodeFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,14 +43,14 @@ abstract public class LiteralNode extends Node {
      *  from this node on Rows / Records.
      */
     @Override
-    protected List<Value> createObjects(ResourceNode nodeProperty) {
+    protected List<RDFNode> createObjects(ResourceNode nodeProperty) {
         if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createObjects...");
 
         this.setObjectParameters(nodeProperty);
 
         // TODO: Create process for Sub-Records
 
-        this.listValues = null;
+        this.listNodes = null;
 
         //
         // Record Mode...
@@ -70,7 +73,7 @@ abstract public class LiteralNode extends Node {
 
         // Return the collected resources from the statement processing as Objects
         // to the given Property...
-        return this.listValues;
+        return this.listNodes;
     }
 
     /*
@@ -80,18 +83,18 @@ abstract public class LiteralNode extends Node {
     protected void createRecordLiterals() {
         if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createRecordLiterals...");
 
-        List<Value> listLiterals = new ArrayList<Value>();
+        List<RDFNode> listLiterals = new ArrayList<RDFNode>();
         while ( this.theRec.rowNext() ) {
             this.createRowLiterals();
-            if (this.listValues != null) {
-                listLiterals.addAll(this.listValues);
+            if (this.listNodes != null) {
+                listLiterals.addAll(this.listNodes);
             }
         }
         if ( listLiterals.isEmpty() ) {
             listLiterals = null;
         }
 
-        this.listValues = listLiterals;
+        this.listNodes = listLiterals;
     }
 
     abstract protected void createRowLiterals();
@@ -115,31 +118,28 @@ abstract public class LiteralNode extends Node {
 
             // If there is a datatype...
             if (this.nodeDatatype != null) {
-                IRI iriDatatype = null;
+                String strDatatype = this.nodeDatatype.normalizeResourceAsString();
+                RDFDatatype theDatatype = new BaseDatatype(strDatatype);
                 try {
-                    iriDatatype =
-                        this.theFactory.createIRI( this.nodeDatatype.normalizeResourceAsString() );
+                    literal = new LiteralImpl( NodeFactory.createLiteral(strResult, theDatatype), null );
                 }
-                catch (IllegalArgumentException ex) {
-                    // ...continue to get literal another way...
-                }
-                if (iriDatatype != null) {
-                    literal = this.theFactory.createLiteral(strResult, iriDatatype);
+                catch (DatatypeFormatException ex) {
+                    LiteralNode.logger.info("ERROR: normalizeLiteral: Datatype not valid: " + strResult + " ^^ " + strDatatype);
                 }
             }
-            // Else if there is a language...
+            // Else, if there is a language...
             else if (this.strLanguage != null) {
-                literal = this.theFactory.createLiteral(strResult, this.strLanguage);
+                literal = new LiteralImpl( NodeFactory.createLiteral(strResult, this.strLanguage), null );
             }
             // Otherwise...
             else {
                 // ...don't decorate the value...
-                literal = this.theFactory.createLiteral(strResult);
+                literal = new LiteralImpl( NodeFactory.createLiteral(strResult), null );
             }
 
             // If there is a valid literal...
             if (literal != null) {
-                this.listValues.add(literal);
+                this.listNodes.add(literal);
             }
         }
     }

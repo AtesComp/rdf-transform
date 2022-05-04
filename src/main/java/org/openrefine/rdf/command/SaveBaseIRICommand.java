@@ -1,7 +1,6 @@
 package org.openrefine.rdf.command;
 
 import java.io.IOException;
-import org.eclipse.rdf4j.common.net.ParsedIRI;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -9,7 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.RDFTransform;
+
 import com.google.refine.model.Project;
+
+import org.apache.jena.iri.IRI;
 
 public class SaveBaseIRICommand extends RDFTransformCommand {
 
@@ -27,11 +29,8 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
         try {
             Project theProject = this.getProject(request);
             String strIRI = request.getParameter("baseIRI");
-            ParsedIRI baseIRI;
-            try {
-                baseIRI = Util.buildIRI(strIRI);
-            }
-            catch (RuntimeException ex) {
+            IRI baseIRI = Util.buildIRI(strIRI);
+            if (baseIRI == null) {
                 SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
                 return;
             }

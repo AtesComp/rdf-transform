@@ -11,7 +11,7 @@ import com.google.refine.expr.ParsingException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.eclipse.rdf4j.model.Value;
+import org.apache.jena.rdf.model.RDFNode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -93,7 +93,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     protected void createRowLiterals() {
         if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: createRowLiterals...");
 
-        this.listValues = null;
+        this.listNodes = null;
         Object results = null;
         try {
             results =
@@ -110,7 +110,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
             return;
         }
 
-        this.listValues = new ArrayList<Value>();
+        this.listNodes = new ArrayList<RDFNode>();
 
         // Results are an array...
         if ( results.getClass().isArray() ) {
@@ -126,8 +126,8 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
             this.normalizeLiteral(results);
         }
 
-        if ( this.listValues.isEmpty() ) {
-            this.listValues = null;
+        if ( this.listNodes.isEmpty() ) {
+            this.listNodes = null;
         }
     }
 

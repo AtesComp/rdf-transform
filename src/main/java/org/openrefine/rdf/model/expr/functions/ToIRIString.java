@@ -7,7 +7,9 @@ import com.google.refine.expr.EvalError;
 import com.google.refine.grel.ControlFunctionRegistry;
 import com.google.refine.grel.Function;
 
-import org.eclipse.rdf4j.common.net.ParsedIRI;
+import org.openrefine.rdf.model.Util;
+
+import org.apache.jena.iri.IRI;
 
 /*
  * Class ToIRIString: Convert string to qualify as an RDF IRI component
@@ -38,17 +40,18 @@ public class ToIRIString implements Function {
         int iTry = 0;
         do {
             // Check if it's an acceptable IRI now (absolute or relative)...
-            try {
-                new ParsedIRI(strConvert);
-                break;
-            }
-            catch (Exception ex) {
+            IRI theIRI = Util.buildIRI(strConvert);
+            if (theIRI == null) {
                 if (iTry > 7) {
                     strConvert = null; // ...cannot convert to IRI
                     break;
                 }
                 // ...continue by narrowing the conversion string...
             }
+            else {
+                break;
+            }
+
             switch (iTry) {
                 case 0:
                     // Replace whitespace and unallowed characters with underscores...
