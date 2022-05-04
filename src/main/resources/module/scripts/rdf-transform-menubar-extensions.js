@@ -148,10 +148,10 @@ ExporterManager.MenuItems.push(
                 "label" : $.i18n("rdft-menu/rdf-jsonld"),
                 "click" : () => RDFExporterMenuBar.exportRDF("JSONLD-1.0", "jsonld")
             },
-            {   "id"    : "exportRDFJSONLD11",
-                "label" : $.i18n("rdft-menu/rdf-jsonld11"),
-                "click" : () => RDFExporterMenuBar.exportRDF("JSONLD-1.1", "jsonld11")
-            },
+            //{   "id"    : "exportRDFJSONLD11",
+            //    "label" : $.i18n("rdft-menu/rdf-jsonld11"),
+            //    "click" : () => RDFExporterMenuBar.exportRDF("JSONLD-1.1", "jsonld11")
+            //},
             //{   "id"    : "exportRDFNDJSONLD",
             //    "label" : $.i18n("rdft-menu/rdf-ndjsonld"),
             //    "click" : () => RDFExporterMenuBar.exportRDF("NDJSONLD", "ndjsonld")
