@@ -380,8 +380,14 @@ public class Util {
     }
 
     public static IRI buildIRI(String strIRI) {
+        return Util.buildIRI(strIRI, false);
+    }
+
+    public static IRI buildIRI(String strIRI, boolean bTest) {
+        String strHeader = (bTest ? "TEST: " : "ERROR: ") + "buildIRI(): ";
+
         if (strIRI == null) {
-            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error("ERROR: buildIRI(): Null IRI");
+            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error(strHeader + "Null IRI");
             return null;
         }
 
@@ -390,7 +396,7 @@ public class Util {
             iriNew = Util.iriFactory.construct(strIRI);
         }
         catch (Exception ex) {
-            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error("ERROR: buildIRI(): Malformed IRI <" + strIRI + ">", ex);
+            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
             iriNew = null;
         }
 

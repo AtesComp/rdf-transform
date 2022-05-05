@@ -105,15 +105,21 @@ public class VocabularySearcher implements IVocabularySearcher {
     public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strFetchURL,
                                             String strProjectID)
             throws VocabularyImportException, IOException {
+        String strDebug = null;
+        if ( Util.isDebugMode() ) {
+            strDebug = "DEBUG: Import And Index vocabulary " + strPrefix + ": <" + strNamespace + "> ";
+        }
+        if (strFetchURL == null) {
+            if ( Util.isDebugMode() ) VocabularySearcher.logger.info(strDebug + "nothing to fetch!");
+            return;
+        }
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info(strDebug + "from " + strFetchURL);
+
         VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
         List<RDFTClass> classes = new ArrayList<RDFTClass>();
         List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
 
         // Import classes & properties from Namespace at URL...
-        if ( Util.isDebugMode() ) {
-            VocabularySearcher.logger.info("DEBUG: Import And Index vocabulary " +
-                    strPrefix + ": <" + strNamespace + "> " + "from " + strFetchURL);
-        }
         importer.importVocabulary(strFetchURL, classes, properties);
         this.indexTerms(strProjectID, classes, properties);
     }

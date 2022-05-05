@@ -39,8 +39,8 @@ public class ToIRIString implements Function {
     static public String toIRIString(String strConvert) {
         int iTry = 0;
         do {
-            // Check if it's an acceptable IRI now (absolute or relative)...
-            IRI theIRI = Util.buildIRI(strConvert);
+            // Test if it's an acceptable IRI now (absolute or relative)...
+            IRI theIRI = Util.buildIRI(strConvert, true);
             if (theIRI == null) {
                 if (iTry > 7) {
                     strConvert = null; // ...cannot convert to IRI

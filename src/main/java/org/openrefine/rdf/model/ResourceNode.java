@@ -85,20 +85,23 @@ abstract public class ResourceNode extends Node {
         }
         String strEmbeddedPrefix = null;
         String strLocalPart = objResult.toString();
+
         try {
             IRI tempIRI = Util.buildIRI(strLocalPart);
-            // ...it parsed as an IRI...
-            // If a scheme is present, but a host is not present...
-            strEmbeddedPrefix = tempIRI.getScheme();
-            if (strEmbeddedPrefix != null && tempIRI.getRawHost() == null) {
-                // There is no authority component:
-                //    i.e., there was no "schema://...", just "schema:...", so
-                //    the authority parsing that contains the host parsing was not
-                //    performed.  The rest may parse as a path, query, fragment.
-                // Then, the schema is a prefix and that is enough...
-                strLocalPart = strLocalPart.substring(strEmbeddedPrefix.length() + 1);
-                this.normalizeResource(strEmbeddedPrefix, strLocalPart);
-                return true;
+            if (tempIRI != null) {
+                // ...it parsed as an IRI...
+                // If a scheme is present, but a host is not present...
+                strEmbeddedPrefix = tempIRI.getScheme();
+                if (strEmbeddedPrefix != null && tempIRI.getRawHost() == null) {
+                    // There is no authority component:
+                    //    i.e., there was no "schema://...", just "schema:...", so
+                    //    the authority parsing that contains the host parsing was not
+                    //    performed.  The rest may parse as a path, query, fragment.
+                    // Then, the schema is a prefix and that is enough...
+                    strLocalPart = strLocalPart.substring(strEmbeddedPrefix.length() + 1);
+                    this.normalizeResource(strEmbeddedPrefix, strLocalPart);
+                    return true;
+                }
             }
         }
         catch (Exception ex) {

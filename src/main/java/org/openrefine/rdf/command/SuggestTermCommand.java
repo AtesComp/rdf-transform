@@ -143,7 +143,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
                 //    iIndex + 1 = the length of strQuery to the ':' inclusive
                 //    Is there anything after...
                 if (strIRI.length() > iIndex + 1) {
-                    IRI tempIRI = Util.buildIRI(strIRI);
+                    IRI tempIRI = Util.buildIRI(strIRI, true);
                     if (tempIRI != null) {
                         // ...it parsed as an IRI...
                         // If a scheme is present, but a host is not present...
@@ -170,7 +170,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
                 Project theProject = this.getProject(this.theRequest);
                 String strBaseIRI =
                     RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
-                IRI tempIRI = Util.buildIRI(strBaseIRI + strIRI.substring(1));
+                IRI tempIRI = Util.buildIRI(strBaseIRI + strIRI.substring(1), true);
                 if (tempIRI != null) {
                     // It parses with the Base IRI...
                     bIsPrefixed = true; // ...accept it

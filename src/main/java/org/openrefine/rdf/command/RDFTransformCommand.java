@@ -8,6 +8,8 @@ import org.openrefine.rdf.model.Util;
 import com.google.refine.commands.Command;
 import com.google.refine.model.Project;
 
+import org.slf4j.Logger;
+
 public abstract class RDFTransformCommand extends Command {
 
     public RDFTransformCommand() {
@@ -28,6 +30,27 @@ public abstract class RDFTransformCommand extends Command {
         }
         catch (Exception ex) {
             throw new ServletException("Unable to retrieve Project or RDF Transform! (Other)", ex);
+        }
+    }
+
+    public void processException(Exception except, boolean bError, boolean bFormatted, Logger logger) {
+        if (except == null) {
+            return;
+        }
+
+        String strMsg =  except.getMessage();
+        if (bError) { // ...error...
+            if (!bFormatted) {
+                strMsg = "ERROR: " + strMsg;
+            }
+            if (logger != null) logger.error(strMsg, except);
+            if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
+        }
+        else { // ...warning...
+            if (!bFormatted) {
+                strMsg = "WARNING: " + strMsg;
+            }
+            if ( logger != null && (Util.isVerbose() || Util.isDebugMode() ) ) logger.warn(strMsg, except);
         }
     }
 }

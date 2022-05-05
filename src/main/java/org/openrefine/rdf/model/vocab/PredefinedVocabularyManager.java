@@ -124,7 +124,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             strPrefix    = astrTokens[0];
             strNamespace = astrTokens[1];
             if (astrTokens.length < 3)
-                strFetchURL = strNamespace;
+                strFetchURL = null;
             else
                 strFetchURL = astrTokens[2];
 

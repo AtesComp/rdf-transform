@@ -56,7 +56,6 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         Project theProject = this.getProject(request);
         FileItemFactory factory = new DiskFileItemFactory();
 
-        Model theModel = null;
         try {
             // Create a new file upload handler...
             ServletFileUpload upload = new ServletFileUpload(factory);
@@ -67,22 +66,13 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
 
             // NOTE: use createOntologyModel() to do ontology include processing.
             //      createDefaultModel() just processes the given file without incluing.
-            theModel = ModelFactory.createDefaultModel();
+            Model theModel = ModelFactory.createDefaultModel();
             if (this.theRDFLang != null) {
                 theModel.read(this.instreamFile, "", this.theRDFLang.getName());
             }
             else {
                 theModel.read(this.instreamFile, "");
             }
-        }
-        catch (Exception ex) {
-            NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
-            NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
-            return;
-        }
-
-        try {
-            this.getTransform(theProject).addNamespace(this.strPrefix, this.strNamespace);
 
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
@@ -93,6 +83,11 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
             return;
         }
+
+        // Otherwise, all good...
+
+        // Add the namespace...
+        this.getTransform(theProject).addNamespace(this.strPrefix, this.strNamespace);
 
         NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
     }

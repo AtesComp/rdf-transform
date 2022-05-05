@@ -34,6 +34,8 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
 
         String strPrefix    = request.getParameter(Util.gstrPrefix);
         String strNamespace = request.getParameter(Util.gstrNamespace);
+        // TODO: The system does not track No Vocab, File Vocab or URL Fetchable Vocab and
+        //      assumes web fetchable.  Do we need to track fetchability???
 
         RDFTransform theTransform = this.getRDFTransform(request);
 
@@ -41,8 +43,8 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
         theTransform.removeNamespace(strPrefix);
 
         Exception except = null;
-        boolean bError = false;
-        String strError = null;
+        boolean bError = false; // ...not fetchable
+        boolean bFormatted = false;
         try{
             // Remove related vocabulary...
             RDFTransform.getGlobalContext().
@@ -55,25 +57,17 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
                     importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
         }
         catch (VocabularyImportException ex) {
-            bError = true;
-            strError = "Importing";
+            bFormatted = true;
             except = ex;
         }
         catch (Exception ex) {
             bError = true;
-            strError = "Processing";
             except = ex;
         }
 
         // Some problem occurred....
         if (except != null) {
-            if (bError) {// ...error...
-                NamespaceRefreshCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
-                if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
-            }
-            else { // ...warning...
-                if ( Util.isVerbose() ) NamespaceRefreshCommand.logger.warn("Prefix exists: ", except);
-            }
+            this.processException(except, bError, bFormatted, logger);
 
             NamespaceRefreshCommand.respondJSON(response, CodeResponse.error);
             return;

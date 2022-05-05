@@ -470,7 +470,7 @@ public class RDFTransform implements OverlayModel {
         else if ( jnodeBaseIRI.isTextual() ) {
             // Get the Base IRI string...
             strBaseIRI = jnodeBaseIRI.textValue();
-            if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI JSON Value Text: " + jnodeBaseIRI.isValueNode());
+            if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI JSON Value Text: " + strBaseIRI);
             iriBase = Util.buildIRI( strBaseIRI );
         }
         else if ( jnodeBaseIRI.isObject() && ! jnodeBaseIRI.isEmpty() ) {

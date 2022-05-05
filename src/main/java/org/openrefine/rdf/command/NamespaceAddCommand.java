@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
+import org.openrefine.rdf.model.vocab.VocabularyImportException;
 
 public class NamespaceAddCommand extends RDFTransformCommand {
 
@@ -31,21 +32,41 @@ public class NamespaceAddCommand extends RDFTransformCommand {
 
         if ( strFetchOption.equals("web") ) {
             String strFetchURL = request.getParameter("fetchURL");
-            if (strFetchURL == null || strFetchOption.isEmpty()) {
+            if (strFetchURL == null) {
                 strFetchURL = strNamespace;
             }
+
+            Exception except = null;
+            boolean bError = false; // ...not fetchable
+            boolean bFormatted = false;
             try {
+                // Add related vocabulary...
                 RDFTransform.getGlobalContext().
                     getVocabularySearcher().
                         importAndIndexVocabulary(
                             strPrefix, strNamespace, strFetchURL, strProjectID);
             }
-            catch (Exception ex) { // VocabularyImportException | IOException
+            catch (VocabularyImportException ex) {
+                bFormatted = true;
+                except = ex;
+            }
+            catch (Exception ex) { // IOException
+                bError = true;
+                except = ex;
+            }
+
+            // Some problem occurred....
+            if (except != null) {
+                this.processException(except, bError, bFormatted, logger);
+
                 NamespaceAddCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
         }
 
+        // Otherwise, all good...
+
+        // Add the namespace...
         this.getRDFTransform(request).addNamespace(strPrefix, strNamespace);
 
         NamespaceAddCommand.respondJSON(response, CodeResponse.ok);

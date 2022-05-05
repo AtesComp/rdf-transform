@@ -72,8 +72,8 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
         for (Vocabulary vocab : listVocabs) {
             if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("  Prefix: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
             Exception except = null;
-            boolean bError = false;
-            String strError = null;
+            boolean bError = false; // ...not fetchable
+            boolean bFormatted = false;
             try {
                 RDFTransform.getGlobalContext().
                     getVocabularySearcher().
@@ -81,27 +81,17 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
                             vocab.getPrefix(), vocab.getNamespace(), vocab.getNamespace(), strProjectID);
             }
             catch (VocabularyImportException ex) {
-                bError = true;
-                strError = "Importing";
+                bFormatted = true;
                 except = ex;
             }
             catch (Exception ex) { // ...all other exceptions...
                 bError = true;
-                strError = "Processing";
                 except = ex;
             }
 
             // Some problem occurred....
             if (except != null) {
-                // A Default Prefix vocabulary is not defined properly...
-                //   Ignore the exception, but log it...
-                if (bError) {// ...error...
-                    NamespacesGetDefaultCommand.logger.error("ERROR: " + strError + " vocabulary: ", except);
-                    if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
-                }
-                else { // ...warning...
-                    if ( Util.isVerbose() || Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.warn("Prefix exists: ", except);
-                }
+                this.processException(except, bError, bFormatted, logger);
                 // ...continue processing the other vocabularies...
             }
 

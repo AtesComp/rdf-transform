@@ -10,12 +10,18 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.riot.Lang;
+import org.openrefine.rdf.model.Util;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class VocabularyImporter {
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:VocabImporter");
+
     static private final String USER_AGENT = "OpenRefine.Extension.RDF-Transform";
 
     static private final String PREFIXES = // Default Namespaces...
@@ -83,6 +89,10 @@ public class VocabularyImporter {
 
     private void getModel(String strFetchURL)
             throws VocabularyImportException {
+        if (strFetchURL == null) {
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: getModel() Import: nothing to fetch!");
+            return;
+        }
         this.faultyContentNegotiation(strFetchURL); // ...set up this.bStrictlyRDF
 
         try {
@@ -137,7 +147,7 @@ public class VocabularyImporter {
             }
         }
         catch (Exception ex) {
-            throw new VocabularyImportException("ERROR: Processing vocabulary [" + this.strPrefix + "] classes", ex);
+            throw new VocabularyImportException("ERROR: Processing vocabulary [" + this.strPrefix + "] classes: " + ex.getMessage(), ex);
         }
     }
 
@@ -157,7 +167,7 @@ public class VocabularyImporter {
             }
         }
         catch (Exception ex) {
-            throw new VocabularyImportException("ERROR: Processing vocabulary [" + this.strPrefix + "] properties", ex);
+            throw new VocabularyImportException("ERROR: Processing vocabulary [" + this.strPrefix + "] properties: " + ex.getMessage(), ex);
         }
     }
 
@@ -198,10 +208,17 @@ public class VocabularyImporter {
     }
 
     private String getString(RDFNode node) {
+        String strLabel = null;
         if (node != null) {
-            return node.asNode().getURI();
+            try {
+                strLabel = node.asLiteral().getLexicalForm();
+            }
+            catch (Exception ex) {
+                if ( Util.isDebugMode() ) VocabularyImporter.logger.warn("DEBUG: Expected Literal");
+                strLabel = null;
+            }
         }
-        return null;
+        return strLabel;
     }
 
     private void faultyContentNegotiation(String strNamespace) {

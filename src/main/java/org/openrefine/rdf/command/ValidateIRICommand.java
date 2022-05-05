@@ -33,7 +33,7 @@ public class ValidateIRICommand extends Command {
 
             String strIRI = request.getParameter("iri").strip();
 
-            IRI theIRI = Util.buildIRI(strIRI);
+            IRI theIRI = Util.buildIRI(strIRI, true);
             if (theIRI == null) {
                 if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: Failure [" + strIRI + "]");
                 // TODO: Convert to CodeResponse and respondJSON(), modify caller
@@ -42,7 +42,7 @@ public class ValidateIRICommand extends Command {
             }
         }
         catch (Exception ex) { // ...any other exception...
-            if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: ExceptionError", ex);
+            if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: Exception: " + ex.getMessage(), ex);
             ValidateIRICommand.respondException(response, ex);
             return;
         }
