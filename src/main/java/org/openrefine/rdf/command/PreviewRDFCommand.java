@@ -121,7 +121,7 @@ public class PreviewRDFCommand extends Command {
                 PreviewRDFCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Got writer from StreamRDFWriter.");
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
 
             // Start writing...
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Starting RDF Processing...");

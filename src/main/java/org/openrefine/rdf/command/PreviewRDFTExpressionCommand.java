@@ -158,12 +158,12 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                     this.theWriter.writeStartObject();
                     this.theWriter.writeStringField("message", ((EvalError) results).message);
                     this.theWriter.writeEndObject();
-                    continue; // ...keep processing the array...
+                    continue; // ...process the next row...
                 }
                 // Process empties...
                 if ( ! ExpressionUtils.isNonBlankData(results) ) {
                     this.theWriter.writeNull();
-                    continue; // ...keep processing the array...
+                    continue; // ...process the next row...
                 }
                 // Process arrays...
                 if ( results.getClass().isArray() ) {
@@ -174,14 +174,14 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                     strbuffTempAbs.setLength(0); // ...absolute IRI
                     strbuffTempAbs.append("["); // ...absolute IRI
                     for (int iResult = 0; iResult < iResultCount; iResult++) {
-                        // Convert all non-breaking spaces to whitespace and strip string ends and
-                        // prepend the prefix...
+                        // Remove all whitespace...
                         // NOTE: The expectation for this stripping is that the expression result will
-                        //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
+                        //       be used for an IRI, so whitespace is NOT ALLOWED!
                         strResult = Util.toSpaceStrippedString( Array.get(results, iResult) );
-                        if (strResult == null || strResult.isEmpty()) { // ...skip empties
-                            continue;
+                        if (strResult == null || strResult.isEmpty()) {
+                            continue; // ...skip empties
                         }
+                        // Prepend the prefix...
                         strResult = this.strPrefix + strResult;
                         if ( Util.isDebugMode() ) PreviewRDFTExpressionCommand.logger.info("DEBUG: Resource (" + iResult + "): [" + strResult + "]");
                         strbuffTemp.append(strResult);
@@ -201,15 +201,15 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                 }
                 // Process anything but an array as a string...
                 else {
-                    // Convert all non-breaking spaces to whitespace and strip string ends and
-                    // prepend the prefix...
+                    // Remove all whitespace...
                     // NOTE: The expectation for this stripping is that the expression result will
-                    //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
+                    //       be used for an IRI, so whitespace is NOT ALLOWED!
                     strResult = Util.toSpaceStrippedString(results);
-                    if ( strResult == null || strResult.isEmpty() ) { // ...nulls for empties
+                    if ( strResult == null || strResult.isEmpty() ) {
                         this.theWriter.writeNull();
-                        continue;
+                        continue; // ...process the next row...
                     }
+                    // Prepend the prefix...
                     strResult = this.strPrefix + strResult;
                     if ( Util.isDebugMode() ) PreviewRDFTExpressionCommand.logger.info("DEBUG: Resource: [" + strResult + "]");
                     this.theWriter.writeString(strResult);
@@ -261,7 +261,7 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                 String strAbsolute = astrAbsolutes[iRow];
                 if (strAbsolute == null) {
                     this.theWriter.writeNull();
-                    continue;
+                    continue; // ...process the next row...
                 }
                 this.theWriter.writeString(strAbsolute);
             }
@@ -330,12 +330,12 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                     this.theWriter.writeStartObject();
                     this.theWriter.writeStringField("message", ((EvalError) results).message);
                     this.theWriter.writeEndObject();
-                    continue; // ...keep processing the array...
+                    continue; // ...process the next row...
                 }
                 // Process empties...
                 if ( ! ExpressionUtils.isNonBlankData(results) ) {
                     this.theWriter.writeNull();
-                    continue; // ...keep processing the array...
+                    continue; // ...process the next row...
                 }
                 // Process arrays...
                 if ( results.getClass().isArray() ) {
@@ -343,14 +343,15 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                     strbuffTemp.setLength(0);
                     strbuffTemp.append("[");
                     for (int iResult = 0; iResult < iResultCount; iResult++) {
-                        // Convert all non-breaking spaces to whitespace and strip string ends...
-                        // NOTE: The expectation for this stripping is that the expression result will
-                        //       be used for an IRI, so whitespace and non-breaking space is NOT ALLOWED!
-                        strResult = Util.toSpaceStrippedString( Array.get(results, iResult) );
-                        if ( Util.isDebugMode() ) PreviewRDFTExpressionCommand.logger.info("DEBUG: Literal (" + iResult + "): [" + strResult + "]");
-                        if (strResult == null || strResult.isEmpty()) { // ...skip empties
-                            continue;
+                        strResult = null;
+                        Object obj = Array.get(results, iResult);
+                        if (obj != null) {
+                            strResult = obj.toString();
                         }
+                        if (strResult == null || strResult.isEmpty()) {
+                            continue; // ...skip empties
+                        }
+                        if ( Util.isDebugMode() ) PreviewRDFTExpressionCommand.logger.info("DEBUG: Literal (" + iResult + "): [" + strResult + "]");
                         strbuffTemp.append(strResult);
                         if (iResult < iResultCount - 1) {
                             strbuffTemp.append(",");
@@ -362,14 +363,15 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                 }
                 // Process anything but an array as a string...
                 else {
-                    // Convert all non-breaking spaces to whitespace and strip string ends...
-                    // NOTE: Not as strong an argument as for respondIRIPreview()
-                    strResult = Util.toSpaceStrippedString(results);
-                    if ( Util.isDebugMode() ) PreviewRDFTExpressionCommand.logger.info("DEBUG: Literal: [" + strResult + "]");
+                    strResult = null;
+                    if (results != null) {
+                        strResult = results.toString();
+                    }
                     if ( strResult == null || strResult.isEmpty() ) {
                         this.theWriter.writeNull();
-                        continue;
+                        continue; // ...process the next row...
                     }
+                    if ( Util.isDebugMode() ) PreviewRDFTExpressionCommand.logger.info("DEBUG: Literal: [" + strResult + "]");
                     this.theWriter.writeString(strResult);
                 }
             }

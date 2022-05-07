@@ -41,7 +41,7 @@ public class ConstantLiteralNode extends LiteralNode implements ConstantNode {
             strName += "^^" + this.nodeDatatype.normalizeResourceAsString();
         }
 
-        // If there is NOT a datatype BUT there is a language...
+        // Else, if there is a language...
         else if (this.strLanguage != null) {
             strName += "@" + strLanguage;
         }

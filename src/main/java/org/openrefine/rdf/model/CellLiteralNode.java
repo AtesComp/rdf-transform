@@ -49,19 +49,19 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
     public String getNodeName() {
         String strName = "Cell Literal: <[" +
             ( this.bIsIndex ? "Index#" : this.strColumnName ) +
-            "] on [" + this.strExpression + "]>";
+            "] on [" + this.strExpression + "]";
 
-        // If there is a value type...
+        // If there is a datatype...
         if (this.nodeDatatype != null) {
             strName += "^^" + this.nodeDatatype.normalizeResourceAsString();
         }
 
-        // If there is not a value type AND there is a language...
+        // Else, if there is a language...
         else if (this.strLanguage != null) {
             strName += "@" + strLanguage;
         }
 
-        return strName;
+        return strName + ">";
     }
 
     @Override
@@ -117,8 +117,8 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
             if (Util.isDebugMode()) CellLiteralNode.logger.info("DEBUG: Result is Array...");
 
             List<Object> listResult = Arrays.asList(results);
-            for (Object objResult : listResult) {
-                this.normalizeLiteral(objResult);
+            for (Object obj : listResult) {
+                this.normalizeLiteral(obj);
             }
         }
         // Results are singular...

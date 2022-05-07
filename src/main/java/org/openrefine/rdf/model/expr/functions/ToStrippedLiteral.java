@@ -8,7 +8,7 @@ import com.google.refine.grel.Function;
 
 /*
  * Class ToStrippedLiteral: Convert string to qualify as an RDF Literal
- * 
+ *
  *  NOTE: We don't check for a leading scheme.  We could append the baseIRI
  *      by retrieving the current baseIRI setting from the binding properties.
  */
@@ -29,17 +29,19 @@ public class ToStrippedLiteral implements Function {
             return new EvalError("empty string");
         }
 
-        strConvert = strConvert.replaceAll("[\uC2A0\\p{C}\\p{Z}]+", "").strip();
+        // Replace each whitespace character with a simple space character and strip the ends...
+        strConvert = strConvert.replaceAll("[\uC2A0\\p{C}\\p{Z}]", " ").strip();
 
         return strConvert;
     }
 
     @Override
     public String getDescription() {
-            return "toStrippedLiteral() is intended to minimally prepare a literal.\n" +
-                    "    1. Replace non-breaking space characters with normal spaces.\n" +
-                    "    2. Replace horitontal whitespace with normal spaces.\n" +
-                    "    3. Strip the ends of the string removing whitespace.";
+            return "toStrippedLiteral() is intended to minimally clean a literal:\n" +
+                    "    1. Replace each whitespace character, including horitontal\n" +
+                    "       whitespace, with a normal space.\n" +
+                    "    2. Strip the ends of the string removing whitespace.\n" +
+                    "There is no requirement to use this function to prepare literals.";
     }
 
     @Override

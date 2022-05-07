@@ -102,45 +102,45 @@ abstract public class LiteralNode extends Node {
     /*
      *  Method normalizeLiteral() for Literal Node to Literal string
      */
-    protected void normalizeLiteral(Object objResult) {
-        //String strResult = Util.toSpaceStrippedString(objResult);
-        String strResult = objResult.toString();
+    protected void normalizeLiteral(Object obj) {
+        String strResult = obj.toString();
+        if ( strResult == null || strResult.isEmpty() ) {
+            return;
+        }
         if ( Util.isDebugMode() ) LiteralNode.logger.info("DEBUG: normalizeLiteral: Result: " + strResult);
 
-        if ( ! ( strResult == null || strResult.isEmpty() ) ) {
-            //
-            // Process each string as a Literal with the following preference:
-            //    1. a given Datatype
-            //    2. a given Language code
-            //    3. nothing, just a simple string Literal
-            //
-            Literal literal = null;
+        //
+        // Process each string as a Literal with the following preference:
+        //    1. a given Datatype
+        //    2. a given Language code
+        //    3. nothing, just a simple string Literal
+        //
+        Literal literal = null;
 
-            // If there is a datatype...
-            if (this.nodeDatatype != null) {
-                String strDatatype = this.nodeDatatype.normalizeResourceAsString();
-                RDFDatatype theDatatype = new BaseDatatype(strDatatype);
-                try {
-                    literal = new LiteralImpl( NodeFactory.createLiteral(strResult, theDatatype), null );
-                }
-                catch (DatatypeFormatException ex) {
-                    LiteralNode.logger.info("ERROR: normalizeLiteral: Datatype not valid: " + strResult + " ^^ " + strDatatype);
-                }
+        // If there is a datatype...
+        if (this.nodeDatatype != null) {
+            String strDatatype = this.nodeDatatype.normalizeResourceAsString();
+            RDFDatatype theDatatype = new BaseDatatype(strDatatype);
+            try {
+                literal = new LiteralImpl( NodeFactory.createLiteral(strResult, theDatatype), null );
             }
-            // Else, if there is a language...
-            else if (this.strLanguage != null) {
-                literal = new LiteralImpl( NodeFactory.createLiteral(strResult, this.strLanguage), null );
+            catch (DatatypeFormatException ex) {
+                LiteralNode.logger.info("ERROR: normalizeLiteral: Datatype not valid: " + strResult + " ^^ " + strDatatype);
             }
-            // Otherwise...
-            else {
-                // ...don't decorate the value...
-                literal = new LiteralImpl( NodeFactory.createLiteral(strResult), null );
-            }
+        }
+        // Else, if there is a language...
+        else if (this.strLanguage != null) {
+            literal = new LiteralImpl( NodeFactory.createLiteral(strResult, this.strLanguage), null );
+        }
+        // Otherwise...
+        else {
+            // ...don't decorate the value...
+            literal = new LiteralImpl( NodeFactory.createLiteral(strResult), null );
+        }
 
-            // If there is a valid literal...
-            if (literal != null) {
-                this.listNodes.add(literal);
-            }
+        // If there is a valid literal...
+        if (literal != null) {
+            this.listNodes.add(literal);
         }
     }
 

@@ -94,8 +94,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
         if ( this.strConstant == null || this.strConstant.isEmpty() ) {
             return strIRI;
         }
-        //Util.toSpaceStrippedString(this.strPrefix) + Util.toSpaceStrippedString(this.strConstant);
-        strIRI += this.strConstant; // ...Full IRI
+        strIRI = this.strConstant; // ...Full IRI
         if ( this.strPrefix != null ) {
             strIRI = this.strPrefix + ":" + this.strConstant; // ...CIRIE
         }
@@ -110,13 +109,7 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
             ConstantResourceNode.logger.info(strDebug);
         }
 
-        //String strPrefixedIRI = null;
         try {
-            //strPrefixedIRI = Util.resolveIRI(this.baseIRI, strIRI);
-            //if (strPrefixedIRI != null) {
-            //    String strFullIRI = this.expandPrefixedIRI(strPrefixedIRI);
-            //    if ( Util.isDebugMode() ) ResourceNode.logger.info("DEBUG: normalizeResource: Processed IRI: " + strFullIRI);
-            //}
             Util.resolveIRI(this.baseIRI, strIRI);
         }
         catch (Exception ex) {
@@ -125,7 +118,6 @@ public class ConstantResourceNode extends ResourceNode implements ConstantNode {
             // In either case, record error and eat the exception...
             ConstantResourceNode.logger.error("ERROR: Bad IRI: " + strIRI, ex);
         }
-        //return strPrefixedIRI;
         return strIRI;
     }
 
