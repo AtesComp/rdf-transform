@@ -35,7 +35,7 @@ function registerClientSide() {
         "project/scripts",
         module,
         // Script files to inject into /project page...
-        [    "scripts/rdf-transform-menubar-extensions.js",    // 1. must be first: language and menu load
+        [   "scripts/rdf-transform-menubar-extensions.js",    // 1. must be first: language and menu load
             "scripts/rdf-transform-common.js",
             "scripts/rdf-transform.js",
             "scripts/rdf-transform-resource.js",
@@ -89,10 +89,10 @@ function registerServerSide() {
      */
     var strSaveRDFTransform = "save-rdf-transform";
     RefineServlet.registerCommand( module, "initialize",              new RDFTCmd.InitializationCommand(appContext) );
+    RefineServlet.registerCommand( module, "preview-rdf",             new RDFTCmd.PreviewRDFCommand() );
+    RefineServlet.registerCommand( module, "preview-rdf-expression",  new RDFTCmd.PreviewRDFTExpressionCommand() );
     RefineServlet.registerCommand( module, strSaveRDFTransform,       new RDFTCmd.SaveRDFTransformCommand() );
     RefineServlet.registerCommand( module, "save-baseIRI",            new RDFTCmd.SaveBaseIRICommand() );
-    RefineServlet.registerCommand( module, "preview-rdf",             new RDFTCmd.PreviewRDFCommand() );
-    RefineServlet.registerCommand( module, "preview-rdf-expression",  new RDFTCmd.PreviewRDFExpressionCommand() );
     RefineServlet.registerCommand( module, "validate-iri",            new RDFTCmd.ValidateIRICommand() );
     // Vocabs commands
     RefineServlet.registerCommand( module, "get-default-namespaces",  new RDFTCmd.NamespacesGetDefaultCommand() );
@@ -113,7 +113,7 @@ function registerServerSide() {
     var strRefineBase = "com.google.refine";
     var strRDFTransformBase = "org.openrefine.rdf";
     RefineServlet.registerClassMapping(
-        // Non-existent name--we are adding, not renaming...
+        // Non-existent name--we are adding, not renaming, so this can be a dummy...
         strRefineBase + ".model.changes.DataExtensionChange",
         // Added Change Class name...
         strRDFTransformBase + ".model.operation.RDFTransformChange"
@@ -140,54 +140,88 @@ function registerServerSide() {
      *  Server-side Exporters...
      */
     var RefineExpReg = RefineBase.exporters.ExporterRegistry;
-    var RDFTExp = RDFTModel.exporter.RDFExporter;
+    var RDFStreamExporter = RDFTModel.exporter.RDFStreamExporter;
     var RDFFormat = org.apache.jena.riot.RDFFormat;
 
     var strExp = "";
-    strExp = "RDF/XML";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.RDFXML, strExp) );
-    strExp = "NTriples";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.NTRIPLES, strExp) );
-    strExp = "NTriples*";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.NTRIPLES, strExp) );
-    strExp = "Turtle";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.TURTLE, strExp) );
-    strExp = "Turtle*";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.TURTLE, strExp) );
-    //strExp = "N3";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.TURTLE, strExp) );
-    strExp = "TriX";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.TRIX, strExp) );
-    strExp = "TriG";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.TRIG, strExp) );
-    strExp = "TriG*";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.TRIG, strExp) );
-    //strExp = "BinaryRDF";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(BINARY, strExp) ); // RDF4J Binary
-    strExp = "NQuads";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.NQUADS, strExp) );
-    strExp = "NQuads*";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.NQUADS, strExp) );
-    strExp = "JSONLD";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.JSONLD, strExp) );
-    //strExp = "JSONLD-1.1";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.JSONLD11, strExp) ); // JSONLD is JSONLD-1.1
-    //strExp = "NDJSONLD";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
-    strExp = "RDF/JSON";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.RDFJSON, strExp) );
+
+    //
+    // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
+    //
+    //strExp = "RDF/XML (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.RDFXML, strExp) );
+    //strExp = "Turtle (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+    //strExp = "Turtle* (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+    //strExp = "N3 (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+    //strExp = "N3* (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+    //strExp = "TriG (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.TRIG, strExp) );
+    //strExp = "TriG* (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.TRIG, strExp) );
+    //strExp = "JSONLD (Pretty)"; // Who would want ugly FLAT?
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.JSONLD, strExp) );
+    //strExp = "NDJSONLD (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
+    //strExp = "RDF/JSON (Pretty)";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.RDFJSON, strExp) );
+
+    //
+    // TODO: Are these even doable???
+    //
     //strExp = "RDFa";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(RDFA, strExp) );
-    //strExp = "HDT";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(HDT, strExp) );
-    //strExp = "RDFNull";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.RDFNULL, strExp) );
-    //strExp = "RDFProto";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.RDF_PROTO, strExp) );
-    strExp = "RDFTrift";
-    RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.RDF_THRIFT, strExp) );
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFA, strExp) );
     //strExp = "SHACLC";
-    //RefineExpReg.registerExporter( strExp, new RDFTExp(RDFFormat.SHACLC, strExp) );
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(RDFFormat.SHACLC, strExp) );
+
+    //
+    // BLOCKS PRINTERS: per Subject (Stream)
+    //
+    strExp = "Turtle (Blocks)";
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+    //strExp = "Turtle* (Blocks)"; // Same as Turtle
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+    //strExp = "N3 (Blocks)"; // Same as Turtle
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+    //strExp = "N3* (Blocks)"; // Same as Turtle
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+    strExp = "TriG (Blocks)";
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
+    //strExp = "TriG* (Blocks)"; // Same as TriG
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
+
+    //
+    // LINE PRINTERS: triple, quad (Stream)
+    //
+    strExp = "NTriples (Flat)";
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+    //strExp = "NTriples* (Flat)"; // Same as NTriples
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+    strExp = "NQuads (Flat)";
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+    //strExp = "NQuads* (Flat)"; // Quads*...Seriously? SAME AS NQuads
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+    strExp = "TriX";
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
+    strExp = "RDFNull (Test)"; // ...the bit bucket
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDFNULL, strExp) );
+
+    //
+    // BINARY PRINTERS: (Stream)
+    //
+    // TODO: Load library for RDFProtoBuf
+    //strExp = "RDFProtoBuf";
+    //RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
+    strExp = "RDFTrift";
+    RefineExpReg.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_THRIFT, strExp) );
+
+    //strExp = "BinaryRDF";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(BINARY, strExp) ); // RDF4J
+    //strExp = "HDT";
+    //RefineExpReg.registerExporter( strExp, new RDFExporter(HDT, strExp) );
 
     /*
      *  Server-side Overlay Models - Attach an RDFTransform object to the project...

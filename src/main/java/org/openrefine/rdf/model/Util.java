@@ -150,14 +150,16 @@ public class Util {
     static private final Logger logger = LoggerFactory.getLogger("RDFT:Util" );
 
     //
-    // Preference Setting Defaults (see setPreferencesByPreferenceStore)...
+    // Preference Setting Defaults...
+    //      See setPreferencesByPreferenceStore() for preferences settable by OpenRefine.
     //
     private static Map<String, Object> Preferences =
         new HashMap<String, Object>() {{
+            // Settable by OpenRefine Preferences...
             put("Verbosity", 0);
             put("ExportLimit", 10737418);
             put("DebugMode", false);
-
+            // Settable only in RDF Transform UI, if at all...
             put("SampleLimit", 10);
         }};
 
@@ -488,7 +490,13 @@ public class Util {
     // NOTE: When set to 0, there is no limit.
     //
     public static int getSampleLimit() {
-        return (int) Util.Preferences.get("SampleLimit");
+        int iSampleLimit = 10; // ...default, see Util's Preferences variable
+        Integer icSampleLimit = (Integer) Util.Preferences.get("SampleLimit");
+        if (icSampleLimit != null && icSampleLimit >= 0) {
+            iSampleLimit = icSampleLimit;
+        }
+        return iSampleLimit;
+
     }
 
     public static void setSampleLimit(int iSampleLimit) {

@@ -9,9 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.RefineServlet;
 import com.google.refine.commands.Command;
+
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
+
+import org.apache.jena.sys.JenaSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +56,11 @@ public class InitializationCommand extends Command {
             InitializationCommand.logger.error("ERROR: App Context Init: " + ex.getMessage(), ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
         }
+
+        if ( Util.isDebugMode() ) JenaSystem.DEBUG_INIT = true;
+        JenaSystem.init();
+        InitializationCommand.logger.info("...Apache Jena initialized.");
+
         InitializationCommand.logger.info("...initialized.");
     }
 

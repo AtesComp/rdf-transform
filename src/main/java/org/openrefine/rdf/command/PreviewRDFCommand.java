@@ -20,8 +20,14 @@ import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.RIOT;
+import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.riot.system.StreamRDFWriterFactory;
+import org.apache.jena.riot.writer.WriterStreamRDFBlocks;
+import org.apache.jena.sparql.util.Context;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -48,18 +54,23 @@ public class PreviewRDFCommand extends Command {
             // Get the RDF Transform...
             String strTransform = request.getParameter(RDFTransform.KEY);
             if (strTransform == null) {
-                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  No Transform JSON.");
+                PreviewRDFCommand.logger.info("ERROR: No Transform JSON! Cannot construct preview.");
                 PreviewRDFCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
-                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  No Transform.");
+                PreviewRDFCommand.logger.info("ERROR: No Transform JSON Node! Cannot construct preview.");
                 PreviewRDFCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Transform reconstructed.");
+            if (theTransform == null) {
+                PreviewRDFCommand.logger.info("ERROR: No Transform available! Cannot construct preview.");
+                PreviewRDFCommand.respondJSON(response, CodeResponse.error);
+                return;
+            }
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Transform reconstructed.");
 
             //if ( Util.isDebugMode() ) {
             //    PreviewRDFCommand.logger.info( "Given Transform:\n" + strTransform );
@@ -72,27 +83,48 @@ public class PreviewRDFCommand extends Command {
             //
             // Process Sample Limit...
             //
-            String strLimit = request.getParameter("sampleLimit");
-            int iLimit = Util.getSampleLimit(); // ...set to current limit
-            if (strLimit != null) { // ...a limit was passed
+            int iSampleLimit = Util.getSampleLimit(); // ...set to current limit
+            String strSampleLimit = request.getParameter("SampleLimit");
+            if (strSampleLimit != null) { // ...a user limit was passed from the UI
                 try {
-                    iLimit = Integer.parseInt(strLimit); // ...set to user limit
+                    iSampleLimit = Integer.parseInt(strSampleLimit); // ...set to user limit
                 }
                 catch (NumberFormatException ex) {
                     // ignore, use default...
                 }
             }
-            if ( iLimit != Util.getSampleLimit() ) {
-                Util.setSampleLimit(iLimit);
+            if ( iSampleLimit != Util.getSampleLimit() ) {
+                Util.setSampleLimit(iSampleLimit);
             }
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Sample Limit processed.");
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Sample Limit processed.");
 
             // Setup writer for output...
             ByteArrayOutputStream osOut = new ByteArrayOutputStream();
-            StreamRDF theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   BAOS Setup.");
+
+            StreamRDF theWriter = null;
+            // TODO: Report Jena Bug:
+            //      The Jena code says getWriterStream() will return null if the RDFFormat
+            //      doesn't have a writer registered.  It lies!  It throws a RiotException.
+            try {
+                // TODO: Report Jena Bug:
+                //      The following code without the end null should work but, instead,
+                //      it hangs (locks up) processing.  With the null, it succeeds.
+                //theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
+                theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS, null);
+            }
+            catch (RiotException ex) { // ...an error occurred setting the writer...
+                theWriter = null;
+            }
+            if (theWriter == null) {
+                PreviewRDFCommand.logger.info("ERROR: The writer is invalid! Cannot construct preview.");
+                PreviewRDFCommand.respondJSON(response, CodeResponse.error);
+                return;
+            }
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Got writer from StreamRDFWriter.");
 
             // Start writing...
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  Starting RDF Processing...");
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Starting RDF Processing...");
             theWriter.start();
 
             //
@@ -100,17 +132,18 @@ public class PreviewRDFCommand extends Command {
             //
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
-                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("    Process by Record Visitor...");
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Record Visitor...");
                 theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
             }
             else {
-                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("    Process by Row Visitor...");
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Row Visitor...");
                 theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
             }
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the model...");
             theVisitor.buildModel(theProject, theEngine);
 
             theWriter.finish();
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("  ...Ended RDF Processing.");
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
             // ...end writing
 
             String strStatements = osOut.toString(StandardCharsets.UTF_8);

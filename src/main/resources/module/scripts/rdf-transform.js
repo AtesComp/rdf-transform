@@ -139,7 +139,7 @@ class RDFTransform {
  *  The RDF Transform dialog class for transforming data to RDF
  */
 class RDFTransformDialog {
-    iSampleLimit = 20; // TODO: Modify for user input
+    iSampleLimit = 20; // TODO: Modify for user input, defaults to 10 in Util.Preferences
 
     #namespacesManager;
 
@@ -729,7 +729,7 @@ class RDFTransformDialog {
             {},                     // params
             {   [RDFTransform.KEY] : JSON.stringify( theTransform ),
                 "engine"           : JSON.stringify( ui.browsingEngine.getJSON() ),
-                "sampleLimit"      : this.iSampleLimit
+                "SampleLimit"      : this.iSampleLimit
             },
             {},                     // updateOps
             {   onDone: (data) => { // callbacks

@@ -89,7 +89,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
         }
 
         // Results cannot be classed...
-        if ( results == null || ExpressionUtils.isError(results) ) {
+        if ( results == null || ExpressionUtils.isError(results) || ! ExpressionUtils.isNonBlankData(results) ) {
             return;
         }
 
@@ -115,7 +115,7 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     }
 
     private void normalizeBNodeResource(Object objResult) {
-        String strResult = objResult.toString();
+        String strResult = Util.toSpaceStrippedString(objResult);
         // NOTE: The prefix "_:" is auto-added by createBNode()
         // TODO: Use strResult or just "true" or "false"?  Currently, "true" or "false".
         // If we have a good result...

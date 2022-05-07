@@ -106,7 +106,7 @@ public class CellLiteralNode extends LiteralNode implements CellNode {
         }
 
         // Results cannot be classed...
-        if ( results == null || ExpressionUtils.isError(results) ) {
+        if ( results == null || ExpressionUtils.isError(results) || ! ExpressionUtils.isNonBlankData(results) ) {
             return;
         }
 

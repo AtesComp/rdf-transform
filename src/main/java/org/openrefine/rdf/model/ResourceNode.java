@@ -80,11 +80,11 @@ abstract public class ResourceNode extends Node {
      *  Method processResultsAsArray() for a single result to a Resource
      */
     protected boolean processResultsAsSingle(Object objResult) {
-        if ( objResult == null || objResult.toString().isEmpty() ) {
+        String strLocalPart = Util.toSpaceStrippedString(objResult);
+        if ( strLocalPart == null || strLocalPart.isEmpty() ) {
             return false;
         }
         String strEmbeddedPrefix = null;
-        String strLocalPart = objResult.toString();
 
         try {
             IRI tempIRI = Util.buildIRI(strLocalPart);
@@ -117,7 +117,7 @@ abstract public class ResourceNode extends Node {
         if (objResult == null) {
             return;
         }
-        String strIRI = objResult.toString(); // ...Default: Full IRI
+        String strIRI = Util.toSpaceStrippedString(objResult); // ...Default: Full IRI
         if ( strIRI.isEmpty() ) {
             return;
         }

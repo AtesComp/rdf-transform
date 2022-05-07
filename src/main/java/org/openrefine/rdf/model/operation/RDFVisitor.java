@@ -51,7 +51,7 @@ public abstract class RDFVisitor {
             }
         }
 
-        this.theModel.begin();
+        //this.theModel.begin();
 
         // Set Default Namespace for repository...
         if ( bUseBaseIRI && ! strBaseIRI.isEmpty() ) {
@@ -67,7 +67,7 @@ public abstract class RDFVisitor {
             this.theModel.setNsPrefix( vocab.getPrefix(), vocab.getNamespace() );
         }
 
-        this.theModel.commit();
+        //this.theModel.commit();
     }
 
     public RDFTransform getRDFTransform() {

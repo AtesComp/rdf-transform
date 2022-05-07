@@ -103,7 +103,7 @@ abstract public class LiteralNode extends Node {
      *  Method normalizeLiteral() for Literal Node to Literal string
      */
     protected void normalizeLiteral(Object objResult) {
-        //String strResult = Util.toSpaceStrippedString(objResult.toString());
+        //String strResult = Util.toSpaceStrippedString(objResult);
         String strResult = objResult.toString();
         if ( Util.isDebugMode() ) LiteralNode.logger.info("DEBUG: normalizeLiteral: Result: " + strResult);
 

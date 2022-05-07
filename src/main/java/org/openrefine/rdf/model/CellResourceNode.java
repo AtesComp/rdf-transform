@@ -89,7 +89,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         }
 
         // Results cannot be classed...
-        if ( results == null || ExpressionUtils.isError(results) ) {
+        if ( results == null || ExpressionUtils.isError(results) || ! ExpressionUtils.isNonBlankData(results) ) {
             return;
         }
 
@@ -102,6 +102,7 @@ public class CellResourceNode extends ResourceNode implements CellNode {
         }
         // Results are singular...
         else {
+            if (Util.isDebugMode()) CellResourceNode.logger.info("DEBUG: Result is Singular...");
             if ( results.toString().isEmpty() ) {
                 return;
             }
