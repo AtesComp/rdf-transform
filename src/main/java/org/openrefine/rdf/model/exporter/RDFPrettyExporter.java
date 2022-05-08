@@ -2,21 +2,15 @@ package org.openrefine.rdf.model.exporter;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.Properties;
 
-import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
-import org.openrefine.rdf.model.operation.ExportRDFRecordVisitor;
-import org.openrefine.rdf.model.operation.ExportRDFRowVisitor;
-import org.openrefine.rdf.model.operation.RDFVisitor;
 
 import com.google.refine.browsing.Engine;
 import com.google.refine.exporters.WriterExporter;
 import com.google.refine.model.Project;
 
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

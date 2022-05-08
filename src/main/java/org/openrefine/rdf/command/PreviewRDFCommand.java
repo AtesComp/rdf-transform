@@ -20,14 +20,9 @@ import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
-import org.apache.jena.riot.system.StreamRDFWriterFactory;
-import org.apache.jena.riot.writer.WriterStreamRDFBlocks;
-import org.apache.jena.sparql.util.Context;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -103,11 +98,11 @@ public class PreviewRDFCommand extends Command {
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   BAOS Setup.");
 
             StreamRDF theWriter = null;
-            // TODO: Report Jena Bug:
+            // TODO: Reported Jena Bug:
             //      The Jena code says getWriterStream() will return null if the RDFFormat
             //      doesn't have a writer registered.  It lies!  It throws a RiotException.
             try {
-                // TODO: Report Jena Bug:
+                // TODO: Reported Jena Bug:
                 //      The following code without the end null should work but, instead,
                 //      it hangs (locks up) processing.  With the null, it succeeds.
                 //theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);

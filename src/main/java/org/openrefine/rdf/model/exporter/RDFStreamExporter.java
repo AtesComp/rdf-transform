@@ -63,11 +63,11 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
     private void export(Project theProject, Properties options, Engine theEngine)
             throws IOException {
         StreamRDF theStreamer = null;
-        // TODO: Report Jena Bug:
+        // TODO: Reported Jena Bug:
         //      The Jena code says getWriterStream() will return null if the RDFFormat
         //      doesn't have a writer registered.  It lies!  It throws a RiotException.
         try {
-            // TODO: Report Jena Bug:
+            // TODO: Reported Jena Bug:
             //      The following code without the end null should work but, instead,
             //      it hangs (locks up) processing.  With the null, it succeeds.
             //theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format);
