@@ -31,7 +31,8 @@
         <butterfly.version>1.2.3</butterfly.version><!-- matches 3.6-SNAPSHOT -->
         <slf4j.version>1.7.36</slf4j.version><!-- matches 3.6-SNAPSHOT -->
 
-        <jena.version>4.4.0</jena.version><!-- matches 3.6-SNAPSHOT -->
+        <!--<jena.version>4.4.0</jena.version>--><!-- matches 3.6-SNAPSHOT -->
+        <jena.version>4.5.0</jena.version>
         <!--<javax.version>4.0.1</javax.version>--><!-- matches 3.6-SNAPSHOT for servlet-api -->
         <jsonld.version>1.3.0</jsonld.version>
         <velocity.version>1.6.3</velocity.version><!-- matches 3.6-SNAPSHOT : to exclude older dependancies than butterfly's-->
@@ -81,6 +82,12 @@
             <artifactId>openrefine</artifactId>
             <version>${openrefine.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-arq</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -138,11 +145,16 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
+                    <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+                <!--
+                <exclusion>
                     <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
+                    <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
@@ -161,13 +173,10 @@
                     <artifactId>httpclient</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-codec</groupId>
                     <artifactId>commons-codec</artifactId>
                 </exclusion>
+                -->
                 <exclusion>
                     <groupId>com.apicatalog</groupId>
                     <artifactId>titanium-json-ld</artifactId>

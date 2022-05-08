@@ -211,10 +211,10 @@ ExporterManager.MenuItems.push(
             //
             // BINARY PRINTERS: (Stream)
             //
-            // TODO: Load library for RDFProtoBuf
+            // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
             //{   "id"    : "exportRDFProto_Stream",
             //    "label" : $.i18n("rdft-menu/rdf-proto-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("RDFProto", "rp")
+            //    "click" : () => RDFExporterMenuBar.exportRDF("RDFProtoBuf", "rp")
             //},
             {   "id"    : "exportRDFThrift_Stream",
                 "label" : $.i18n("rdft-menu/rdf-thrift-stream"),

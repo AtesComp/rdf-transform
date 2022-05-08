@@ -2,31 +2,360 @@ package org.openrefine.rdf.command;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.refine.ClientSideResourceManager;
+import com.google.refine.ProjectManager;
 import com.google.refine.RefineServlet;
 import com.google.refine.commands.Command;
+import com.google.refine.exporters.ExporterRegistry;
+import com.google.refine.expr.ExpressionUtils;
+import com.google.refine.grel.ControlFunctionRegistry;
+import com.google.refine.model.Project;
+import com.google.refine.operations.OperationRegistry;
+import com.google.refine.preference.PreferenceStore;
 
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
+import org.openrefine.rdf.model.exporter.RDFStreamExporter;
+import org.openrefine.rdf.model.expr.RDFTransformBinder;
+import org.openrefine.rdf.model.expr.functions.ToIRIString;
+import org.openrefine.rdf.model.expr.functions.ToStrippedLiteral;
 import org.openrefine.rdf.model.Util;
-
+import org.openrefine.rdf.model.operation.RDFTransformChange;
+import org.openrefine.rdf.model.operation.SaveRDFTransformOperation;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sys.JenaSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InitializationCommand extends Command {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:InitCmd");
+import edu.mit.simile.butterfly.ButterflyModule;
 
+public class InitializationCommand extends Command {
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:InitCmd");
+
+    // Client side preferences mirror Server side...
+    static public Map<String, Object> Preferences =
+        new HashMap<String, Object>() {{
+            // Settable by OpenRefine Preferences...
+            put("Verbosity", 0);
+            put("ExportLimit", 10737418);
+            put("DebugMode", false);
+            // Settable only in RDF Transform UI, if at all...
+            put("SampleLimit", 10);
+        }};
+
+    private ButterflyModule theModule;
     private ApplicationContext theContext;
 
-    public InitializationCommand(ApplicationContext theContext) {
-        this.theContext = theContext;
-        RDFTransform.setGlobalContext(theContext);
+    public InitializationCommand(ButterflyModule theModule) {
+        super();
+        this.theModule = theModule;
+        this.initialize();
+    }
+
+    private void initialize() {
+        InitializationCommand.logger.info("Initializing RDF Transform Extension " + RDFTransform.VERSION + "...");
+        InitializationCommand.logger.info("  Ext Mount Point: " + this.theModule.getMountPoint() );
+        InitializationCommand.logger.info("  Client Side...");
+        this.registerClientSide();
+        InitializationCommand.logger.info("  Server Side...");
+        this.registerServerSide();
+        InitializationCommand.logger.info("  Preferences...");
+        this.processPreferences();
+
+        InitializationCommand.logger.info("...RDF Transform Extension initialized.");
+    }
+
+    private void registerClientSide() {
+        //
+        //  Client-side Resources...
+        // ------------------------------------------------------------
+
+        //
+        // Client-side Javascript...
+        //
+         String[] astrScripts = new String[] {
+            "scripts/rdf-transform-menubar-extensions.js",    // 1. must be first: language and menu load
+            "scripts/rdf-transform-common.js",
+            "scripts/rdf-transform.js",
+            "scripts/rdf-transform-resource.js",
+            "scripts/rdf-transform-ui-node.js",
+            "scripts/rdf-transform-ui-node-config.js",
+            "scripts/rdf-transform-ui-property.js",
+            "scripts/rdf-transform-vocab-manager.js",
+            "scripts/rdf-transform-namespaces-manager.js",
+            "scripts/rdf-transform-namespace-adder.js",
+            "scripts/rdf-transform-suggest-term.js",
+            "scripts/rdf-transform-import-template.js",
+            "scripts/rdf-transform-export-template.js",
+            "scripts/rdf-data-table-view.js",
+            // JQuery is required and provided by OpenRefine...
+            // "scripts/externals/jquery.form.min.js"
+        };
+        // Inject script files into /project page...
+        ClientSideResourceManager.addPaths("project/scripts", this.theModule, astrScripts);
+
+        //
+        // Client-side CSS...
+        //
+        String[] astrStyles = new String[] {
+            "styles/flyout.css",
+            "styles/rdf-transform-dialog.css",
+        };
+        // Inject style files into /project page...
+        ClientSideResourceManager.addPaths("project/styles", this.theModule, astrStyles);
+    }
+
+    private void registerServerSide() {
+        //
+        //  Server-side Resources...
+        // ------------------------------------------------------------
+
+        /*
+         *  Server-side Context Initialization...
+         *    The One and Only RDF Transform Application Context.
+         */
+        this.theContext = new ApplicationContext();
+
+        RDFTransform.setGlobalContext(this.theContext);
+
+        /*
+         *  Server-side Ajax Commands...
+         *    Each registration calls the class' init() method.
+         */
+        String strSaveRDFTransform = "save-rdf-transform";
+        RefineServlet.registerCommand( this.theModule, "initialize", this);
+        RefineServlet.registerCommand( this.theModule, "preview-rdf",             new PreviewRDFCommand() );
+        RefineServlet.registerCommand( this.theModule, "preview-rdf-expression",  new PreviewRDFTExpressionCommand() );
+        RefineServlet.registerCommand( this.theModule, strSaveRDFTransform,       new SaveRDFTransformCommand() );
+        RefineServlet.registerCommand( this.theModule, "save-baseIRI",            new SaveBaseIRICommand() );
+        RefineServlet.registerCommand( this.theModule, "validate-iri",            new ValidateIRICommand() );
+        // Vocabs commands
+        RefineServlet.registerCommand( this.theModule, "get-default-namespaces",  new NamespacesGetDefaultCommand() );
+        RefineServlet.registerCommand( this.theModule, "save-namespaces",         new NamespacesSaveCommand() );
+        RefineServlet.registerCommand( this.theModule, "add-namespace",           new NamespaceAddCommand() );
+        RefineServlet.registerCommand( this.theModule, "add-namespace-from-file", new NamespaceAddFromFileCommand() );
+        RefineServlet.registerCommand( this.theModule, "refresh-prefix",          new NamespaceRefreshCommand() );
+        RefineServlet.registerCommand( this.theModule, "remove-prefix",           new NamespaceRemoveCommand() );
+        RefineServlet.registerCommand( this.theModule, "suggest-namespace",       new SuggestNamespaceCommand() );
+        RefineServlet.registerCommand( this.theModule, "suggest-term",            new SuggestTermCommand() );
+        // Others:
+        //   CodeResponse - Standard Response Class for Commands
+        //   RDFTransformCommand - Abstract RDF Command Class
+
+        /*
+         *  Server-side Custom Change Class...
+         */
+        RefineServlet.registerClassMapping(
+            // Non-existent name--we are adding, not renaming, so this can be a dummy...
+            "com.google.refine.model.changes.DataExtensionChange",
+            // Added Change Class name...
+            "org.openrefine.rdf.model.operation.RDFTransformChange"
+        );
+        RefineServlet.cacheClass(RDFTransformChange.class);
+
+        /*
+         *  Server-side Operations...
+         */
+        OperationRegistry.registerOperation(
+            this.theModule, strSaveRDFTransform, SaveRDFTransformOperation.class
+        );
+
+        /*
+         *  Server-side GREL Functions and Binders...
+         */
+        ControlFunctionRegistry.registerFunction( "toIRIString", new ToIRIString() );
+        ControlFunctionRegistry.registerFunction( "toStrippedLiteral", new ToStrippedLiteral() );
+
+        ExpressionUtils.registerBinder( new RDFTransformBinder() );
+
+        /*
+         *  Server-side Exporters...
+         */
+
+        String strExp = "";
+
+        //
+        // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
+        //
+        //strExp = "RDF/XML (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.RDFXML, strExp) );
+        //strExp = "Turtle (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+        //strExp = "Turtle* (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+        //strExp = "N3 (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+        //strExp = "N3* (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
+        //strExp = "TriG (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TRIG, strExp) );
+        //strExp = "TriG* (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TRIG, strExp) );
+        //strExp = "JSONLD (Pretty)"; // Who would want ugly FLAT?
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.JSONLD, strExp) );
+        //strExp = "NDJSONLD (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
+        //strExp = "RDF/JSON (Pretty)";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.RDFJSON, strExp) );
+
+        //
+        // TODO: Are these even doable???
+        //
+        //strExp = "RDFa";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFA, strExp) );
+        //strExp = "SHACLC";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.SHACLC, strExp) );
+
+        //
+        // BLOCKS PRINTERS: per Subject (Stream)
+        //
+        strExp = "Turtle (Blocks)";
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        //strExp = "Turtle* (Blocks)"; // Same as Turtle
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        //strExp = "N3 (Blocks)"; // Same as Turtle
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        //strExp = "N3* (Blocks)"; // Same as Turtle
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        strExp = "TriG (Blocks)";
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
+        //strExp = "TriG* (Blocks)"; // Same as TriG
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
+
+        //
+        // LINE PRINTERS: triple, quad (Stream)
+        //
+        strExp = "NTriples (Flat)";
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+        //strExp = "NTriples* (Flat)"; // Same as NTriples
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+        strExp = "NQuads (Flat)";
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+        //strExp = "NQuads* (Flat)"; // Quads*...Seriously? SAME AS NQuads
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+        strExp = "TriX";
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
+        strExp = "RDFNull (Test)"; // ...the bit bucket
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDFNULL, strExp) );
+
+        //
+        // BINARY PRINTERS: (Stream)
+        //
+        strExp = "RDFProtoBuf";
+        // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
+        //      OpenRefine 3.5.2 load an older Jena ARQ version that overrides the local
+        //      extension's newer library jar.  Bummer.
+        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
+        // NOTE: Tried this but can't control RDFExporterMenuBar in rdf-transform-menubar-extension.js
+        //      as it's client side...without using some major voodoo...
+        //try {
+        //    RDFFormat.class.getDeclaredField("RDF_PROTO"); // ...throws exception if not present
+        //    ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
+        //}
+        //catch (Exception ex) {
+        //}
+        strExp = "RDFTrift";
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_THRIFT, strExp) );
+
+        //strExp = "BinaryRDF";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(BINARY, strExp) ); // RDF4J
+        //strExp = "HDT";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(HDT, strExp) );
+
+        /*
+         *  Server-side Overlay Models - Attach an RDFTransform object to the project...
+         */
+        Project.registerOverlayModel("RDFTransform", RDFTransform.class);
+    }
+
+    private void processPreferences() {
+        /*
+         *  Process OpenRefine Preference Store...
+         *
+         *  NOTE: Check and report on the preferences related to this extension.
+         */
+        PreferenceStore prefStore = ProjectManager.singleton.getPreferenceStore();
+        if (prefStore == null) {
+            InitializationCommand.logger.info("Preferences not yet loaded!");
+            return;
+        }
+
+        Object obj = null;
+
+        // Verbosity...
+        obj = prefStore.get("RDFTransform.verbose");
+        if (obj == null) {
+            obj = prefStore.get("verbose");
+        }
+        if (obj != null) {
+            String strPrefVerbosity = obj.toString();
+            int iVerbosity = 0;
+            try {
+                iVerbosity = Integer.parseInt(strPrefVerbosity);
+                InitializationCommand.logger.info("TEST: Verbosity: " + strPrefVerbosity + " " + iVerbosity);
+                InitializationCommand.Preferences.put( "Verbosity", iVerbosity );
+            }
+            catch ( NumberFormatException ex ) {
+                // ...continue...
+            }
+        }
+
+        // Export Limit...
+        obj = prefStore.get("RDFTransform.exportLimit");
+        if (obj != null) {
+            String strPrefExportLimit = obj.toString();
+            int iExportLimit = 0;
+            try {
+                iExportLimit = Integer.parseInt(strPrefExportLimit);
+                InitializationCommand.logger.info("TEST: ExportLimit: " + strPrefExportLimit + " " + iExportLimit);
+
+                InitializationCommand.Preferences.put( "ExportLimit", iExportLimit );
+            }
+            catch ( NumberFormatException ex ) {
+                // ...continue...
+            }
+        }
+
+        // Debug...
+        obj = prefStore.get("RDFTransform.debug");
+        if (obj == null) {
+            obj = prefStore.get("debug");
+        }
+        if (obj != null) {
+            String strPrefDebug = obj.toString();
+            boolean bDebug = Boolean.parseBoolean( strPrefDebug.toLowerCase() );
+            InitializationCommand.logger.info("TEST: DebugMode: " + strPrefDebug + " " + bDebug);
+            InitializationCommand.Preferences.put( "DebugMode", bDebug );
+        }
+
+        //
+        // Output RDFTranform Preferences...
+        //
+        // NOTE: This really sucks because this server-side JavaScript is extremely limited!!!
+        //        1. Looping structure don't exist!
+        //        2. JSON object does not exist, so no stringify()!
+        // In other words, we can't automate the processing of the RDFTransformPrefs list, but
+        // must call out each pref by key explicitly.
+        String strPrefs = "Preferences: { ";
+        String strPref;
+        strPref = "Verbosity";
+        strPrefs += strPref + " : " +
+            (int) InitializationCommand.Preferences.get(strPref) + " , ";
+        strPref = "ExportLimit";
+        strPrefs += strPref + " : " +
+            (int) InitializationCommand.Preferences.get(strPref) + " , ";
+        strPref = "DebugMode";
+        strPrefs += strPref + " : " +
+            (boolean) InitializationCommand.Preferences.get(strPref) + " }";
+        InitializationCommand.logger.info(strPrefs);
     }
 
     @Override
@@ -64,6 +393,12 @@ public class InitializationCommand extends Command {
         InitializationCommand.logger.info("...initialized.");
     }
 
+    //
+    // DUMMY OVERRIDES ================
+    //      The InitializationCommand is s dummy Command class that does not actually process
+    //      POST or GET requests.  Instead, it absorbs all the "controller.js" server-side
+    //      JavaScript functionality in a more performant code processor...Java
+    //
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

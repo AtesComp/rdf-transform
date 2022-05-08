@@ -153,7 +153,7 @@ public class Util {
     // Preference Setting Defaults...
     //      See setPreferencesByPreferenceStore() for preferences settable by OpenRefine.
     //
-    private static Map<String, Object> Preferences =
+    static private Map<String, Object> Preferences =
         new HashMap<String, Object>() {{
             // Settable by OpenRefine Preferences...
             put("Verbosity", 0);
@@ -168,13 +168,13 @@ public class Util {
 //
 //   See https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url
 
-    public static class IRIParsingException extends Exception {
+    static public class IRIParsingException extends Exception {
         public IRIParsingException(String strErrorMessage) {
             super(strErrorMessage);
         }
     }
 
-    public static String resolveIRI(IRI baseIRI, String strIRI) throws IRIParsingException {
+    static public String resolveIRI(IRI baseIRI, String strIRI) throws IRIParsingException {
         String strError = "ERROR: resolveIRI: ";
         String strErrMsg = null;
         String strAbsoluteIRI = null;
@@ -242,7 +242,7 @@ public class Util {
         return strAbsoluteIRI;
     }
 
-    public int findLocalPartIndex(String strIRI) {
+    static public int findLocalPartIndex(String strIRI) {
         if ( strIRI == null || strIRI.isEmpty() ) {
             return -1;
         }
@@ -272,7 +272,7 @@ public class Util {
         return iIndex;
     }
 
-    public int findPrefixIndex(String strIRI) {
+    static public int findPrefixIndex(String strIRI) {
         //
         // A Prefixed Qualified Name is by definition an IRI of the form:
         //    prefix:FQDN
@@ -358,7 +358,7 @@ public class Util {
         return iIndex;
     }
 
-    public static String getDataType(IRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
+    static public String getDataType(IRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
         if (strDataTypeValue == null) {
             return strDataTypeValue;
         }
@@ -381,11 +381,11 @@ public class Util {
         return strResolvedDatatype;
     }
 
-    public static IRI buildIRI(String strIRI) {
+    static public IRI buildIRI(String strIRI) {
         return Util.buildIRI(strIRI, false);
     }
 
-    public static IRI buildIRI(String strIRI, boolean bTest) {
+    static public IRI buildIRI(String strIRI, boolean bTest) {
         String strHeader = (bTest ? "TEST: " : "ERROR: ") + "buildIRI(): ";
 
         if (strIRI == null) {
@@ -405,7 +405,7 @@ public class Util {
         return iriNew;
     }
 
-    public static Object evaluateExpression(Project theProject, String strExpression, String strColumnName, int iRowIndex)
+    static public Object evaluateExpression(Project theProject, String strExpression, String strColumnName, int iRowIndex)
             throws ParsingException {
         //
         // Evaluate the expression on the cell and return results...
@@ -467,19 +467,19 @@ public class Util {
         return eval.evaluate(bindings);
     }
 
-    public static boolean isVerbose() {
+    static public boolean isVerbose() {
         return ( Util.isVerbose(1) );
     }
 
-    public static boolean isVerbose(int iVerbose) {
+    static public boolean isVerbose(int iVerbose) {
         return ( (int) Util.Preferences.get("Verbosity") >= iVerbose );
     }
 
-    public static int getExportLimit() {
+    static public int getExportLimit() {
         return (int) Util.Preferences.get("ExportLimit");
     }
 
-    public static boolean isDebugMode() {
+    static public boolean isDebugMode() {
         return (boolean) Util.Preferences.get("DebugMode");
     }
 
@@ -489,7 +489,7 @@ public class Util {
     // The limit on the number of sample rows or records processed.
     // NOTE: When set to 0, there is no limit.
     //
-    public static int getSampleLimit() {
+    static public int getSampleLimit() {
         int iSampleLimit = 10; // ...default, see Util's Preferences variable
         Integer icSampleLimit = (Integer) Util.Preferences.get("SampleLimit");
         if (icSampleLimit != null && icSampleLimit >= 0) {
@@ -499,92 +499,95 @@ public class Util {
 
     }
 
-    public static void setSampleLimit(int iSampleLimit) {
+    static public void setSampleLimit(int iSampleLimit) {
         if (iSampleLimit >= 0) {
             Util.Preferences.put("SampleLimit", iSampleLimit);
         }
     }
     // ...end Sample Limit
 
-    public static void setPreferencesByPreferenceStore() {
+    static public void setPreferencesByPreferenceStore() {
         PreferenceStore prefStore = ProjectManager.singleton.getPreferenceStore();
-        if (prefStore != null) {
-            //
-            // Set Verbosity for logging...
-            //
-            // * 0 (or missing preference) == no verbosity and unknown, uncaught errors (stack traces, of course)
-            // * 1 == basic functional information and all unknown, caught errors
-            // * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
-            // * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
-            // * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
-            //
-            Object prefVerbosity = prefStore.get("RDFTransform.verbose");
-            if (prefVerbosity == null) {
-                prefVerbosity = prefStore.get("verbose"); // General OpenRefine Verbosity
-            }
-            if (prefVerbosity != null) {
-                try {
-                    Util.Preferences.put("Verbosity", Integer.parseInt( prefVerbosity.toString() ) );
-                }
-                catch (Exception ex) {
-                    // No problem: take default and continue...
-                }
-            }
-            //
-            // Set Export Statement Limit...
-            //
-            // The Export Statement Limit (iExportStatementLimit) is used to manage the
-            // statement writing process for an RDF export to a disk file.
-            //
-            // Ideally, the limit on the number of statements held in memory for buffered
-            // writing would be based on the input data size and available memory.  Generally,
-            // the processing buffer would be approximately 1/10 to 1/1000 of the data size
-            // depending on available memory.  A reasonable limit might be 1 GiB:
-            //      1 GiB = 1024 * 1024 * 1024 bytes = 1073741824 bytes
-            // Since we only have the number of statements currently in the connection,
-            // we estimate the size of a statement to 100 bytes.  The average is probably
-            // smaller.  Then, the estimated number of statements for a flush is set to:
-            //      1073741824 bytes / 100 bytes per statements ~= 10737418 statements
-            // This is the default limit and is overridden by the user preference.
-            //
-            Object prefExportStatementLimit = prefStore.get("RDFTransform.exportLimit");
-            if (prefExportStatementLimit != null) {
-                try {
-                    Util.Preferences.put("ExportLimit", Integer.parseInt( prefExportStatementLimit.toString() ) );
-                }
-                catch (Exception ex) {
-                    // No problem: take default and continue...
-                }
-            }
+        if (prefStore == null) {
+            return;
+        }
 
-            //
-            // Set Debug Mode...
-            //
-            // The Debug Mode (iDebug) is used to manage the output of specifically marked "debug" messages.
-            //
-            Object prefDebugMode = prefStore.get("RDFTransform.debug"); // RDFTransform Debug Mode
-            if (prefDebugMode == null) {
-                prefDebugMode = prefStore.get("debug"); // General OpenRefine Debug
+        Object obj = null;
+        //
+        // Set Verbosity for logging...
+        //
+        // * 0 (or missing preference) == no verbosity and unknown, uncaught errors (stack traces, of course)
+        // * 1 == basic functional information and all unknown, caught errors
+        // * 2 == additional info and warnings on well-known issues: functional exits, permissibly missing data, etc
+        // * 3 == detailed info on functional minutiae and warnings on missing, but desired, data
+        // * 4 == controlled error catching stack traces, RDF preview statements, and other highly anal minutiae
+        //
+        obj = prefStore.get("RDFTransform.verbose");
+        if (obj == null) {
+            obj = prefStore.get("verbose"); // General OpenRefine Verbosity
+        }
+        if (obj != null) {
+            try {
+                Util.Preferences.put("Verbosity", Integer.parseInt( obj.toString() ) );
             }
-            if (prefDebugMode != null) {
-                try {
-                    Util.Preferences.put("DebugMode", Boolean.parseBoolean( prefDebugMode.toString() ) );
-                }
-                catch (Exception ex) {
-                    // No problem: take default and continue...
-                }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+        //
+        // Set Export Statement Limit...
+        //
+        // The Export Statement Limit (iExportStatementLimit) is used to manage the
+        // statement writing process for an RDF export to a disk file.
+        //
+        // Ideally, the limit on the number of statements held in memory for buffered
+        // writing would be based on the input data size and available memory.  Generally,
+        // the processing buffer would be approximately 1/10 to 1/1000 of the data size
+        // depending on available memory.  A reasonable limit might be 1 GiB:
+        //      1 GiB = 1024 * 1024 * 1024 bytes = 1073741824 bytes
+        // Since we only have the number of statements currently in the connection,
+        // we estimate the size of a statement to 100 bytes.  The average is probably
+        // smaller.  Then, the estimated number of statements for a flush is set to:
+        //      1073741824 bytes / 100 bytes per statements ~= 10737418 statements
+        // This is the default limit and is overridden by the user preference.
+        //
+        obj = prefStore.get("RDFTransform.exportLimit");
+        if (obj != null) {
+            try {
+                Util.Preferences.put("ExportLimit", Integer.parseInt( obj.toString() ) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+
+        //
+        // Set Debug Mode...
+        //
+        // The Debug Mode (iDebug) is used to manage the output of specifically marked "debug" messages.
+        //
+        obj = prefStore.get("RDFTransform.debug"); // RDFTransform Debug Mode
+        if (obj == null) {
+            obj = prefStore.get("debug"); // General OpenRefine Debug
+        }
+        if (obj != null) {
+            try {
+                Util.Preferences.put("DebugMode", Boolean.parseBoolean( obj.toString() ) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
             }
         }
     }
 
-    public static String toSpaceStrippedString(Object obj) {
+    static public String toSpaceStrippedString(Object obj) {
         if (obj == null) {
             return null;
         }
         return obj.toString().replaceAll("[\uC2A0\\p{C}\\p{Z}]+", "").strip();
     }
 
-    public static String toNodeTypeString(NodeType eNodeType) {
+    static public String toNodeTypeString(NodeType eNodeType) {
         if ( eNodeType.equals(NodeType.ROW) ) {
             return "ROW";
         }
@@ -600,7 +603,7 @@ public class Util {
         return "EXPRESSION";
     }
 
-    public static String toNodeSourceString(NodeType eNodeType) {
+    static public String toNodeSourceString(NodeType eNodeType) {
         if ( eNodeType.equals(NodeType.ROW) ) {
             return Util.gstrRowIndex;
         }

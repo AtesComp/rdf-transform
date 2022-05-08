@@ -37,9 +37,7 @@ choc:0
   <li class="step step2">
     Using <em>Edit RDF Transform...</em> command available under the <em>RDF Transform</em>
     extension menu, design the following transform:
-    <p>
-      <img src="images/example/rdf-transform.png" alt="RDF Transform Dialog Example" border="1" />
-    </p>
+    <p><img src="images/example/rdf-transform.png" alt="RDF Transform Dialog Example" border="1" /></p>
     <ol type="1">
       <li>Base IRI
         <div>
@@ -61,7 +59,7 @@ choc:0
           <em>Add property...</em>, and <em>Add object...</em> commands as needed. Use the
           <em>[Add Root Node]</em> button to manage additional root nodes as needed. Root nodes may
           be IRIs copied from inner objects to manage substructures for specific purposes.  Constant
-          IRIs and blank nodes are applied project-wide (not restricted to a row or record). 
+          IRIs and blank nodes are applied project-wide (not restricted to a row or record).
         </div>
         <ol type="1">
           <li>Create
@@ -106,23 +104,31 @@ choc:0
       Notice the custom expression used to define the IRI. The <em>Edit & Preview</em> command displays
       the "Preview Expression: IRI" dialog allowing edits and showing sample values from the first 10
       rows:
-      <p>
-        <img src="images/example/edit_grel.png" alt="Preview Expression Dialog Example" border="1" />
-      </p>
+      <p><img src="images/example/edit_grel.png" alt="Preview Expression Dialog Example" border="1" /></p>
     </div>
   </li>
   <li class="step step3">
     Save the transform by clicking the <em>Save</em> button to immediately save or the <em>OK</em>
     button to exit. Notice that a "Save RDF Transform" operation is added to the Undo / Redo history
     panel of OpenRefine. History items can be undone, redone, exported, and re-applied.
-    <p>
-      <img src="images/example/history.png" alt="History (Undo/Redo) Tab Example" border="1" />
-    </p>
+    <p><img src="images/example/history.png" alt="History (Undo/Redo) Tab Example" border="1" /></p>
   </li>
   <li class="step step4">
     You can export RDF data in many different RDF formats from the <em>Export</em> menu:
-    <p>
-      <img src="images/example/rdf_export.png" alt="Export RDF Menu Item Example" border="1" />
-    </p>
+    <p><img src="images/example/rdf_export.png" alt="Export RDF Menu Item Example" border="1" /></p>
+    <p>Stream output types are exports that work on discreet blocks or lines of output. They are
+       readable but may duplicate triple information during output. Their best feature is that they
+       scale well for large datasets</p>
+    <p>Pretty output types are exports that optimize an entire graph to minimize duplicative triples.
+       They look good, but they don't scale well.  As such, use these with caution for large datasets.</p>
+    <ol>
+      <li>RDF as Turtle (Stream) - A Turtle formatted, stream optimized export</li>
+      <li>RDF as TRiG (Stream) - A Turtle like, graph oriented, stream optimized export</li>
+      <li>RDF as N-Triples (Stream) - A basic "Line per Triple" stream optimized export</li>
+      <li>RDF as N-Quads (Stream) - A basic "Line per Quad" stream optimized export (identical to N-Triple)</li>
+      <li>RDF as TriX (Stream) - A basic "Triples in XML" stream optimized export</li>
+      <li>RDF as RDFNull (Test) - A NULL test, yet stream optimized, export (produces a zero byte file)</li>
+      <li>RDF as RDFThrift (Stream) - A binary condensed, stream optimized export</li>
+    </ol>
   </li>
 </ul>
