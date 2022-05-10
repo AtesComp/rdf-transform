@@ -158,6 +158,7 @@
     "rdft-prefix/prefix-by-web": "Trying to import vocabulary from ",
     "rdft-prefix/provided": "is provided",
     "rdft-prefix/rdfjson": "RDF/JSON",
+    "rdft-prefix/rdfthrift": "RDFThrift",
     "rdft-prefix/rdfxml": "RDF/XML",
     "rdft-prefix/suggested": "suggested by",
     "rdft-prefix/suggestion": "a suggestion from",

@@ -53,4 +53,33 @@ public abstract class RDFTransformCommand extends Command {
             if ( logger != null && (Util.isVerbose() || Util.isDebugMode() ) ) logger.warn(strMsg, except);
         }
     }
+
+    /**
+     * Utility method for retrieving the CSRF token stored in either:
+     * 1. the "csrf_token" parameter of the request or
+     * 2. the "X-CSRF-TOKEN" in the header of the request,
+     * and checking that it is valid.
+     *
+     * @param request
+     * @return
+     * @throws ServletException
+     */
+    protected boolean hasValidCSRFToken(HttpServletRequest request) throws ServletException {
+        if ( super.hasValidCSRFToken(request) ) { // ...try to validate the normal way
+            return true;
+        }
+
+        //
+        // Otherwise, try the second method...
+        //
+        //      For form submits with file streams, we use a header parameter "X-CSRF-TOKEN".
+        //
+        try {
+            String token = request.getHeader("X-CSRF-TOKEN");
+            return token != null && RDFTransformCommand.csrfFactory.validToken(token);
+        } catch (Exception e) {
+            // ignore
+        }
+        throw new ServletException("Can't find CSRF token: missing or bad URL parameter");
+    }
 }

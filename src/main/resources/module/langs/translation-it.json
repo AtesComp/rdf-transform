@@ -158,6 +158,7 @@
     "rdft-prefix/prefix-by-web": "Tentativo di importare il vocabolario da ",
     "rdft-prefix/provided": "è fornito",
     "rdft-prefix/rdfjson": "RDF/JSON",
+    "rdft-prefix/rdfthrift": "RDFThrift",
     "rdft-prefix/rdfxml": "RDF/XML",
     "rdft-prefix/suggested": "suggerito da",
     "rdft-prefix/suggestion": "un suggerimento da",

@@ -37,7 +37,7 @@ class RDFTransformNamespaceAdder {
         this.#elements.rdf_transform_prefix_rdfjson.html(   $.i18n('rdft-prefix/rdfjson')         );
         this.#elements.rdf_transform_prefix_trig.html(      $.i18n('rdft-prefix/trig')            );
         this.#elements.rdf_transform_prefix_trix.html(      $.i18n('rdft-prefix/trix')            );
-        this.#elements.rdf_transform_prefix_binary.html(    $.i18n('rdft-prefix/binary')          );
+        this.#elements.rdf_transform_prefix_rdfthrift.html( $.i18n('rdft-prefix/rdfthrift')       );
 
         this.#elements.buttonOK.html( $.i18n('rdft-buttons/ok') );
         this.#elements.buttonCancel.html( $.i18n('rdft-buttons/cancel') );
@@ -94,9 +94,22 @@ class RDFTransformNamespaceAdder {
             //
             // All Good: Process the Prefix Info for addition on the server...
             //
-            var postCmd = null;
-            var postData = {};
-            var dismissBusy = null;
+            var funcDismissBusy = null;
+
+            let funcSuccess = (data) => {
+                if (data.code === "error") {
+                    alert(
+                        $.i18n('rdft-vocab/error-adding') + ': ' + strPrefix + "\n" +
+                        data.message );
+                }
+                else if (this.#onDoneAdding) {
+                    // Since we've successfully added the Prefix Info on the server,
+                    // add it to the client for viewing...
+                    this.#onDoneAdding(strPrefix, strNamespace);
+                }
+                funcDismissBusy();
+                this.#dismiss();
+            }
 
             if (strFetchOption === 'file') {
                 // Prepare the form values by id attributes...
@@ -104,12 +117,30 @@ class RDFTransformNamespaceAdder {
                 $('#vocab-prefix').val(strPrefix);
                 $('#vocab-namespace').val(strNamespace);
 
-                postCmd = "command/rdf-transform/add-namespace-from-file";
-                dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace);
+                funcDismissBusy =
+                    DialogSystem.showBusy(
+                        $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
+                        ' from file: ' + this.#elements.file[0].files[0].name );
+
+                Refine.wrapCSRF(
+                    (token) => {
+                        // Requires JQuery Form plugin...
+                        // @ts-ignore
+                        $(evt.currentTarget).ajaxSubmit(
+                            {
+                                url      : "command/rdf-transform/add-namespace-from-file",
+                                type     : "post",
+                                dataType : "json",
+                                headers  : { 'X-CSRF-TOKEN': token },
+                                success  : funcSuccess
+                            }
+                        );
+                    }
+                );
             }
-            else {
-                postCmd = "command/rdf-transform/add-namespace";
+            else { // strFetchOption === "prefix" or "web"
                 // Prepare the data values...
+                var postData = {};
                 postData.project   = theProject.id;
                 postData.prefix    = strPrefix;
                 postData.namespace = strNamespace;
@@ -117,30 +148,19 @@ class RDFTransformNamespaceAdder {
                 postData.fetchURL  = strNamespace;
 
                 if (strFetchOption === 'web') {
-                    dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
+                    funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
                 }
                 else { // if (fetchOption === 'prefix') {
-                    dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
+                    funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
                 }
-            }
 
-            Refine.postCSRF(
-                postCmd,
-                postData,
-                (data) => {
-                    if (data.code === "error") {
-                        alert($.i18n('rdft-vocab/error-adding') + ': ' + strPrefix);
-                    }
-                    else if (this.#onDoneAdding) {
-                        // Since we've successfully added the Prefix Info on the server,
-                        // add it to the client for viewing...
-                        this.#onDoneAdding(strPrefix, strNamespace);
-                    }
-                    dismissBusy();
-                    this.#dismiss();
-                },
-                "json"
-            );
+                Refine.postCSRF(
+                    "command/rdf-transform/add-namespace",
+                    postData,
+                    funcSuccess,
+                    "json"
+                );
+            }
         });
 
         this.#elements.buttonOK

@@ -96,8 +96,9 @@ public class InitializationCommand extends Command {
             "scripts/rdf-transform-import-template.js",
             "scripts/rdf-transform-export-template.js",
             "scripts/rdf-data-table-view.js",
-            // JQuery is required and provided by OpenRefine...
-            // "scripts/externals/jquery.form.min.js"
+            // JQuery is required and provided by OpenRefine.
+            // Add the JQuery Form plugin...
+            "scripts/externals/jquery.form.min.js"
         };
         // Inject script files into /project page...
         ClientSideResourceManager.addPaths("project/scripts", this.theModule, astrScripts);

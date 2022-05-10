@@ -7,15 +7,16 @@
 //   processor, so many functions taken for granted in modern JavaScript
 //   processors may not be present in this implementation.
 //
-importPackage(org.openrefine.rdf.commands);
 
-var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
+//var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 
 //var RefineBase = Packages.com.google.refine;
 var RDFTCmd = Packages.org.openrefine.rdf.command;
 
 /*
  * Initialization Function for RDF Transform Extension.
+ *
+ *      The init() function is called by OpenRefine's Simile Butterfly Server for each extension.
  */
 function init() {
     /*
@@ -32,6 +33,12 @@ function init() {
 
 /*
  * Process Function for external command requests.
+ *
+ *      The process() function is called by OpenRefine's Simile Butterfly Server when the web
+ *      URL address uses the extension.  Example:
+ *          http://127.0.0.1:3333/extension/rdf-transform/...
+ *      However, this function is only used to reshape the URL.  RDF Transform does not need
+ *      to reshape the URL, so is only here for completeness.
  */
 function process(path, request, response) {
 

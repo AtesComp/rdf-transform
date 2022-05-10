@@ -14,7 +14,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import org.openrefine.rdf.RDFTransform;
-
+import org.openrefine.rdf.model.Util;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceAddFromFileCommand extends RDFTransformCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxAddFromFileCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:NSAddFromFileCmd");
 
     String strPrefix;
     String strNamespace;
@@ -49,24 +49,37 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: Starting ontology import...");
         if ( ! this.hasValidCSRFToken(request) ) {
             NamespaceAddFromFileCommand.respondCSRFError(response);
             return;
         }
-        Project theProject = this.getProject(request);
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting DiskFileItemFactory...");
         FileItemFactory factory = new DiskFileItemFactory();
+        RDFTransform theTransform = null;
 
         try {
             // Create a new file upload handler...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting ServletFileUpload...");
             ServletFileUpload upload = new ServletFileUpload(factory);
 
-            // Get the parameters...
+            // Parse the request into a file item list...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Parsing request into this ontology's related file items...");
             List<FileItem> items = upload.parseRequest(request);
+
+            // Parse the file into an input stream...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Parsing the ontology's file items into action elements...");
             this.parseUploadItems(items);
 
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
+            theTransform = getProjectTransform();
+
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Creating model for this ontology file...");
             // NOTE: use createOntologyModel() to do ontology include processing.
-            //      createDefaultModel() just processes the given file without incluing.
+            //      createDefaultModel() just processes the given file without including.
             Model theModel = ModelFactory.createDefaultModel();
+
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Reading model from ontology file...");
             if (this.theRDFLang != null) {
                 theModel.read(this.instreamFile, "", this.theRDFLang.getName());
             }
@@ -74,6 +87,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
                 theModel.read(this.instreamFile, "");
             }
 
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from RDF model...");
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
                     importAndIndexVocabulary(this.strPrefix, this.strNamespace, theModel, this.strProjectID);
@@ -87,40 +101,43 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         // Otherwise, all good...
 
         // Add the namespace...
-        this.getTransform(theProject).addNamespace(this.strPrefix, this.strNamespace);
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Adding Namespace...");
+        theTransform.addNamespace(this.strPrefix, this.strNamespace);
 
         NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
+
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: ...Ended ontology import.");
     }
 
     private void parseUploadItems(List<FileItem> items)
             throws IOException {
         String strFormat = null;
-        // Get the form values by name attributes...
+        // Get the form values by attribute names...
+        //      NOTE: See file "rdf-transform-prefix-add.html" for matching keys.
         for (FileItem item : items) {
-            if (item.getFieldName().equals("vocab_prefix")) {
+            String strItemName = item.getFieldName();
+            if (strItemName.equals("vocab_prefix")) {
                 this.strPrefix = item.getString();
             }
-            else if (item.getFieldName().equals("vocab_namespace")) {
+            else if (strItemName.equals("vocab_namespace")) {
                 this.strNamespace = item.getString();
             }
-            else if (item.getFieldName().equals("vocab_project")) {
+            else if (strItemName.equals("vocab_project")) {
                 this.strProjectID = item.getString();
             }
-            else if (item.getFieldName().equals("file_format")) {
+            else if (strItemName.equals("file_format")) {
                 strFormat = item.getString();
             }
-            else {
+            else { // if (strItemName.equals("uploaded_file"))
                 this.strFilename = item.getName();
                 this.instreamFile = item.getInputStream();
             }
         }
 
-        this.theRDFLang = Lang.TURTLE;
+        this.theRDFLang = Lang.RDFXML;
         if (strFormat != null) {
-            //
-            // NOTE: See file "rdf-transform-prefix-add.html" for
-            //      matching values.
-            //
+            // Check the "file_format" key's value to set RDF language...
+            //      NOTE: See file "rdf-transform-prefix-add.html" for matching key values.
             if (strFormat.equals("auto-detect")) {
                 this.theRDFLang = this.guessFormat(strFilename);
             }
@@ -151,64 +168,65 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             else if (strFormat.equals("TRIX")) {
                 this.theRDFLang = Lang.TRIX;
             }
-            else if (strFormat.equals("BINARY")) {
+            else if (strFormat.equals("RDFTHRIFT")) {
                 this.theRDFLang = Lang.RDFTHRIFT;
             }
         }
     }
 
     private Lang guessFormat(String strFilename) {
+        Lang theLang = Lang.RDFXML; // ...default for unknown extension
         if (strFilename.lastIndexOf('.') != -1) {
             String strExtension = strFilename.substring(strFilename.lastIndexOf('.') + 1).toLowerCase();
             if (strExtension.equals("rdf")) {
-                return Lang.RDFXML;
+                theLang = Lang.RDFXML;
             }
             else if (strExtension.equals("rdfs")) {
-                return Lang.RDFXML;
+                theLang = Lang.RDFXML;
             }
             else if (strExtension.equals("owl")) {
-                return Lang.RDFXML;
+                theLang = Lang.RDFXML;
             }
             else if (strExtension.equals("ttl")) {
-                return Lang.TURTLE;
+                theLang = Lang.TURTLE;
             }
             else if (strExtension.equals("n3")) {
-                return Lang.N3;
+                theLang = Lang.N3;
             }
             else if (strExtension.equals("nt")) {
-                return Lang.NTRIPLES;
+                theLang = Lang.NTRIPLES;
             }
             else if (strExtension.equals("jsonld")) {
-                return Lang.JSONLD;
+                theLang = Lang.JSONLD;
             }
             else if (strExtension.equals("nq")) {
-                return Lang.NQUADS;
+                theLang = Lang.NQUADS;
             }
             else if (strExtension.equals("rj")) {
-                return Lang.RDFJSON;
+                theLang = Lang.RDFJSON;
             }
             else if (strExtension.equals("trig")) {
-                return Lang.TRIG;
+                theLang = Lang.TRIG;
             }
             else if (strExtension.equals("trix")) {
-                return Lang.TRIX;
+                theLang = Lang.TRIX;
             }
             else if (strExtension.equals("xml")) {
-                return Lang.TRIX;
+                theLang = Lang.TRIX;
             }
             else if (strExtension.equals("trdf")) {
-                return Lang.RDFTHRIFT;
+                theLang = Lang.RDFTHRIFT;
             }
             else if (strExtension.equals("rt")) {
-                return Lang.RDFTHRIFT;
+                theLang = Lang.RDFTHRIFT;
             }
         }
-        return Lang.TURTLE;
+        return theLang;
     }
 
-    private RDFTransform getTransform(Project theDefaultProject)
+    private RDFTransform getProjectTransform()
             throws ServletException { // ...just because
-        Project theProject = theDefaultProject;
+        Project theProject = null;
 
         if ( ! ( this.strProjectID == null || this.strProjectID.isEmpty() ) ) {
             Long liProjectID;
@@ -226,10 +244,10 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             throw new ServletException("Project ID [" + strProjectID + "] not found! May be corrupt.");
         }
 
-        RDFTransform transform = RDFTransform.getRDFTransform(theProject);
-        if (transform == null) {
+        RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
+        if (theTransform == null) {
             throw new ServletException("RDF Transform for Project ID [" + strProjectID + "] not found!");
         }
-        return transform;
+        return theTransform;
     }
 }

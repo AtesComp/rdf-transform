@@ -66,37 +66,59 @@ public class VocabularyImporter {
     private String strPrefix;
     private String strNamespace;
     private boolean bStrictlyRDF;
+    private boolean bXMLSchema;
     private Model modelImport;
 
     public VocabularyImporter(String strPrefix, String strNamespace) {
         this.strPrefix = strPrefix;
         this.strNamespace = strNamespace;
         this.bStrictlyRDF = false;
+        this.bXMLSchema = false;
+        this.modelImport = null;
     }
 
     public void importVocabulary(String strFetchURL, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given URL: " + strFetchURL);
+        if (strFetchURL == null) {
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! URL is null.");
+            return;
+        }
         this.getModel(strFetchURL);
+        if (this.modelImport == null) {
+            return;
+        }
         this.getTerms(classes, properties);
     }
 
     public void importVocabulary(Model model, List<RDFTClass> classes, List<RDFTProperty> properties)
-            throws VocabularyImportException {
+            throws VocabularyImportException
+    {
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by existing model...");
         this.modelImport = model;
+        if (this.modelImport == null) {
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import model is null.");
+        }
         this.getTerms(classes, properties);
     }
 
     private void getModel(String strFetchURL)
-            throws VocabularyImportException {
-        if (strFetchURL == null) {
-            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: getModel() Import: nothing to fetch!");
+            throws VocabularyImportException
+    {
+        this.modelImport = null;
+
+        this.faultyContentNegotiation(strFetchURL); // ...set up booleans...
+        if (this.bXMLSchema) {
+            VocabularyImporter.logger.info("NOTE: XMLSchema is a built-in Datatype ontology...skipping import.");
             return;
         }
-        this.faultyContentNegotiation(strFetchURL); // ...set up this.bStrictlyRDF
 
         try {
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Creating model for URL");
             this.modelImport = ModelFactory.createDefaultModel();
+
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Reading model from URL");
             if (this.bStrictlyRDF) {
                 this.modelImport.read( strFetchURL, Lang.RDFXML.getName() ); ;
             }
@@ -105,6 +127,7 @@ public class VocabularyImporter {
             }
         }
         catch (Exception ex) {
+            this.modelImport = null;
             throw new VocabularyImportException("ERROR: Importing vocabulary: " + strFetchURL, ex);
         }
     }
@@ -123,12 +146,14 @@ public class VocabularyImporter {
         //
         // Get classes...
         //
-        queryClasses(classes, astrLoader);
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Querying classes from ontology...");
+        this.queryClasses(classes, astrLoader);
 
         //
         // Get properties...
         //
-        queryProperties(properties, astrLoader);
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Querying properties from ontology...");
+        this.queryProperties(properties, astrLoader);
     }
 
     private void queryClasses(List<RDFTClass> classes, String[] astrLoader)
@@ -226,5 +251,6 @@ public class VocabularyImporter {
         //       "Accept" header properly!  SKOS always returns "HTML" if the "Accept" header
         //       contains HTML regardless other more preferred options.
         this.bStrictlyRDF = strNamespace.equals("http://www.w3.org/2004/02/skos/core#");
+        this.bXMLSchema = strNamespace.equals("http://www.w3.org/2001/XMLSchema#");
     }
 }
