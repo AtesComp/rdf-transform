@@ -39,8 +39,10 @@ class RDFTransformNamespaceAdder {
         this.#elements.rdf_transform_prefix_trix.html(      $.i18n('rdft-prefix/trix')            );
         this.#elements.rdf_transform_prefix_rdfthrift.html( $.i18n('rdft-prefix/rdfthrift')       );
 
-        this.#elements.buttonOK.html( $.i18n('rdft-buttons/ok') );
-        this.#elements.buttonCancel.html( $.i18n('rdft-buttons/cancel') );
+        this.#elements.rdf_transform_prefix_note.html( $.i18n('rdft-prefix/namespace-note') );
+
+        this.#elements.buttonOK.html(       $.i18n('rdft-buttons/ok')                  );
+        this.#elements.buttonCancel.html(   $.i18n('rdft-buttons/cancel')              );
         this.#elements.buttonAdvanced.html( $.i18n('rdft-prefix/vocab-import') + "..." );
 
     }
@@ -120,7 +122,7 @@ class RDFTransformNamespaceAdder {
                 funcDismissBusy =
                     DialogSystem.showBusy(
                         $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
-                        ' from file: ' + this.#elements.file[0].files[0].name );
+                        '<br />File: ' + this.#elements.file[0].files[0].name );
 
                 Refine.wrapCSRF(
                     (token) => {
