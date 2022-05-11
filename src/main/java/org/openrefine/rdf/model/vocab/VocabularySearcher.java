@@ -235,15 +235,15 @@ public class VocabularySearcher implements IVocabularySearcher {
     private void indexTerms(String strProjectID, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws IOException {
         for (RDFTClass c : classes) {
-            this.indexRDFNode(c, CLASS_TYPE, strProjectID);
+            this.indexRDFTNode(c, CLASS_TYPE, strProjectID);
         }
         for (RDFTProperty p : properties) {
-            this.indexRDFNode(p, PROPERTY_TYPE, strProjectID);
+            this.indexRDFTNode(p, PROPERTY_TYPE, strProjectID);
         }
         this.update();
     }
 
-    private void indexRDFNode(RDFTNode node, String strNodeType, String strProjectID)
+    private void indexRDFTNode(RDFTNode node, String strNodeType, String strProjectID)
             throws IOException {
         /*
          * Create a new lucene document to store and index the related content
@@ -251,7 +251,7 @@ public class VocabularySearcher implements IVocabularySearcher {
          */
         Document doc = new Document();
 
-        // From Node...
+        // From RDFTNode...
         //
         //  IRI         str   required
         //  Label       str   copy of IRI if not given
@@ -259,25 +259,31 @@ public class VocabularySearcher implements IVocabularySearcher {
         //  Prefix      null
         //  Namespace   null  generated from IRI if not given
         //  LocalPart   null  generated from IRI if not given
+
+        String strIRI = node.getIRI();
+        if (strIRI == null) {
+            if ( Util.isVerbose(2) ||  Util.isDebugMode() ) {
+                VocabularySearcher.logger.warn("WARNING: Indexing IRI cannot be null! Skipping...");
+            }
+            return;
+        }
+
         String strLabel = node.getLabel();
-        if (strLabel == null)
-            strLabel = "";
+        if (strLabel == null)     strLabel = "";
 
         String strDesc = node.getDescription();
-        if (strDesc == null)
-            strDesc = "";
+        if (strDesc == null)      strDesc = "";
 
         String strPrefix = node.getPrefix();
-        if (strPrefix == null)
-            strPrefix = "";
+        if (strPrefix == null)    strPrefix = "";
 
         String strNamespace = node.getNamespace();
-        if (strNamespace == null)
-            strNamespace = "";
+        if (strNamespace == null) strNamespace = "";
 
         String strLocalPart = node.getLocalPart();
-        if (strLocalPart == null)
-            strLocalPart = "";
+        if (strLocalPart == null) strLocalPart = "";
+
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("Indexing: ");
 
         doc.add( new StoredField( Util.gstrIRI,         node.getIRI() ) );
         doc.add( new TextField(   Util.gstrLabel,       strLabel,     Field.Store.YES) );

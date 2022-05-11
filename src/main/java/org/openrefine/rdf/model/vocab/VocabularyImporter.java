@@ -1,5 +1,10 @@
 package org.openrefine.rdf.model.vocab;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryException;
 import org.apache.jena.query.QueryExecution;
@@ -12,10 +17,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.riot.Lang;
 import org.openrefine.rdf.model.Util;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,33 +167,36 @@ public class VocabularyImporter {
 
         Query query = null;
         try {
-            String strQuery = String.format(VocabularyImporter.CLASSES_QUERY, this.strNamespace);
+            String strQuery = String.format( VocabularyImporter.CLASSES_QUERY, Pattern.quote(this.strNamespace) );
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create class query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
         catch (QueryException ex) {
             throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
         }
-        ResultSet results = null;
-        try ( QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport) ) {
-            results = qexec.execSelect();
-        }
-        catch (Exception ex) {
-            VocabularyImporter.logger.info("INFO: [Thrown] No class results!");
-            return;
-        }
-        while ( results.hasNext() ) {
-            QuerySolution solution = results.next();
-            try {
-                if ( this.processSolution(solution, astrLoader, seen) ) {
-                    classes.add( new RDFTClass(astrLoader) );
+        try {
+            QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
+            ResultSet results = qexec.execSelect();
+            while ( results.hasNext() ) {
+                QuerySolution solution = results.next();
+                try {
+                    if ( this.processSolution(solution, astrLoader, seen) ) {
+                        classes.add( new RDFTClass(astrLoader) );
+                    }
+                }
+                catch (Exception ex) {
+                    if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+                        VocabularyImporter.logger.warn(
+                            "WARNING: Processing" + strMessage +
+                                "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]" );
+                    }
+                    // ...continue processing...
                 }
             }
-            catch (Exception ex) {
-                VocabularyImporter.logger.error(
-                        "ERROR: Processing" + strMessage +
-                            "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]");
-            }
+        }
+        catch (Exception ex) {
+            VocabularyImporter.logger.error("ERROR: Class query and results: " + ex.getMessage(), ex);
+            return;
         }
     }
 
@@ -204,33 +208,36 @@ public class VocabularyImporter {
 
         Query query = null;
         try {
-            String strQuery = String.format(VocabularyImporter.PROPERTIES_QUERY, this.strNamespace);
+            String strQuery = String.format( VocabularyImporter.PROPERTIES_QUERY, Pattern.quote(this.strNamespace) );
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create property query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
         catch (QueryException ex) {
             throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
         }
-        ResultSet results = null;
-        try ( QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport) ) {
-            results = qexec.execSelect();
-        }
-        catch (Exception ex) {
-            VocabularyImporter.logger.info("INFO: [Thrown] No property results!");
-            return;
-        }
-        while ( results.hasNext() ) {
-            QuerySolution solution = results.nextSolution();
-            try {
-                if ( this.processSolution(solution, astrLoader, seen) ) {
-                    properties.add( new RDFTProperty(astrLoader) );
+        try {
+            QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
+            ResultSet results = qexec.execSelect();
+            while ( results.hasNext() ) {
+                QuerySolution solution = results.nextSolution();
+                try {
+                    if ( this.processSolution(solution, astrLoader, seen) ) {
+                        properties.add( new RDFTProperty(astrLoader) );
+                    }
+                }
+                catch (Exception ex) {
+                    if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+                        VocabularyImporter.logger.warn(
+                            "WARNING: Processing" + strMessage +
+                                "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]" );
+                    }
+                    // ...continue processing...
                 }
             }
-            catch (Exception ex) {
-                VocabularyImporter.logger.error(
-                        "ERROR: Processing" + strMessage +
-                            "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]");
-            }
+        }
+        catch (Exception ex) {
+            VocabularyImporter.logger.error("ERROR: Property query and results: " + ex.getMessage(), ex);
+            return;
         }
     }
 
