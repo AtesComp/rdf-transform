@@ -159,6 +159,7 @@ public class Util {
             put("Verbosity", 0);
             put("ExportLimit", 10737418);
             put("DebugMode", false);
+            put("DebugJSON", false);
             // Settable only in RDF Transform UI, if at all...
             put("SampleLimit", 10);
         }};
@@ -483,6 +484,10 @@ public class Util {
         return (boolean) Util.Preferences.get("DebugMode");
     }
 
+    static public boolean isDebugJSON() {
+        return (boolean) Util.Preferences.get("DebugJSON");
+    }
+
     //
     // Sample Limit:
     //
@@ -573,6 +578,21 @@ public class Util {
         if (obj != null) {
             try {
                 Util.Preferences.put("DebugMode", Boolean.parseBoolean( obj.toString() ) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+
+        //
+        // Set Debug JSON...
+        //
+        // The Debug JSON (iDebugJSON) is used to manage the output of specifically marked "debug JSON" messages.
+        //
+        obj = prefStore.get("RDFTransform.debugJSON"); // RDFTransform Debug Mode
+        if (obj != null) {
+            try {
+                Util.Preferences.put("DebugJSON", Boolean.parseBoolean( obj.toString() ) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...

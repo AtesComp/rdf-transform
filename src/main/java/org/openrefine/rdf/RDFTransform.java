@@ -194,9 +194,7 @@ public class RDFTransform implements OverlayModel {
 
     static public RDFTransform reconstruct(Project theProject, JsonNode jnodeRoot) {
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Start reconstruction...");
-        if ( Util.isDebugMode() ) {
-            RDFTransform.logger.info("  JSON:\n" + jnodeRoot.toPrettyString());
-        }
+        if ( Util.isDebugJSON() ) RDFTransform.logger.info("  JSON:\n" + jnodeRoot.toPrettyString());
 
         if ( jnodeRoot == null || jnodeRoot.isNull() || jnodeRoot.isEmpty() ) {
             if ( Util.isVerbose(3) || Util.isDebugMode() ) RDFTransform.logger.info("  Nothing to reconstruct!");
@@ -625,7 +623,7 @@ public class RDFTransform implements OverlayModel {
             jsonWriter.close();
             String strJSON = baostream.toString("UTF-8");
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToArrayNode(strJSON);
-            if ( Util.isDebugMode() ) RDFTransform.logger.info("  JSON:\n" + jnodeTransform.toPrettyString());
+            if ( Util.isDebugJSON() ) RDFTransform.logger.info("  JSON:\n" + jnodeTransform.toPrettyString());
             return jnodeTransform;
         }
         catch (Exception ex) {
