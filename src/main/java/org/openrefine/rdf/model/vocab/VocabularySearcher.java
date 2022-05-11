@@ -219,7 +219,7 @@ public class VocabularySearcher implements IVocabularySearcher {
     private void deleteTerms(String strPrefix, String strProjectID)
             throws IOException {
         if ( strProjectID == null || strProjectID.isEmpty() ) {
-            throw new RuntimeException("Project ID is null");
+            throw new RuntimeException("Project ID is missing!");
         }
 
         BooleanQuery termsQuery =
@@ -511,7 +511,7 @@ public class VocabularySearcher implements IVocabularySearcher {
     private void deleteNamespacesOfProjectID(String strProjectID, Set<String> toDelete)
             throws IOException {
         if ( strProjectID == null || strProjectID.isEmpty() ) {
-            throw new RuntimeException("Project ID is null");
+            throw new RuntimeException("Project ID is missing!");
         }
 
         BooleanQuery.Builder qbuilderNamespaces = new BooleanQuery.Builder();

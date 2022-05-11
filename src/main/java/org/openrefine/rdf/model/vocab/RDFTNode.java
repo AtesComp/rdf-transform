@@ -171,7 +171,6 @@ public class RDFTNode {
     // }
 
     public String getType() {
-        //throw new UnsupportedOperationException();
         return this.getClass().getSimpleName();
     }
 

@@ -47,7 +47,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         try {
             this.reconstructVocabulariesFromFile();
             if ( predefinedVocabularies.isEmpty() ) {
-                throw new FileNotFoundException();
+                throw new FileNotFoundException("Predefined Vocabularies list is empty!");
             }
         }
         catch (FileNotFoundException ex1) {
@@ -93,15 +93,14 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             this.load();
         }
         else {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException("File " + SAVED_VOCABS_FILE_NAME + " is missing or empty!");
         }
     }
 
     private void addPredefinedVocabularies() throws IOException {
         InputStream inStream = getPredefinedVocabularyFile();
         if (inStream == null) {
-            String strError = "Predefined Vocabulary resource not found!";
-            throw new IOException(strError);
+            throw new IOException("File " + SAVED_VOCABS_FILE_NAME + " not found!");
         }
         BufferedReader buffReader = new BufferedReader( new InputStreamReader(inStream) );
         String strLine, strPrefix = null, strNamespace = null, strFetchURL = null;

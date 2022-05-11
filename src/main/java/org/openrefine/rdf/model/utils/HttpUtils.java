@@ -78,13 +78,13 @@ public class HttpUtils {
     }
 
     public static HttpEntity get(String strURL) throws IOException {
-        if ( Util.isDebugMode() ) logger.info("DEBUG: GET request at " + strURL);
+        if ( Util.isDebugMode() ) HttpUtils.logger.info("DEBUG: GET request at " + strURL);
         HttpGet getter = new HttpGet(strURL);
         return get(getter);
     }
 
     public static HttpEntity get(String strURL, String accept) throws IOException {
-        if ( Util.isDebugMode() ) logger.info("DEBUG: GET request at " + strURL);
+        if ( Util.isDebugMode() ) HttpUtils.logger.info("DEBUG: GET request at " + strURL);
         HttpGet getter = new HttpGet(strURL);
         getter.setHeader("Accept", accept);
         return get(getter);
@@ -98,9 +98,9 @@ public class HttpUtils {
         }
         else {
             String strErrorMessage =
-                "Error performing GET request: " +
+                "GET request failed: " +
                 response.getCode() + " " + response.getReasonPhrase();
-            logger.error(strErrorMessage);
+            HttpUtils.logger.error("ERROR: " + strErrorMessage);
             throw new ClientProtocolException(strErrorMessage);
         }
     }

@@ -100,7 +100,7 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
         catch (Exception ex) {
             if ( Util.isDebugMode() ) RDFStreamExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-            throw new RuntimeException(ex);
+            throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 }
