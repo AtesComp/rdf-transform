@@ -1,6 +1,7 @@
 package org.openrefine.rdf.model.vocab;
 
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryException;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
@@ -39,12 +40,13 @@ public class VocabularyImporter {
         "OPTIONAL { ?resource rdfs:label ?en_label . " +
                     "FILTER langMatches( lang(?en_label), \"EN\" ) } " +
         "OPTIONAL { ?resource rdfs:comment ?description . } " +
-        "OPTIONAL { ?resource rdfs:comment ?en_description . FILTER langMatches( lang(?en_description), \"EN\" ) } " +
+        "OPTIONAL { ?resource rdfs:comment ?en_description . " +
+                    "FILTER langMatches( lang(?en_description), \"EN\" ) } " +
         "OPTIONAL { ?resource skos:definition ?definition . } " +
         "OPTIONAL { ?resource skos:definition ?en_definition . " +
                     "FILTER langMatches( lang(?en_definition), \"EN\" ) } " +
         "VALUES ?type { rdfs:Class owl:Class } " +
-        "FILTER regex(str(?resource), \"^%s\") }";
+        "FILTER regex(str(?resource), \"^%s\") }"; // ..starts with given namespace
     
 
     static private final String PROPERTIES_QUERY =
@@ -61,7 +63,7 @@ public class VocabularyImporter {
         "OPTIONAL { ?resource skos:definition ?definition.} " +
         "OPTIONAL { ?resource skos:definition ?en_definition . " +
                     "FILTER langMatches( lang(?en_definition), \"EN\" ) } " +
-        "FILTER regex(str(?resource), \"^%s\") }";
+        "FILTER regex(str(?resource), \"^%s\") }"; // ..starts with given namespace
 
     private String strPrefix;
     private String strNamespace;
@@ -95,7 +97,7 @@ public class VocabularyImporter {
     public void importVocabulary(Model model, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
-        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by existing model...");
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given model...");
         this.modelImport = model;
         if (this.modelImport == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import model is null.");
@@ -110,7 +112,7 @@ public class VocabularyImporter {
 
         this.faultyContentNegotiation(strFetchURL); // ...set up booleans...
         if (this.bXMLSchema) {
-            VocabularyImporter.logger.info("NOTE: XMLSchema is a built-in Datatype ontology...skipping import.");
+            VocabularyImporter.logger.info("INFO: XMLSchema is a built-in Datatype ontology...skipping import.");
             return;
         }
 
@@ -128,7 +130,7 @@ public class VocabularyImporter {
         }
         catch (Exception ex) {
             this.modelImport = null;
-            throw new VocabularyImportException("ERROR: Importing vocabulary: " + strFetchURL, ex);
+            throw new VocabularyImportException("Importing vocabulary: " + strFetchURL, ex);
         }
     }
 
@@ -159,72 +161,111 @@ public class VocabularyImporter {
     private void queryClasses(List<RDFTClass> classes, String[] astrLoader)
             throws VocabularyImportException
     {
+        String strMessage = " vocabulary [" + this.strPrefix + "] classes: ";
         Set<String> seen = new HashSet<String>();
 
-        Query query = QueryFactory.create( String.format(VocabularyImporter.CLASSES_QUERY, this.strNamespace) );
-        try (QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport)) {
-            ResultSet results = qexec.execSelect();
-            while ( results.hasNext() ) {
-                QuerySolution solution = results.nextSolution();
-                if ( processSolution(solution, astrLoader, seen) ) {
+        Query query = null;
+        try {
+            String strQuery = String.format(VocabularyImporter.CLASSES_QUERY, this.strNamespace);
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create class query:\n" + strQuery);
+            query = QueryFactory.create(strQuery);
+        }
+        catch (QueryException ex) {
+            throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
+        }
+        ResultSet results = null;
+        try ( QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport) ) {
+            results = qexec.execSelect();
+        }
+        catch (Exception ex) {
+            VocabularyImporter.logger.info("INFO: [Thrown] No class results!");
+            return;
+        }
+        while ( results.hasNext() ) {
+            QuerySolution solution = results.next();
+            try {
+                if ( this.processSolution(solution, astrLoader, seen) ) {
                     classes.add( new RDFTClass(astrLoader) );
                 }
             }
-        }
-        catch (Exception ex) {
-            throw new VocabularyImportException("ERROR: Processing vocabulary [" + this.strPrefix + "] classes: " + ex.getMessage(), ex);
+            catch (Exception ex) {
+                VocabularyImporter.logger.error(
+                        "ERROR: Processing" + strMessage +
+                            "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]");
+            }
         }
     }
 
     private void queryProperties(List<RDFTProperty> properties, String[] astrLoader)
             throws VocabularyImportException
     {
+        String strMessage = " vocabulary [" + this.strPrefix + "] properties: ";
         Set<String> seen = new HashSet<String>();
 
-        Query query = QueryFactory.create( String.format(VocabularyImporter.PROPERTIES_QUERY, this.strNamespace) );
-        try (QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport)) {
-            ResultSet results = qexec.execSelect();
-            while ( results.hasNext() ) {
-                QuerySolution solution = results.nextSolution();
-                if ( processSolution(solution, astrLoader, seen) ) {
+        Query query = null;
+        try {
+            String strQuery = String.format(VocabularyImporter.PROPERTIES_QUERY, this.strNamespace);
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create property query:\n" + strQuery);
+            query = QueryFactory.create(strQuery);
+        }
+        catch (QueryException ex) {
+            throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
+        }
+        ResultSet results = null;
+        try ( QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport) ) {
+            results = qexec.execSelect();
+        }
+        catch (Exception ex) {
+            VocabularyImporter.logger.info("INFO: [Thrown] No property results!");
+            return;
+        }
+        while ( results.hasNext() ) {
+            QuerySolution solution = results.nextSolution();
+            try {
+                if ( this.processSolution(solution, astrLoader, seen) ) {
                     properties.add( new RDFTProperty(astrLoader) );
                 }
             }
-        }
-        catch (Exception ex) {
-            throw new VocabularyImportException("ERROR: Processing vocabulary [" + this.strPrefix + "] properties: " + ex.getMessage(), ex);
+            catch (Exception ex) {
+                VocabularyImporter.logger.error(
+                        "ERROR: Processing" + strMessage +
+                            "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]");
+            }
         }
     }
 
     private boolean processSolution(QuerySolution solution, String[] astrLoader, Set<String> seen) {
         astrLoader[RDFTNode.iIRI] = null;
         RDFNode node = solution.get("resource");
-        if (node != null) { // ...should never be null...
-            astrLoader[RDFTNode.iIRI] = node.toString();
+        if (node == null) { // ...should never be null...
+            return false;
         }
+        astrLoader[RDFTNode.iIRI] = node.toString();
         if ( seen.contains(astrLoader[RDFTNode.iIRI]) ) {
             return false;
         }
         seen.add(astrLoader[RDFTNode.iIRI]);
         astrLoader[RDFTNode.iLabel] =
-            getFirstNotNullLiteral( new RDFNode[] {
-                                solution.get("en_label"),
-                                solution.get("label")
-                            } );
+            this.getFirstNotNullLiteral(
+                    new RDFNode[] {
+                        solution.get("en_label"),
+                        solution.get("label")
+                    } );
         astrLoader[RDFTNode.iDesc] =
-            getFirstNotNullLiteral( new RDFNode[] {
-                                solution.get("en_definition"),  // 1: Definitions
-                                solution.get("definition"),
-                                solution.get("en_description"), // 2: Descriptions
-                                solution.get("description")
-                            } );
+            this.getFirstNotNullLiteral(
+                    new RDFNode[] {
+                        solution.get("en_definition"),  // 1: Definitions
+                        solution.get("definition"),
+                        solution.get("en_description"), // 2: Descriptions
+                        solution.get("description")
+                    } );
         return true;
     }
 
     private String getFirstNotNullLiteral(RDFNode[] nodes) {
         String strNode = null;
         for (int i = 0; i < nodes.length; i++) {
-            strNode = getString(nodes[i]);
+            strNode = this.getString(nodes[i]);
             if (strNode != null) {
                 break;
             }
