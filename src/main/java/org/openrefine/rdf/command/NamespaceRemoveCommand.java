@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceRemoveCommand extends RDFTransformCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRemoveCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:NSRemoveCmd");
 
     public NamespaceRemoveCommand() {
         super();

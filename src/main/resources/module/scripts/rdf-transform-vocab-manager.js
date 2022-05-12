@@ -17,10 +17,10 @@ class RDFTransformVocabManager {
         this.#elements.dialogHeader.html($.i18n('rdft-vocab/header'));
         this.#elements.buttonAddNamespace.html($.i18n('rdft-buttons/add-namespace'));
         this.#elements.buttonOK.html($.i18n('rdft-buttons/ok'));
-        this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
+        //this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
 
-        this.#elements.buttonCancel
-        .on("click", () => { this.#dismiss(); } );
+        //this.#elements.buttonCancel
+        //.on("click", () => { this.#dismiss(); } );
 
         this.#elements.buttonAddNamespace
         .on("click",
