@@ -559,7 +559,7 @@ public class RDFTransform implements OverlayModel {
             }
             this.theNamespaces.clear();
 
-            if ( Util.isDebugMode() ) RDFTransform.logger.info("  Namespaces:\n" + jnodeNamespaces.toPrettyString());
+            if ( Util.isDebugJSON() ) RDFTransform.logger.info("  Namespaces:\n" + jnodeNamespaces.toPrettyString());
 
             if ( jnodeNamespaces.isObject() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Namespaces set by JSON Object...");
