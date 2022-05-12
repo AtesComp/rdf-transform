@@ -15,21 +15,49 @@
       <img src="images/example/example_data.png" border="1" />
     </p>
     <p>
-      The intended RDF we want to export should look like the following (for the first few lines):
+      The intended RDF we want to export should look something like the following (for the first line):
       <pre>
 <code>
+@prefix rdf:   &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs:  &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl:   &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix xsd:   &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix choc:  &lt;http://foc/choc/&gt; .
+@prefix ref:   &lt;http://foc/choc/Reference/&gt; .
+@prefix ingred: &lt;http://foc/choc/Ingredient/&gt; .
+@prefix wiki:  &lt;https://en.wikipedia.org/wiki/&gt; .
+
 choc:0
-  a  choc:Entry
-  choc:reference  choc:RefID_2454"  ;
+  a  choc:Entry;
+  choc:reference  ref:2454"  ;
   choc:companyName  "5150"  ;
-  choc:country  "U.S.A."  ;
+  choc:companyLocation  "U.S.A."  ;
   choc:reviewDate  "2019"^^xsd:date  ;
-  choc:beanOrigin  "Tanzania"  ;
-  choc:beanOriginSpecifics  "Kokoa Kamili, batch 1"  ;
+  choc:beanOriginCountry  "Tanzania"  ;
+  choc:beanOriginBarName  "Kokoa Kamili, batch 1"  ;
   choc:contentCocoa  "76"^^xsd:double  ;
-  choc:ingredients  "3- B,S,C"  ;
+  choc:ingredients  [
+    a  rdf:Bag  ;
+    rdf:1  ingred:CocoaButter  ;
+    rdf:2  ingred:Sugar  ;
+    rdf:3  ingred:Beans
+  ]  ;
   choc:characteristics  "rich cocoa", "fatty", "bready"  ;
   choc:rating "3.25"^^xsd:double  .
+
+ref:2454  a  choc:Reference  ;
+
+ingred:Beans
+  rdfs:seeAlso  wiki:Cocoa_bean ;
+  rdfs:label    "Beans" .
+
+ingred:CocoaButter
+  rdfs:seeAlso  wiki:Cocoa_butter ;
+  rdfs:label    "Cocoa Butter" .
+
+ingred:Sugar
+  rdfs:seeAlso  wiki:Sugar ;
+  rdfs:label    "Sugar" .
 </code>
       </pre>
     </p>
@@ -48,8 +76,14 @@ choc:0
       <li>Namespaces
         <div>
           Namespaces can be managed by the <em>[+ Add]</em> and <em>[* Manage]</em> buttons on the
-          <em>Available Namespaces:</em> line.  Add a namespace "http://cocoa/" with the prefix
-          "choc".
+          <em>Available Namespaces:</em> line.  Add the following prefixed namespaces:<br />
+          <ol>
+            <li>Prefix "choc" with namespace "http://cocoa/"</li>
+            <li>Prefix "ref" with namespace "http://foc/choc/Reference/"</li>
+            <li>Prefix "ingred" with namespace "http://foc/choc/Ingredient/"</li>
+            <li>Prefix "wiki" with namespace "https://en.wikipedia.org/wiki/"</li>
+          </ol>
+          You can remove any unused namespaces with the <em>[* Manage]</em> button.
         </div>
       </li>
       <li>Transform
@@ -87,13 +121,27 @@ choc:0
       </li>
       <li>
         <div>
-          As an additional exercise, you can use GREL to breakdown the ingredience string
+          As an additional exercise, use GREL to breakdown the "Ingredience" string
           into actual ingredience resource IRIs and add those IRIs as new root nodes
           referenceing actual Internet resources for those ingredience (see Wikidata,
           DBpedia, or any other favored location).
         </div>
       </li>
+      <li>
+        <div>
+          As an additional exercise, use GREL to breakdown the "Most Memorable
+          Characteristics" string into individual characteristics strings. There are
+          at most 5 characteristics mostly separated by a comma. There are a few that
+          alternatively use the word "and" to separate 2 characteristics.
+        </div>
+      </li>
     </ol>
+    <div class="note">
+      For the above additional exercises, the provided
+      <a href="example/foc.json.html">Flavors of Cacao JSON Template</a> contains the
+      structure (pretty printed for your reading enjoyment) and the GREL expressions
+      used to break down these strings.
+    </div>
     <p>
       The figure below shows an example of a RDF Node dialog (the <em>Bean Type IRI</em> resource):
       <div class="image">

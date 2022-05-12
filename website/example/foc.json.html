@@ -1,0 +1,903 @@
+<pre>
+{
+    "baseIRI" : "http://foc/choc/",
+    "extension" : "RDFTransform",
+    "namespaces" : {
+       "choc" : "http://foc/choc/",
+       "ingred" : "http://foc/choc/Ingredient/",
+       "owl" : "http://www.w3.org/2002/07/owl#",
+       "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+       "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+       "ref" : "http://foc/choc/Reference/",
+       "wiki" : "https://en.wikipedia.org/wiki/",
+       "xsd" : "http://www.w3.org/2001/XMLSchema#"
+    },
+    "subjectMappings" : [
+       {
+          "expression" : {
+             "code" : "row.index",
+             "language" : "grel"
+          },
+          "prefix" : "choc",
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "toIRIString(value)",
+                         "language" : "grel"
+                      },
+                      "prefix" : "ref",
+                      "typeMappings" : [
+                         {
+                            "prefix" : "choc",
+                            "valueSource" : {
+                               "constant" : "Reference",
+                               "source" : "constant"
+                            }
+                         }
+                      ],
+                      "valueSource" : {
+                         "columnName" : "REF",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "reference",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "valueSource" : {
+                         "columnName" : "Company (Manufacturer)",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "companyName",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "valueSource" : {
+                         "columnName" : "Company Location",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "companyLocation",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if(not(isBlank(value)), toDate(toString(value), false, \"yyyy-MM-dd\"), value)",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Review Date",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "datatype" : {
+                            "prefix" : "xsd",
+                            "valueSource" : {
+                               "constant" : "date",
+                               "source" : "constant"
+                            }
+                         },
+                         "type" : "datatype_literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "reviewDate",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "valueSource" : {
+                         "columnName" : "Country of Bean Origin",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "beanOriginCountry",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "valueSource" : {
+                         "columnName" : "Specific Bean Origin or Bar Name",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "beanOriginBarName",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "toNumber(chomp(value, '%'))",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Cocoa Percent",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "datatype" : {
+                            "prefix" : "xsd",
+                            "valueSource" : {
+                               "constant" : "double",
+                               "source" : "constant"
+                            }
+                         },
+                         "type" : "datatype_literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "contentCocoa",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "propertyMappings" : [
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 0, with( smartSplit( slice( toString(value), 3) )[0], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         },
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 1, with( smartSplit( slice( toString(value), 3) )[1], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         },
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 2, with( smartSplit( slice( toString(value), 3) )[2], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         },
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 3, with( smartSplit( slice( toString(value), 3) )[3], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         },
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 4, with( smartSplit( slice( toString(value), 3) )[4], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         },
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 5, with( smartSplit( slice( toString(value), 3) )[5], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         },
+                         {
+                            "objectMappings" : [
+                               {
+                                  "expression" : {
+                                     "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 6, with( smartSplit( slice( toString(value), 3) )[6], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+                                     "language" : "grel"
+                                  },
+                                  "valueSource" : {
+                                     "columnName" : "Ingredients",
+                                     "source" : "column"
+                                  },
+                                  "valueType" : {
+                                     "type" : "iri"
+                                  }
+                               }
+                            ],
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "li",
+                               "source" : "constant"
+                            }
+                         }
+                      ],
+                      "typeMappings" : [
+                         {
+                            "prefix" : "rdf",
+                            "valueSource" : {
+                               "constant" : "Bag",
+                               "source" : "constant"
+                            }
+                         }
+                      ],
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "bnode"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "ingredients",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "with(\n    if( not( isBlank(value) ), smartSplit( toString(value), \" and \" ), null ),\n    astr,\n    if( isNotNull(astr),\n        strip( smartSplit( if( length(astr) == 2, astr[0] + \", \" + astr[1], astr[0] ), ',' )[0] ),\n        astr ) )",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Most Memorable Characteristics",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "characteristics",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "with(\n    if( not( isBlank(value) ), smartSplit( toString(value), \" and \" ), null ),\n    astr,\n    if( isNotNull(astr),\n        strip( smartSplit( if( length(astr) == 2, astr[0] + \", \" + astr[1], astr[0] ), ',' )[1] ),\n        astr ) )",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Most Memorable Characteristics",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "characteristics",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "with(\n    if( not( isBlank(value) ), smartSplit( toString(value), \" and \" ), null ),\n    astr,\n    if( isNotNull(astr),\n        strip( smartSplit( if( length(astr) == 2, astr[0] + \", \" + astr[1], astr[0] ), ',' )[2] ),\n        astr ) )",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Most Memorable Characteristics",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "characteristics",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "with(\n    if( not( isBlank(value) ), smartSplit( toString(value), \" and \" ), null ),\n    astr,\n    if( isNotNull(astr),\n        strip( smartSplit( if( length(astr) == 2, astr[0] + \", \" + astr[1], astr[0] ), ',' )[3] ),\n        astr ) )",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Most Memorable Characteristics",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "characteristics",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "with(\n    if( not( isBlank(value) ), smartSplit( toString(value), \" and \" ), null ),\n    astr,\n    if( isNotNull(astr),\n        strip( smartSplit( if( length(astr) == 2, astr[0] + \", \" + astr[1], astr[0] ), ',' )[4] ),\n        astr ) )",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Most Memorable Characteristics",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "characteristics",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "valueSource" : {
+                         "columnName" : "Rating",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "datatype" : {
+                            "prefix" : "xsd",
+                            "valueSource" : {
+                               "constant" : "double",
+                               "source" : "constant"
+                            }
+                         },
+                         "type" : "datatype_literal"
+                      }
+                   }
+                ],
+                "prefix" : "choc",
+                "valueSource" : {
+                   "constant" : "rating",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "source" : "row_index"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 0, with( smartSplit( slice( toString(value), 3) )[0], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 0, with( smartSplit( slice( toString(value), 3) )[0], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 0, with( smartSplit( slice( toString(value), 3) )[0], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 1, with( smartSplit( slice( toString(value), 3) )[1], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 1, with( smartSplit( slice( toString(value), 3) )[1], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 1, with( smartSplit( slice( toString(value), 3) )[1], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 2, with( smartSplit( slice( toString(value), 3) )[2], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 2, with( smartSplit( slice( toString(value), 3) )[2], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 2, with( smartSplit( slice( toString(value), 3) )[2], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 3, with( smartSplit( slice( toString(value), 3) )[3], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 3, with( smartSplit( slice( toString(value), 3) )[3], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 3, with( smartSplit( slice( toString(value), 3) )[3], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 4, with( smartSplit( slice( toString(value), 3) )[4], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 4, with( smartSplit( slice( toString(value), 3) )[4], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 4, with( smartSplit( slice( toString(value), 3) )[4], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 5, with( smartSplit( slice( toString(value), 3) )[5], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 5, with( smartSplit( slice( toString(value), 3) )[5], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 5, with( smartSplit( slice( toString(value), 3) )[5], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       },
+       {
+          "expression" : {
+             "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 6, with( smartSplit( slice( toString(value), 3) )[6], cIng, if( cIng=='B', 'ingred:Beans', if( cIng=='S', 'ingred:Sugar', if( cIng=='S*', 'ingred:Sweetener', if( cIng=='C', 'ingred:CocoaButter', if( cIng=='V', 'ingred:Vanilla', if( cIng=='L', 'ingred:Lecithin', if( cIng=='Sa', 'ingred:Salt', ''))))))) ), ''), '')",
+             "language" : "grel"
+          },
+          "propertyMappings" : [
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 6, with( smartSplit( slice( toString(value), 3) )[6], cIng, if( cIng=='B', 'Beans', if( cIng=='S', 'Sugar', if( cIng=='S*', 'Sweetener other than white cane or beet sugar', if( cIng=='C', 'Cocoa Butter', if( cIng=='V', 'Vanilla', if( cIng=='L', 'Lecithin', if( cIng=='Sa', 'Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "literal"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "label",
+                   "source" : "constant"
+                }
+             },
+             {
+                "objectMappings" : [
+                   {
+                      "expression" : {
+                         "code" : "if( not( isBlank(value) ), if( toNumber( smartSplit( slice( toString(value), 0, 3), '-')[0]) > 6, with( smartSplit( slice( toString(value), 3) )[6], cIng, if( cIng=='B', 'wiki:Cocoa_bean', if( cIng=='S', 'wiki:Sugar', if( cIng=='S*', 'wiki:Sugar_substitute', if( cIng=='C', 'wiki:Cocoa_butter', if( cIng=='V', 'wiki:Vanilla', if( cIng=='L', 'wiki:Lecithin', if( cIng=='Sa', 'wiki:Salt', ''))))))) ), ''), '')",
+                         "language" : "grel"
+                      },
+                      "valueSource" : {
+                         "columnName" : "Ingredients",
+                         "source" : "column"
+                      },
+                      "valueType" : {
+                         "type" : "iri"
+                      }
+                   }
+                ],
+                "prefix" : "rdfs",
+                "valueSource" : {
+                   "constant" : "seeAlso",
+                   "source" : "constant"
+                }
+             }
+          ],
+          "valueSource" : {
+             "columnName" : "Ingredients",
+             "source" : "column"
+          }
+       }
+    ],
+    "version" : "2.1.0"
+ }
+</pre>
