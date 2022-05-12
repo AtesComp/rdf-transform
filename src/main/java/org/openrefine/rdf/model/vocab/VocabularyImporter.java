@@ -3,7 +3,6 @@ package org.openrefine.rdf.model.vocab;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryException;
@@ -167,7 +166,7 @@ public class VocabularyImporter {
 
         Query query = null;
         try {
-            String strQuery = String.format( VocabularyImporter.CLASSES_QUERY, Pattern.quote(this.strNamespace) );
+            String strQuery = String.format( VocabularyImporter.CLASSES_QUERY, this.strNamespace );
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create class query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
@@ -208,7 +207,7 @@ public class VocabularyImporter {
 
         Query query = null;
         try {
-            String strQuery = String.format( VocabularyImporter.PROPERTIES_QUERY, Pattern.quote(this.strNamespace) );
+            String strQuery = String.format( VocabularyImporter.PROPERTIES_QUERY, this.strNamespace );
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create property query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
