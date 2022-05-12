@@ -375,26 +375,24 @@ abstract public class Node {
     }
 
     protected String expandPrefixedIRI(String strObjectIRI) {
-        String strExpanded = strObjectIRI;
-        if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: string = " + strObjectIRI);
-        if ( ! strObjectIRI.contains("://") ) {
-            if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: checking prefix...");
-            int iIndex = strObjectIRI.indexOf(':'); // ...get index of first ':'...
-            if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: index = " + iIndex);
-            if (iIndex >= 0) { // ...a ':' exists...
-                String strPrefix = strObjectIRI.substring(0, iIndex); // ...including blank ("") prefix...
-                if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: strPrefix = " + strPrefix);
-                if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: connection = " +
-                                                    ( this.theModel == null ? "null" : "connected" ) );
-                String strNamespace = this.theModel.getNsPrefixURI(strPrefix);
-                if (Util.isDebugMode()) Node.logger.info("DEBUG: expandPrefixedIRI: strNamespace = " + strNamespace);
-                if (strNamespace != null) {
-                     // Get the string just beyond the first ':'...
-                    strExpanded = strNamespace + strObjectIRI.substring(iIndex+1);
-                }
-            }
+        if (this.theModel == null) {
+            return null;
         }
-        return strExpanded;
+        return this.theModel.expandPrefix(strObjectIRI);
+
+        // String strExpanded = strObjectIRI;
+        // int iIndex = strObjectIRI.indexOf(':'); // ...get index of first ':'...
+        // if (iIndex >= 0) { // ...a ':' exists...
+        //     if ( ! strObjectIRI.contains("://") ) { // ...if not already expanded...
+        //         String strPrefix = strObjectIRI.substring(0, iIndex); // ...including blank ("") prefix...
+        //         String strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+        //         if (strNamespace != null) {
+        //              // Get the string just beyond the first ':'...
+        //             strExpanded = strNamespace + strObjectIRI.substring(iIndex+1);
+        //         }
+        //     }
+        // }
+        // return strExpanded;
     }
 
     /*

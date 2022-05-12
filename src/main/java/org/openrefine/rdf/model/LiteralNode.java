@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.BaseDatatype;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.impl.LiteralImpl;
 import org.apache.jena.rdf.model.Literal;
@@ -120,7 +120,11 @@ abstract public class LiteralNode extends Node {
         // If there is a datatype...
         if (this.nodeDatatype != null) {
             String strDatatype = this.nodeDatatype.normalizeResourceAsString();
-            RDFDatatype theDatatype = new BaseDatatype(strDatatype);
+            String strExpandedDatatype = this.expandPrefixedIRI(strDatatype);
+            if ( strExpandedDatatype != null) {
+                strDatatype = strExpandedDatatype;
+            }
+            RDFDatatype theDatatype = TypeMapper.getInstance().getSafeTypeByName(strDatatype);
             try {
                 literal = new LiteralImpl( NodeFactory.createLiteral(strResult, theDatatype), null );
             }
