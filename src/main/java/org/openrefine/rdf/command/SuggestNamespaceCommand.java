@@ -29,16 +29,18 @@ public class SuggestNamespaceCommand extends RDFTransformCommand {
         try {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "application/json");
-            Writer writer = response.getWriter();
-            JsonGenerator jgWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
-            jgWriter.writeStartObject();
-            jgWriter.writeStringField("code", "ok");
-            jgWriter.writeStringField(Util.gstrNamespace, strNamespace);
-            jgWriter.writeEndObject();
-            jgWriter.flush();
-            jgWriter.close();
-            writer.flush();
-            writer.close();
+
+            Writer writerBase = response.getWriter();
+            JsonGenerator theWriter = ParsingUtilities.mapper.getFactory().createGenerator(writerBase);
+
+            theWriter.writeStartObject();
+            theWriter.writeStringField("code", "ok");
+            theWriter.writeStringField(Util.gstrNamespace, strNamespace);
+            theWriter.writeEndObject();
+
+            theWriter.flush();
+            theWriter.close();
+            writerBase.close();
         }
         catch (Exception ex) {
             respondException(response, ex);
