@@ -308,7 +308,7 @@ class RDFTransformResourceDialog {
                     term.localPart = obj.localPart;
                     //term.description
 
-                    await this.#handlerAddSuggestTerm(evt, this.#strLookForType, term);
+                    this.#handlerAddSuggestTerm(evt, this.#strLookForType, term);
 
                     // Process new IRI object...
                     this.#onDone(obj);
@@ -327,7 +327,7 @@ class RDFTransformResourceDialog {
         elements.rdftNewResourceIRI.focus();
     }
 
-    async #handlerAddSuggestTerm(evt, strType, params) {
+    #handlerAddSuggestTerm(evt, strType, params) {
         evt.preventDefault();
 
         params.project = theProject.id;
@@ -335,23 +335,17 @@ class RDFTransformResourceDialog {
 
         var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/adding-term') + ' ' + params.iri);
 
-        var resData = new Promise(
-            (resolve, reject) => {
-                Refine.postCSRF(
-                    "command/rdf-transform/add-suggest-term",
-                    params,
-                    (data) => {
-                        if (data.code === "error") {
-                            alert($.i18n('rdft-vocab/error-adding-term') + ': [' + params.iri + "]");
-                        }
-                        dismissBusy();
-                        resolve(data);
-                    },
-                    "json"
-                );
-            }
+        Refine.postCSRF(
+            "command/rdf-transform/add-suggest-term",
+            params,
+            (data) => {
+                if (data.code === "error") {
+                    alert($.i18n('rdft-vocab/error-adding-term') + ': [' + params.iri + "]");
+                }
+                dismissBusy();
+            },
+            "json"
         );
-        
     }
 
     /*

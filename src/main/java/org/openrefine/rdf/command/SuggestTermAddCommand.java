@@ -1,6 +1,7 @@
 package org.openrefine.rdf.command;
 
 import org.openrefine.rdf.RDFTransform;
+import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.IVocabularySearcher;
 import org.openrefine.rdf.model.vocab.RDFTNode;
 
@@ -10,23 +11,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SuggestTermAddCommand extends RDFTransformCommand {
-    //private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
 
     public SuggestTermAddCommand() {
         super();
     }
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if ( ! this.hasValidCSRFToken(request) ) {
             SuggestTermAddCommand.respondCSRFError(response);
             return;
         }
+        if ( Util.isDebugMode() ) SuggestTermAddCommand.logger.info("DEBUG: Adding suggestion term...");
 
         // Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
         // The "project" holds the project ID of the project to search...
@@ -53,6 +55,7 @@ public class SuggestTermAddCommand extends RDFTransformCommand {
                 theSearcher.addTerm(node, strType, strProjectID);
             }
             catch (Exception ex) {
+                if ( Util.isDebugMode() ) SuggestTermAddCommand.logger.error("ERROR: " + ex.getMessage(), ex);
                 SuggestTermAddCommand.respondJSON(response, CodeResponse.error);
                 return;
             }

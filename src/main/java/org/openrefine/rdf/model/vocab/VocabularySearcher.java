@@ -163,7 +163,8 @@ public class VocabularySearcher implements IVocabularySearcher {
     @Override
     public void addTerm(RDFTNode node, String strNodeType, String strProjectID)
             throws IOException {
-        indexRDFTNode(node, strNodeType, strProjectID);
+        this.indexRDFTNode(node, strNodeType, strProjectID);
+        this.update();
     }
 
     @Override
