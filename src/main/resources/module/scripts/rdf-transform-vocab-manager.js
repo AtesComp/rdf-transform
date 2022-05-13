@@ -48,7 +48,7 @@ class RDFTransformVocabManager {
         );
     }
 
-    #getRemoveHandler(strPrefix) {
+    #handlerRemove(strPrefix) {
         return (evtHandler) => {
             evtHandler.preventDefault();
             var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
@@ -73,7 +73,7 @@ class RDFTransformVocabManager {
         };
     }
 
-    #getRefreshHandler(strPrefix, strNamespace) {
+    #handlerRefresh(strPrefix, strNamespace) {
         return (evtHandler) => {
             evtHandler.preventDefault();
             if ( window.confirm(
@@ -123,14 +123,14 @@ class RDFTransformVocabManager {
                 $('<a/>')
                 .text( $.i18n('rdft-vocab/delete') )
                 .attr('href', '#')
-                .on("click", this.#getRemoveHandler(strPrefix) );
+                .on("click", this.#handlerRemove(strPrefix) );
             /** @type {HTMLElement} */
             // @ts-ignore
             var htmlRefreshNamespace =
                 $('<a/>')
                 .text( $.i18n('rdft-vocab/refresh') )
                 .attr('href', '#')
-                .on("click", this.#getRefreshHandler(strPrefix, strNamespace) );
+                .on("click", this.#handlerRefresh(strPrefix, strNamespace) );
             var tr = $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
                 .append( $('<td>').text(strPrefix) )
                 .append( $('<td>').text(strNamespace) )

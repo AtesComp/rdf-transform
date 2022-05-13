@@ -130,6 +130,7 @@ class RDFTransformResourceDialog {
                 }
 
                 if (obj !== null) {
+                    // Process existing or not-added IRI object...
                     this.#onDone(obj);
                 }
                 else {
@@ -158,20 +159,21 @@ class RDFTransformResourceDialog {
                 if ( data !== null && typeof data === 'string' ) {
                     strIRI = data;
                     // A leading ':' for Base IRI encoding is an invalid IRI, so remove for test...
-                    const bBaseIRI = (strIRI[0] === ':');
                     var strTestIRI = strIRI;
+                    const bBaseIRI = (strIRI[0] === ':');
                     if (bBaseIRI) {
                         strTestIRI = strIRI.substring(1);
                     }
                     // Does the IRI look like a prefixed IRI?
+                    //      1 : Yes | 0 : No, but IRI | -1 : Not an IRI
                     var iPrefixedIRI = await RDFTransformCommon.isPrefixedQName(strTestIRI);
-                    // Is it a good IRI?
+                    // Is it an IRI?
                     if ( iPrefixedIRI >= 0 ) {
                         MenuSystem.dismissAll();
 
                         // If it's a good BaseIRI prefixed IRI...
                         if (bBaseIRI) {
-                            iPrefixedIRI = 0; // ...then it's otherwise not prefixed, just good
+                            iPrefixedIRI = 2; // ...then it's a BaseIRI prefixed IRI
                         }
 
                         // Is it a prefixed IRI?
@@ -190,24 +192,20 @@ class RDFTransformResourceDialog {
                                 );
                             strLabel = strIRI;
                         }
-                        // Is it a good IRI?
-                        else if ( iPrefixedIRI === 0 ) {
-                            // Does it have a Base IRI prefix?  Yes...
-                            if (bBaseIRI) {
-                                strPrefix = ""; // ...use Base IRI Prefix
-                                strNamespace = this.#dialog.getBaseIRI();
-                                strLocalPart = strIRI.substring(1);
-                                strLabel = strIRI;
-                                strIRI = strNamespace + strLocalPart;
-                            }
-                            // Otherwise, it's a Full IRI...
-                            else {
-                                // ...take it as is...
-                                strLabel = strIRI;
-                            }
+                        // or Is it an BaseIRI prefixed IRI?
+                        else if ( iPrefixedIRI === 2 ) {
+                            strPrefix = ""; // ...use Base IRI Prefix
+                            strNamespace = this.#dialog.getBaseIRI();
+                            strLocalPart = strIRI.substring(1);
+                            strLabel = strIRI;
+                            strIRI = strNamespace + strLocalPart;
                         }
-                        // Otherwise, it's a BAD IRI!
+                        // or Is it an non-prefixed IRI?
+                        else if ( iPrefixedIRI === 0 ) {
+                            strLabel = strIRI; // ...take it as is...
+                        }
                     }
+                    // Otherwise, it's a BAD IRI!
                 }
                 /* DEBUG
                 alert("DEBUG: Select New: Add Item:\n" +
@@ -228,7 +226,7 @@ class RDFTransformResourceDialog {
                 if (strLocalPart) { // ...not null or ""
                     // Is there an existing prefix matching the given prefix?
                     if ( strPrefix === "" || this.#dialog.getNamespacesManager().hasPrefix(strPrefix) ) {
-                        // ...yes (BaseIRI or already managed), add resource...
+                        // ...yes (BaseIRI or already managed namespace), add resource...
                         obj = {};
                         obj.prefix    = strPrefix;
                         obj.localPart = strLocalPart;
@@ -279,15 +277,16 @@ class RDFTransformResourceDialog {
                     }
                 }
                 // Otherwise, if there is a good IRI...
-                else if (strIRI) {
-                    obj = {};
+                else if (strIRI && strIRI !== ":") {
                     // If it has a Base IRI prefix...
-                    if (strIRI[0] === ':') {
+                    if (strIRI[0] === ':' && strIRI.length > 1) {
+                        obj = {};
                         obj.prefix    = ""; // ...use Base IRI Prefix
                         obj.localPart = strIRI.substring(1);
                     }
                     // Otherwise, it's a Full IRI...
                     else {
+                        obj = {};
                         obj.prefix    = null;   // No Prefix
                         obj.localPart = strIRI; // Full IRI
                     }
@@ -295,7 +294,23 @@ class RDFTransformResourceDialog {
 
                 // Do we have a good resource (obj) to add?
                 if (obj !== null) {
-                    // ...yes, add resource...
+                    // Add new IRI object to suggestions...
+                    var term = {};
+                    term.iri = strIRI;
+                    term.label = strIRI;
+                    //term.desc
+                    if (obj.prefix != null) {
+                        term.prefix = obj.prefix;
+                    }
+                    if (strNamespace != null) {
+                        term.namespace = strNamespace;
+                    }
+                    term.localPart = obj.localPart;
+                    //term.description
+
+                    await this.#handlerAddSuggestTerm(evt, this.#strLookForType, term);
+
+                    // Process new IRI object...
                     this.#onDone(obj);
                 }
                 else {
@@ -310,6 +325,33 @@ class RDFTransformResourceDialog {
             }
         );
         elements.rdftNewResourceIRI.focus();
+    }
+
+    async #handlerAddSuggestTerm(evt, strType, params) {
+        evt.preventDefault();
+
+        params.project = theProject.id;
+        params.type = strType;
+
+        var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/adding-term') + ' ' + params.iri);
+
+        var resData = new Promise(
+            (resolve, reject) => {
+                Refine.postCSRF(
+                    "command/rdf-transform/add-suggest-term",
+                    params,
+                    (data) => {
+                        if (data.code === "error") {
+                            alert($.i18n('rdft-vocab/error-adding-term') + ': [' + params.iri + "]");
+                        }
+                        dismissBusy();
+                        resolve(data);
+                    },
+                    "json"
+                );
+            }
+        );
+        
     }
 
     /*

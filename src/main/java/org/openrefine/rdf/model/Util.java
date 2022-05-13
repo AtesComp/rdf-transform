@@ -40,6 +40,8 @@ public class Util {
 
     static public final IRIFactory iriFactory = SetupJenaIRI.iriCheckerFactory();
 
+    static public final String WHITESPACE = "\uC2A0\\p{C}\\p{Z}";
+
     // RDF Transform JSON Strings
     // --------------------------------------------------------------------------------
     static public final String gstrProject = "project";
@@ -306,57 +308,52 @@ public class Util {
         // is a prefix for a CIRIE...
 
         int iIndex = -1;
-        if (strIRI != null) {
-            iIndex = strIRI.indexOf(":");
-             // If we have a possible prefix but not a base IRI reference (where iIndex == 0)...
-             // NOTE: The ':' could also be in the path
-            if (iIndex > 0) {
-                // Is there is a possible path...
-                //    iIndex + 1 = the length of strQuery to the ':' inclusive
-                //    Is there anything after...
-                if (strIRI.length() > iIndex + 1) {
-                    try {
-                        IRI tempIRI = Util.iriFactory.construct(strIRI);
-                        // ...it parsed as an IRI...
-                        // If a scheme is present, but a host is not present...
-                        if (tempIRI.getScheme() != null && tempIRI.getRawHost() == null) {
-                            // There is no authority component:
-                            //    i.e., there was no "schema://...", just "schema:...", so
-                            //    the authority parsing that contains the host parsing was not
-                            //    performed.  The rest may parse as a path, query, fragment.
-                            // Then, the schema is a prefix and that is enough...
-                            return iIndex; // ...accept it
-                        }
-                    }
-                    catch (Exception ex) {
-                        // ...continue: strQuery is NOT an IRI...yet...
-                    }
-                }
-                // Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
-                else if ( strIRI.matches("\\S+") ) { // ...contains no whitespace...
-                        return iIndex; // ...accept it
-                }
-            }
-            // Else, we might have a possible base IRI reference (starts with ':")...
-            // ...don't accept...
-            /*
-            else if (iIndex == 0 && strIRI.length() > 1) {
-                // Create Absolute IRI with Relative IRI using Base IRI...
-                try {
-                    Project theProject = this.getProject(this.theRequest);
-                    String strBaseIRI =
-                        RDFTransform.getRDFTransform(theProject).getBaseIRI().toString();
-                    ParsedIRI tempIRI = new ParsedIRI(strBaseIRI + strIRI.substring(1));
-                    // It parses with the Base IRI...
-                    bIsPrefixed = true; // ...accept it
-                }
-                catch (Exception ex) {
-                    // ...continue...
-                }
-            }
-            */
+        if (strIRI == null) {
+            return iIndex;
         }
-        return iIndex;
+
+        iIndex = strIRI.indexOf(":");
+        // If we have a base IRI reference (0) or no prefix (-1)...
+        if (iIndex < 1) {
+            return iIndex;
+        }
+
+        // We have a possible prefix but not a base IRI reference,
+        // since iIndex > 0...
+        // NOTE: The ':' could also be in the path
+
+        // Is there is a possible path...
+        //    iIndex + 1 = the length of strQuery to the ':' inclusive
+        //    Is there anything after...
+        if (strIRI.length() > iIndex + 1) {
+            IRI tempIRI = Util.buildIRI(strIRI, true);
+            if (tempIRI == null) { // ...a BAD IRI?...
+                return -2;
+            }
+            // ...it parsed as an IRI...
+            // If a scheme is present, but a host is not present...
+            if (tempIRI.getScheme() != null && tempIRI.getRawHost() == null) {
+                // There is no authority component:
+                //    i.e., there was no "schema://...", just "schema:...", so
+                //    the authority parsing that contains the host parsing was not
+                //    performed.  The rest may parse as a path, query, fragment.
+                // Then, the schema is a prefix and that is enough...
+                return iIndex; // ...accept it
+            }
+        }
+        // Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
+        // If the string contains no whitespace...
+        else if ( strIRI.length() == strIRI.replaceAll("[" + Util.WHITESPACE + "]", "").length() ) {
+            return iIndex; // ...accept it
+        }
+        // Otherwise, not a valid IRI string, so don't accept...
+        return -3;
+    }
+
+    static public  boolean isPrefixedIRI(String strIRI) {
+        // Check for normal prefixed IRIs (...ccc:ccc...) and
+        //      base prefix IRIs...
+        return ( Util.findPrefixIndex(strIRI) >= 0 );
     }
 
     static public String getDataType(IRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
@@ -400,7 +397,6 @@ public class Util {
         }
         catch (Exception ex) {
             if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
-            iriNew = null;
         }
 
         return iriNew;
@@ -604,7 +600,7 @@ public class Util {
         if (obj == null) {
             return null;
         }
-        return obj.toString().replaceAll("[\uC2A0\\p{C}\\p{Z}]+", "").strip();
+        return obj.toString().replaceAll("[" + Util.WHITESPACE + "]+", "").strip();
     }
 
     static public String toNodeTypeString(NodeType eNodeType) {

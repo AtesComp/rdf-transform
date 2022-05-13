@@ -9,9 +9,11 @@ class RDFTransformNamespacesManager {
     #dialog;
 
     #theNamespaces;
+    #theVocabManager;
 
     constructor(dialog) {
         this.#dialog = dialog;
+        this.#theVocabManager = new RDFTransformVocabManager(this);
 
         // Namespaces have not been initialized...
         // Initialize after construction due to await'ing on defaults when needed!
@@ -96,8 +98,7 @@ class RDFTransformNamespacesManager {
     }
 
     showManageWidget() {
-        var vocabManager = new RDFTransformVocabManager(this);
-        vocabManager.show( () => this.#renderNamespaces() );
+        this.#theVocabManager.show( () => this.#renderNamespaces() );
     }
 
     #renderNamespaces() {

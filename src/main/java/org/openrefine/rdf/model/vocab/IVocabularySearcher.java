@@ -53,6 +53,9 @@ public interface IVocabularySearcher {
     public List<SearchResultItem> searchProperties(String strProperty, String strProjectID)
                     throws IOException;
 
+    public void addTerm(RDFTNode node, String strNodeType, String strProjectID)
+                    throws IOException;
+
     public void deleteTermsOfVocabs(Set<Vocabulary> setVocabToRemove, String strProjectID)
                     throws IOException;
 

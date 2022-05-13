@@ -161,6 +161,12 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
+    public void addTerm(RDFTNode node, String strNodeType, String strProjectID)
+            throws IOException {
+        indexRDFTNode(node, strNodeType, strProjectID);
+    }
+
+    @Override
     public void deleteTermsOfVocabs(Set<Vocabulary> toRemove, String strProjectID)
             throws IOException {
         for (Vocabulary v : toRemove) {

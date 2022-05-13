@@ -89,8 +89,7 @@
                         // @ts-ignore
                         this.options.service_url +
                         // @ts-ignore
-                        this.options.service_path; // + "?" +
-                        //$.param(data, true);
+                        this.options.service_path;
 
                     var ajax_options = {
                         "url"      : url,

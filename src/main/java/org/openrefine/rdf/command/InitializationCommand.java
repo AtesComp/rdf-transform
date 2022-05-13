@@ -147,6 +147,7 @@ public class InitializationCommand extends Command {
         RefineServlet.registerCommand( this.theModule, "remove-prefix",           new NamespaceRemoveCommand() );
         RefineServlet.registerCommand( this.theModule, "suggest-namespace",       new SuggestNamespaceCommand() );
         RefineServlet.registerCommand( this.theModule, "suggest-term",            new SuggestTermCommand() );
+        RefineServlet.registerCommand( this.theModule, "add-suggest-term",        new SuggestTermAddCommand() );
         // Others:
         //   CodeResponse - Standard Response Class for Commands
         //   RDFTransformCommand - Abstract RDF Command Class

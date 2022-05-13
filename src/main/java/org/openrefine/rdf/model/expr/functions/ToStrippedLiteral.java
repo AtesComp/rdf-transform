@@ -6,6 +6,8 @@ import com.google.refine.expr.EvalError;
 import com.google.refine.grel.ControlFunctionRegistry;
 import com.google.refine.grel.Function;
 
+import org.openrefine.rdf.model.Util;
+
 /*
  * Class ToStrippedLiteral: Convert string to qualify as an RDF Literal
  *
@@ -30,7 +32,7 @@ public class ToStrippedLiteral implements Function {
         }
 
         // Replace each whitespace character with a simple space character and strip the ends...
-        strConvert = strConvert.replaceAll("[\uC2A0\\p{C}\\p{Z}]", " ").strip();
+        strConvert = strConvert.replaceAll("[" + Util.WHITESPACE + "]", " ").strip();
 
         return strConvert;
     }
