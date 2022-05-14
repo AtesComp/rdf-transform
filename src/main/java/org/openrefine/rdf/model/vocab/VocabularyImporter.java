@@ -47,7 +47,7 @@ public class VocabularyImporter {
                     "FILTER langMatches( lang(?en_definition), \"EN\" ) } " +
         "VALUES ?type { rdfs:Class owl:Class } " +
         "FILTER regex(str(?resource), \"^%s\") }"; // ..starts with given namespace
-    
+
 
     static private final String PROPERTIES_QUERY =
         VocabularyImporter.PREFIXES +
@@ -67,16 +67,14 @@ public class VocabularyImporter {
 
     private String strPrefix;
     private String strNamespace;
-    private boolean bStrictlyRDF;
-    private boolean bXMLSchema;
-    private Model modelImport;
+    private Model modelImport = null;
+
+    // Faulty Content Negotiators to Modify Processing...
+    private boolean bStrictlyRDF = false;
 
     public VocabularyImporter(String strPrefix, String strNamespace) {
         this.strPrefix = strPrefix;
         this.strNamespace = strNamespace;
-        this.bStrictlyRDF = false;
-        this.bXMLSchema = false;
-        this.modelImport = null;
     }
 
     public void importVocabulary(String strFetchURL, List<RDFTClass> classes, List<RDFTProperty> properties)
@@ -110,9 +108,8 @@ public class VocabularyImporter {
     {
         this.modelImport = null;
 
-        this.faultyContentNegotiation(strFetchURL); // ...set up booleans...
-        if (this.bXMLSchema) {
-            VocabularyImporter.logger.info("INFO: XMLSchema is a built-in Datatype ontology...skipping import.");
+        // Check the Namespace for process modification...
+        if ( this.faultyContentNegotiation(strFetchURL) ) {
             return;
         }
 
@@ -122,7 +119,7 @@ public class VocabularyImporter {
 
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Reading model from URL");
             if (this.bStrictlyRDF) {
-                this.modelImport.read( strFetchURL, Lang.RDFXML.getName() ); ;
+                this.modelImport.read( strFetchURL, Lang.RDFXML.getName() );
             }
             else {
                 this.modelImport.read(strFetchURL);
@@ -141,7 +138,7 @@ public class VocabularyImporter {
         String[] astrLoader = new String[6];
         astrLoader[RDFTNode.iPrefix] = this.strPrefix;
         astrLoader[RDFTNode.iNamespace] = this.strNamespace;
-        astrLoader[RDFTNode.iLocalPart] = "";    // ...empty string, not null, since we purposely
+        astrLoader[RDFTNode.iLocalPart] = "";   // ...empty string, not null, since we purposely
                                                 // need to extract the LocalPart from the IRI later
                                                 // during the Class / Property Node creation.
                                                 // A null is an error condition.
@@ -293,11 +290,45 @@ public class VocabularyImporter {
         return strLabel;
     }
 
-    private void faultyContentNegotiation(String strNamespace) {
+    /**
+     * Method faultyContentNegotiation(String strNamespace)<br />
+     * <br />
+     * Processes the given namespace {@code String} to determine if the namespace
+     * needs adjustments for retrieval or to stop processing altogether.<br />
+     * <br />
+     * The result is {@code true} if and only if further processing must stop. This
+     * generally indicates that the namespace is not retrievable. The result is
+     * {@code false} to indicate further processing is allowed with possible
+     * modifications for the namespace via instance scoped {@code boolean} values.<br />
+     *
+     * @param  strNamespace
+     *         The {@code String} namespace to process
+     *
+     * @return  {@code true} if the given namespace cannot be retrieved,
+     *          {@code false} otherwise.
+     */
+    private boolean faultyContentNegotiation(String strNamespace) {
+        //
+        // Continue Processing: Set up booleans to process by later code outside this function
+        //
+
         // SKOS: We add an exceptional treatment for SKOS as their deployment does not handle an
         //       "Accept" header properly!  SKOS always returns "HTML" if the "Accept" header
         //       contains HTML regardless other more preferred options.
         this.bStrictlyRDF = strNamespace.equals("http://www.w3.org/2004/02/skos/core#");
-        this.bXMLSchema = strNamespace.equals("http://www.w3.org/2001/XMLSchema#");
+        if (this.bStrictlyRDF) {
+            return false; // ...continue
+        }
+
+        //
+        // Process Now: Set up code to process a return boolean to stop further processing
+        //
+
+        if ( strNamespace.equals("http://www.w3.org/2001/XMLSchema#") ) {
+            VocabularyImporter.logger.info("INFO: XMLSchema is a built-in Datatype ontology...skipping import.");
+            return true; // ...stop
+        }
+
+        return false; // ...continue condition
     }
 }
