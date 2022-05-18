@@ -37,6 +37,8 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 ## Issues
 ***General interaction issue with OpenRefine versions, Web Browsers, OSes, etc., not specifically code related.***
 
+**NOTE**: It is recommended that you have an active Internet connection when using the extension as it can download ontologies from specified namespaces (such as rdf, rdfs, owl and foaf). You can (re)add namespaces and specify whether to download the ontology (or not) from the namespace declaration URL. If you must run OpenRefine from an offline location, you can copy the ontologies to files in your offline space and use the "from file" feature to load the ontologies.
+
 ### OpenRefine
 As an extension, RDF Transform runs under the control of OpenRefine and its JVM. As such, the libraries included with OpenRefine override any of the same libraries included with the extension. This limits the extension to OpenRefine's version of those library functions and features.
 
