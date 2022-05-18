@@ -136,9 +136,13 @@ class RDFExpressionPreviewDialog {
     #level;
     #previewWidget;
 
-    #iBaseFrameHeight;
-    #iDiffFrameHeight;
-    #iLastDiffFrameHeight;
+    #iLastFrameHeight;
+    #iLastFrameWidth;
+
+    #iLastEditorHeight;
+    #iLastEditorWidth;
+
+    #bFrameNotShown;
 
     static #generateWidgetHTMLforGREL() {
         //
@@ -203,8 +207,10 @@ class RDFExpressionPreviewDialog {
 
         this.#frame
             .append(header, body, footer)
-            .css({ "minWidth" : "700px" })
+            .css({ "min-width" : "700px" })
             .resizable();
+
+        this.#bFrameNotShown = true;
     }
 
     preview(strColumnName, iRowLimit, strExpression, bIsIndex) {
@@ -213,8 +219,6 @@ class RDFExpressionPreviewDialog {
         this.#elements.or_dialog_help.text( $.i18n('rdft-dialog/tab-help') );
 
         $( "#expression-preview-tabs", this.#frame ).tabs();
-
-        this.#level = DialogSystem.showDialog(this.#frame);
 
         // Substitute our widget for OpenRefine's ExpressionPreviewDialog widget...
         this.#previewWidget =
@@ -225,26 +229,145 @@ class RDFExpressionPreviewDialog {
             );
         this.#previewWidget.preview();
 
-        const iFrameHeight = this.#frame.height();
-
-        this.#frame.css({ "minHeight" : "" + iFrameHeight + "px" });
-        this.#iBaseFrameHeight = iFrameHeight;
-        this.#iLastDiffFrameHeight = iFrameHeight;
-        this.#iDiffFrameHeight = 0;
+        this.#level = DialogSystem.showDialog(this.#frame);
 
         // Hook up resize...
         this.#frame
             .on("resize",
-                (evt, ui) => {
-                    this.#iDiffFrameHeight = ui.size.height - this.#iBaseFrameHeight;
+                () => {
+                    // Diff = Current - Last
+                    const iDiffFrameHeight = this.#frame.height() - this.#iLastFrameHeight;
+                    const iDiffFrameWidth = this.#frame.width() - this.#iLastFrameWidth;
                     // If there is a detected change...
-                    if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
-                        // ...update the tabs...
-                        this.#previewWidget.resize(this.#iDiffFrameHeight);
-                        this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
+                    if ( iDiffFrameHeight != 0 || iDiffFrameWidth != 0 )
+                    {
+                        // ...update the editor width...
+                        this.#resizeEditor(0, iDiffFrameWidth)
+                        // ...update the tabs height...
+                        this.#previewWidget.resizeTabs(iDiffFrameHeight, 0);
+
+                        this.#iLastFrameHeight = this.#frame.height();
+                        this.#iLastFrameWidth = this.#frame.width();
                     }
                 } 
             );
+
+        const resizeObserver =
+            new ResizeObserver(
+                () => {
+                    // On first call...
+                    if (this.#bFrameNotShown) {
+                        this.#iLastEditorHeight = this.#elements.expressionPreviewTextarea.height();
+                        this.#iLastEditorWidth = this.#elements.expressionPreviewTextarea.width();
+                        this.#elements.expressionPreviewTextarea.css(
+                            { "min-height" : "" + this.#iLastEditorHeight + "px",
+                              "min-width"  : "" + this.#iLastEditorWidth +  "px" }
+                        );
+                        this.#previewWidget.setTabDimensions();
+                        this.#bFrameNotShown = false;
+                        return;
+                    }
+                    // Diff = Current - Last
+                    const iDiffEditorHeight =
+                        this.#elements.expressionPreviewTextarea.height() - this.#iLastEditorHeight;
+                    const iDiffEditorWidth =
+                        this.#elements.expressionPreviewTextarea.width() - this.#iLastEditorWidth;
+                    // If there is a detected change...
+                    if ( iDiffEditorHeight != 0 || iDiffEditorWidth != 0 )
+                    {
+                        // ...update the frame...
+                        this.#resizeFrame(iDiffEditorHeight, iDiffEditorWidth)
+                        // No need to update the tabs--they resize with frame.
+
+                        this.#iLastEditorHeight = this.#elements.expressionPreviewTextarea.height();
+                        this.#iLastEditorWidth = this.#elements.expressionPreviewTextarea.width();
+                    }
+                }
+            );
+
+        this.#iLastFrameHeight = this.#frame.height();
+        this.#iLastFrameWidth = this.#frame.width();
+        this.#frame.css(
+            { "min-height" : "" + this.#iLastFrameHeight + "px",
+              "min-width"  : "" + this.#iLastFrameWidth +  "px" }
+        );
+
+        this.#iLastEditorHeight = this.#elements.expressionPreviewTextarea.height();
+        this.#iLastEditorWidth = this.#elements.expressionPreviewTextarea.width();
+        this.#elements.expressionPreviewTextarea.css(
+            { "min-height" : "" + this.#iLastEditorHeight + "px",
+              "min-width"  : "" + this.#iLastEditorWidth +  "px" }
+        );
+
+        this.#previewWidget.setTabDimensions();
+        resizeObserver.observe( this.#elements.expressionPreviewTextarea[0] );
+    }
+
+    //
+    // Method resizeFrame(): Resize the Frame with a Editor resize...
+    //
+    #resizeFrame(iDiffHeight, iDiffWidth) {
+        var iDiffTabH = 0;
+        if (iDiffHeight != 0) {
+            var iMinFrameHeight = parseInt( this.#frame.css('min-height'), 10);
+            var iNewH = this.#frame.height() + iDiffHeight;
+            if (iNewH < iMinFrameHeight ) {
+                if (this.#frame.height() == iMinFrameHeight) {
+                    iDiffTabH = -iDiffHeight;
+                }
+                else {
+                    iDiffTabH = iMinFrameHeight - iNewH;
+                }
+                iNewH = iMinFrameHeight;
+            }
+            this.#frame.height(iNewH);
+            this.#iLastFrameHeight = iNewH;
+            var iBufferHeight =
+                this.#elements.expressionPreviewPreviewContainer.height() -
+                parseInt( this.#elements.expressionPreviewPreviewContainer.css('min-height'), 10);
+            iMinFrameHeight = iNewH - iBufferHeight;
+            this.#frame.css(
+                { "min-height" : "" + iMinFrameHeight + "px" }
+            );
+        }
+
+        var iDiffTabW = 0;
+        if (iDiffWidth != 0) {
+            var iMinFrameWidth = parseInt( this.#frame.css('min-width'), 10);
+            var iNewW = this.#frame.width() + iDiffWidth;
+            if (iNewW < iMinFrameWidth) {
+                if (this.#frame.width() == iMinFrameWidth) {
+                    iDiffTabW = -iDiffWidth;
+                }
+                else {
+                    iDiffTabW = iMinFrameWidth - iNewW;
+                }
+                iNewW = iMinFrameWidth;
+            }
+            this.#frame.width(iNewW);
+            this.#iLastFrameWidth = iNewW;
+        }
+
+        if (iDiffTabH != 0 || iDiffTabW != 0) {
+            this.#previewWidget.resizeTabs(iDiffTabH, iDiffTabW);
+        }
+    }
+
+    //
+    // Method resizeEditor(): Resize the Editor with a Frame resize...
+    //
+    #resizeEditor(iDiffHeight, iDiffWidth) {
+        if (iDiffHeight != 0) {
+            const iNewH = this.#elements.expressionPreviewTextarea.height() + iDiffHeight;
+            this.#elements.expressionPreviewTextarea.height(iNewH);
+            this.#iLastEditorHeight = this.#elements.expressionPreviewTextarea.height();
+        }
+
+        if (iDiffWidth != 0) {
+            const iNewW = this.#elements.expressionPreviewTextarea.width() + iDiffWidth;
+            this.#elements.expressionPreviewTextarea.width(iNewW);
+            this.#iLastEditorWidth = this.#elements.expressionPreviewTextarea.width();
+        }
     }
 }
 
@@ -327,7 +450,10 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
     #aiRowIndices;
     #astrRowValues;
 
-    #iBaseTabHeight;
+    #iLastTabHeight;
+    #iLastTabWidth;
+    #iMinTabHeight;
+    #iMinTabWidth;
 
     //
     // Methods
@@ -393,19 +519,53 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         this.update();
         this._renderExpressionHistoryTab();
         this._renderHelpTab();
+    }
 
-        this.#iBaseTabHeight = this._elmts.expressionPreviewPreviewContainer.height();
-        const objMinHeight = { "minHeight" : "" + this.#iBaseTabHeight + "px" };
+    setTabDimensions() {
+        this.#iMinTabHeight = this._elmts.expressionPreviewPreviewContainer.height();
+        this.#iMinTabWidth = this._elmts.expressionPreviewPreviewContainer.width();
+
+        const strHeight = "" + this.#iMinTabHeight + "px";
+        const objMinHeight = { "min-height" : strHeight };
         this._elmts.expressionPreviewPreviewContainer.css(objMinHeight);
         this._elmts.expressionPreviewHistoryContainer.css(objMinHeight);
         this._elmts.expressionPreviewHelpTabBody.css(objMinHeight);
+
+        const strWidth = "" + this.#iMinTabWidth + "px";
+        const objMinWidth = { "min-width" : strWidth };
+        this._elmts.expressionPreviewPreviewContainer.css(objMinWidth);
+        this._elmts.expressionPreviewHistoryContainer.css(objMinWidth);
+        this._elmts.expressionPreviewHelpTabBody.css(objMinWidth);
+
+        this.#iLastTabHeight = this.#iMinTabHeight;
+        this.#iLastTabWidth = this.#iMinTabWidth;
     }
 
-    resize(iDiffHeight) {
-        const iDiff = this.#iBaseTabHeight + iDiffHeight;
-        this._elmts.expressionPreviewPreviewContainer.height(iDiff);
-        this._elmts.expressionPreviewHistoryContainer.height(iDiff);
-        this._elmts.expressionPreviewHelpTabBody.height(iDiff);
+    //
+    // Method resize(): Resize the Tabs with a Frame resize...
+    //
+    resizeTabs(iDiffHeight, iDiffWidth) {
+        if (iDiffHeight != 0) {
+            var iNewH = this.#iLastTabHeight + iDiffHeight;
+            if (iNewH < this.#iMinTabHeight) {
+                iNewH = this.#iMinTabHeight;
+            }
+            this._elmts.expressionPreviewPreviewContainer.height(iNewH);
+            this._elmts.expressionPreviewHistoryContainer.height(iNewH);
+            this._elmts.expressionPreviewHelpTabBody.height(iNewH);
+            this.#iLastTabHeight = iNewH;
+        }
+
+        if (iDiffWidth != 0) {
+            var iNewW = this.#iLastTabWidth + iDiffWidth;
+            if (iNewW < this.#iMinTabWidth) {
+                iNewW = this.#iMinTabWidth;
+            }
+            this._elmts.expressionPreviewPreviewContainer.width(iNewW);
+            this._elmts.expressionPreviewHistoryContainer.width(iNewW);
+            this._elmts.expressionPreviewHelpTabBody.width(iNewW);
+            this.#iLastTabWidth = iNewW;
+        }
     }
 
     //

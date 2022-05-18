@@ -503,7 +503,7 @@ class RDFTransformDialog {
 
         // Set Description box minimum height to its initial height...
         const iDescHeight = this.#elements.rdftDescription.height();
-        this.#elements.rdftDescription.css({ "minHeight" : "" + iDescHeight + "px" });
+        this.#elements.rdftDescription.css({ "min-height" : "" + iDescHeight + "px" });
 
         // Get the base pane heights as the initial heights...
         this.#iBaseTransformPaneHeight = this.#elements.rdftTransformData.height();

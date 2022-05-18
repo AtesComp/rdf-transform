@@ -53,9 +53,9 @@ class RDFTransformUINodeConfig {
         var frame = DialogSystem.createDialog();
 
         frame.css(
-            {   minWidth: "500px",
-                width: "500px",
-                minHeight: "300px"
+            {   "min-width" : "500px",
+                "width" : "500px",
+                "min-height" : "300px"
             }
         );
 
