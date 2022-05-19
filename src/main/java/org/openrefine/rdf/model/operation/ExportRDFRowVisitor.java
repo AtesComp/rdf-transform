@@ -45,6 +45,10 @@ public class ExportRDFRowVisitor extends RDFRowVisitor {
                 //
                 if ( theModel.size() > Util.getExportLimit() ) {
                     this.flushStatements();
+                    if ( this.isNoWriter() && bLimitWarning) {
+                        this.bLimitWarning = false;
+                        ExportRDFRowVisitor.logger.warn("WARNING:   Limit Reached: Memory may soon become exhausted!");
+                    }
                 }
             }
 

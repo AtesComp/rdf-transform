@@ -19,6 +19,7 @@ import com.google.refine.commands.Command;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
@@ -96,7 +97,7 @@ public class PreviewRDFCommand extends Command {
             // Setup writer for output...
             ByteArrayOutputStream osOut = new ByteArrayOutputStream();
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   BAOS Setup.");
-
+/*
             StreamRDF theWriter = null;
             // TODO: Reported Jena Bug:
             //      The Jena code says getWriterStream() will return null if the RDFFormat
@@ -117,10 +118,10 @@ public class PreviewRDFCommand extends Command {
                 return;
             }
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
-
+*/
             // Start writing...
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Starting RDF Processing...");
-            theWriter.start();
+//            theWriter.start();
 
             //
             // Process sample records/rows of data for statements...
@@ -128,16 +129,20 @@ public class PreviewRDFCommand extends Command {
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Record Visitor...");
-                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
+//                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
+                theVisitor = new PreviewRDFRecordVisitor(theTransform, null);
             }
             else {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Row Visitor...");
-                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
+//                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
+                theVisitor = new PreviewRDFRowVisitor(theTransform, null);
             }
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the model...");
             theVisitor.buildModel(theProject, theEngine);
 
-            theWriter.finish();
+//            theWriter.finish();
+            RDFDataMgr.write(osOut, theVisitor.getModel(), RDFFormat.TURTLE);
+            theVisitor.getModel().close();
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
             // ...end writing
 

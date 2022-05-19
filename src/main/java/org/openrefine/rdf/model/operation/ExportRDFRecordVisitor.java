@@ -46,6 +46,10 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
                 //
                 if ( theModel.size() > Util.getExportLimit() ) {
                     this.flushStatements();
+                    if ( this.isNoWriter() && bLimitWarning) {
+                        this.bLimitWarning = false;
+                        ExportRDFRecordVisitor.logger.warn("WARNING:   Limit Reached: Memory may soon become exhausted!");
+                    }
                 }
             }
 

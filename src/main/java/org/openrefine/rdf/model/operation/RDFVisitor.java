@@ -25,6 +25,7 @@ public abstract class RDFVisitor {
     private final RDFTransform theTransform;
     private final StreamRDF theWriter;
     protected final Model theModel;
+    protected boolean bLimitWarning = true;
 
     public RDFVisitor(RDFTransform theTransform, StreamRDF theWriter) {
         this.theTransform = theTransform;
@@ -78,10 +79,17 @@ public abstract class RDFVisitor {
         return this.theModel;
     }
 
+    public boolean isNoWriter() {
+        return (this.theWriter == null);
+    }
+
     abstract public void buildModel(Project theProject, Engine theEngine);
 
     public void start(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("Starting Visitation...");
+        if ( this.theWriter == null ) {
+            return;
+        }
 
         // Export namespace information previously populated in the model...
         try {
@@ -102,6 +110,9 @@ public abstract class RDFVisitor {
 
     public void end(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("...Ending Visitation");
+        if ( this.theWriter == null ) {
+            return;
+        }
 
         try {
             this.theModel.close();
@@ -114,6 +125,9 @@ public abstract class RDFVisitor {
     }
 
     protected void flushStatements() {
+        if ( this.theWriter == null ) {
+            return;
+        }
         // TODO: Code for future context upgrade (quads)
 
         // Export statements...
