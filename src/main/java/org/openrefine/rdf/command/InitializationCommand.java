@@ -22,6 +22,7 @@ import com.google.refine.preference.PreferenceStore;
 
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
+import org.openrefine.rdf.model.exporter.RDFPrettyExporter;
 import org.openrefine.rdf.model.exporter.RDFStreamExporter;
 import org.openrefine.rdf.model.expr.RDFTransformBinder;
 import org.openrefine.rdf.model.expr.functions.ToIRIString;
@@ -182,67 +183,59 @@ public class InitializationCommand extends Command {
          *  Server-side Exporters...
          */
 
-        String strExp = "";
+        String strExp;
 
         //
         // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
         //
-        //strExp = "RDF/XML (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.RDFXML, strExp) );
-        //strExp = "Turtle (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
-        //strExp = "Turtle* (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
-        //strExp = "N3 (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
-        //strExp = "N3* (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TURTLE, strExp) );
-        //strExp = "TriG (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TRIG, strExp) );
-        //strExp = "TriG* (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.TRIG, strExp) );
-        //strExp = "JSONLD (Pretty)"; // Who would want ugly FLAT?
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.JSONLD, strExp) );
+        strExp = "RDF/XML (Pretty)";
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFXML, strExp) );
+        strExp = "Turtle (Pretty)";
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        strExp = "Turtle* (Pretty)"; // Same as Turtle
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        strExp = "N3 (Pretty)"; // Same as Turtle
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        strExp = "N3* (Pretty)"; // Same as Turtle
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        strExp = "TriG (Pretty)";
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG, strExp) );
+        strExp = "TriG* (Pretty)"; // Same as TriG
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG, strExp) );
+        strExp = "JSONLD (Pretty)"; // Who would want ugly FLAT?
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.JSONLD, strExp) );
         //strExp = "NDJSONLD (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
-        //strExp = "RDF/JSON (Pretty)";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.RDFJSON, strExp) );
-
-        //
-        // TODO: Are these even doable???
-        //
-        //strExp = "RDFa";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFA, strExp) );
-        //strExp = "SHACLC";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.SHACLC, strExp) );
+        //ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
+        strExp = "RDF/JSON (Pretty)";
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFJSON, strExp) );
 
         //
         // BLOCKS PRINTERS: per Subject (Stream)
         //
         strExp = "Turtle (Blocks)";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        //strExp = "Turtle* (Blocks)"; // Same as Turtle
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        //strExp = "N3 (Blocks)"; // Same as Turtle
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        //strExp = "N3* (Blocks)"; // Same as Turtle
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        strExp = "Turtle* (Blocks)"; // Same as Turtle
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        strExp = "N3 (Blocks)"; // Same as Turtle
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
+        strExp = "N3* (Blocks)"; // Same as Turtle
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
         strExp = "TriG (Blocks)";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
-        //strExp = "TriG* (Blocks)"; // Same as TriG
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
+        strExp = "TriG* (Blocks)"; // Same as TriG
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
 
         //
         // LINE PRINTERS: triple, quad (Stream)
         //
         strExp = "NTriples (Flat)";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
-        //strExp = "NTriples* (Flat)"; // Same as NTriples
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+        strExp = "NTriples* (Flat)"; // Same as NTriples
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
         strExp = "NQuads (Flat)";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
-        //strExp = "NQuads* (Flat)"; // Quads*...Seriously? SAME AS NQuads
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+        strExp = "NQuads* (Flat)"; // Quads*...Seriously? SAME AS NQuads
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
         strExp = "TriX";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
         strExp = "RDFNull (Test)"; // ...the bit bucket
@@ -256,7 +249,7 @@ public class InitializationCommand extends Command {
         //      OpenRefine 3.5.2 load an older Jena ARQ version that overrides the local
         //      extension's newer library jar.  Bummer.
         //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
-        // NOTE: Tried this but can't control RDFExporterMenuBar in rdf-transform-menubar-extension.js
+        // NOTE: Tried the following but can't control RDFExporterMenuBar in rdf-transform-menubar-extension.js
         //      as it's client side...without using some major voodoo...
         //try {
         //    RDFFormat.class.getDeclaredField("RDF_PROTO"); // ...throws exception if not present
@@ -271,6 +264,14 @@ public class InitializationCommand extends Command {
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(BINARY, strExp) ); // RDF4J
         //strExp = "HDT";
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(HDT, strExp) );
+
+        //
+        // TODO: Special RDFExporters - Are these even doable???
+        //
+        //strExp = "RDFa";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFA, strExp) );
+        //strExp = "SHACLC";
+        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.SHACLC, strExp) );
 
         /*
          *  Server-side Overlay Models - Attach an RDFTransform object to the project...

@@ -97,6 +97,8 @@
     "rdft-menu/err-message": "Error message",
     "rdft-menu/err-uploading": "Error loading triples",
     "rdft-menu/error": "Error",
+    "rdft-menu/export-pretty": "Pretty Exports",
+    "rdft-menu/export-stream": "Stream Exports",
     "rdft-menu/fetching": "Fetching",
     "rdft-menu/not-added": "Not added",
     "rdft-menu/not-cached": "Not cached",

@@ -17,10 +17,8 @@ import com.google.refine.exporters.WriterExporter;
 import com.google.refine.model.Project;
 
 import org.apache.commons.io.output.WriterOutputStream;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.StreamRDFWriterFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

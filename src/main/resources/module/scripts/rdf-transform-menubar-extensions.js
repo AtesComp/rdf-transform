@@ -99,135 +99,148 @@ ExporterManager.MenuItems.push(
             //
             // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
             //
-            //{   "id"    : "exportRDFXML_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-xml-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("RDF/XML (Pretty)", "rdf")
-            //},
-            //{   "id"    : "exportRDFTurtle_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-turtle-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("Turtle (Pretty)", "ttl")
-            //},
-            //{   "id"    : "exportRDFTurtleStar_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-turtle-star-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("Turtle* (Pretty)", "ttls")
-            //},
-            //{   "id"    : "exportRDFNotation3_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-n3-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("N3 (Pretty)", "n3")
-            //},
-            //{   "id"    : "exportRDFNotation3Star_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-n3-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("N3* (Pretty)", "n3")
-            //},
-            //{   "id"    : "exportRDFTriG_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-trig-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("TriG (Pretty)", "trig")
-            //},
-            //{   "id"    : "exportRDFTriGStar_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-trig-star-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("TriG* (Pretty)", "trigs")
-            //},
-            //{   "id"    : "exportRDFJSONLD_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-jsonld-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("JSONLD (Pretty)", "jsonld")
-            //},
-            //{   "id"    : "exportRDFNDJSONLD_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-ndjsonld-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("NDJSONLD (Pretty)", "ndjsonld")
-            //},
-            //{   "id"    : "exportRDFJSON_Pretty",
-            //    "label" : $.i18n("rdft-menu/rdf-json-pretty"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("RDF/JSON (Pretty)", "rj")
-            //},
+            {   "id"        : "rdf-transform/pretty",
+                "label"     : $.i18n('rdft-menu/export-pretty'),
+                "submenu"   : [
+                    {   "id"    : "rdf-transform/pretty/exportRDFXML",
+                        "label" : $.i18n("rdft-menu/rdf-xml-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("RDF/XML (Pretty)", "rdf")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFTurtle",
+                        "label" : $.i18n("rdft-menu/rdf-turtle-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("Turtle (Pretty)", "ttl")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFTurtleStar",
+                        "label" : $.i18n("rdft-menu/rdf-turtle-star-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("Turtle* (Pretty)", "ttls")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFNotation3",
+                        "label" : $.i18n("rdft-menu/rdf-n3-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("N3 (Pretty)", "n3")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFNotation3Star",
+                        "label" : $.i18n("rdft-menu/rdf-n3-star-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("N3* (Pretty)", "n3s")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFTriG",
+                        "label" : $.i18n("rdft-menu/rdf-trig-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("TriG (Pretty)", "trig")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFTriGStar",
+                        "label" : $.i18n("rdft-menu/rdf-trig-star-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("TriG* (Pretty)", "trigs")
+                    },
+                    {   "id"    : "rdf-transform/pretty/exportRDFJSONLD",
+                        "label" : $.i18n("rdft-menu/rdf-jsonld-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("JSONLD (Pretty)", "jsonld")
+                    },
+                    //{   "id"    : "rdf-transform/pretty/exportRDFNDJSONLD",
+                    //    "label" : $.i18n("rdft-menu/rdf-ndjsonld-pretty"),
+                    //    "click" : () => RDFExporterMenuBar.exportRDF("NDJSONLD (Pretty)", "ndjsonld")
+                    //},
+                    {   "id"    : "rdf-transform/pretty/exportRDFJSON",
+                        "label" : $.i18n("rdft-menu/rdf-json-pretty"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("RDF/JSON (Pretty)", "rj")
+                    }
+                ]
+            },
 
             //
-            // TODO: Are these even doable???
+            // STREAM PRINTERS: per Subject (Stream)
             //
-            //{   "id"    : "exportRDFa",
+            {   "id"        : "rdf-transform/stream",
+                "label"     : $.i18n('rdft-menu/export-stream'),
+                "submenu"   : [
+                    //
+                    // BLOCKS PRINTERS: per Subject (Stream)
+                    //
+                    {   "id"    : "rdf-transform/stream/exportRDFTurtle",
+                        "label" : $.i18n("rdft-menu/rdf-turtle-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("Turtle (Blocks)", "ttl")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFTurtleStar",
+                        "label" : $.i18n("rdft-menu/rdf-turtle-star-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("Turtle* (Blocks)", "ttls")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFNotation3",
+                        "label" : $.i18n("rdft-menu/rdf-n3-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("N3 (Blocks)", "n3")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFNotation3Star",
+                        "label" : $.i18n("rdft-menu/rdf-n3-star-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("N3* (Blocks)", "n3s")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFTriG",
+                        "label" : $.i18n("rdft-menu/rdf-trig-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("TriG (Blocks)", "trig")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFTriGStar",
+                        "label" : $.i18n("rdft-menu/rdf-trig-star-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("TriG* (Blocks)", "trigs")
+                    },
+
+                    //
+                    // LINE PRINTERS: triple, quad (Stream)
+                    //
+                    {   "id"    : "rdf-transform/stream/exportRDFNTriples",
+                        "label" : $.i18n("rdft-menu/rdf-n-triples-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("NTriples (Flat)", "nt")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFNTriplesStar",
+                        "label" : $.i18n("rdft-menu/rdf-n-triples-star-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("NTriples* (Flat)", "nts")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFNQuads",
+                        "label" : $.i18n("rdft-menu/rdf-nquads-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("NQuads (Flat)", "nq")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFNQuadsStar",
+                        "label" : $.i18n("rdft-menu/rdf-nquads-star-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("NQuads* (Flat)", "nqs")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFTriX",
+                        "label" : $.i18n("rdft-menu/rdf-trix-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("TriX", "xml")
+                    },
+                    {   "id"    : "rdf-transform/stream/exportRDFNull",
+                        "label" : $.i18n("rdft-menu/rdf-null-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("RDFNull (Test)", "rn")
+                    },
+
+                    //
+                    // BINARY PRINTERS: (Stream)
+                    //
+                    // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
+                    //{   "id"    : "rdf-transform/stream/exportRDFProto",
+                    //    "label" : $.i18n("rdft-menu/rdf-proto-stream"),
+                    //    "click" : () => RDFExporterMenuBar.exportRDF("RDFProtoBuf", "rp")
+                    //},
+                    {   "id"    : "rdf-transform/stream/exportRDFThrift",
+                        "label" : $.i18n("rdft-menu/rdf-thrift-stream"),
+                        "click" : () => RDFExporterMenuBar.exportRDF("RDFThrift", "rt")
+                    },
+
+                    //{   "id"    : "rdf-transform/stream/exportRDFBinaryRDF",
+                    //    "label" : $.i18n("rdft-menu/rdf-binary"),
+                    //    "click" : () => RDFExporterMenuBar.exportRDF("BinaryRDF", "brf")
+                    //},
+                    //{   "id"    : "rdf-transform/stream/exportRDFHDT",
+                    //    "label" : $.i18n("rdft-menu/rdf-hdt"),
+                    //    "click" : () => RDFExporterMenuBar.exportRDF("HDT", "hdt")
+                    //},
+                ]
+            }
+
+            //
+            // TODO: Special RDFExporters - Are these even doable???
+            //
+            //{   "id"    : "rdf-transform/unknown/exportRDFa",
             //    "label" : $.i18n("rdft-menu/rdf-a"),
             //    "click" : () => RDFExporterMenuBar.exportRDF("RDFa", "xhtml")
             //},
-            //{   "id"    : "exportRDFSHACLC",
+            //{   "id"    : "rdf-transform/unknown/exportRDFSHACLC",
             //    "label" : $.i18n("rdft-menu/rdf-shaclc"),
             //    "click" : () => RDFExporterMenuBar.exportRDF("SHACLC", "sc")
-            //},
-
-            //
-            // BLOCKS PRINTERS: per Subject (Stream)
-            //
-            {   "id"    : "exportRDFTurtle_Stream",
-                "label" : $.i18n("rdft-menu/rdf-turtle-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("Turtle (Blocks)", "ttl")
-            },
-            //{   "id"    : "exportRDFTurtleStar_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-turtle-star-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("Turtle* (Blocks)", "ttls")
-            //},
-            //{   "id"    : "exportRDFNotation3_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-n3-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("N3 (Blocks)", "n3")
-            //},
-            //{   "id"    : "exportRDFNotation3Star_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-n3-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("N3* (Blocks)", "n3")
-            //},
-            {   "id"    : "exportRDFTriG_Stream",
-                "label" : $.i18n("rdft-menu/rdf-trig-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("TriG (Blocks)", "trig")
-            },
-            //{   "id"    : "exportRDFTriGStar_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-trig-star-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("TriG* (Blocks)", "trigs")
-            //},
-
-            //
-            // LINE PRINTERS: triple, quad (Stream)
-            //
-            {   "id"    : "exportRDFNTriples_Stream",
-                "label" : $.i18n("rdft-menu/rdf-n-triples-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("NTriples (Flat)", "nt")
-            },
-            //{   "id"    : "exportRDFNTriplesStar_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-n-triples-star-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("NTriples* (Flat)", "nts")
-            //},
-            {   "id"    : "exportRDFNQuads_Stream",
-                "label" : $.i18n("rdft-menu/rdf-nquads-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("NQuads (Flat)", "nq")
-            },
-            //{   "id"    : "exportRDFNQuadsStar_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-nquads-star-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("NQuads* (Flat)", "nqs")
-            //},
-            {   "id"    : "exportRDFTriX_Stream",
-                "label" : $.i18n("rdft-menu/rdf-trix-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("TriX", "xml")
-            },
-            {   "id"    : "exportRDFNull_Stream",
-                "label" : $.i18n("rdft-menu/rdf-null-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("RDFNull (Test)", "rn")
-            },
-
-            //
-            // BINARY PRINTERS: (Stream)
-            //
-            // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
-            //{   "id"    : "exportRDFProto_Stream",
-            //    "label" : $.i18n("rdft-menu/rdf-proto-stream"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("RDFProtoBuf", "rp")
-            //},
-            {   "id"    : "exportRDFThrift_Stream",
-                "label" : $.i18n("rdft-menu/rdf-thrift-stream"),
-                "click" : () => RDFExporterMenuBar.exportRDF("RDFThrift", "rt")
-            },
-
-            //{   "id"    : "exportRDFBinaryRDF",
-            //    "label" : $.i18n("rdft-menu/rdf-binary"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("BinaryRDF", "brf")
-            //},
-            //{   "id"    : "exportRDFHDT",
-            //    "label" : $.i18n("rdft-menu/rdf-hdt"),
-            //    "click" : () => RDFExporterMenuBar.exportRDF("HDT", "hdt")
             //},
         ]
     }

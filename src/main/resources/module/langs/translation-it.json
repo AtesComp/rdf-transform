@@ -97,6 +97,8 @@
     "rdft-menu/err-message": "Si è verificato un errore. Messaggio d'errore",
     "rdft-menu/err-uploading": "Errore durante il caricamento delle triple",
     "rdft-menu/error": "Errore",
+    "rdft-menu/export-pretty": "Bella Esportazioni",
+    "rdft-menu/export-stream": "Flusso Esportazioni",
     "rdft-menu/fetching": "recupero",
     "rdft-menu/not-added": "non aggiunto (il servizio è già registrato)",
     "rdft-menu/not-cached": "non salvata nella cache locale",
