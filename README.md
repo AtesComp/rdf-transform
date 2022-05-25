@@ -42,13 +42,22 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 ### OpenRefine
 As an extension, RDF Transform runs under the control of OpenRefine and its JVM. As such, the libraries included with OpenRefine override any of the same libraries included with the extension. This limits the extension to OpenRefine's version of those library functions and features.
 
-### Linux
+### OSes
+See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for related information.
+
+#### Linux
 RDF Transform has been tested against OpenRefine 3.5.2 and the rolling 3.6-SNAPSHOT on a modern Debian-based OS (Ubuntu derivative) using Chrome. No system related issue were found under these conditions.
 
-### Windows
+#### Windows
 Test runs on MS Windows 10 have indicated the JVM opertate slightly different than on Linux. The MS Windows version tends to be more sensitive to certain statements.
 1. The version of Simile Butterfly that processes the limited server-side JavaScript engine can fail on unused declarative statements such as "importPackage()". If the package is not found, Windows systems may silently fail to run any following statements whereas Linux systems will continue. To mitigate against server-side JavaScript issues, all possible server-side JavaScript code has been migrated to Java.
 2. The JVM relies on OS specific services to process network connections. It may process web-based content negotiation differently on a particular OS. On Windows, if the URL does not produce the expected response, negotiation and the related response processing may lock the process for an unreasonably long time whereas Linux may fail safe and quickly. To mitigate against web content negotiation issues, a Faulty Content Negotiation processor is used identify known fault intolerant processing.  As faults become known, they are added to the processor.
+
+#### Mac
+In all instances, the MacOS versions of OpenRefine are currently bundled with Java 8 JRE. Since RDF Transform requires Java 11 to 17, the bundled Java should be overridden with:
+1. A later Java install, preferably Java 11 JDK or Java 17 JDK
+   * Java installs later than 8 do not have a separate JRE install
+2. Setting the JAVA_HOME env variable to the later Java install directory
 
 ### Reporting
 Please report any problem using RDF Transform to the code repository's [Issues](https://github.com/AtesComp/rdf-transform/issues).
