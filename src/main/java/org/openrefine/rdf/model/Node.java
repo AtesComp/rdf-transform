@@ -159,7 +159,7 @@ abstract public class Node {
             eNodeType = Util.NodeType.CONSTANT;
             bConstNode = true;
         }
-        // TODO: Not currently supported by itself.
+        // TODO: Expressions currently unsupported independently.
         //      Expressions may be embedded in the others.
         //      Is it a Value or Constant node?
         //else if ( strSource.equals(Util.gstrExpression) ) {
@@ -226,7 +226,7 @@ abstract public class Node {
                 rnodeResource = new ConstantResourceNode(strValue, strPrefix);
             }
             else if ( eNodeType == Util.NodeType.EXPRESSION ) {
-                // TODO: Currently unsupported
+                // TODO: Expressions currently unsupported independently
             }
         }
         else if ( strType.equals(Util.gstrBNode) ) { // Variable
@@ -319,7 +319,7 @@ abstract public class Node {
             lnodeLiteral = new ConstantLiteralNode(strValue, nodeDatatype, strLanguageCode);
         }
         else if ( eNodeType == Util.NodeType.EXPRESSION ) {
-            // TODO: Currently unsupported - what is an expression? Value or Constant?
+            // TODO: Expressions currently unsupported independently - what is an expression? Value or Constant?
         }
 
         return lnodeLiteral;

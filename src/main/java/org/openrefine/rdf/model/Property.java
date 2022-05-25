@@ -134,7 +134,7 @@ public class Property {
                 eNodeType = Util.NodeType.CONSTANT;
                 bConstNode = true;
             }
-            // TODO: Not currently supported by itself.
+            // TODO: Expressions currently unsupported independently.
             //      Expressions may be embedded in the others.
             //      Is it a Value or Constant node?
             //else if ( strSource.equals(Util.gstrExpression) ) {
@@ -180,7 +180,7 @@ public class Property {
                 rnodeResource = new ConstantResourceNode(strValue, strPrefix);
             }
             //else if ( bIsExpression ) {
-            //    // TODO: Currently unsupported
+            //    // TODO: Expressions currently unsupported independently
             //}
             if (rnodeResource == null) {
                 Property.logger.error("ERROR: Bad Property: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
