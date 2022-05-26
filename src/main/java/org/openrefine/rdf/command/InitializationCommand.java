@@ -58,6 +58,8 @@ public class InitializationCommand extends Command {
     public InitializationCommand(ButterflyModule theModule) {
         super();
         this.theModule = theModule;
+        //String strJVMVersion = System.getProperty("java.version");
+        //InitializationCommand.logger.info("Current Java VM Version: " + strJVMVersion);
         this.initialize();
     }
 

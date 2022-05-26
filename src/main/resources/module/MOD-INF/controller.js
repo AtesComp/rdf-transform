@@ -8,7 +8,7 @@
 //   processors may not be present in this implementation.
 //
 
-//var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
+var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 
 //var RefineBase = Packages.com.google.refine;
 var RDFTCmd = Packages.org.openrefine.rdf.command;
@@ -19,8 +19,23 @@ var RDFTCmd = Packages.org.openrefine.rdf.command;
  *      The init() function is called by OpenRefine's Simile Butterfly Server for each extension.
  */
 function init() {
+    //
+    // Get and test Java VM for an RDF Transform compliant version
+    //
+    var strJVMVersion = Packages.java.lang.System.getProperty("java.version");
+    logger.info('Current Java VM Version: ' + strJVMVersion);
+    if (strJVMVersion < "11.0") {
+        logger.error('ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!');
+        logger.error('       Install a Java JDK from version 11 to 17 and use it for OpenRefine by');
+        logger.error('       setting your JAVA_HOME envirenment variable to point to its Java');
+        logger.error('       directory.');
+        logger.error('       Ending RDF Transform load...');
+        return;
+    }
+
     /*
-     * Fool Butterfly: Make the extension's Initializer do all the heavy lifting instead of the
+     * Fool Butterfly:
+     *      Make the extension's Initializer do all the heavy lifting instead of the
      *      limited server side JavaScript processor for "controller.js".
      *      NOTE TO SELF: Doh, I should have seen this a long, long, LONG time ago.
      *
