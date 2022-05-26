@@ -43,7 +43,7 @@
         <!--
              RDF Transform Dependent
         -->
-        <lucene.version>8.10.0</lucene.version>
+        <lucene.version>8.11.1</lucene.version>
 
     </properties>
 
