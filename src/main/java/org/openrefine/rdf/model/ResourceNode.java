@@ -210,18 +210,18 @@ abstract public class ResourceNode extends Node {
         // Transition from Record to Row processing...
         //
         if ( this.theRec.isRecordPerRow() ) {
-            List<RDFNode> listResourcesAll = new ArrayList<RDFNode>();
+            List<RDFNode> listResources = new ArrayList<RDFNode>();
             while ( this.theRec.rowNext() ) {
                 this.createRowResources(); // ...Row only
                 if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
-                    this.createResourceStatements(); // ...relies on this.listResources iteration
-                    listResourcesAll.addAll(this.listNodes);
+                    this.createResourceStatements();
+                    listResources.addAll(this.listNodes);
                 }
             }
-            if ( listResourcesAll.isEmpty() ) {
-                listResourcesAll = null;
+            if ( listResources.isEmpty() ) {
+                listResources = null;
             }
-            this.listNodes = listResourcesAll;
+            this.listNodes = listResources;
         }
 
         //
@@ -229,20 +229,21 @@ abstract public class ResourceNode extends Node {
         //
         else {
             this.createResources(); // ...Record or Row
-            if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
-                this.createResourceStatements();
+            if ( this.listNodes == null || this.listNodes.isEmpty() ) {
+                this.listNodes = null;
             }
             else {
-                this.listNodes = null;
+                this.createResourceStatements();
             }
         }
     }
 
     /*
-     *  Method createResource() for Resource Node types
+     *  Method createResources() for Resource Node types
      *
-     *  Return: List<Value>
-     *    Returns the Resources as generic Values since these are "object" elements in
+     *  Return: void
+     * 
+     *  Stores the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
     protected void createResources() {
@@ -279,6 +280,7 @@ abstract public class ResourceNode extends Node {
      */
     protected void createRecordResources() {
         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createRecordResources...");
+
         List<RDFNode> listResources = new ArrayList<RDFNode>();
         while ( this.theRec.rowNext() ) {
             this.createRowResources();
@@ -320,7 +322,7 @@ abstract public class ResourceNode extends Node {
      */
     private void createTypeStatements() {
         if ( Util.isDebugMode() ) {
-            String strPropertyCount = "DEBUG: Type Count: {}";
+            String strPropertyCount = "DEBUG: createTypeStatements: Type Count: {}";
             int iPropertyCount = 0;
             if (this.listTypes != null) {
                 iPropertyCount = listTypes.size();
@@ -354,25 +356,26 @@ abstract public class ResourceNode extends Node {
                 strNamespace = this.theModel.getNsPrefixURI(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
+            if ( strType == null || strType.isEmpty() ) {
+                continue;
+            }
 
-            if ( ! (strType == null || strType.isEmpty() ) ) {
-                try {
-                    // Resolve the IRI for Full IRI or CIRIE...
-                    strFullType = Util.resolveIRI(this.baseIRI, strType);
-                    if (strFullType != null) {
-                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: [" + strFullType + "]");
-                        if (strNamespace != null) {
-                            nodeType = new ResourceImpl(strNamespace, strLocalPart);
-                        }
-                        else { // ...on no prefix or missing namespace, treat as Full...
-                            nodeType = new ResourceImpl(strFullType);
-                        }
-                        listTypesForStmts.add(nodeType);
+            try {
+                // Resolve the IRI for Full IRI or CIRIE...
+                strFullType = Util.resolveIRI(this.baseIRI, strType);
+                if (strFullType != null) {
+                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type Resource: [" + strFullType + "]");
+                    if (strNamespace != null) {
+                        nodeType = new ResourceImpl(strNamespace, strLocalPart);
                     }
+                    else { // ...on no prefix or missing namespace, treat as Full...
+                        nodeType = new ResourceImpl(strFullType);
+                    }
+                    listTypesForStmts.add(nodeType);
                 }
-                catch (IRIParsingException | IllegalArgumentException ex) {
-                    logger.error( "ERROR: Bad Type IRI: " + strType, ex);
-                }
+            }
+            catch (IRIParsingException | IllegalArgumentException ex) {
+                logger.error( "ERROR: Bad Type IRI: " + strType, ex);
             }
         }
 
@@ -394,10 +397,10 @@ abstract public class ResourceNode extends Node {
      */
     private void createPropertyStatements() {
         if ( Util.isDebugMode() ) {
-            String strPropertyCount = "DEBUG: Property Count: {}";
+            String strPropertyCount = "DEBUG: createPropertyStatements: Property Count: {}";
             int iPropertyCount = 0;
             if (this.listProperties != null) {
-                iPropertyCount = listProperties.size();
+                iPropertyCount = this.listProperties.size();
             }
             ResourceNode.logger.info(strPropertyCount, iPropertyCount);
         }
@@ -449,38 +452,41 @@ abstract public class ResourceNode extends Node {
                 strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
                 strNamespace = this.theModel.getNsPrefixURI(strPrefix);
             }
+            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
+            if ( strProperty == null || strProperty.isEmpty() ) {
+                continue;
+            }
 
             //
             // OBJECTS
             //
             nodeObject = propItem.getObject();
             if (nodeObject == null) { // ...no Object?
+                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Cannot create statements: no Object for Property found.");
                 continue; // ...then, no statement can be processed
             }
             listObjects = nodeObject.createObjects(this);
             if (listObjects == null) { // ...no Object List?
+                if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Cannot create statements: no Object List created on Object for Property.");
                 continue; // ...then, no statements can be processed
             }
 
-            if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
-            if ( ! ( strProperty == null || strProperty.isEmpty() ) ) {
-                try {
-                    // Resolve Property for Full IRI and CIRIE...
-                    strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
-                    if (strFullProperty != null) {
-                        if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: [" + strFullProperty + "]");
-                        if (strNamespace != null) {
-                            theProperty = new PropertyImpl(strNamespace, strLocalName);
-                        }
-                        else { // ...on no prefix or missing namespace, treat as Full...
-                            theProperty = new PropertyImpl(strFullProperty);
-                        }
-                        listPropsForStmts.add( new PropertyObjectList(theProperty, listObjects) );
+            try {
+                // Resolve Property for Full IRI and CIRIE...
+                strFullProperty = Util.resolveIRI(this.baseIRI, strProperty);
+                if (strFullProperty != null) {
+                    if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop Resource: [" + strFullProperty + "]");
+                    if (strNamespace != null) {
+                        theProperty = new PropertyImpl(strNamespace, strLocalName);
                     }
+                    else { // ...on no prefix or missing namespace, treat as Full...
+                        theProperty = new PropertyImpl(strFullProperty);
+                    }
+                    listPropsForStmts.add( new PropertyObjectList(theProperty, listObjects) );
                 }
-                catch (IRIParsingException | IllegalArgumentException ex) {
-                    logger.error( "ERROR: Bad Property IRI: " + strProperty, ex);
-                }
+            }
+            catch (IRIParsingException | IllegalArgumentException ex) {
+                logger.error( "ERROR: Bad Property IRI: " + strProperty, ex);
             }
         }
 
@@ -510,6 +516,7 @@ abstract public class ResourceNode extends Node {
      *    Returns the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */
+    @Override
     protected List<RDFNode> createObjects(ResourceNode nodeProperty)
             throws RuntimeException {
         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createObjects...");

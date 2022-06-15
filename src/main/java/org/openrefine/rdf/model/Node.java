@@ -197,7 +197,7 @@ abstract public class Node {
         // Resource types...
         if (bResource) {
             nodeElement =
-                reconstructResourceNode(jnodeSubject, baseIRI, theNamespaces,
+                Node.reconstructResourceNode(jnodeSubject, baseIRI, theNamespaces,
                     strType, bValueNode, bConstNode, strValue, strPrefix, strSource, strExpCode,
                     bIsIndex, eNodeType);
         }
@@ -205,7 +205,7 @@ abstract public class Node {
         // Literal types...
         else if (bLiteral) {
             nodeElement =
-                reconstructLiteralNode(jnodeSubject, baseIRI, theNamespaces,
+                Node.reconstructLiteralNode(jnodeSubject, baseIRI, theNamespaces,
                     strType, jnodeValueType, bValueNode, bConstNode, strValue, strExpCode,
                     bIsIndex, eNodeType);
         }

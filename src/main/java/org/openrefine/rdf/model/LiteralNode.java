@@ -58,7 +58,6 @@ abstract public class LiteralNode extends Node {
         if ( nodeProperty.theRec.isRecordMode() ) { // ...property is Record based,
             // ...set to Row Mode and process on current row as set by rowNext()...
             this.theRec.setMode(nodeProperty, true);
-            this.createRecordLiterals();
         }
         //
         // Row Mode...
@@ -66,14 +65,89 @@ abstract public class LiteralNode extends Node {
         else {
             // ...process on current row as set by rowNext()...
             this.theRec.setMode(nodeProperty);
-            this.createRowLiterals();
         }
 
+        this.createStatementsWorker();
         this.theRec.clear();
 
         // Return the collected resources from the statement processing as Objects
         // to the given Property...
         return this.listNodes;
+    }
+
+    /*
+     *  Method createStatementsWorker() for Literal Node types
+     *
+     *  Return: void
+     *
+     *  Stores the Literal as generic Values since these are "object" elements in
+     *    ( source, predicate, object ) triples and need to be compatible with resources.
+     */
+    private void createStatementsWorker() {
+        if (Util.isDebugMode()) logger.info("DEBUG: createStatementsWorker...");
+
+        //
+        // Transition from Record to Row processing...
+        //
+        if ( this.theRec.isRecordPerRow() ) {
+            List<RDFNode> listLiteralsAll = new ArrayList<RDFNode>();
+            while ( this.theRec.rowNext() ) {
+                this.createRowLiterals(); // ...Row only
+                if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
+                    listLiteralsAll.addAll(this.listNodes);
+                }
+            }
+            if ( listLiteralsAll.isEmpty() ) {
+                listLiteralsAll = null;
+            }
+            this.listNodes = listLiteralsAll;
+        }
+
+        //
+        // Standard Record or Row processing...
+        //
+        else {
+            this.createLiterals(); // ...Record or Row
+            if ( this.listNodes == null || this.listNodes.isEmpty() ) {
+                this.listNodes = null;
+            }
+        }
+    }
+
+    /*
+     *  Method createLiterals() for Literal Node types
+     *
+     *  Return: void
+     * 
+     *  Stores the Literals as generic Values since these are "object" elements in
+     *    ( source, predicate, object ) triples and need to be compatible with resources.
+     */
+    protected void createLiterals() {
+        if (Util.isDebugMode()) logger.info("DEBUG: createLiterals...");
+
+        // TODO: Create process for Sub-Records
+
+        //
+        // Record Mode
+        //
+        if ( this.theRec.isRecordMode() ) {
+            // If a column node, the node should iterate all records in the Record group...
+            if ( ! this.bIsIndex ) {
+                this.createRecordLiterals();
+            }
+            // Otherwise, we only need to get a single "Record Number" literal for the Record group...
+            else {
+                this.theRec.rowNext(); // ...set index for first (or any) row in the Record
+                this.createRowLiterals(); // ...get the one resource
+                this.theRec.rowReset(); // ...reset for any other row run on the Record
+            }
+        }
+        //
+        // Row Mode
+        //
+        else {
+            this.createRowLiterals();
+        }
     }
 
     /*
@@ -86,7 +160,7 @@ abstract public class LiteralNode extends Node {
         List<RDFNode> listLiterals = new ArrayList<RDFNode>();
         while ( this.theRec.rowNext() ) {
             this.createRowLiterals();
-            if (this.listNodes != null) {
+            if ( this.listNodes != null ) {
                 listLiterals.addAll(this.listNodes);
             }
         }
