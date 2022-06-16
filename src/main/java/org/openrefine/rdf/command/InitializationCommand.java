@@ -41,17 +41,6 @@ import edu.mit.simile.butterfly.ButterflyModule;
 public class InitializationCommand extends Command {
     static private final Logger logger = LoggerFactory.getLogger("RDFT:InitCmd");
 
-    // Client side preferences mirror Server side...
-    static public Map<String, Object> Preferences =
-        new HashMap<String, Object>() {{
-            // Settable by OpenRefine Preferences...
-            put("Verbosity", 0);
-            put("ExportLimit", 10737418);
-            put("DebugMode", false);
-            // Settable only in RDF Transform UI, if at all...
-            put("SampleLimit", 10);
-        }};
-
     private ButterflyModule theModule;
     private ApplicationContext theContext;
 
@@ -66,12 +55,15 @@ public class InitializationCommand extends Command {
     private void initialize() {
         InitializationCommand.logger.info("Initializing RDF Transform Extension " + RDFTransform.VERSION + "...");
         InitializationCommand.logger.info("  Ext Mount Point: " + this.theModule.getMountPoint() );
+
         InitializationCommand.logger.info("  Client Side...");
         this.registerClientSide();
+
         InitializationCommand.logger.info("  Server Side...");
         this.registerServerSide();
+
         InitializationCommand.logger.info("  Preferences...");
-        this.processPreferences();
+        InitializationCommand.logger.info( Util.preferencesToString() );
 
         InitializationCommand.logger.info("...RDF Transform Extension initialized.");
     }
@@ -279,88 +271,6 @@ public class InitializationCommand extends Command {
          *  Server-side Overlay Models - Attach an RDFTransform object to the project...
          */
         Project.registerOverlayModel("RDFTransform", RDFTransform.class);
-    }
-
-    private void processPreferences() {
-        /*
-         *  Process OpenRefine Preference Store...
-         *
-         *  NOTE: Check and report on the preferences related to this extension.
-         */
-        PreferenceStore prefStore = ProjectManager.singleton.getPreferenceStore();
-        if (prefStore == null) {
-            InitializationCommand.logger.info("Preferences not yet loaded!");
-            return;
-        }
-
-        Object obj = null;
-
-        // Verbosity...
-        obj = prefStore.get("RDFTransform.verbose");
-        if (obj == null) {
-            obj = prefStore.get("verbose");
-        }
-        if (obj != null) {
-            String strPrefVerbosity = obj.toString();
-            int iVerbosity = 0;
-            try {
-                iVerbosity = Integer.parseInt(strPrefVerbosity);
-                InitializationCommand.logger.info("TEST: Verbosity: " + strPrefVerbosity + " " + iVerbosity);
-                InitializationCommand.Preferences.put( "Verbosity", iVerbosity );
-            }
-            catch ( NumberFormatException ex ) {
-                // ...continue...
-            }
-        }
-
-        // Export Limit...
-        obj = prefStore.get("RDFTransform.exportLimit");
-        if (obj != null) {
-            String strPrefExportLimit = obj.toString();
-            int iExportLimit = 0;
-            try {
-                iExportLimit = Integer.parseInt(strPrefExportLimit);
-                InitializationCommand.logger.info("TEST: ExportLimit: " + strPrefExportLimit + " " + iExportLimit);
-
-                InitializationCommand.Preferences.put( "ExportLimit", iExportLimit );
-            }
-            catch ( NumberFormatException ex ) {
-                // ...continue...
-            }
-        }
-
-        // Debug...
-        obj = prefStore.get("RDFTransform.debug");
-        if (obj == null) {
-            obj = prefStore.get("debug");
-        }
-        if (obj != null) {
-            String strPrefDebug = obj.toString();
-            boolean bDebug = Boolean.parseBoolean( strPrefDebug.toLowerCase() );
-            InitializationCommand.logger.info("TEST: DebugMode: " + strPrefDebug + " " + bDebug);
-            InitializationCommand.Preferences.put( "DebugMode", bDebug );
-        }
-
-        //
-        // Output RDFTranform Preferences...
-        //
-        // NOTE: This really sucks because this server-side JavaScript is extremely limited!!!
-        //        1. Looping structure don't exist!
-        //        2. JSON object does not exist, so no stringify()!
-        // In other words, we can't automate the processing of the RDFTransformPrefs list, but
-        // must call out each pref by key explicitly.
-        String strPrefs = "Preferences: { ";
-        String strPref;
-        strPref = "Verbosity";
-        strPrefs += strPref + " : " +
-            (int) InitializationCommand.Preferences.get(strPref) + " , ";
-        strPref = "ExportLimit";
-        strPrefs += strPref + " : " +
-            (int) InitializationCommand.Preferences.get(strPref) + " , ";
-        strPref = "DebugMode";
-        strPrefs += strPref + " : " +
-            (boolean) InitializationCommand.Preferences.get(strPref) + " }";
-        InitializationCommand.logger.info(strPrefs);
     }
 
     @Override

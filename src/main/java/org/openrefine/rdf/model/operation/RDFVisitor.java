@@ -85,8 +85,15 @@ public abstract class RDFVisitor {
 
     abstract public void buildModel(Project theProject, Engine theEngine);
 
+    /**
+     * Performs any necessary processing before visiting the selected (filtered) data rows or records. 
+     * Called by the FilteredRows or FilteredRecords accept() method in this.buildModel(Project, Engine)
+     * @param theProject
+     */
     public void start(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("Starting Visitation...");
+
+        // If we do NOT have a writer, let the calling processor control all model activity...
         if ( this.theWriter == null ) {
             return;
         }
@@ -108,12 +115,20 @@ public abstract class RDFVisitor {
         }
     }
 
+    /**
+     * Performs any necessary processing after visiting the selected (filtered) data rows or records. 
+     * Called by the FilteredRows or FilteredRecords accept() method in this.buildModel(Project, Engine)
+     * @param theProject
+     */
     public void end(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("...Ending Visitation");
+
+        // If we do NOT have a writer, let the calling processor control all model activity...
         if ( this.theWriter == null ) {
             return;
         }
 
+        // Close the model automatically...
         try {
             this.theModel.close();
         }

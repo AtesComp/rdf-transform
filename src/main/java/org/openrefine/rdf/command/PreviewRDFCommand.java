@@ -21,9 +21,9 @@ import com.google.refine.util.ParsingUtilities;
 
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-//import org.apache.jena.riot.RiotException;
-//import org.apache.jena.riot.system.StreamRDF;
-//import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFWriter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -97,31 +97,35 @@ public class PreviewRDFCommand extends Command {
             // Setup writer for output...
             ByteArrayOutputStream osOut = new ByteArrayOutputStream();
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   BAOS Setup.");
-/*
+
             StreamRDF theWriter = null;
-            // TODO: Reported Jena Bug:
-            //      The Jena code says getWriterStream() will return null if the RDFFormat
-            //      doesn't have a writer registered.  It lies!  It throws a RiotException.
-            try {
+            if ( Util.isPreviewStream() )  {
                 // TODO: Reported Jena Bug:
-                //      The following code without the end null should work but, instead,
-                //      it hangs (locks up) processing.  With the null, it succeeds.
-                //theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
-                theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS, null);
+                //      The Jena code says getWriterStream() will return null if the RDFFormat
+                //      doesn't have a writer registered.  It lies!  It throws a RiotException.
+                try {
+                    // TODO: Reported Jena Bug:
+                    //      The following code without the end null should work but, instead,
+                    //      it hangs (locks up) processing.  With the null, it succeeds.
+                    //theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
+                    theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS, null);
+                }
+                catch (RiotException ex) { // ...an error occurred setting the writer...
+                    theWriter = null;
+                }
+                if (theWriter == null) {
+                    PreviewRDFCommand.logger.warn("WARN: Cannot construct Stream-based writer. Using pretty printer.");
+                }
+                else {
+                    if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
+                }
             }
-            catch (RiotException ex) { // ...an error occurred setting the writer...
-                theWriter = null;
-            }
-            if (theWriter == null) {
-                PreviewRDFCommand.logger.info("ERROR: The writer is invalid! Cannot construct preview.");
-                PreviewRDFCommand.respondJSON(response, CodeResponse.error);
-                return;
-            }
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
-*/
+
             // Start writing...
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Starting RDF Processing...");
-//            theWriter.start();
+            if (theWriter != null) {
+                theWriter.start();
+            }
 
             //
             // Process sample records/rows of data for statements...
@@ -129,20 +133,22 @@ public class PreviewRDFCommand extends Command {
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Record Visitor...");
-//                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
-                theVisitor = new PreviewRDFRecordVisitor(theTransform, null);
+                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
             }
             else {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Row Visitor...");
-//                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
-                theVisitor = new PreviewRDFRowVisitor(theTransform, null);
+                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
             }
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the model...");
             theVisitor.buildModel(theProject, theEngine);
 
-//            theWriter.finish();
-            RDFDataMgr.write(osOut, theVisitor.getModel(), RDFFormat.TURTLE);
-            theVisitor.getModel().close();
+            if (theWriter != null) {
+                theWriter.finish();
+            }
+            else {
+                RDFDataMgr.write(osOut, theVisitor.getModel(), RDFFormat.TURTLE);
+                theVisitor.getModel().close();
+            }
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
             // ...end writing
 

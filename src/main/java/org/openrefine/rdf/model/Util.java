@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,6 +161,7 @@ public class Util {
             // Settable by OpenRefine Preferences...
             put("Verbosity", 0);
             put("ExportLimit", 10737418);
+            put("PreviewStream", false);
             put("DebugMode", false);
             put("DebugJSON", false);
             // Settable only in RDF Transform UI, if at all...
@@ -472,8 +474,16 @@ public class Util {
         return ( (int) Util.Preferences.get("Verbosity") >= iVerbose );
     }
 
+    static public int getVerbose() {
+        return (int) Util.Preferences.get("Verbosity");
+    }
+
     static public int getExportLimit() {
         return (int) Util.Preferences.get("ExportLimit");
+    }
+
+    static public boolean isPreviewStream() {
+        return (boolean) Util.Preferences.get("PreviewStream");
     }
 
     static public boolean isDebugMode() {
@@ -482,6 +492,28 @@ public class Util {
 
     static public boolean isDebugJSON() {
         return (boolean) Util.Preferences.get("DebugJSON");
+    }
+
+    static public String preferencesToString() {
+        //
+        // Output RDFTranform Preferences...
+        //
+        String strPrefs = "Preferences: { ";
+        String strPref;
+        int iCount = 0;
+        Set<Map.Entry<String, Object>> entrySet = Preferences.entrySet();
+        for (Map.Entry<String, Object> entry : entrySet) {
+            iCount++;
+            strPref = entry.getKey();
+            strPrefs += strPref + " : " + entry.getValue().toString();
+            if (iCount < entrySet.size()) {
+                strPrefs +=  " , ";
+            }
+            else {
+                strPrefs +=   " }";
+            }
+        }
+        return strPrefs;
     }
 
     //
@@ -508,6 +540,8 @@ public class Util {
     // ...end Sample Limit
 
     static public void setPreferencesByPreferenceStore() {
+        Util.logger.info("Getting Preferences from Preference Store...");
+
         PreferenceStore prefStore = ProjectManager.singleton.getPreferenceStore();
         if (prefStore == null) {
             return;
@@ -563,9 +597,24 @@ public class Util {
         }
 
         //
+        // Set Preview Stream Mode...
+        //
+        // The Preview Stream Mode (bPreviewStream) is used to manage the preview for stream vs pretty output.
+        //
+        obj = prefStore.get("RDFTransform.previewStream"); // RDFTransform Preview Stream Mode
+        if (obj != null) {
+            try {
+                Util.Preferences.put("PreviewStream", Boolean.parseBoolean( obj.toString() ) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+
+        //
         // Set Debug Mode...
         //
-        // The Debug Mode (iDebug) is used to manage the output of specifically marked "debug" messages.
+        // The Debug Mode (bDebug) is used to manage the output of specifically marked "debug" messages.
         //
         obj = prefStore.get("RDFTransform.debug"); // RDFTransform Debug Mode
         if (obj == null) {
@@ -583,9 +632,9 @@ public class Util {
         //
         // Set Debug JSON...
         //
-        // The Debug JSON (iDebugJSON) is used to manage the output of specifically marked "debug JSON" messages.
+        // The Debug JSON (bDebugJSON) is used to manage the output of specifically marked "debug JSON" messages.
         //
-        obj = prefStore.get("RDFTransform.debugJSON"); // RDFTransform Debug Mode
+        obj = prefStore.get("RDFTransform.debugJSON"); // RDFTransform Debug JSON Mode
         if (obj != null) {
             try {
                 Util.Preferences.put("DebugJSON", Boolean.parseBoolean( obj.toString() ) );

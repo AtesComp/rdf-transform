@@ -62,7 +62,7 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
 
     private void export(Project theProject, Properties options, Engine theEngine)
             throws IOException {
-        StreamRDF theStreamer = null;
+        StreamRDF theWriter = null;
         // TODO: Reported Jena Bug:
         //      The Jena code says getWriterStream() will return null if the RDFFormat
         //      doesn't have a writer registered.  It lies!  It throws a RiotException.
@@ -71,30 +71,34 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
             //      The following code without the end null should work but, instead,
             //      it hangs (locks up) processing.  With the null, it succeeds.
             //theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format);
-            theStreamer = StreamRDFWriter.getWriterStream(this.outputStream, this.format, null);
+            theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format, null);
         }
         catch (RiotException ex) { // ...an error occurred setting the streamer...
-            theStreamer = null;
+            theWriter = null;
+            RDFStreamExporter.logger.error("ERROR: The writer is invalid! Cannot construct export.");
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+            throw new RuntimeException(ex.getMessage(), ex);
         }
+        if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
 
         RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
         try {
             if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("  Starting RDF Export...");
-            theStreamer.start();
+            theWriter.start();
 
             // Process all records/rows of data for statements...
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("    Process by Record Visitor...");
-                theVisitor = new ExportRDFRecordVisitor(theTransform, theStreamer);
+                theVisitor = new ExportRDFRecordVisitor(theTransform, theWriter);
             }
             else {
                 if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("    Process by Row Visitor...");
-                theVisitor = new ExportRDFRowVisitor(theTransform, theStreamer);
+                theVisitor = new ExportRDFRowVisitor(theTransform, theWriter);
             }
             theVisitor.buildModel(theProject, theEngine);
 
-            theStreamer.finish();
+            theWriter.finish();
             if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("  ...Ended RDF Export.");
         }
         catch (Exception ex) {

@@ -18,9 +18,6 @@ public abstract class RDFTransformCommand extends Command {
 
     public RDFTransform getRDFTransform(HttpServletRequest request)
             throws ServletException {
-        // Reset the RDF Transform preferences via the OpenRefine Preference Store
-        // as it may have changed since last call...
-        Util.setPreferencesByPreferenceStore();
         try {
             Project theProject = this.getProject(request);
             return RDFTransform.getRDFTransform(theProject);

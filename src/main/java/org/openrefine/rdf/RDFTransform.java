@@ -193,6 +193,10 @@ public class RDFTransform implements OverlayModel {
     }
 
     static public RDFTransform reconstruct(Project theProject, JsonNode jnodeRoot) {
+        // Reset the RDF Transform preferences via the OpenRefine Preference Store
+        // as it may have changed since last call...
+        Util.setPreferencesByPreferenceStore();
+
         if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Start reconstruction...");
         if ( Util.isDebugJSON() ) RDFTransform.logger.info("  JSON:\n" + jnodeRoot.toPrettyString());
 
