@@ -71,7 +71,7 @@
     "rdft-dialog/resolve": "le IRI relative verranno risolte con Base IRI",
     "rdft-dialog/sample-rec": "record.",
     "rdft-dialog/sample-row": "righe.",
-    "rdft-dialog/sample-turtle": "Questo è un esempio di rappresentazione in <code>Turtle</code> delle (fino a) <em>prime $1</em> ",
+    "rdft-dialog/sample-preview": "Anteprima Dati di Esempio: ",
     "rdft-dialog/search-for": "Cerca",
     "rdft-dialog/tab-preview": "Anteprima",
     "rdft-dialog/tab-transform": "Trasforma",

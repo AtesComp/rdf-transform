@@ -128,6 +128,7 @@ public class InitializationCommand extends Command {
          */
         String strSaveRDFTransform = "save-rdf-transform";
         RefineServlet.registerCommand( this.theModule, "initialize", this);
+        RefineServlet.registerCommand( this.theModule, "get-preferences",         new PreferencesCommand() );
         RefineServlet.registerCommand( this.theModule, "preview-rdf",             new PreviewRDFCommand() );
         RefineServlet.registerCommand( this.theModule, "preview-rdf-expression",  new PreviewRDFTExpressionCommand() );
         RefineServlet.registerCommand( this.theModule, strSaveRDFTransform,       new SaveRDFTransformCommand() );

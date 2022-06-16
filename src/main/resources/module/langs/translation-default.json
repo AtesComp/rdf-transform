@@ -71,7 +71,7 @@
     "rdft-dialog/resolve": "Resolve",
     "rdft-dialog/sample-rec": "records.",
     "rdft-dialog/sample-row": "rows.",
-    "rdft-dialog/sample-turtle": "This is a sample <code>Turtle</code> representation of (up to) the <em>first $1</em> ",
+    "rdft-dialog/sample-preview": "Sample Data Preview: ",
     "rdft-dialog/search-for": "Search for",
     "rdft-dialog/tab-preview": "Preview",
     "rdft-dialog/tab-transform": "Transform",

@@ -55,7 +55,22 @@
       </div>
       <!-- Preview Tab... -->
       <div id="rdf-transform-tab-preview" class="tabcontent">
-        <div class="rdf-transform-tab-header" bind="rdftSampleTurtleText"></div>
+        <div class="rdf-transform-tab-header">
+          <table>
+            <tr>
+              <td><span bind="rdftPreviewText"></span></td>
+              <td>
+                <div class="rdf-transform-preview-settings">
+                  <input type="text" id="idSampleLimit" bind="rdftSampleLimitTB" />
+                  <label for="idfname" bind="rdftSampleLimitL"></label>
+                  <nbsp />
+                  <input type="checkbox" id="idPreviewStream" bind="rdftPreviewStreamCB" />
+                  <label for="idPreviewStream" bind="rdftPreviewStreamL"></label>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
         <!-- Preview Data... -->
         <div class="rdf-transform-data-preview" bind="rdftPreviewData"></div>
       </div>

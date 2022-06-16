@@ -499,20 +499,17 @@ public class Util {
         // Output RDFTranform Preferences...
         //
         String strPrefs = "Preferences: { ";
-        String strPref;
-        int iCount = 0;
+        String strComma = ", "; 
+        boolean bNotFirstEntry = false;
         Set<Map.Entry<String, Object>> entrySet = Preferences.entrySet();
         for (Map.Entry<String, Object> entry : entrySet) {
-            iCount++;
-            strPref = entry.getKey();
-            strPrefs += strPref + " : " + entry.getValue().toString();
-            if (iCount < entrySet.size()) {
-                strPrefs +=  " , ";
+            if (bNotFirstEntry) {
+                strPrefs += strComma;
             }
-            else {
-                strPrefs +=   " }";
-            }
+            strPrefs += entry.getKey() + ":" + entry.getValue().toString();
+            bNotFirstEntry = true;
         }
+        strPrefs +=   " }";
         return strPrefs;
     }
 
@@ -538,6 +535,17 @@ public class Util {
         }
     }
     // ...end Sample Limit
+
+    //
+    // Preview Stream:
+    //
+    // The preview preference: Stream or Pretty.
+    // NOTE: When set to false, use Pretty.
+    //
+    static public void setPreviewStream(boolean bPreviewStream) {
+        Util.Preferences.put("PreviewStream", bPreviewStream);
+    }
+    // ...end Preview Stream
 
     static public void setPreferencesByPreferenceStore() {
         Util.logger.info("Getting Preferences from Preference Store...");

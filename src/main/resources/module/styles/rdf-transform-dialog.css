@@ -137,6 +137,12 @@ div.rdf-transform-prefixes {
     */
 }
 
+div.rdf-transform-preview-settings {
+    /*
+    width: 100%;
+    */
+}
+
 span.rdf-transform-prefix-box {
     padding: 0 4px;
     font-family: monospace;

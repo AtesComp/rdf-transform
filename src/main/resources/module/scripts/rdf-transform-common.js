@@ -311,6 +311,23 @@ class RDFTransformCommon {
         return RDFTransformCommon.shortenLiteral(strResource);
     }
 
+    static getPreferences(params) {
+        return new Promise(
+            (resolve, reject) => {
+                $.ajax(
+                    {   url  : "command/rdf-transform/get-preferences",
+                        type : 'GET',
+                        async: false, // ...wait on results
+                        data : params,
+                        dataType : "json",
+                        success : (data, strStatus, xhr) => { resolve(data); },
+                        error   : (xhr, strStatus, error) => { resolve( { "good" : "0" } ) }
+                    }
+                );
+            }
+        );
+    }
+
     /*
      * Method saveFile(strTemplate, strName, strExt, strType, strDesc)
      *
