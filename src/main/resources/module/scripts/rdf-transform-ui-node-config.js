@@ -679,7 +679,7 @@ class RDFTransformUINodeConfig {
     #validateNodeTypes() {
         // Determine the Node's Value Type: Variable or Constant
         //      by testing if Constant Radio button is checked...
-        this.#bIsVarNodeConfig = ! ( $("#rdf-constant-value-radio").is(':checked') );
+        this.#bIsVarNodeConfig = ! ( $("#rdf-constant-value-radio").prop('checked') );
 
         // Determine the Node's RDF Type: "resource", "literal", or "blank"...
         const strNodeType = $("input[name='rdf-content-radio']:checked").val();

@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.refine.commands.Command;
 import org.openrefine.rdf.model.Util;
 
-import org.apache.jena.iri.IRI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +21,7 @@ public class PreferencesCommand extends Command {
         if ( Util.isVerbose(3) ) PreferencesCommand.logger.info("Setting and Getting preferences...");
         // NOTE: No CSRFToken required for this command.
 
-        String strPreferences = "{ \"good\" : \"0\" }";
+        String strPreferences = "{ \"good\" : 0 }";
         try {
             //
             // Set up response...
@@ -32,31 +30,27 @@ public class PreferencesCommand extends Command {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "application/json");
 
-            // Set Preview Stream if given...
-            boolean bPreviewStream = Util.isPreviewStream(); // ...get
-            String strPreviewStream = request.getParameter("PreviewStream");
-            if (strPreviewStream != null) {
-                bPreviewStream = Boolean.parseBoolean(strPreviewStream);
-                Util.setPreviewStream(bPreviewStream);
-            }
+            // // Set Preview Stream if given...
+            // String strPreviewStream = request.getParameter("bPreviewStream");
+            // if (strPreviewStream != null) {
+            //     Util.setPreviewStream( Boolean.parseBoolean(strPreviewStream) );
+            // }
 
-            // Set Sample Limit if given...
-            int iSampleLimit = Util.getSampleLimit(); // ...get
-            String strSampleLimit = request.getParameter("SampleLimit");
-            if (strSampleLimit != null) {
-                iSampleLimit = Integer.parseInt(strSampleLimit);
-                Util.setSampleLimit(iSampleLimit);
-            }
+            // // Set Sample Limit if given...
+            // String strSampleLimit = request.getParameter("iSampleLimit");
+            // if (strSampleLimit != null) {
+            //     Util.setSampleLimit( Integer.parseInt(strSampleLimit) );
+            // }
 
             // Get Preferences...
             strPreferences =
-                "{ \"good\" : \"1\", " +
-                  "\"Verbosity\" : \"" +     Util.getVerbose() + "\", " +
-                  "\"ExportLimit\" : \"" +   Util.getExportLimit() + "\", " +
-                  "\"PreviewStream\" : \"" + bPreviewStream + "\", " +
-                  "\"DebugMode\" : \"" +     Util.isDebugMode() + "\", " +
-                  "\"DebugJSON\" : \"" +     Util.isDebugJSON() + "\", " +
-                  "\"SampleLimit\" : \"" +   iSampleLimit + "\"" +
+                "{ \"good\" : 1, " +
+                  "\"iVerbosity\" : " +     Util.getVerbose() + ", " +
+                  "\"iExportLimit\" : " +   Util.getExportLimit() + ", " +
+                  "\"bPreviewStream\" : " + Util.isPreviewStream() + ", " +
+                  "\"bDebugMode\" : " +     Util.isDebugMode() + ", " +
+                  "\"bDebugJSON\" : " +     Util.isDebugJSON() + ", " +
+                  "\"iSampleLimit\" : " +   Util.getSampleLimit() + "" +
                   " }";
         }
         catch (Exception ex) { // ...any other exception...

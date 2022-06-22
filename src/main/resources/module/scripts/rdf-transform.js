@@ -71,6 +71,17 @@ class RDFTransform {
         this.gnodeMasterRoot.propertyMappings = [];
     }
 
+    // Setup Preferences...
+    static gPreferences = {};
+    static {
+        this.gPreferences.iVerbosity = 0;
+        this.gPreferences.iExportLimit = 10737418;
+        this.gPreferences.bPreviewStream = null;
+        this.gPreferences.bDebugMode = false;
+        this.gPreferences.bDebugJSON = false;
+        this.gPreferences.iSampleLimit = null;
+    }
+
     static setDefaults() {
         // NOTE: We can't set these variables as static class statements since they depend on
         //       OpenRefine's "theProject".  The classes are loaded when the extension is
@@ -152,13 +163,6 @@ class RDFTransformDialog {
     #tableNodes;
 
     #bPreviewUpdate;
-    #Verbosity = 0;
-    #ExportLimit = 10737418;
-    #bPreviewStream = false; 
-    #DebugMode = false;
-    #DebugJSON = false;
-
-    #iSampleLimit = 20; // TODO: Modify for user input, defaults to 10 in Util.Preferences
 
     #iResize;
     #iDiffFrameHeight;
@@ -187,7 +191,6 @@ class RDFTransformDialog {
 
         this.#nodeUIs = [];
 
-
         // The RDFTransformDialog has not been fully initialized!
         // Initialize by asynchronous setTimeout() for:
         //  1. server-side required processing (i.e., after construction)
@@ -198,6 +201,7 @@ class RDFTransformDialog {
     async #initTransform(theTransform) {
         // Preferences
         await this.#getPreferences();
+        this.#updatePreviewSettings();
 
         // Setup the underlying data...
         await this.#init(theTransform);
@@ -460,20 +464,21 @@ class RDFTransformDialog {
 
         this.#elements = DOM.bind(this.#dialog);
 
-        this.#elements.dialogHeader.text(         $.i18n('rdft-dialog/header')                 );
-        this.#elements.rdftDescription.text(      $.i18n('rdft-dialog/desc')                   );
-        this.#elements.rdftBaseIRIText.text(      $.i18n('rdft-dialog/base-iri') + ':'         );
-        this.#elements.rdftEditBaseIRI.text(      $.i18n('rdft-dialog/edit')                   );
-        this.#elements.rdftBaseIRIValue.text(     "Waiting on transform..."                    );
-        this.#elements.rdftTabTransformText.text( $.i18n('rdft-dialog/tab-transform')          );
-        this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview')            );
+        this.#elements.dialogHeader.text(         $.i18n('rdft-dialog/header') );
+        this.#elements.rdftDescription.text(      $.i18n('rdft-dialog/desc') );
+        this.#elements.rdftDocLink.text(          $.i18n('rdft-dialog/doc-link') );
+        this.#elements.rdftBaseIRIText.text(      $.i18n('rdft-dialog/base-iri') + ':' );
+        this.#elements.rdftBaseIRIValue.text(     $.i18n('rdft-dialog/base-iri-waiting') + "..." );
+        this.#elements.rdftEditBaseIRI.text(      $.i18n('rdft-dialog/edit') );
+        this.#elements.rdftTabTransformText.text( $.i18n('rdft-dialog/tab-transform') );
+        this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview') );
         this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
-        this.#elements.buttonAddRootNode.text(    $.i18n('rdft-buttons/add-root')              );
-        this.#elements.buttonImpTemplate.text(    $.i18n('rdft-buttons/import-template')       );
-        this.#elements.buttonExpTemplate.text(    $.i18n('rdft-buttons/export-template')       );
-        this.#elements.buttonSaveTransform.text(  $.i18n('rdft-buttons/save')                  );
-        this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok')                    );
-        this.#elements.buttonCancel.text(         $.i18n('rdft-buttons/cancel')                );
+        this.#elements.buttonAddRootNode.text(    $.i18n('rdft-buttons/add-root') );
+        this.#elements.buttonImpTemplate.text(    $.i18n('rdft-buttons/import-template') );
+        this.#elements.buttonExpTemplate.text(    $.i18n('rdft-buttons/export-template') );
+        this.#elements.buttonSaveTransform.text(  $.i18n('rdft-buttons/save') );
+        this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok') );
+        this.#elements.buttonCancel.text(         $.i18n('rdft-buttons/cancel') );
 
         var imgAddPrefix =
             $('<img />')
@@ -495,7 +500,7 @@ class RDFTransformDialog {
 
         const strPreviewText = $.i18n('rdft-dialog/sample-preview');
         this.#elements.rdftPreviewText.html( strPreviewText );
-        this.updatePreviewSettings();
+        this.#initPreviewSettings();
 
         // Set initial spinners...
         this.#elements.rdftPrefixesContainer.append(this.#imgLineBounce);
@@ -508,6 +513,10 @@ class RDFTransformDialog {
         //
         //   AFTER show...
         //
+
+        // Set Description Paragraph box minimum height to its initial height...
+        const iDescParaHeight = this.#elements.rdftDescParagraph.height();
+        this.#elements.rdftDescParagraph.css({ "min-height" : "" + iDescParaHeight + "px" });
 
         // Set Description box minimum height to its initial height...
         const iDescHeight = this.#elements.rdftDescription.height();
@@ -526,9 +535,10 @@ class RDFTransformDialog {
         this.#elements.rdftTabs
             .tabs(
                 { activate :
-                    (evt, ui ) => {
+                    (evt, ui) => {
                         // If Preview tab activation...
-                        if ( ui.newPanel.is("#rdf-transform-tab-preview") ) {
+                        if (this.#elements.rdftTabs.tabs('option', 'active') === 1) {
+                        //if ( ui.newPanel.is("#rdf-transform-tab-preview") ) {
                             // Process any outstanding preview updates...
                             this.#processPreviewTab();
                         }
@@ -594,6 +604,27 @@ class RDFTransformDialog {
             .on("click", (evt) => {
                     evt.preventDefault();
                     this.#doSave();
+                }
+            );
+
+        // Hook up the Sample Limit Textbox...
+        this.#elements.rdftSampleLimit
+            .on("keypress", (evt) => {
+                    if (evt.which == 13) {
+                        this.#elements.rdftSampleLimit.focusout();
+                    }
+                }
+            );
+        this.#elements.rdftSampleLimit
+            .on("focusout", (evt) => {
+                    this.#editSampleLimit( $(evt.target) );
+                }
+            );
+
+        // Hook up the Preview Stream Checkbox...
+        this.#elements.rdftPreviewStream
+            .on("change", (evt) => {
+                    this.#editPreviewStream( $(evt.target) );
                 }
             );
 
@@ -672,12 +703,14 @@ class RDFTransformDialog {
         console.log(theTransform);
         */
 
+        var params = { [RDFTransform.KEY] : JSON.stringify( theTransform ) };
+
         // Update the oracle on the RDF Transform...
         Refine.postProcess(
             RDFTransform.KEY,       // module
             'save-rdf-transform',   // command
-            {},                     // params
-            { [RDFTransform.KEY] : JSON.stringify( theTransform ) },
+            {},
+            params,                 // params
             {},                     // updateOps
             {   onDone: (data) => { // callbacks
                     theProject.overlayModels.RDFTransform = theTransform;
@@ -693,28 +726,22 @@ class RDFTransformDialog {
         return theTransform;
     }
 
-    async #getPreferences(bFirst) {
+    async #getPreferences() {
         var params = {};
-        if (! bFirst) {
-            params.PreviewStream = this.#bPreviewStream;
-        }
-        params.SampleLimit = this.#iSampleLimit;
-
         var data = {};
         try {
             data = await RDFTransformCommon.getPreferences(params);
         }
         catch (evt) {
-            data.good = "0"; // ...force bad result
+            data.good = 0; // ...force bad result
         }
-        if (data.good == "1") {
-            this.#Verbosity = data.Verbosity;
-            this.#ExportLimit = data.ExportLimit;
-            this.#bPreviewStream = data.PreviewStream;
-            this.#DebugMode = data.DebugMode;
-            this.#DebugJSON = data.DebugJSON;
-
-            this.#iSampleLimit = data.SampleLimit;
+        if (data.good == 1) {
+            RDFTransform.gPreferences.iVerbosity     = data.iVerbosity;
+            RDFTransform.gPreferences.iExportLimit   = data.iExportLimit;
+            RDFTransform.gPreferences.bPreviewStream = data.bPreviewStream;
+            RDFTransform.gPreferences.bDebugMode     = data.bDebugMode;
+            RDFTransform.gPreferences.bDebugJSON     = data.bDebugJSON;
+            RDFTransform.gPreferences.iSampleLimit   = data.iSampleLimit;
         }
     }
 
@@ -755,16 +782,21 @@ class RDFTransformDialog {
         */
         this.#elements.rdftPreviewData.empty().append(this.#imgLargeSpinner);
 
+        var params = { [RDFTransform.KEY] : JSON.stringify( theTransform ) };
+        params.engine = JSON.stringify( ui.browsingEngine.getJSON() );
+        if (RDFTransform.gPreferences.bPreviewStream != null) {
+            params.bPreviewStream = RDFTransform.gPreferences.bPreviewStream;
+        }
+        if (RDFTransform.gPreferences.iSampleLimit != null) {
+            params.iSampleLimit = RDFTransform.gPreferences.iSampleLimit;
+        }
+
         // Consult the oracle on the RDF Preview...
         Refine.postProcess(
             RDFTransform.KEY,       // module
             "preview-rdf",          // command
-            {},                     // params
-            {   [RDFTransform.KEY] : JSON.stringify( theTransform ),
-                "engine"           : JSON.stringify( ui.browsingEngine.getJSON() ),
-                "SampleLimit"      : this.#iSampleLimit,
-                "PreviewStream"    : this.#bPreviewStream
-            },
+            {},
+            params,                 // params
             {},                     // updateOps
             {   onDone: (data) => { // callbacks
                     //var strPreview = RDFTransformCommon.toHTMLBreaks( data.message.toString() );
@@ -817,14 +849,12 @@ class RDFTransformDialog {
                 // All Good, set the project's BaseIRI...
                 MenuSystem.dismissAll();
                 this.#replaceBaseIRI(strIRI);
+                // Set up Preview Tab processing...
+                this.updatePreview();
                 // If the Preview Tab is active...
                 if (this.#elements.rdftTabs.tabs('option', 'active') === 1) {
-                    // Process the Preview Tab...
+                    // ...process the Preview Tab NOW...
                     this.#processPreviewTab();
-                }
-                // Otherwise, reserve Preview Tab processing for later...
-                else {
-                    this.updatePreview();
                 }
             }
         );
@@ -880,20 +910,55 @@ class RDFTransformDialog {
         }
     }
 
+    #editSampleLimit(target) {
+        var iSampleLimit = this.#elements.rdftSampleLimit.val();
+        if ( isNaN(iSampleLimit) ) {
+            this.#elements.rdftSampleLimit.val(RDFTransform.gPreferences.iSampleLimit);
+        }
+        else if (iSampleLimit != RDFTransform.gPreferences.iSampleLimit) {
+            RDFTransform.gPreferences.iSampleLimit = iSampleLimit;
+
+            // Set up Preview Tab processing...
+            this.updatePreview();
+            // Since the Preview Tab is active, process the Preview Tab NOW...
+            this.#processPreviewTab();
+        }
+    }
+
+    #editPreviewStream(target) {
+        var bPreviewStream = this.#elements.rdftPreviewStream.prop('checked');
+        if (bPreviewStream != RDFTransform.gPreferences.bPreviewStream) {
+            RDFTransform.gPreferences.bPreviewStream = bPreviewStream;
+            this.#updatePreviewStreamLabel();
+
+            // Set up Preview Tab processing...
+            this.updatePreview();
+            // Since the Preview Tab is active, process the Preview Tab NOW...
+            this.#processPreviewTab();
+        }
+    }
+
     updatePreview() {
         // Set the Preview Tab to update when we've modified something affecting the preview...
         this.#bPreviewUpdate = true;
     }
 
-    updatePreviewSettings() {
-        this.#elements.rdftSampleLimitTB.val(this.#iSampleLimit);
-        this.#elements.rdftSampleLimitL.text( " " +
+    #initPreviewSettings() {
+        this.#elements.rdftSampleLimitLabel.text( " " +
             ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") )
         );
-        this.#elements.rdftPreviewStreamCB.prop('checked', this.#bPreviewStream);
-        this.#elements.rdftPreviewStreamL.text(
-            ( this.#bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") ) +
-            " "
+        this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-turtle-pretty") );
+    }
+
+    #updatePreviewSettings() {
+        this.#elements.rdftSampleLimit.val(RDFTransform.gPreferences.iSampleLimit);
+        this.#elements.rdftPreviewStream.prop('checked', RDFTransform.gPreferences.bPreviewStream);
+        this.#updatePreviewStreamLabel();
+    }
+
+    #updatePreviewStreamLabel() {
+        this.#elements.rdftPreviewStreamLabel.text(
+            ( RDFTransform.gPreferences.bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") )
         );
     }
 

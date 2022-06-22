@@ -22,6 +22,12 @@ input[type="radio"] {
     vertical-align: middle;
 }
 
+input[type="number"] {
+    display: inline-block;
+    margin-top: -1px;
+    vertical-align: middle;
+}
+
 pre {
     font-family: Consolas,"courier new";
     background-color: #f1f1f1;
@@ -67,15 +73,16 @@ div.tabcontent {
 
 div.rdf-transform-tab-header {
     background: none repeat scroll 0 0 #E0EDFE;
+    height: 21px;
     padding: 2px;
 }
 
 div.rdf-transform-data-transform {
-/* 600 - 282 = 318
-   34 less than preview due to extra bottom buttons
+/* 600 - 279 = 321
+   25 less than preview due to extra bottom buttons
 */
-    height: 318px;
-    min-height: 318px;
+    height: 321px;
+    min-height: 321px;
     overflow: scroll;
     flex: 1 1 auto;
 }
@@ -88,6 +95,7 @@ table.rdf-transform-pane-table-layout > tbody > tr > td.padded {
 
 div.rdf-transform-tab-footer {
     background: none repeat scroll 0 0 #E0EDFE;
+    height: 21px;
     padding: 2px;
 }
 
@@ -114,10 +122,10 @@ button.rdf-transform-right {
 }
 
 div.rdf-transform-data-preview {
-/* 600 - 248 = 352
+/* 600 - 254 = 346
 */
-    height: 352px;
-    min-height: 352px;
+    height: 346px;
+    min-height: 346px;
     overflow: scroll;
     flex: 1 1 auto;
 }

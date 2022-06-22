@@ -159,13 +159,13 @@ public class Util {
     static private Map<String, Object> Preferences =
         new HashMap<String, Object>() {{
             // Settable by OpenRefine Preferences...
-            put("Verbosity", 0);
-            put("ExportLimit", 10737418);
-            put("PreviewStream", false);
-            put("DebugMode", false);
-            put("DebugJSON", false);
-            // Settable only in RDF Transform UI, if at all...
-            put("SampleLimit", 10);
+            put("iVerbosity", 0);
+            put("iExportLimit", 10737418);
+            put("bPreviewStream", false);
+            put("bDebugMode", false);
+            put("bDebugJSON", false);
+            // Settable only in RDF Transform UI...
+            put("iSampleLimit", 20);
         }};
 
 //
@@ -471,28 +471,62 @@ public class Util {
     }
 
     static public boolean isVerbose(int iVerbose) {
-        return ( (int) Util.Preferences.get("Verbosity") >= iVerbose );
+        return ( (int) Util.Preferences.get("iVerbosity") >= iVerbose );
     }
 
     static public int getVerbose() {
-        return (int) Util.Preferences.get("Verbosity");
+        return (int) Util.Preferences.get("iVerbosity");
     }
 
     static public int getExportLimit() {
-        return (int) Util.Preferences.get("ExportLimit");
+        return (int) Util.Preferences.get("iExportLimit");
+    }
+
+    //
+    // Preview Stream:
+    //
+    // The preview preference: Pretty or Stream.
+    // NOTE: When set to false, use Pretty.
+    //
+    static public void setPreviewStream(boolean bPreviewStream) {
+        Util.Preferences.put("bPreviewStream", bPreviewStream);
     }
 
     static public boolean isPreviewStream() {
-        return (boolean) Util.Preferences.get("PreviewStream");
+        return (boolean) Util.Preferences.get("bPreviewStream");
     }
+    // ...end Preview Stream
 
     static public boolean isDebugMode() {
-        return (boolean) Util.Preferences.get("DebugMode");
+        return (boolean) Util.Preferences.get("bDebugMode");
     }
 
     static public boolean isDebugJSON() {
-        return (boolean) Util.Preferences.get("DebugJSON");
+        return (boolean) Util.Preferences.get("bDebugJSON");
     }
+
+    //
+    // Sample Limit:
+    //
+    // The limit on the number of sample rows or records processed.
+    // NOTE: When set to 0, there is no limit.
+    //
+    static public void setSampleLimit(int iSampleLimit) {
+        if (iSampleLimit >= 0) {
+            Util.Preferences.put("iSampleLimit", iSampleLimit);
+        }
+    }
+
+    static public int getSampleLimit() {
+        int iSampleLimit = 10; // ...default, see Util's Preferences variable
+        Integer icSampleLimit = (Integer) Util.Preferences.get("iSampleLimit");
+        if (icSampleLimit != null && icSampleLimit >= 0) {
+            iSampleLimit = icSampleLimit;
+        }
+        return iSampleLimit;
+
+    }
+    // ...end Sample Limit
 
     static public String preferencesToString() {
         //
@@ -513,40 +547,6 @@ public class Util {
         return strPrefs;
     }
 
-    //
-    // Sample Limit:
-    //
-    // The limit on the number of sample rows or records processed.
-    // NOTE: When set to 0, there is no limit.
-    //
-    static public int getSampleLimit() {
-        int iSampleLimit = 10; // ...default, see Util's Preferences variable
-        Integer icSampleLimit = (Integer) Util.Preferences.get("SampleLimit");
-        if (icSampleLimit != null && icSampleLimit >= 0) {
-            iSampleLimit = icSampleLimit;
-        }
-        return iSampleLimit;
-
-    }
-
-    static public void setSampleLimit(int iSampleLimit) {
-        if (iSampleLimit >= 0) {
-            Util.Preferences.put("SampleLimit", iSampleLimit);
-        }
-    }
-    // ...end Sample Limit
-
-    //
-    // Preview Stream:
-    //
-    // The preview preference: Stream or Pretty.
-    // NOTE: When set to false, use Pretty.
-    //
-    static public void setPreviewStream(boolean bPreviewStream) {
-        Util.Preferences.put("PreviewStream", bPreviewStream);
-    }
-    // ...end Preview Stream
-
     static public void setPreferencesByPreferenceStore() {
         Util.logger.info("Getting Preferences from Preference Store...");
 
@@ -556,6 +556,7 @@ public class Util {
         }
 
         Object obj = null;
+
         //
         // Set Verbosity for logging...
         //
@@ -571,12 +572,13 @@ public class Util {
         }
         if (obj != null) {
             try {
-                Util.Preferences.put("Verbosity", Integer.parseInt( obj.toString() ) );
+                Util.Preferences.put("iVerbosity", Integer.parseInt( obj.toString() ) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...
             }
         }
+
         //
         // Set Export Statement Limit...
         //
@@ -597,7 +599,7 @@ public class Util {
         obj = prefStore.get("RDFTransform.exportLimit");
         if (obj != null) {
             try {
-                Util.Preferences.put("ExportLimit", Integer.parseInt( obj.toString() ) );
+                Util.Preferences.put("iExportLimit", Integer.parseInt( obj.toString() ) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...
@@ -607,12 +609,12 @@ public class Util {
         //
         // Set Preview Stream Mode...
         //
-        // The Preview Stream Mode (bPreviewStream) is used to manage the preview for stream vs pretty output.
+        // The Preview Stream Mode (bPreviewStream) is used to manage the preview for pretty vs stream output.
         //
         obj = prefStore.get("RDFTransform.previewStream"); // RDFTransform Preview Stream Mode
         if (obj != null) {
             try {
-                Util.Preferences.put("PreviewStream", Boolean.parseBoolean( obj.toString() ) );
+                Util.Preferences.put("bPreviewStream", Boolean.parseBoolean( obj.toString() ) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...
@@ -630,7 +632,7 @@ public class Util {
         }
         if (obj != null) {
             try {
-                Util.Preferences.put("DebugMode", Boolean.parseBoolean( obj.toString() ) );
+                Util.Preferences.put("bDebugMode", Boolean.parseBoolean( obj.toString() ) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...
@@ -645,7 +647,7 @@ public class Util {
         obj = prefStore.get("RDFTransform.debugJSON"); // RDFTransform Debug JSON Mode
         if (obj != null) {
             try {
-                Util.Preferences.put("DebugJSON", Boolean.parseBoolean( obj.toString() ) );
+                Util.Preferences.put("bDebugJSON", Boolean.parseBoolean( obj.toString() ) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...

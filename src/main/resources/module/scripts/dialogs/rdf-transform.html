@@ -4,7 +4,10 @@
   <!-- Body... -->
   <div class="dialog-body" bind="dialogBody">
     <div class="dialog-body-head" bind="dialogBodyHead">
-      <p><span bind="rdftDescription"></span> <a href="extension/rdf-transform/website/" target=”_blank”>See the docs</a>.</p>
+      <p bind="rdftDescParagraph">
+        <span bind="rdftDescription"></span>
+        <a href="extension/rdf-transform/website/" target=”_blank” bind="rdftDocLink"></a>.
+      </p>
       <p class="rdf-transform-base-iri">
         <span class="emphasized" bind="rdftBaseIRIText"></span>
         <span bind="rdftBaseIRIValue"></span>
@@ -61,11 +64,11 @@
               <td><span bind="rdftPreviewText"></span></td>
               <td>
                 <div class="rdf-transform-preview-settings">
-                  <input type="text" id="idSampleLimit" bind="rdftSampleLimitTB" />
-                  <label for="idfname" bind="rdftSampleLimitL"></label>
+                  <input type="number" id="idSampleLimit" bind="rdftSampleLimit" min="10" max="999" />
+                  <label for="idfname" bind="rdftSampleLimitLabel"></label>
                   <nbsp />
-                  <input type="checkbox" id="idPreviewStream" bind="rdftPreviewStreamCB" />
-                  <label for="idPreviewStream" bind="rdftPreviewStreamL"></label>
+                  <input type="checkbox" id="idPreviewStream" bind="rdftPreviewStream" />
+                  <label for="idPreviewStream" bind="rdftPreviewStreamLabel"></label>
                 </div>
               </td>
             </tr>

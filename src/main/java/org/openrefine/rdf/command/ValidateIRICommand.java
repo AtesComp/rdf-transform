@@ -37,7 +37,7 @@ public class ValidateIRICommand extends Command {
             if (theIRI == null) {
                 if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: Failure [" + strIRI + "]");
                 // TODO: Convert to CodeResponse and respondJSON(), modify caller
-                ValidateIRICommand.respond(response, "{ \"good\" : \"0\" }");
+                ValidateIRICommand.respond(response, "{ \"good\" : 0 }");
                 return;
             }
         }
@@ -48,6 +48,6 @@ public class ValidateIRICommand extends Command {
         }
         if ( Util.isVerbose(3) ) ValidateIRICommand.logger.info("...IRI validated.");
         // TODO: Convert to CodeResponse and respondJSON(), modify caller
-        ValidateIRICommand.respond(response, "{ \"good\" : \"1\" }");
+        ValidateIRICommand.respond(response, "{ \"good\" : 1 }");
     }
 }

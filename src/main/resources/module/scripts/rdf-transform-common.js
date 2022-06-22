@@ -132,10 +132,10 @@ class RDFTransformCommon {
             data = await RDFTransformCommon.#getValidIRI(strIRI);
         }
         catch (evt) {
-            data.good = "0"; // ...force bad result
+            data.good = 0; // ...force bad result
         }
         var bGoodIRI = false;
-        if (data.good == "1") {
+        if (data.good == 1) {
             bGoodIRI = true;
         }
         return bGoodIRI;
@@ -153,7 +153,7 @@ class RDFTransformCommon {
                         data : params,
                         dataType : "json",
                         success : (data, strStatus, xhr) => { resolve(data); },
-                        error   : (xhr, strStatus, error) => { resolve( { "good" : "0" } ) }
+                        error   : (xhr, strStatus, error) => { resolve( { "good" : 0 } ) }
                     }
                 );
             }
@@ -321,7 +321,7 @@ class RDFTransformCommon {
                         data : params,
                         dataType : "json",
                         success : (data, strStatus, xhr) => { resolve(data); },
-                        error   : (xhr, strStatus, error) => { resolve( { "good" : "0" } ) }
+                        error   : (xhr, strStatus, error) => { resolve( { "good" : 0 } ) }
                     }
                 );
             }

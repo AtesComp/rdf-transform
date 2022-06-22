@@ -77,13 +77,23 @@ public class PreviewRDFCommand extends Command {
             //}
 
             //
+            // Process Preview Stream...
+            //
+            boolean bPreviewStream = Util.isPreviewStream(); // ...set to current type: Pretty (false) or Stream (true)
+            String strPreviewStream = request.getParameter("bPreviewStream");
+            if (strPreviewStream != null) { // ...a preview type was passed from the UI
+                bPreviewStream = Boolean.parseBoolean(strPreviewStream); // ...set to preview type
+            }
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Preview Stream processed: " + strPreviewStream + ", " + bPreviewStream);
+
+            //
             // Process Sample Limit...
             //
             int iSampleLimit = Util.getSampleLimit(); // ...set to current limit
-            String strSampleLimit = request.getParameter("SampleLimit");
-            if (strSampleLimit != null) { // ...a user limit was passed from the UI
+            String strSampleLimit = request.getParameter("iSampleLimit");
+            if (strSampleLimit != null) { // ...a sample limit was passed from the UI
                 try {
-                    iSampleLimit = Integer.parseInt(strSampleLimit); // ...set to user limit
+                    iSampleLimit = Integer.parseInt(strSampleLimit); // ...set to sample limit
                 }
                 catch (NumberFormatException ex) {
                     // ignore, use default...
@@ -92,14 +102,17 @@ public class PreviewRDFCommand extends Command {
             if ( iSampleLimit != Util.getSampleLimit() ) {
                 Util.setSampleLimit(iSampleLimit);
             }
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Sample Limit processed.");
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Sample Limit processed: " + strSampleLimit + ", " + iSampleLimit);
 
             // Setup writer for output...
             ByteArrayOutputStream osOut = new ByteArrayOutputStream();
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   BAOS Setup.");
 
+            //
+            // Get the Stream Writer if applicable...
+            //
             StreamRDF theWriter = null;
-            if ( Util.isPreviewStream() )  {
+            if ( bPreviewStream )  {
                 // TODO: Reported Jena Bug:
                 //      The Jena code says getWriterStream() will return null if the RDFFormat
                 //      doesn't have a writer registered.  It lies!  It throws a RiotException.
@@ -142,13 +155,16 @@ public class PreviewRDFCommand extends Command {
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the model...");
             theVisitor.buildModel(theProject, theEngine);
 
+            // If Stream Writer, end Stream Writer...
             if (theWriter != null) {
                 theWriter.finish();
             }
+            // Otherwise, write and end Pretty Writer...
             else {
                 RDFDataMgr.write(osOut, theVisitor.getModel(), RDFFormat.TURTLE);
                 theVisitor.getModel().close();
             }
+
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
             // ...end writing
 
