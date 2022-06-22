@@ -16,10 +16,21 @@
   <!-- RDF Transform Version Control -->
   <h2>News</h2>
   <dl>
+    <dt>2.1.1 Beta Released</dt>
+    <dd>This version correct Literal processing for record-based literals at the Tier 2 level and below.
+        Literals not directly connected to a root node would not process properly when in OpenRefine
+        "record" mode. These literals would not be present in the preview or in export files. Other
+        enhancements include preview controls for setting 1) the sample size for records or rows to
+        process and 2) the preview output type based on a Jena Stream or Pretty format, new
+        RDFTransform.previewStream preference as default for preview output type, updated the preview
+        expression dialog, expanded the exports with Pretty Formats, updated the Lucene version, code
+        management, and log and debug enhancements.</dd>
+  </dl>
+  <dl>
     <dt>2.1.0 Beta Released</dt>
     <dd>This version correct the Namespace processing by Web and File Import. The Web Import controls
         faulty content negotiation for the non-existent XMLSchema ontology. The File Import corrects
-        the client POST processing for form content including file streams.  Other enhancements include
+        the client POST processing for form content including file streams. Other enhancements include
         further corrects for the "controller" initialization code, removing Binary RDF processing and
         adding RDFThrift processing to match the Jena change, an RDFTransform.DebugJSON preference to
         manage the transform template output separate from other debugging, code management, log and
