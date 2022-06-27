@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openrefine.rdf.model.Util;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 
 @JsonIgnoreType
@@ -24,12 +26,12 @@ public class NamespaceManager {
         String[] astrTokens;
         while ( (strLine = buffReader.readLine() ) != null) {
             // Parse entries...
-            astrTokens = strLine.split("\\s+");
+            astrTokens = Util.replaceAllWhitespace(strLine).split("\\s+");
 
             // Are there enough entries?
             if (astrTokens.length < 2)
                 continue;
-            
+
             // Organize entries...
             strPrefix    = astrTokens[0];
             strNamespace = astrTokens[1];

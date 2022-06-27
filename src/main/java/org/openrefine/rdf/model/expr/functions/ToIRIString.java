@@ -13,7 +13,7 @@ import org.apache.jena.iri.IRI;
 
 /*
  * Class ToIRIString: Convert string to qualify as an RDF IRI component
- * 
+ *
  *  NOTE: We don't check for a leading scheme.  We could append the baseIRI
  *      by retrieving the current baseIRI setting from the binding properties.
  */
@@ -37,6 +37,7 @@ public class ToIRIString implements Function {
     }
 
     static public String toIRIString(String strConvert) {
+        String strUnderscore = "_";
         int iTry = 0;
         do {
             // Test if it's an acceptable IRI now (absolute or relative)...
@@ -55,39 +56,50 @@ public class ToIRIString implements Function {
             switch (iTry) {
                 case 0:
                     // Replace whitespace and unallowed characters with underscores...
-                    strConvert = strConvert.replaceAll("[" + Util.WHITESPACE + Pattern.quote("<>\"{}|\\^`") + "]+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert,
+                                "[" + Util.WHITESPACE + Pattern.quote("<>\"{}|\\^`") + "]+",
+                                strUnderscore);
                     break;
                 case 1:
                     // Replace any unsupported characters with underscores...
-                    strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~:/\\?#\\[\\]@\\%!\\$&'\\(\\)\\*\\+,;=]+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert,
+                            "[^-\\p{N}\\p{L}_\\.~:/\\?#\\[\\]@\\%!\\$&'\\(\\)\\*\\+,;=]+",
+                            strUnderscore);
                     break;
                 case 2:
                     // Replace (multiple) leading ":/+" or "/+" with underscores...
-                    strConvert = strConvert.replaceFirst("^(:?/+)+", "_");
+                    strConvert = Util.replaceFirst(strConvert, "^(:?/+)+", strUnderscore);
                     break;
                 case 3:
                     // Replace sub-delim characters with underscores...
-                    strConvert = strConvert.replaceAll("[!\\$&'\\(\\)\\*\\+,;=]+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert, "[!\\$&'\\(\\)\\*\\+,;=]+", strUnderscore);
                     break;
                 case 4:
                     // Replace gen-delim (but not ":" and "/") characters with underscores...
-                    strConvert = strConvert.replaceAll("[\\?#\\[\\]@]+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert, "[\\?#\\[\\]@]+", strUnderscore);
                     break;
                 case 5:
                     // Replace "/" characters with underscores...
-                    strConvert = strConvert.replaceAll("/+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert, "/+", strUnderscore);
                     break;
                 case 6:
                     // Replace ":" characters with underscores...
-                    strConvert = strConvert.replaceAll(":+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert, ":+", strUnderscore);
                     break;
                 default: //...should not occur but here for completeness...
                     // Replace all but Unreserved characters with underscores...
-                    strConvert = strConvert.replaceAll("[^-\\p{N}\\p{L}_\\.~]+", "_");
+                    strConvert =
+                        Util.replaceAll(strConvert, "[^-\\p{N}\\p{L}_\\.~]+", strUnderscore);
                     break;
             }
             // Condense underscores...
-            strConvert = strConvert.replaceAll("__+", "_");
+            strConvert = strConvert.replaceAll("__+", strUnderscore);
             ++iTry;
         } while (true);
 

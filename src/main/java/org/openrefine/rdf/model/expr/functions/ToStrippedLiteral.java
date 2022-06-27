@@ -32,7 +32,7 @@ public class ToStrippedLiteral implements Function {
         }
 
         // Replace each whitespace character with a simple space character and strip the ends...
-        strConvert = strConvert.replaceAll("[" + Util.WHITESPACE + "]", " ").strip();
+        strConvert = Util.replaceAllWhitespace(strConvert).strip();
 
         return strConvert;
     }

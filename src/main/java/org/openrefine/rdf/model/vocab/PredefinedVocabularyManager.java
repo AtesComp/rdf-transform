@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.model.Util;
+
 import com.google.refine.util.ParsingUtilities;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -113,7 +114,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         String[] astrTokens;
         while ((strLine = buffReader.readLine()) != null) {
             // Parse entries...
-            astrTokens = strLine.split("\\s+");
+            astrTokens = Util.replaceAllWhitespace(strLine).split("\\s+");
 
             // Are there enough entries?
             if (astrTokens.length < 2)

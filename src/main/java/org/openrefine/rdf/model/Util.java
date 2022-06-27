@@ -15,6 +15,7 @@ import org.apache.jena.iri.IRIFactory;
 import org.apache.jena.iri.IRIException;
 import org.apache.jena.irix.SetupJenaIRI;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ public class Util {
     static public final IRIFactory iriFactory = SetupJenaIRI.iriCheckerFactory();
 
     static public final String WHITESPACE = "\uC2A0\\p{C}\\p{Z}";
+    //static public final String WHITESPACE = "\\p{Cc}\\p{Co}\\p{Cn}\\p{Z}";
 
     // RDF Transform JSON Strings
     // --------------------------------------------------------------------------------
@@ -345,7 +347,7 @@ public class Util {
         }
         // Otherwise, we have a string like "ccc:", so treat it as a possible prefix...
         // If the string contains no whitespace...
-        else if ( strIRI.length() == strIRI.replaceAll("[" + Util.WHITESPACE + "]", "").length() ) {
+        else if ( strIRI.length() == Util.removeAllWhitespace(strIRI).length() ) {
             return iIndex; // ...accept it
         }
         // Otherwise, not a valid IRI string, so don't accept...
@@ -533,7 +535,7 @@ public class Util {
         // Output RDFTranform Preferences...
         //
         String strPrefs = "Preferences: { ";
-        String strComma = ", "; 
+        String strComma = ", ";
         boolean bNotFirstEntry = false;
         Set<Map.Entry<String, Object>> entrySet = Preferences.entrySet();
         for (Map.Entry<String, Object> entry : entrySet) {
@@ -655,11 +657,35 @@ public class Util {
         }
     }
 
+    static public String replaceAll(String strUTF16, String strRegEx, String strReplace) {
+        //String strUTF8 = new String( strUTF16.getBytes(StandardCharsets.UTF_16), StandardCharsets.UTF_8);
+        //strUTF8 = strUTF8.replaceAll(strRegEx, strReplace);
+        //strUTF16 = new String( strUTF8.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_16);
+        strUTF16 = strUTF16.replaceAll(strRegEx, strReplace);
+        return strUTF16;
+    }
+
+    static public String replaceFirst(String strUTF16, String strRegEx, String strReplace) {
+        //String strUTF8 = new String( strUTF16.getBytes(StandardCharsets.UTF_16), StandardCharsets.UTF_8);
+        //strUTF8 = strUTF8.replaceFirst(strRegEx, strReplace);
+        //strUTF16 = new String( strUTF8.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_16);
+        strUTF16 = strUTF16.replaceFirst(strRegEx, strReplace);
+        return strUTF16;
+    }
+
+    static public String removeAllWhitespace(String strUTF16) {
+        return Util.replaceAll(strUTF16, "[" + Util.WHITESPACE + "]+", "");
+    }
+
+    static public String replaceAllWhitespace(String strUTF16) {
+        return Util.replaceAll(strUTF16, "[" + Util.WHITESPACE + "]", " ");
+    }
+
     static public String toSpaceStrippedString(Object obj) {
         if (obj == null) {
             return null;
         }
-        return obj.toString().replaceAll("[" + Util.WHITESPACE + "]+", "").strip();
+        return Util.removeAllWhitespace( obj.toString() ).strip();
     }
 
     static public String toNodeTypeString(NodeType eNodeType) {
