@@ -52,68 +52,61 @@ class RDFTransformCommon {
         }
     }
 
+    /*
+     * Method toIRIString(strText)
+     *
+     *  Convert string to an IRI string
+     */
     static async toIRIString(strText) {
+        // NOTE: Replaced the local string conversion to IRI with the
+        //       server-side toIRIString function.  See: rdf-transform-reserve.js to
+        //       reimplement.
+
         if ( ! strText ) {
             return null;
         }
-        var strConvert = strText;
+
+        // To UTF-16...
+        //  from() encodes with encoding
+        //  toString() decodes from encoding to UTF-16
+        //var strConvert = Buffer.from(strText).toString();
+        var strConvert = strText.toString();
+
         if ( strConvert === "" ) {
             return null;
         }
 
-        var iTry = 0; // case 0: No replacements...
-        var strReplace = null;
-        // While the IRI (absolute or relative) is NOT valid...
-        while ( ! ( await RDFTransformCommon.validateIRI(strConvert) ) ) {
-            ++iTry;
-            //  If the try count is out of range...
-            if (iTry > 8) {
-                strConvert = null; // ...cannot use the text as an IRI
-                break;
-            }
-            //
-            // Continue by narrowing the conversion string...
-            //
-            switch (iTry) {
-                case 1:
-                    // Replace whitespace and unallowed characters with underscores...
-                    strReplace = strConvert.replace(/[\u{C2A0}\p{C}\p{Z}<>"{}|^`]+/gu, "_");
-                    break;
-                case 2:
-                    // Replace any unsupported characters with underscores...
-                    strReplace = strConvert.replace(/[^-\p{N}\p{L}_.~:/?#[\]@%!$&'()*+,;=]+/gu, "_");
-                    break;
-                case 3:
-                    // Replace (multiple) leading ":/+" or "/+" with nothing (remove) (first occurrences, not global)...
-                    strReplace = strConvert.replace(/^(:?\/+)+/u, "");
-                    break;
-                case 4:
-                    // Replace sub-delim characters with underscores...
-                    strReplace = strConvert.replace(/[!$&'()*+,;=]+/gu, "_");
-                    break;
-                case 5:
-                    // Replace gen-delim (but not ":" and "/") characters with underscores...
-                    strReplace = strConvert.replace(/[?#[\]@]+/gu, "_");
-                    break;
-                case 6:
-                    // Replace "/" characters with underscores...
-                    strReplace = strConvert.replace(/\/+/gu, "_");
-                    break;
-                case 7:
-                    // Replace ":" characters with underscores...
-                    strReplace = strConvert.replace(/:+/gu, "_");
-                    break;
-                case 8:
-                default:
-                    // Replace all but Unreserved characters with underscores...
-                    strReplace = strConvert.replace(/[^-\p{N}\p{L}_\\.~]+/gu, "_");
-                    break;
-            }
-            // Condense any underscores...
-            strConvert = strReplace.replace(/__+/gu, "_");
+        var data = {};
+        try {
+            data = await RDFTransformCommon.#convertToIRIString(strConvert);
         }
+        catch (evt) {
+            data.good = 0; // ...force bad result
+        }
+        var strIRI = null;
+        if (data.good == 1) {
+            strIRI = data.iri;
+        }
+        return strIRI;
+    }
 
-        return strConvert;
+    static #convertToIRIString(strConvert) {
+        return new Promise(
+            (resolve, reject) => {
+                var params = { [RDFTransform.gstrConvertToIRI] : strConvert };
+
+                $.ajax(
+                    {   url  : "command/rdf-transform/convert-to-iri",
+                        type : 'GET',
+                        async: false, // ...wait on results
+                        data : params,
+                        dataType : "json",
+                        success : (data, strStatus, xhr) => { resolve(data); },
+                        error   : (xhr, strStatus, error) => { resolve( { "good" : 0 } ) }
+                    }
+                );
+            }
+        );
     }
 
     /*

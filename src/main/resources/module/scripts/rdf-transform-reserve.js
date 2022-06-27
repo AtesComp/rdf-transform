@@ -243,4 +243,81 @@ class Reserve_RDFTransformCommon {
      static toHTMLBreaks(strText) {
         return strText.replace(Reserve_RDFTransformCommon.#reLINE_TERMINAL_gm, "<br />");
     }
+
+    /*
+     * Method toIRIString(strIRI)
+     *
+     *  Convert string to an IRI string
+     */
+    static async toIRIString(strText) {
+        if ( ! strText ) {
+            return null;
+        }
+
+        // To UTF-16...
+        //  from() encodes with encoding
+        //  toString() decodes from encoding to UTF-16
+        //var strConvert = Buffer.from(strText).toString();
+        var strConvert = strText.toString();
+
+        if ( strConvert === "" ) {
+            return null;
+        }
+
+        var iTry = 0; // case 0: No replacements...
+        var strReplace = null;
+        // While the IRI (absolute or relative) is NOT valid...
+        while ( ! ( await RDFTransformCommon.validateIRI(strConvert) ) ) {
+            ++iTry;
+            //  If the try count is out of range...
+            if (iTry > 8) {
+                strConvert = null; // ...cannot use the text as an IRI
+                break;
+            }
+            //
+            // Continue by narrowing the conversion string...
+            //
+            switch (iTry) {
+                case 1:
+                    // Replace whitespace and unallowed characters with underscores...
+                    strReplace = strConvert.replace(/[\u{C2A0}\p{C}\p{Z}<>"{}|^`]+/gu, "_");
+                    //strReplace = strConvert.replace(/[\p{Cc}\p{Co}\p{Cn}\p{Z}<>"{}|^`]+/gu, "_");
+                    break;
+                case 2:
+                    // Replace any unsupported characters with underscores...
+                    strReplace = strConvert.replace(/[^-\p{N}\p{L}_.~:/?#[\]@%!$&'()*+,;=]+/gu, "_");
+                    break;
+                case 3:
+                    // Replace (multiple) leading ":/+" or "/+" with nothing (remove) (first occurrences, not global)...
+                    strReplace = strConvert.replace(/^(:?\/+)+/u, "");
+                    break;
+                case 4:
+                    // Replace sub-delim characters with underscores...
+                    strReplace = strConvert.replace(/[!$&'()*+,;=]+/gu, "_");
+                    break;
+                case 5:
+                    // Replace gen-delim (but not ":" and "/") characters with underscores...
+                    strReplace = strConvert.replace(/[?#[\]@]+/gu, "_");
+                    break;
+                case 6:
+                    // Replace "/" characters with underscores...
+                    strReplace = strConvert.replace(/\/+/gu, "_");
+                    break;
+                case 7:
+                    // Replace ":" characters with underscores...
+                    strReplace = strConvert.replace(/:+/gu, "_");
+                    break;
+                case 8:
+                default:
+                    // Replace all but Unreserved characters with underscores...
+                    strReplace = strConvert.replace(/[^-\p{N}\p{L}_\\.~]+/gu, "_");
+                    break;
+            }
+            // Condense any underscores...
+            strConvert = strReplace.replace(/__+/gu, "_");
+        }
+
+        return strConvert;
+    }
+
 }

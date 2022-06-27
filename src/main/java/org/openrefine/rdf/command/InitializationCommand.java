@@ -134,6 +134,7 @@ public class InitializationCommand extends Command {
         RefineServlet.registerCommand( this.theModule, strSaveRDFTransform,       new SaveRDFTransformCommand() );
         RefineServlet.registerCommand( this.theModule, "save-baseIRI",            new SaveBaseIRICommand() );
         RefineServlet.registerCommand( this.theModule, "validate-iri",            new ValidateIRICommand() );
+        RefineServlet.registerCommand( this.theModule, "convert-to-iri",          new ToIRICommand() );
         // Vocabs commands
         RefineServlet.registerCommand( this.theModule, "get-default-namespaces",  new NamespacesGetDefaultCommand() );
         RefineServlet.registerCommand( this.theModule, "save-namespaces",         new NamespacesSaveCommand() );

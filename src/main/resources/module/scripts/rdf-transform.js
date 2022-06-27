@@ -60,6 +60,8 @@ class RDFTransform {
     // objectMappings
     static gstrObjectMappings = "objectMappings";
 
+    static gstrConvertToIRI = "convert";
+
     // Setup default Master Root Node (copy as needed)...
     static gnodeMasterRoot = {};
     static {
