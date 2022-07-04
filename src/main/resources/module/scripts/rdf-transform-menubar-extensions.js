@@ -258,6 +258,11 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
+        //
+        // DUMMY PRINTERS: (Stream)
+        //
+        strType = " (Test)";
+
         strExp = "RDFNull" + strType;
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNull",
@@ -269,6 +274,8 @@ class RDFExporterMenuBar
         //
         // BINARY PRINTERS: (Stream)
         //
+        strType = " (Binary)";
+
         // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
         //strExp = "RDFProtoBuf" + strType;
         //objTypeSubSubMenuItem = {
