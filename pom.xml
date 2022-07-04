@@ -31,8 +31,7 @@
         <butterfly.version>1.2.3</butterfly.version><!-- matches 3.6-SNAPSHOT -->
         <slf4j.version>1.7.36</slf4j.version><!-- matches 3.6-SNAPSHOT -->
 
-        <!--<jena.version>4.4.0</jena.version>--><!-- matches 3.6-SNAPSHOT -->
-        <jena.version>4.5.0</jena.version>
+        <jena.version>4.5.0</jena.version><!-- matches 3.6-SNAPSHOT -->
         <!--<javax.version>4.0.1</javax.version>--><!-- matches 3.6-SNAPSHOT for servlet-api -->
         <jsonld.version>1.3.0</jsonld.version>
         <velocity.version>1.6.3</velocity.version><!-- matches 3.6-SNAPSHOT : to exclude older dependancies than butterfly's-->
@@ -138,6 +137,7 @@
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
             <version>${jena.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
