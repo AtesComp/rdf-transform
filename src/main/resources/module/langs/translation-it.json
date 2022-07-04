@@ -137,6 +137,7 @@
     "rdft-menu/reset": "Resetta RDF Trasforma",
     "rdft-menu/search-single-site": "per cercare su un singolo sito",
     "rdft-menu/set-up-service": "Configura un servizio di riconciliazione che usa",
+    "rdft-menu/shown-below": "mostrato di seguito",
     "rdft-menu/upload-completed": "Yay! Upload completato.",
     "rdft-menu/upload-virtuoso": "Carica triple su Virtuoso",
     "rdft-prefix/add": "aggiungi prefisso",

@@ -960,7 +960,8 @@ class RDFTransformDialog {
 
     #updatePreviewStreamLabel() {
         this.#elements.rdftPreviewStreamLabel.text(
-            ( RDFTransform.gPreferences.bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") )
+            ( RDFTransform.gPreferences.bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") ) +
+            " " + $.i18n("rdft-menu/shown-below") + "..."
         );
     }
 

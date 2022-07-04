@@ -137,6 +137,7 @@
     "rdft-menu/reset": "Reset RDF Transform",
     "rdft-menu/search-single-site": "Search single site",
     "rdft-menu/set-up-service": "Set up service",
+    "rdft-menu/shown-below": "shown below",
     "rdft-menu/upload-completed": "Upload has completed.",
     "rdft-menu/upload-virtuoso": "Upload to Virtuoso",
     "rdft-prefix/add": "Add",
