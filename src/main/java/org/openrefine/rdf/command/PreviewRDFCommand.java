@@ -113,11 +113,9 @@ public class PreviewRDFCommand extends Command {
             //
             StreamRDF theWriter = null;
             if ( bPreviewStream )  {
-                // TODO: Reported Jena Bug:
-                //      The Jena code says getWriterStream() will return null if the RDFFormat
-                //      doesn't have a writer registered.  It lies!  It throws a RiotException.
+                // TODO: Remove "try catch" when only supporting OpenRefine 3.6+
                 try {
-                    // TODO: Reported Jena Bug:
+                    // TODO: Remove +null version when only supporting OpenRefine 3.6+
                     //      The following code without the end null should work but, instead,
                     //      it hangs (locks up) processing.  With the null, it succeeds.
                     //theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
