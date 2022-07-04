@@ -24,7 +24,7 @@ public class RDFExporter {
             return this.format.getLang().getContentType().getContentTypeStr();
         }
         else { // ...export as Turtle...
-            return RDFFormat.TURTLE.getLang().getContentType().getContentTypeStr();
+            return RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentTypeStr();
         }
     }
 }

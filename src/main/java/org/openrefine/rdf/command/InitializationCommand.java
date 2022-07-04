@@ -183,21 +183,21 @@ public class InitializationCommand extends Command {
         //
         strType = " (Pretty)";
         strExp = "RDF/XML"  + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFXML, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFXML_PRETTY, strExp) );
         strExp = "Turtle" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, strExp) );
         strExp = "Turtle*" + strType; // Same as Turtle
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, strExp) );
         strExp = "N3" + strType; // Same as Turtle
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, strExp) );
         strExp = "N3*" + strType; // Same as Turtle
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, strExp) );
         strExp = "TriG" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG_PRETTY, strExp) );
         strExp = "TriG*" + strType; // Same as TriG
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG_PRETTY, strExp) );
         strExp = "JSONLD" + strType; // Who would want ugly FLAT?
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.JSONLD, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.JSONLD_PRETTY, strExp) );
         //strExp = "NDJSONLD" + strPretty;
         //ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
         strExp = "RDF/JSON" + strType;
@@ -225,13 +225,13 @@ public class InitializationCommand extends Command {
         //
         strType = " (Flat)";
         strExp = "NTriples" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES_UTF8, strExp) );
         strExp = "NTriples*" + strType; // Same as NTriples
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES_UTF8, strExp) );
         strExp = "NQuads" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS_UTF8, strExp) );
         strExp = "NQuads*" + strType; // Quads*...Seriously? SAME AS NQuads
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS_UTF8, strExp) );
         strExp = "TriX";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
         strExp = "RDFNull (Test)"; // ...the bit bucket
