@@ -10,6 +10,7 @@ import com.google.refine.model.Project;
 import com.google.refine.model.Row;
 
 import org.apache.jena.iri.IRI;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
@@ -28,7 +29,9 @@ public class ExportRDFRowVisitor extends RDFRowVisitor {
             IRI baseIRI = this.getRDFTransform().getBaseIRI();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
+                this.theModel.enterCriticalSection(Model.WRITE);
                 root.createStatements(baseIRI, theModel, theProject, iRowIndex);
+                this.theModel.leaveCriticalSection();
 
                 if ( Util.isDebugMode() ) {
                     ExportRDFRowVisitor.logger.info("DEBUG:   " +

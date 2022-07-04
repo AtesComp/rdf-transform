@@ -53,6 +53,8 @@ public abstract class RDFVisitor {
         }
 
         //this.theModel.begin();
+        this.theModel.clearNsPrefixMap();
+        this.theModel.enterCriticalSection(Model.WRITE);
 
         // Set Default Namespace for repository...
         if ( bUseBaseIRI && ! strBaseIRI.isEmpty() ) {
@@ -68,7 +70,9 @@ public abstract class RDFVisitor {
             this.theModel.setNsPrefix( vocab.getPrefix(), vocab.getNamespace() );
         }
 
+        this.theModel.leaveCriticalSection();
         //this.theModel.commit();
+        this.theModel.lock();
     }
 
     public RDFTransform getRDFTransform() {
@@ -86,7 +90,7 @@ public abstract class RDFVisitor {
     abstract public void buildModel(Project theProject, Engine theEngine);
 
     /**
-     * Performs any necessary processing before visiting the selected (filtered) data rows or records. 
+     * Performs any necessary processing before visiting the selected (filtered) data rows or records.
      * Called by the FilteredRows or FilteredRecords accept() method in this.buildModel(Project, Engine)
      * @param theProject
      */
@@ -116,7 +120,7 @@ public abstract class RDFVisitor {
     }
 
     /**
-     * Performs any necessary processing after visiting the selected (filtered) data rows or records. 
+     * Performs any necessary processing after visiting the selected (filtered) data rows or records.
      * Called by the FilteredRows or FilteredRecords accept() method in this.buildModel(Project, Engine)
      * @param theProject
      */
@@ -146,8 +150,8 @@ public abstract class RDFVisitor {
         // TODO: Code for future context upgrade (quads)
 
         // Export statements...
+        this.theModel.enterCriticalSection(Model.READ);
         ExtendedIterator<Triple> stmtIter = this.theModel.getGraph().find();
-
         try {
             while ( stmtIter.hasNext() ) {
                 this.theWriter.triple( stmtIter.next() );
@@ -156,8 +160,11 @@ public abstract class RDFVisitor {
         finally {
             stmtIter.close();
         }
+        this.theModel.leaveCriticalSection();
 
         // Remove the exported statements from the model...
+        this.theModel.enterCriticalSection(Model.WRITE);
         this.theModel.removeAll();
+        this.theModel.leaveCriticalSection();
     }
 }
