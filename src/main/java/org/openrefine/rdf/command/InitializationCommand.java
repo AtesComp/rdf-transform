@@ -2,15 +2,12 @@ package org.openrefine.rdf.command;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.refine.ClientSideResourceManager;
-import com.google.refine.ProjectManager;
 import com.google.refine.RefineServlet;
 import com.google.refine.commands.Command;
 import com.google.refine.exporters.ExporterRegistry;
@@ -18,7 +15,6 @@ import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.grel.ControlFunctionRegistry;
 import com.google.refine.model.Project;
 import com.google.refine.operations.OperationRegistry;
-import com.google.refine.preference.PreferenceStore;
 
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
@@ -179,58 +175,62 @@ public class InitializationCommand extends Command {
          *  Server-side Exporters...
          */
 
+        String strType;
         String strExp;
 
         //
         // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
         //
-        strExp = "RDF/XML (Pretty)";
+        strType = " (Pretty)";
+        strExp = "RDF/XML"  + strType;
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFXML, strExp) );
-        strExp = "Turtle (Pretty)";
+        strExp = "Turtle" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
-        strExp = "Turtle* (Pretty)"; // Same as Turtle
+        strExp = "Turtle*" + strType; // Same as Turtle
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
-        strExp = "N3 (Pretty)"; // Same as Turtle
+        strExp = "N3" + strType; // Same as Turtle
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
-        strExp = "N3* (Pretty)"; // Same as Turtle
+        strExp = "N3*" + strType; // Same as Turtle
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE, strExp) );
-        strExp = "TriG (Pretty)";
+        strExp = "TriG" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG, strExp) );
-        strExp = "TriG* (Pretty)"; // Same as TriG
+        strExp = "TriG*" + strType; // Same as TriG
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG, strExp) );
-        strExp = "JSONLD (Pretty)"; // Who would want ugly FLAT?
+        strExp = "JSONLD" + strType; // Who would want ugly FLAT?
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.JSONLD, strExp) );
-        //strExp = "NDJSONLD (Pretty)";
+        //strExp = "NDJSONLD" + strPretty;
         //ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
-        strExp = "RDF/JSON (Pretty)";
+        strExp = "RDF/JSON" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFJSON, strExp) );
 
         //
         // BLOCKS PRINTERS: per Subject (Stream)
         //
-        strExp = "Turtle (Blocks)";
+        strType = " (Blocks)";
+        strExp = "Turtle" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        strExp = "Turtle* (Blocks)"; // Same as Turtle
+        strExp = "Turtle*" + strType; // Same as Turtle
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        strExp = "N3 (Blocks)"; // Same as Turtle
+        strExp = "N3" + strType; // Same as Turtle
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        strExp = "N3* (Blocks)"; // Same as Turtle
+        strExp = "N3*" + strType; // Same as Turtle
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        strExp = "TriG (Blocks)";
+        strExp = "TriG" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
-        strExp = "TriG* (Blocks)"; // Same as TriG
+        strExp = "TriG*" + strType; // Same as TriG
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
 
         //
         // LINE PRINTERS: triple, quad (Stream)
         //
-        strExp = "NTriples (Flat)";
+        strType = " (Flat)";
+        strExp = "NTriples" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
-        strExp = "NTriples* (Flat)"; // Same as NTriples
+        strExp = "NTriples*" + strType; // Same as NTriples
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES, strExp) );
-        strExp = "NQuads (Flat)";
+        strExp = "NQuads" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
-        strExp = "NQuads* (Flat)"; // Quads*...Seriously? SAME AS NQuads
+        strExp = "NQuads*" + strType; // Quads*...Seriously? SAME AS NQuads
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS, strExp) );
         strExp = "TriX";
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
@@ -240,10 +240,11 @@ public class InitializationCommand extends Command {
         //
         // BINARY PRINTERS: (Stream)
         //
-        strExp = "RDFProtoBuf";
+        strType = " (Binary)";
         // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
-        //      OpenRefine 3.5.2 load an older Jena ARQ version that overrides the local
+        //      OpenRefine 3.5.2 loads an older Jena ARQ version that overrides the local
         //      extension's newer library jar.  Bummer.
+        //strExp = "RDFProtoBuf" + strType;
         //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
         // NOTE: Tried the following but can't control RDFExporterMenuBar in rdf-transform-menubar-extension.js
         //      as it's client side...without using some major voodoo...
@@ -253,20 +254,21 @@ public class InitializationCommand extends Command {
         //}
         //catch (Exception ex) {
         //}
-        strExp = "RDFTrift";
+        strExp = "RDFTrift" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_THRIFT, strExp) );
 
-        //strExp = "BinaryRDF";
+        //strExp = "BinaryRDF" + strType;
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(BINARY, strExp) ); // RDF4J
-        //strExp = "HDT";
+        //strExp = "HDT" + strType;
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(HDT, strExp) );
 
         //
         // TODO: Special RDFExporters - Are these even doable???
         //
-        //strExp = "RDFa";
+        //strType = " (Special)";
+        //strExp = "RDFa" + strType;
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFA, strExp) );
-        //strExp = "SHACLC";
+        //strExp = "SHACLC" + strType;
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.SHACLC, strExp) );
 
         /*
