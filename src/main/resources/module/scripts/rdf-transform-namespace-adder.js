@@ -21,10 +21,10 @@ class RDFTransformNamespaceAdder {
         this.#elements.dialogHeader.html(                   $.i18n('rdft-prefix/header')          );
         this.#elements.rdf_transform_prefix_prefix.html(    $.i18n('rdft-prefix/prefix') + ":"    );
         this.#elements.rdf_transform_prefix_namespace.html( $.i18n('rdft-prefix/namespace') + ":" );
-        this.#elements.rdf_transform_prefix_voc.html(       $.i18n('rdft-prefix/voc')             );
+        this.#elements.rdf_transform_prefix_voc.html(       $.i18n('rdft-prefix/vocab-terms')     );
         this.#elements.rdf_transform_prefix_only.html(      $.i18n('rdft-prefix/prefix-add-only') );
         this.#elements.rdf_transform_prefix_fetch.html(     $.i18n('rdft-prefix/fetch')           );
-        this.#elements.rdf_transform_prefix_imp.html(       $.i18n('rdft-prefix/imp')             );
+        this.#elements.rdf_transform_prefix_imp.html(       $.i18n('rdft-prefix/import')          );
         this.#elements.rdf_transform_prefix_file.html(      $.i18n('rdft-prefix/file') + ":"      );
         this.#elements.rdf_transform_prefix_format.html(    $.i18n('rdft-prefix/format') + ":"    );
         this.#elements.rdf_transform_prefix_auto.html(      $.i18n('rdft-prefix/auto')            );
@@ -43,7 +43,7 @@ class RDFTransformNamespaceAdder {
 
         this.#elements.buttonOK.html(       $.i18n('rdft-buttons/ok')                  );
         this.#elements.buttonCancel.html(   $.i18n('rdft-buttons/cancel')              );
-        this.#elements.buttonAdvanced.html( $.i18n('rdft-prefix/vocab-import') + "..." );
+        this.#elements.buttonVocabImport.html( $.i18n('rdft-buttons/vocab-import') + "..." );
 
     }
 
@@ -66,7 +66,7 @@ class RDFTransformNamespaceAdder {
             var strPrefix = this.#elements.prefix.val();
             var strNamespace = this.#elements.namespace.val();
             var strFetchOption =
-                this.#elements.fetching_options_table
+                this.#elements.vocab_import_table
                 .find('input[name="vocab_fetch_method"]:checked')
                 .val();
 
@@ -171,20 +171,20 @@ class RDFTransformNamespaceAdder {
         this.#elements.buttonCancel
         .on("click", () => { this.#dismiss(); } );
 
-        this.#elements.buttonAdvanced
+        this.#elements.buttonVocabImport
         .on("click", () => {
-                this.#elements.fetching_options_table.show();
-                $('#button-advanced-options').hide();
-                $('#button-advanced-options').prop("disabled", "true");
+                this.#elements.vocab_import_table.show();
+                $('#button-vocab-import').hide();
+                $('#button-vocab-import').prop("disabled", "true");
             }
         );
 
-        this.#elements.fetching_options_table
+        this.#elements.vocab_import_table
         .hide()
         .find('input[name="vocab_fetch_method"]')
         .on("click", (evt) => {
                 var bHideUpload = ( $(evt.currentTarget).val() !== 'file' );
-                this.#elements.fetching_options_table
+                this.#elements.vocab_import_table
                 .find('.upload_file_inputs')
                 .prop('disabled', bHideUpload);
             }
