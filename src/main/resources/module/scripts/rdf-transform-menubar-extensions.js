@@ -23,7 +23,10 @@ $.ajax(
     }
 )
 .always(
-    () => { $.i18n().load(strDict, strLang); }
+    () => {
+        $.i18n().load(strDict, strLang);
+        console.log("RDF Transform [Dictionary: " + strDict.toString() + "  Language: " + strLang + "]");
+    }
 );
 
 // ...end Language Management

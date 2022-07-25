@@ -65,10 +65,14 @@
               <td>
                 <div class="rdf-transform-preview-settings">
                   <input type="number" id="idSampleLimit" bind="rdftSampleLimit" min="10" max="999" />
-                  <label for="idfname" bind="rdftSampleLimitLabel"></label>
+                  <label for="idSampleLimit" bind="rdftSampleLimitLabel"></label>
                   <nbsp />
-                  <input type="checkbox" id="idPreviewStream" bind="rdftPreviewStream" />
+                  <span bind="rdftPreviewShown"></span>
+                  <nbsp />
+                  <input type="radio" id="idPreviewStream" name="rdftPreviewType" value="stream" bind="rdftPreviewStream" />
                   <label for="idPreviewStream" bind="rdftPreviewStreamLabel"></label>
+                  <input type="radio" id="idPreviewPretty" name="rdftPreviewType" value="pretty" bind="rdftPreviewPretty" />
+                  <label for="idPreviewPretty" bind="rdftPreviewPrettyLabel"></label>
                 </div>
               </td>
             </tr>

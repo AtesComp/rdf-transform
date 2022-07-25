@@ -466,21 +466,24 @@ class RDFTransformDialog {
 
         this.#elements = DOM.bind(this.#dialog);
 
-        this.#elements.dialogHeader.text(         $.i18n('rdft-dialog/header') );
-        this.#elements.rdftDescription.text(      $.i18n('rdft-dialog/desc') );
-        this.#elements.rdftDocLink.text(          $.i18n('rdft-dialog/doc-link') );
-        this.#elements.rdftBaseIRIText.text(      $.i18n('rdft-dialog/base-iri') + ':' );
-        this.#elements.rdftBaseIRIValue.text(     $.i18n('rdft-dialog/base-iri-waiting') + "..." );
-        this.#elements.rdftEditBaseIRI.text(      $.i18n('rdft-dialog/edit') );
-        this.#elements.rdftTabTransformText.text( $.i18n('rdft-dialog/tab-transform') );
-        this.#elements.rdftTabPreviewText.text(   $.i18n('rdft-dialog/tab-preview') );
-        this.#elements.rdftPrefixesText.text(     $.i18n('rdft-dialog/available-prefix') + ':' );
-        this.#elements.buttonAddRootNode.text(    $.i18n('rdft-buttons/add-root') );
-        this.#elements.buttonImpTemplate.text(    $.i18n('rdft-buttons/import-template') );
-        this.#elements.buttonExpTemplate.text(    $.i18n('rdft-buttons/export-template') );
-        this.#elements.buttonSaveTransform.text(  $.i18n('rdft-buttons/save') );
-        this.#elements.buttonOK.text(             $.i18n('rdft-buttons/ok') );
-        this.#elements.buttonCancel.text(         $.i18n('rdft-buttons/cancel') );
+        this.#elements.dialogHeader.text(           $.i18n('rdft-dialog/header') );
+        this.#elements.rdftDescription.text(        $.i18n('rdft-dialog/desc') );
+        this.#elements.rdftDocLink.text(            $.i18n('rdft-dialog/doc-link') );
+        this.#elements.rdftBaseIRIText.text(        $.i18n('rdft-dialog/base-iri') + ':' );
+        this.#elements.rdftBaseIRIValue.text(       $.i18n('rdft-dialog/base-iri-waiting') + "..." );
+        this.#elements.rdftEditBaseIRI.text(        $.i18n('rdft-dialog/edit') );
+        this.#elements.rdftTabTransformText.text(   $.i18n('rdft-dialog/tab-transform') );
+        this.#elements.rdftTabPreviewText.text(     $.i18n('rdft-dialog/tab-preview') );
+        this.#elements.rdftPreviewShown.text(       $.i18n('rdft-dialog/shown-below') + ":" );
+        this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-turtle-stream") );
+        this.#elements.rdftPreviewPrettyLabel.text( $.i18n("rdft-menu/rdf-turtle-pretty") );
+        this.#elements.rdftPrefixesText.text(       $.i18n('rdft-dialog/available-prefix') + ':' );
+        this.#elements.buttonAddRootNode.text(      $.i18n('rdft-buttons/add-root') );
+        this.#elements.buttonImpTemplate.text(      $.i18n('rdft-buttons/import-template') );
+        this.#elements.buttonExpTemplate.text(      $.i18n('rdft-buttons/export-template') );
+        this.#elements.buttonSaveTransform.text(    $.i18n('rdft-buttons/save') );
+        this.#elements.buttonOK.text(               $.i18n('rdft-buttons/ok') );
+        this.#elements.buttonCancel.text(           $.i18n('rdft-buttons/cancel') );
 
         var imgAddPrefix =
             $('<img />')
@@ -623,9 +626,14 @@ class RDFTransformDialog {
                 }
             );
 
-        // Hook up the Preview Stream Checkbox...
+        // Hook up the Preview Stream / Pretty Radio buttons...
         this.#elements.rdftPreviewStream
-            .on("change", (evt) => {
+            .on("click", (evt) => {
+                    this.#editPreviewStream( $(evt.target) );
+                }
+            );
+        this.#elements.rdftPreviewPretty
+            .on("click", (evt) => {
                     this.#editPreviewStream( $(evt.target) );
                 }
             );
@@ -931,7 +939,7 @@ class RDFTransformDialog {
         var bPreviewStream = this.#elements.rdftPreviewStream.prop('checked');
         if (bPreviewStream != RDFTransform.gPreferences.bPreviewStream) {
             RDFTransform.gPreferences.bPreviewStream = bPreviewStream;
-            this.#updatePreviewStreamLabel();
+            //this.#updatePreviewType();
 
             // Set up Preview Tab processing...
             this.updatePreview();
@@ -949,21 +957,27 @@ class RDFTransformDialog {
         this.#elements.rdftSampleLimitLabel.text( " " +
             ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") )
         );
-        this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-turtle-pretty") );
+        this.#elements.rdftPreviewPretty.prop('checked', true); // ...default to pretty
+        //this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-turtle-pretty") );
     }
 
     #updatePreviewSettings() {
         this.#elements.rdftSampleLimit.val(RDFTransform.gPreferences.iSampleLimit);
-        this.#elements.rdftPreviewStream.prop('checked', RDFTransform.gPreferences.bPreviewStream);
-        this.#updatePreviewStreamLabel();
+        if (RDFTransform.gPreferences.bPreviewStream) {
+            this.#elements.rdftPreviewStream.prop('checked', true);
+        }
+        else {
+            this.#elements.rdftPreviewPretty.prop('checked', true);
+        }
+        //this.#updatePreviewType();
     }
 
-    #updatePreviewStreamLabel() {
-        this.#elements.rdftPreviewStreamLabel.text(
-            ( RDFTransform.gPreferences.bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") ) +
-            " " + $.i18n("rdft-menu/shown-below") + "..."
-        );
-    }
+    //#updatePreviewType() {
+    //    this.#elements.rdftPreviewStreamLabel.text(
+    //        ( RDFTransform.gPreferences.bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") ) +
+    //        " " + $.i18n("rdft-dialog/shown-below") + "..."
+    //    );
+    //}
 
     getTransformExport() {
         var theTransform = {};
