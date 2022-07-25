@@ -10,9 +10,9 @@
 /** @type {string} */
 var strDict = "";
 /** @type {string} */
-var strLang = navigator.language.split("-")[0];
+var strLang = navigator.languages[1] || navigator.language.split("-")[0];
 $.ajax(
-    {   url: "command/core/load-language",
+    {   url: "command/core/load-language?",
         type: 'POST',
         async: false, // ...wait on results...
         data: { module: "rdf-transform" },
@@ -25,7 +25,6 @@ $.ajax(
 .always(
     () => {
         $.i18n().load(strDict, strLang);
-        console.log("RDF Transform [Dictionary: " + strDict.toString() + "  Language: " + strLang + "]");
     }
 );
 
