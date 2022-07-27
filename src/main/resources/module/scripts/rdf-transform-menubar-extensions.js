@@ -10,12 +10,15 @@
 /** @type {string} */
 var strDict = "";
 /** @type {string} */
-var strLang = navigator.languages[1] || navigator.language.split("-")[0];
+var strLang = (navigator.language || navigator.languages[0]).split("-")[0];
 $.ajax(
     {   url: "command/core/load-language?",
         type: 'POST',
         async: false, // ...wait on results...
-        data: { module: "rdf-transform" },
+        data: {
+            module: "rdf-transform",
+            lang: strLang
+        },
         success: (data) => {
             strDict = data['dictionary'];
             strLang = data['lang'];
