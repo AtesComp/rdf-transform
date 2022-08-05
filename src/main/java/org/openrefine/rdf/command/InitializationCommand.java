@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.refine.ClientSideResourceManager;
 import com.google.refine.RefineServlet;
 import com.google.refine.commands.Command;
+import com.google.refine.exporters.Exporter;
 import com.google.refine.exporters.ExporterRegistry;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.grel.ControlFunctionRegistry;
@@ -232,8 +233,12 @@ public class InitializationCommand extends Command {
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS_UTF8, strExp) );
         strExp = "NQuads*" + strType; // Quads*...Seriously? SAME AS NQuads
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS_UTF8, strExp) );
-        strExp = "TriX";
+        strExp = "TriX" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
+
+        //
+        // DUMMY PRINTERS: (Stream)
+        //
         strExp = "RDFNull (Test)"; // ...the bit bucket
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDFNULL, strExp) );
 
@@ -263,6 +268,11 @@ public class InitializationCommand extends Command {
          *  Server-side Overlay Models - Attach an RDFTransform object to the project...
          */
         Project.registerOverlayModel("RDFTransform", RDFTransform.class);
+
+        Exporter exporter = ExporterRegistry.getExporter("RDFProtoBuf (Binary)");
+        if (exporter == null) {
+            InitializationCommand.logger.error("ERROR: ExporterRegistry test failed!");
+        }
     }
 
     @Override

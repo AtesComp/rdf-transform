@@ -294,9 +294,7 @@ class RDFExporterMenuBar
         //
         // DUMMY PRINTERS: (Stream)
         //
-        strType = " (Test)";
-
-        strExp = "RDFNull" + strType;
+        strExp = "RDFNull (Test)";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNull",
             label : $.i18n("rdft-menu/rdf-null-stream"),
