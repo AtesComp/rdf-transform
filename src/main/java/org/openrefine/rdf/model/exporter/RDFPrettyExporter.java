@@ -87,7 +87,7 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
         catch (Exception ex) {
             if ( Util.isDebugMode() ) RDFPrettyExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-            throw new RuntimeException(ex.getMessage(), ex);
+            throw new IOException(ex.getMessage(), ex);
         }
     }
 }

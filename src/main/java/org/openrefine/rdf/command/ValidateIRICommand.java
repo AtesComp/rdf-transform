@@ -25,20 +25,12 @@ public class ValidateIRICommand extends Command {
         // NOTE: No CSRFToken required for this command.
 
         try {
-            //
-            // Set up response...
-            //   ...cause we're hand-jamming JSON responses directly...
-            //
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-Type", "application/json");
-
             String strIRI = request.getParameter("iri").strip();
 
             IRI theIRI = Util.buildIRI(strIRI, true);
             if (theIRI == null) {
                 if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: Failure [" + strIRI + "]");
-                // TODO: Convert to CodeResponse and respondJSON(), modify caller
-                ValidateIRICommand.respond(response, "{ \"good\" : 0 }");
+                ValidateIRICommand.respondJSON(response, CodeResponse.error);
                 return;
             }
         }
@@ -48,7 +40,6 @@ public class ValidateIRICommand extends Command {
             return;
         }
         if ( Util.isVerbose(3) ) ValidateIRICommand.logger.info("...IRI validated.");
-        // TODO: Convert to CodeResponse and respondJSON(), modify caller
-        ValidateIRICommand.respond(response, "{ \"good\" : 1 }");
+        ValidateIRICommand.respondJSON(response, CodeResponse.ok);
     }
 }

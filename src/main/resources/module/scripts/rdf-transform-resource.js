@@ -137,7 +137,7 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        "The selection does not have a valid Resource object!\n" + // TODO: $.i18n()
+                        "Invalid Resource object for selection!\n" + // TODO: $.i18n()
                         "IRI: " + strIRI
                     );
                 }
@@ -317,7 +317,7 @@ class RDFTransformResourceDialog {
                     alert(
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
-                        "The selection does not have a valid Resource object!\n" + // TODO: $.i18n()
+                        "Invalid Resource object for selection!\n" + // TODO: $.i18n()
                         "IRI: " + strIRI
                     );
                 }

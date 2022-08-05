@@ -25,20 +25,12 @@ public class ToIRICommand extends Command {
 
         String strIRI = null;
         try {
-            //
-            // Set up response...
-            //   ...cause we're hand-jamming JSON responses directly...
-            //
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-Type", "application/json");
-
             String strConvert = request.getParameter("convert").strip();
 
             strIRI = ToIRIString.toIRIString(strConvert);
             if (strIRI == null) {
                 if ( Util.isDebugMode() ) ToIRICommand.logger.error("DEBUG: Creating IRI: Failure [" + strConvert + "]");
-                // TODO: Convert to CodeResponse and respondJSON(), modify caller
-                ToIRICommand.respond(response, "{ \"good\" : 0 }");
+                ToIRICommand.respondJSON(response, CodeResponse.error);
                 return;
             }
         }
@@ -48,7 +40,6 @@ public class ToIRICommand extends Command {
             return;
         }
         if ( Util.isVerbose(3) ) ToIRICommand.logger.info("...IRI created.");
-        // TODO: Convert to CodeResponse and respondJSON(), modify caller
-        ToIRICommand.respond(response, "{ \"good\" : 1, \"iri\" : \"" + strIRI + "\" }");
+        ToIRICommand.respondJSON( response, new CodeResponse(strIRI) );
     }
 }

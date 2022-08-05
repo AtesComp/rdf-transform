@@ -231,9 +231,9 @@ public class RDFTransform implements OverlayModel {
             }
         }
         if ( Util.isVerbose(2) || Util.isDebugMode() ) {
-            RDFTransform.logger.info("  Found Extension: [" + strExtension + "]  Version: [" + strVersion + "]");
+            RDFTransform.logger.info("  Transform Version: " + strExtension + " " + strVersion);
             if ( ! strVersion.equals(VERSION) ) {
-                RDFTransform.logger.info("    Current Version: [" + VERSION + "] will update template on save.");
+                RDFTransform.logger.info("    Current Version: " + EXTENSION + " " + VERSION + " will update transform on save.");
             }
         }
 

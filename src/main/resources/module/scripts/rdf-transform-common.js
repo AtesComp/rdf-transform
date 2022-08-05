@@ -17,7 +17,7 @@ class RDFTransformCommon {
      *  A categorical type class to manage nodes
      */
     static NodeType = class {
-        // NOTE: The following string names ("resource", "blank", "literal") are intentinally set
+        // NOTE: The following string names ("resource", "blank", "literal") are intentionally set
         //  to the values of the HTML Input group titled 'rdf-content-radio' in the dialog file
         //  rdf-transform-node-config.html.  The type (getType) is generally evaluated via the "checked"
         //  'rdf-content-radio' value:
@@ -38,17 +38,16 @@ class RDFTransformCommon {
         }
 
         static getType(strType) {
-            var eType = null;
-            if ( strType === RDFTransformCommon.NodeType.Resource.getName() ) {
-                eType = RDFTransformCommon.NodeType.Resource;
+            if ( strType === RDFTransformCommon.gstrResource ) {
+                return RDFTransformCommon.NodeType.Resource;
             }
-            else if ( strType === RDFTransformCommon.NodeType.Literal.getName() ) {
-                eType = RDFTransformCommon.NodeType.Literal;
+            else if ( strType === RDFTransformCommon.gstrLiteral ) {
+                return RDFTransformCommon.NodeType.Literal;
             }
-            else if ( strType === RDFTransformCommon.NodeType.Blank.getName() ) {
-                eType = RDFTransformCommon.NodeType.Blank;
+            else if ( strType === RDFTransformCommon.gstrBlank ) {
+                return RDFTransformCommon.NodeType.Blank;
             }
-            return eType;
+            return null;
         }
     }
 
@@ -69,31 +68,30 @@ class RDFTransformCommon {
         // To UTF-16...
         //  from() encodes with encoding
         //  toString() decodes from encoding to UTF-16
-        //var strConvert = Buffer.from(strText).toString();
-        var strConvert = strText.toString();
+        //let strConvert = Buffer.from(strText).toString();
+        let strConvert = strText.toString();
 
         if ( strConvert === "" ) {
             return null;
         }
 
-        var data = {};
+        let data = null;
         try {
             data = await RDFTransformCommon.#convertToIRIString(strConvert);
         }
         catch (evt) {
-            data.good = 0; // ...force bad result
+            // ...ignore error, no IRI...
         }
-        var strIRI = null;
-        if (data.good == 1) {
-            strIRI = data.iri;
+        if (data !== null && data.code === "ok") {
+            return data.message;
         }
-        return strIRI;
+        return null;
     }
 
     static #convertToIRIString(strConvert) {
         return new Promise(
             (resolve, reject) => {
-                var params = { [RDFTransform.gstrConvertToIRI] : strConvert };
+                let params = { [RDFTransform.gstrConvertToIRI] : strConvert };
 
                 $.ajax(
                     {   url  : "command/rdf-transform/convert-to-iri",
@@ -102,7 +100,7 @@ class RDFTransformCommon {
                         data : params,
                         dataType : "json",
                         success : (data, strStatus, xhr) => { resolve(data); },
-                        error   : (xhr, strStatus, error) => { resolve( { "good" : 0 } ) }
+                        error   : (xhr, strStatus, error) => { resolve(null) }
                     }
                 );
             }
@@ -120,18 +118,14 @@ class RDFTransformCommon {
         //       reimplement.
         //return RDFTransformCommon.#reIRI_COMPLETE_iu.test(strIRI);
 
-        var data = {};
+        let data = null;
         try {
             data = await RDFTransformCommon.#getValidIRI(strIRI);
         }
         catch (evt) {
-            data.good = 0; // ...force bad result
+            // ...ignore error, bad IRI...
         }
-        var bGoodIRI = false;
-        if (data.good == 1) {
-            bGoodIRI = true;
-        }
-        return bGoodIRI;
+        return (data != null && data.code === "ok");
     }
 
     static #getValidIRI(strIRI) {
@@ -146,7 +140,7 @@ class RDFTransformCommon {
                         data : params,
                         dataType : "json",
                         success : (data, strStatus, xhr) => { resolve(data); },
-                        error   : (xhr, strStatus, error) => { resolve( { "good" : 0 } ) }
+                        error   : (xhr, strStatus, error) => { resolve(null) }
                     }
                 );
             }

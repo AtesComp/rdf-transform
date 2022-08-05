@@ -113,17 +113,7 @@ public class PreviewRDFCommand extends Command {
             //
             StreamRDF theWriter = null;
             if ( bPreviewStream )  {
-                // TODO: Remove "try catch" when only supporting OpenRefine 3.6+
-                try {
-                    // TODO: Remove +null version when only supporting OpenRefine 3.6+
-                    //      The following code without the end null should work but, instead,
-                    //      it hangs (locks up) processing.  With the null, it succeeds.
-                    //theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
-                    theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS, null);
-                }
-                catch (RiotException ex) { // ...an error occurred setting the writer...
-                    theWriter = null;
-                }
+                theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
                 if (theWriter == null) {
                     PreviewRDFCommand.logger.warn("WARN: Cannot construct Stream-based writer. Using pretty printer.");
                 }

@@ -1,5 +1,7 @@
 package org.openrefine.rdf.model.exporter;
 
+import com.google.refine.exporters.Exporter;
+
 import org.openrefine.rdf.model.Util;
 
 import org.apache.jena.riot.RDFFormat;
@@ -7,7 +9,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RDFExporter {
+public class RDFExporter implements Exporter  {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFExporter");
 
     protected RDFFormat format;

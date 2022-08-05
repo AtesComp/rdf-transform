@@ -1,41 +1,72 @@
 /*
- *  Language Management: Initialize
- *
- *    NOTE: We must retrieve and load language translation file syncronously so that
- *    the following $.i18n() language callouts process correctly.  An asynchronous
- *    load does not present the language elements for many of the display items that
- *    directly follow.
- */
-
-/** @type {string} */
-var strDict = "";
-/** @type {string} */
-var strLang = navigator.languages[1] || navigator.language.split("-")[0];
-$.ajax(
-    {   url: "command/core/load-language?",
-        type: 'POST',
-        async: false, // ...wait on results...
-        data: { module: "rdf-transform" },
-        success: (data) => {
-            strDict = data['dictionary'];
-            strLang = data['lang'];
-        }
-    }
-)
-.always(
-    () => {
-        $.i18n().load(strDict, strLang);
-    }
-);
-
-// ...end Language Management
-
-/*
  *  Export Management: Setup Menu
  */
 class RDFExporterMenuBar
 {
-    static constructExportRDF(format, ext) {
+    static async init(mgrExport, barExtension) {
+        await RDFExporterMenuBar.initLanguage();
+
+        mgrExport.MenuItems.push( {} ); // ...add separator
+        mgrExport.MenuItems.push( RDFExporterMenuBar.constructExportRDF() );
+
+        RDFExporterMenuBar.addExtensionMenu(barExtension);
+    }
+
+    /*
+     *  Language Management: Initialize
+     *
+     *    NOTE: We must retrieve and load language translation file syncronously so that
+     *    the following $.i18n() language callouts process correctly.  An asynchronous
+     *    load does not present the language elements for many of the display items that
+     *    directly follow.
+     */
+    static async initLanguage() {
+        if (typeof I18NUtil !== 'undefined') {
+            await I18NUtil.init("rdf-transform");
+        }
+        // TODO: This code may be removed sometime after the 3.7 release has been circulated.
+        else {
+            let lang = (navigator.language).split("-")[0];
+            let dictionary = "";
+
+            /*
+              Initialize i18n and load message translation file from the server.
+
+              Note that the language is set by the 'userLang' user preference setting.  You can change that by
+              clicking on 'Language Settings' on the landing page.
+            */
+            await $.ajax({
+                url: "command/core/load-language?",
+                type: "POST",
+                async: false,
+                data: {
+                    module: "rdf-transform"
+                },
+                success: function (data) {
+                    dictionary = data['dictionary'];
+                    var langFromServer = data['lang'];
+                    if (lang !== langFromServer) {
+                        console.warn('Language \'' + lang + '\' missing translation. Defaulting to \'' + langFromServer + '\'.');
+                        lang = langFromServer;
+                    }
+                }
+            }).fail(function( jqXhr, textStatus, errorThrown ) {
+                var errorMessage = $.i18n('core-index/prefs-loading-failed');
+                if (errorMessage != "" && errorMessage != 'core-index/prefs-loading-failed') {
+                    alert(errorMessage);
+                }
+                else {
+                    alert( textStatus + ':' + errorThrown );
+                }
+            });
+            $.i18n().load(dictionary, lang);
+            $.i18n( { locale: lang } );
+        }
+    }
+    // ...end Language Management
+
+
+    static constructExportRDF() {
         /* DEBUG:
         alert("Project Name: " + theProject.metadata.name +
             "\nCalc'ed Name: " + name +
@@ -278,14 +309,13 @@ class RDFExporterMenuBar
         //
         strType = " (Binary)";
 
-        // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
-        //strExp = "RDFProtoBuf" + strType;
-        //objTypeSubSubMenuItem = {
-        //    id : "rdf-transform/stream/exportRDFProto",
-        //    label : $.i18n("rdft-menu/rdf-proto-stream"),
-        //    click : () => RDFExporterMenuBar.#exportRDF(strExp, "rp")
-        //};
-        //objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
+        strExp = "RDFProtoBuf" + strType;
+        objTypeSubSubMenuItem = {
+            id : "rdf-transform/stream/exportRDFProto",
+            label : $.i18n("rdft-menu/rdf-proto-stream"),
+            click : () => RDFExporterMenuBar.#exportRDF(strExp, "rp")
+        };
+        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
         strExp = "RDFThrift" + strType;
         objTypeSubSubMenuItem = {
@@ -346,6 +376,8 @@ class RDFExporterMenuBar
     }
 
     static #exportRDF(format, ext) {
+        console.log('Exporting with Format: ' + format + ' Extension: ' + ext);
+
         if (! theProject.overlayModels.RDFTransform) {
             alert( $.i18n("rdft-menu/alert-no-transform") );
             return;
@@ -388,50 +420,49 @@ class RDFExporterMenuBar
 
         document.body.removeChild(form);
     }
+
+    /*
+    *  Extension Management: Setup Menu
+    */
+    static addExtensionMenu(barExtension) { // ...load all DOM elements before executing the following...
+        barExtension.addExtensionMenu(
+            {
+                "id"        : "rdf-transform",
+                "label"     : $.i18n('rdft'),
+                "submenu"   : [
+                    {
+                        "id"    : "rdft/edit-rdf-transform",
+                        "label" : $.i18n('rdft-menu/edit') + "...",
+                        "click" : () => {
+                            const theTransform = theProject.overlayModels.RDFTransform;
+                            // Use setTimeout() to end menuitem and display dialog...
+                            setTimeout(
+                                () => {
+                                    new RDFTransformDialog(theTransform);
+                                }
+                            );
+                        }
+                    },
+                    {
+                        "id"    : "rdft/reset-rdf-transform",
+                        "label" : $.i18n('rdft-menu/reset') + "...",
+                        "click" : () => {
+                            // Use setTimeout() to end menuitem and display dialog...
+                            setTimeout(
+                                () => {
+                                    new RDFTransformDialog();
+                                }
+                            );
+                        }
+                    }
+                ]
+            }
+        )
+    }
+
+    // ...end Extension Management
 }
 
-ExporterManager.MenuItems.push( {} ); // ...add separator
-ExporterManager.MenuItems.push( RDFExporterMenuBar.constructExportRDF() );
+RDFExporterMenuBar.init(ExporterManager, ExtensionBar);
 
 // ...end Export Management
-
-/*
- *  Extension Management: Setup Menu
- */
-$( function() { // ...load all DOM elements before executing the following...
-    ExtensionBar.addExtensionMenu(
-        {
-            "id"        : "rdf-transform",
-            "label"     : $.i18n('rdft'),
-            "submenu"   : [
-                {
-                    "id"    : "rdf/edit-rdf-transform",
-                    "label" : $.i18n('rdft-menu/edit') + "...",
-                    "click" : () => {
-                        const theTransform = theProject.overlayModels.RDFTransform;
-                        // Use setTimeout() to end menuitem and display dialog...
-                        setTimeout(
-                            () => {
-                                new RDFTransformDialog(theTransform);
-                            }
-                        );
-                    }
-                },
-                {
-                    "id"    : "rdf/reset-rdf-transform",
-                    "label" : $.i18n('rdft-menu/reset') + "...",
-                    "click" : () => {
-                        // Use setTimeout() to end menuitem and display dialog...
-                        setTimeout(
-                            () => {
-                                new RDFTransformDialog();
-                            }
-                        );
-                    }
-                }
-            ]
-        }
-    )
-});
-
-// ...end Extension Management

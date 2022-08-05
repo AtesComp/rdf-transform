@@ -8,6 +8,7 @@ declare var ExpressionPreviewDialog: any;
 declare var ExporterManager: any;
 declare var ExtensionBar: any;
 declare var importPackage: any;
+declare var I18NUtil: any;
 declare var DOM: any;
 declare var ui: any;
 declare var module: any;
@@ -36,6 +37,7 @@ interface RDFExpPreviewDialogWidget {
 }
 interface JQueryStatic {
     i18n(value: string, options?: any): string;
+    i18n(value: {locale: string}): string;
     i18n(): { load(dict: string, lang: string) };
     suggest: function | {suggestTerm: any, suggest: {prototype: any, defaults: any}};
 }

@@ -20,7 +20,6 @@ import com.google.refine.model.Project;
 import org.apache.commons.io.output.WriterOutputStream;
 
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 
@@ -63,21 +62,11 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
     private void export(Project theProject, Properties options, Engine theEngine)
             throws IOException {
         StreamRDF theWriter = null;
-        // TODO: Reported Jena Bug:
-        //      The Jena code says getWriterStream() will return null if the RDFFormat
-        //      doesn't have a writer registered.  It lies!  It throws a RiotException.
-        try {
-            // TODO: Reported Jena Bug:
-            //      The following code without the end null should work but, instead,
-            //      it hangs (locks up) processing.  With the null, it succeeds.
-            //theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format);
-            theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format, null);
-        }
-        catch (RiotException ex) { // ...an error occurred setting the streamer...
-            theWriter = null;
-            RDFStreamExporter.logger.error("ERROR: The writer is invalid! Cannot construct export.");
-            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-            throw new RuntimeException(ex.getMessage(), ex);
+        theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format);
+        if (theWriter == null) {
+            String strMsg = "ERROR: The writer is invalid! Cannot construct export.";
+            RDFStreamExporter.logger.error(strMsg);
+            throw new IOException(strMsg);
         }
         if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
 
@@ -104,7 +93,7 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
         catch (Exception ex) {
             if ( Util.isDebugMode() ) RDFStreamExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
-            throw new RuntimeException(ex.getMessage(), ex);
+            throw new IOException(ex.getMessage(), ex);
         }
     }
 }

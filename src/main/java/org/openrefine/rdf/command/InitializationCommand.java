@@ -241,22 +241,10 @@ public class InitializationCommand extends Command {
         // BINARY PRINTERS: (Stream)
         //
         strType = " (Binary)";
-        // TODO: Uncomment the "RDFProtoBuf" export when OpenRefine is up-to-date on Jena
-        //      OpenRefine 3.5.2 loads an older Jena ARQ version that overrides the local
-        //      extension's newer library jar.  Bummer.
-        //strExp = "RDFProtoBuf" + strType;
-        //ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
-        // NOTE: Tried the following but can't control RDFExporterMenuBar in rdf-transform-menubar-extension.js
-        //      as it's client side...without using some major voodoo...
-        //try {
-        //    RDFFormat.class.getDeclaredField("RDF_PROTO"); // ...throws exception if not present
-        //    ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
-        //}
-        //catch (Exception ex) {
-        //}
+        strExp = "RDFProtoBuf" + strType;
+        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
         strExp = "RDFTrift" + strType;
         ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_THRIFT, strExp) );
-
         //strExp = "BinaryRDF" + strType;
         //ExporterRegistry.registerExporter( strExp, new RDFExporter(BINARY, strExp) ); // RDF4J
         //strExp = "HDT" + strType;
