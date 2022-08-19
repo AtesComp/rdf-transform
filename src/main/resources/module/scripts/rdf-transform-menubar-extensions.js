@@ -100,9 +100,9 @@ class RDFExporterMenuBar
             submenu : []
         };
 
-        strType = " (Pretty)";
+        strType = "_PRETTY";
 
-        strExp = "RDF/XML" + strType;
+        strExp = "RDFXML" + strType;
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFXML",
             label : $.i18n("rdft-menu/rdf-xml-pretty"),
@@ -110,7 +110,7 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "Turtle" + strType;
+        strExp = "TURTLE" + strType;
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFTurtle",
             label : $.i18n("rdft-menu/rdf-turtle-pretty"),
@@ -118,43 +118,11 @@ class RDFExporterMenuBar
          } ;
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "Turtle*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/pretty/exportRDFTurtleStar",
-            label : $.i18n("rdft-menu/rdf-turtle-star-pretty"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "ttls")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "N3" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/pretty/exportRDFNotation3",
-            label : $.i18n("rdft-menu/rdf-n3-pretty"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "n3")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "N3*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/pretty/exportRDFNotation3Star",
-            label : $.i18n("rdft-menu/rdf-n3-star-pretty"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "n3s")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "TriG" + strType;
+        strExp = "TRIG" + strType;
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFTriG",
             label : $.i18n("rdft-menu/rdf-trig-pretty"),
             click : () => RDFExporterMenuBar.#exportRDF(strExp, "trig")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "TriG*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/pretty/exportRDFTriGStar",
-            label : $.i18n("rdft-menu/rdf-trig-star-pretty"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "trigs")
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
@@ -174,7 +142,7 @@ class RDFExporterMenuBar
         //};
         //objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "RDF/JSON" + strType;
+        strExp = "RDFJSON";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFJSON",
             label : $.i18n("rdft-menu/rdf-json-pretty"),
@@ -193,12 +161,10 @@ class RDFExporterMenuBar
             submenu : []
         };
 
-        //
         // BLOCKS PRINTERS: per Subject (Stream)
-        //
-        strType = " (Blocks)";
+        strType = "_BLOCKS";
 
-        strExp = "Turtle" + strType;
+        strExp = "TURTLE" + strType;
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFTurtle",
             label : $.i18n("rdft-menu/rdf-turtle-stream"),
@@ -206,31 +172,7 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "Turtle*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/stream/exportRDFTurtleStar",
-            label : $.i18n("rdft-menu/rdf-turtle-star-stream"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "ttls")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "N3" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/stream/exportRDFNotation3",
-            label : $.i18n("rdft-menu/rdf-n3-stream"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "n3")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "N3*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/stream/exportRDFNotation3Star",
-            label : $.i18n("rdft-menu/rdf-n3-star-stream"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "n3s")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "TriG" + strType;
+        strExp = "TRIG" + strType;
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFTriG",
             label : $.i18n("rdft-menu/rdf-trig-stream"),
@@ -238,20 +180,9 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "TriG*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/stream/exportRDFTriGStar",
-            label : $.i18n("rdft-menu/rdf-trig-star-stream"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "trigs")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        //
         // LINE PRINTERS: triple, quad (Stream)
-        //
-        strType = " (Flat)";
 
-        strExp = "NTriples" + strType;
+        strExp = "NTRIPLES";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNTriples",
             label : $.i18n("rdft-menu/rdf-n-triples-stream"),
@@ -259,15 +190,7 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "NTriples*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/stream/exportRDFNTriplesStar",
-            label : $.i18n("rdft-menu/rdf-n-triples-star-stream"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "nts")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "NQuads" + strType;
+        strExp = "NQUADS";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNQuads",
             label : $.i18n("rdft-menu/rdf-nquads-stream"),
@@ -275,15 +198,7 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "NQuads*" + strType;
-        objTypeSubSubMenuItem = {
-            id : "rdf-transform/stream/exportRDFNQuadsStar",
-            label : $.i18n("rdft-menu/rdf-nquads-star-stream"),
-            click : () => RDFExporterMenuBar.#exportRDF(strExp, "nqs")
-        };
-        objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
-
-        strExp = "TriX" + strType;
+        strExp = "TRIX";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFTriX",
             label : $.i18n("rdft-menu/rdf-trix-stream"),
@@ -291,10 +206,9 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        //
         // DUMMY PRINTERS: (Stream)
-        //
-        strExp = "RDFNull (Test)";
+
+        strExp = "RDFNULL";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNull",
             label : $.i18n("rdft-menu/rdf-null-stream"),
@@ -302,12 +216,9 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        //
         // BINARY PRINTERS: (Stream)
-        //
-        strType = " (Binary)";
 
-        strExp = "RDFProtoBuf" + strType;
+        strExp = "RDF_PROTO";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFProto",
             label : $.i18n("rdft-menu/rdf-proto-stream"),
@@ -315,7 +226,7 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        strExp = "RDFThrift" + strType;
+        strExp = "RDF_THRIFT";
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFThrift",
             label : $.i18n("rdft-menu/rdf-thrift-stream"),
@@ -323,7 +234,7 @@ class RDFExporterMenuBar
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        //strExp = "BinaryRDF" + strType;
+        //strExp = "BinaryRDF";
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/stream/exportRDFBinaryRDF",
         //    label : $.i18n("rdft-menu/rdf-binary"),
@@ -331,7 +242,7 @@ class RDFExporterMenuBar
         //};
         //objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        //strExp = "HDT" + strType;
+        //strExp = "HDT";
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/stream/exportRDFHDT",
         //    label : $.i18n("rdft-menu/rdf-hdt"),
@@ -344,15 +255,13 @@ class RDFExporterMenuBar
         //
         // TODO: SPECIAL PRINTERS - Are these even doable???
         //
-        objTypeSubMenuItem = {
-            id : "rdf-transform/special",
-            label : $.i18n('rdft-menu/export-special'),
-            submenu : []
-        };
+        // objTypeSubMenuItem = {
+        //     id : "rdf-transform/special",
+        //     label : $.i18n('rdft-menu/export-special'),
+        //     submenu : []
+        // };
 
-        //strType = " (Special)";
-
-        //strExp = "RDFa" + strType;
+        //strExp = "RDFa";
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/special/exportRDFa",
         //    label : $.i18n("rdft-menu/rdf-a-special"),
@@ -360,7 +269,7 @@ class RDFExporterMenuBar
         //};
         //objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 
-        //strExp = "SHACLC" + strType;
+        //strExp = "SHACLC";
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/special/exportRDFSHACLC",
         //    label : $.i18n("rdft-menu/rdf-shaclc-special"),
