@@ -89,7 +89,7 @@
     "rdft-menu/rdf-binary": "BinaryRDF (Binario)",
     "rdft-menu/rdf-hdt": "HDT (Binario)",
     "rdft-menu/rdf-jsonld-pretty": "JSON-LD (Bella)",
-    "rdft-menu/rdf-json-pretty": "JSON (Bella)",
+    "rdft-menu/rdf-json-pretty": "RDF/JSON (Bella)",
     "rdft-menu/rdf-n-triples-stream": "N-Triples (Flusso)",
     "rdft-menu/rdf-n-triples-star-stream": "N-Triples-star (Flusso)",
     "rdft-menu/rdf-n3-pretty": "N3 (Bella)",

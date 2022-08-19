@@ -89,7 +89,7 @@
     "rdft-menu/rdf-binary": "BinaryRDF (バイナリ)",
     "rdft-menu/rdf-hdt": "HDT (バイナリ)",
     "rdft-menu/rdf-jsonld-pretty": "JSON-LD (綺麗)",
-    "rdft-menu/rdf-json-pretty": "JSON (綺麗)",
+    "rdft-menu/rdf-json-pretty": "RDF/JSON (綺麗)",
     "rdft-menu/rdf-n-triples-stream": "N-Triples (流れ)",
     "rdft-menu/rdf-n-triples-star-stream": "N-Triples-star (流れ)",
     "rdft-menu/rdf-n3-pretty": "N3 (綺麗)",
