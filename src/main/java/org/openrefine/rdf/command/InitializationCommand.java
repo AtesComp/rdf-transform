@@ -176,73 +176,49 @@ public class InitializationCommand extends Command {
          *  Server-side Exporters...
          */
 
-        String strType;
-        String strExp;
-
         //
         // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
         //
-        strType = "_PRETTY";
-        strExp = "RDFXML"  + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFXML_PRETTY, strExp) );
-        strExp = "TURTLE" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, strExp) );
-        strExp = "TRIG" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.TRIG_PRETTY, strExp) );
-        strExp = "JSONLD" + strType; // Who would want ugly FLAT?
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.JSONLD_PRETTY, strExp) );
-        //strExp = "NDJSONLD" + strPretty;
-        //ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(NDJSONLD, strExp) ); // RDF4J NewLine Delimited JSONLD
-        strExp = "RDFJSON";
-        ExporterRegistry.registerExporter( strExp, new RDFPrettyExporter(RDFFormat.RDFJSON, strExp) );
+        ExporterRegistry.registerExporter( "RDFXML_PRETTY", new RDFPrettyExporter(RDFFormat.RDFXML_PRETTY, "RDFXML_PRETTY") );
+        ExporterRegistry.registerExporter( "TURTLE_PRETTY", new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, "TURTLE_PRETTY") );
+        ExporterRegistry.registerExporter( "TRIG_PRETTY", new RDFPrettyExporter(RDFFormat.TRIG_PRETTY, "TRIG_PRETTY") );
+        ExporterRegistry.registerExporter( "JSONLD_PRETTY", new RDFPrettyExporter(RDFFormat.JSONLD_PRETTY, "JSONLD_PRETTY") );
+        //ExporterRegistry.registerExporter( "NDJSONLD_PRETTY", new RDFPrettyExporter(NDJSONLD, "NDJSONLD_PRETTY") ); // RDF4J NewLine Delimited JSONLD
+        ExporterRegistry.registerExporter( "RDFJSON", new RDFPrettyExporter(RDFFormat.RDFJSON, "RDFJSON") );
 
         //
         // STREAM PRINTERS:
         //
-
         // BLOCKS PRINTERS: per Subject (Stream)
-        strType = "_BLOCKS";
-        strExp = "TURTLE" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, strExp) );
-        strExp = "TRIG" + strType;
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, strExp) );
-
+        ExporterRegistry.registerExporter( "TURTLE_BLOCKS", new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, "TURTLE_BLOCKS") );
+        ExporterRegistry.registerExporter( "TRIG_BLOCKS", new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, "TRIG_BLOCKS") );
         // LINE PRINTERS: triple, quad (Stream)
-        strExp = "NTRIPLES";
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NTRIPLES_UTF8, strExp) );
-        strExp = "NQUADS";
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.NQUADS_UTF8, strExp) );
-        strExp = "TRIX";
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.TRIX, strExp) );
-
+        ExporterRegistry.registerExporter( "NTRIPLES", new RDFStreamExporter(RDFFormat.NTRIPLES_UTF8, "NTRIPLES") );
+        ExporterRegistry.registerExporter( "NQUADS", new RDFStreamExporter(RDFFormat.NQUADS_UTF8, "NQUADS") );
+        ExporterRegistry.registerExporter( "TRIX", new RDFStreamExporter(RDFFormat.TRIX, "TRIX") );
         // DUMMY PRINTERS: (Stream)
-        strExp = "RDFNULL"; // ...the bit bucket
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDFNULL, strExp) );
-
+        ExporterRegistry.registerExporter( "RDFNULL", new RDFStreamExporter(RDFFormat.RDFNULL, "RDFNULL") );
         // BINARY PRINTERS: (Stream)
-        strExp = "RDF_PROTO";
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_PROTO, strExp) );
-        strExp = "RDF_THRIFT";
-        ExporterRegistry.registerExporter( strExp, new RDFStreamExporter(RDFFormat.RDF_THRIFT, strExp) );
-        //strExp = "BinaryRDF";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(BINARY, strExp) ); // RDF4J
-        //strExp = "HDT";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(HDT, strExp) );
-
+        ExporterRegistry.registerExporter( "RDF_PROTO", new RDFStreamExporter(RDFFormat.RDF_PROTO, "RDF_PROTO") );
+        ExporterRegistry.registerExporter( "RDF_THRIFT", new RDFStreamExporter(RDFFormat.RDF_THRIFT, "RDF_THRIFT") );
+        //ExporterRegistry.registerExporter( "BinaryRDF", new RDFExporter(BINARY, "BinaryRDF") ); // RDF4J
+        //ExporterRegistry.registerExporter( "HDT", new RDFExporter(HDT, "HDT") );
         // TODO: Special RDFExporters - Are these even doable???
-        //strExp = "RDFa";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFA, strExp) );
-        //strExp = "SHACLC";
-        //ExporterRegistry.registerExporter( strExp, new RDFExporter(RDFFormat.SHACLC, strExp) );
+        //ExporterRegistry.registerExporter( "RDFa", new RDFExporter(RDFA, "RDFa") );
+        //ExporterRegistry.registerExporter( "SHACLC", new RDFExporter(RDFFormat.SHACLC, "SHACLC") );
 
         /*
          *  Server-side Overlay Models - Attach an RDFTransform object to the project...
          */
         Project.registerOverlayModel("RDFTransform", RDFTransform.class);
 
-        Exporter exporter = ExporterRegistry.getExporter("RDFProtoBuf (Binary)");
+        // Test Exporter Registry...
+        Exporter exporter = ExporterRegistry.getExporter("RDF_PROTO");
         if (exporter == null) {
             InitializationCommand.logger.error("ERROR: ExporterRegistry test failed!");
+        }
+        else {
+            InitializationCommand.logger.error("SUCCESS: ExporterRegistry test succeeded!");
         }
     }
 

@@ -53,14 +53,16 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
 
     public void export(Project theProject, Properties options, Engine theEngine,
                         Writer theWriter)
-             throws IOException {
+             throws IOException
+    {
         if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");
         this.outputStream = new WriterOutputStream(theWriter, Charset.forName("UTF-8"));
         this.export(theProject, options, theEngine);
     }
 
     private void export(Project theProject, Properties options, Engine theEngine)
-            throws IOException {
+            throws IOException
+    {
         StreamRDF theWriter = null;
         theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format);
         if (theWriter == null) {
@@ -72,23 +74,23 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
 
         RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
         try {
-            if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("  Starting RDF Export...");
+            if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:   Starting RDF Export...");
             theWriter.start();
 
             // Process all records/rows of data for statements...
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
-                if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("    Process by Record Visitor...");
+                if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:     Process by Record Visitor...");
                 theVisitor = new ExportRDFRecordVisitor(theTransform, theWriter);
             }
             else {
-                if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("    Process by Row Visitor...");
+                if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:     Process by Row Visitor...");
                 theVisitor = new ExportRDFRowVisitor(theTransform, theWriter);
             }
             theVisitor.buildModel(theProject, theEngine);
 
             theWriter.finish();
-            if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("  ...Ended RDF Export.");
+            if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:   ...Ended RDF Export " + this.strName);
         }
         catch (Exception ex) {
             if ( Util.isDebugMode() ) RDFStreamExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);

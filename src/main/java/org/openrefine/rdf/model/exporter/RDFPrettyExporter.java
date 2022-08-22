@@ -67,22 +67,22 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
     {
         RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
         try {
-            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("  Starting RDF Export...");
+            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:   Starting RDF Export...");
 
             // Process all records/rows of data for statements...
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
-                if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("    Process by Record Visitor...");
+                if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Process by Record Visitor...");
                 theVisitor = new ExportRDFRecordVisitor(theTransform, null);
             }
             else {
-                if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("    Process by Row Visitor...");
+                if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Process by Row Visitor...");
                 theVisitor = new ExportRDFRowVisitor(theTransform, null);
             }
             theVisitor.buildModel(theProject, theEngine);
 
             RDFDataMgr.write(this.outputStream, theVisitor.getModel(), this.format) ;
-            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("  ...Ended RDF Export.");
+            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:   ...Ended RDF Export " + this.strName);
         }
         catch (Exception ex) {
             if ( Util.isDebugMode() ) RDFPrettyExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);
