@@ -170,8 +170,11 @@ class RDFTransformDialog {
     #iDiffFrameHeight;
     #iLastDiffFrameHeight;
     #iBodyHeadInit;
-    #iBaseTransformPaneHeight;
-    #iBasePreviewPaneHeight;
+    #iFrameInit;
+    #iBaseTransformDataHeight;
+    #iBasePreviewDataHeight;
+    #iBaseTransformTabHeight;
+    #iBasePreviewTabHeight;
 
     constructor(theTransform) {
         // The transform defaults are set here since "theProject" is not completely
@@ -508,8 +511,8 @@ class RDFTransformDialog {
         this.#initPreviewSettings();
 
         // Set initial spinners...
-        this.#elements.rdftPrefixesContainer.append(this.#imgLineBounce);
-        this.#elements.rdftTransformData.append(this.#imgLargeSpinner);
+        this.waitOnNamespaces();
+        this.waitOnData();
 
         this.#functionalizeDialog();
 
@@ -519,6 +522,11 @@ class RDFTransformDialog {
         //   AFTER show...
         //
 
+        // Get the initial Frame div height as its initial height...
+        this.#iFrameInit = this.#elements.dialogFrame.height();
+
+        const iHeader = 10 + this.#elements.dialogHeader.height() + 10;
+
         // Set Description Paragraph box minimum height to its initial height...
         const iDescParaHeight = this.#elements.rdftDescParagraph.height();
         this.#elements.rdftDescParagraph.css({ "min-height" : "" + iDescParaHeight + "px" });
@@ -527,12 +535,47 @@ class RDFTransformDialog {
         const iDescHeight = this.#elements.rdftDescription.height();
         this.#elements.rdftDescription.css({ "min-height" : "" + iDescHeight + "px" });
 
-        // Get the base pane heights as the initial heights...
-        this.#iBaseTransformPaneHeight = this.#elements.rdftTransformData.height();
-        this.#iBasePreviewPaneHeight = this.#elements.rdftPreviewData.height();
+        const iBaseIRI = 6 + this.#elements.rdftBaseIRI.height() + 4;
+
+        const iTabTitles = this.#elements.rdftTabTitles.height();
+        const iTabTransformHeader = 2 + this.#elements.rdftTabTransformHeader.height() + 2;
+        const iTabTransformFooter = 2 + this.#elements.rdftTabTransformFooter.height() + 2;
+
+        const iFooter = 10 + this.#elements.dialogFooter.height() + 10;
+
+        const iRemains = this.#iFrameInit - (
+            iHeader +
+            15 + // dialogBody
+            iDescParaHeight +
+            iBaseIRI +
+            1 + // rdfTabs
+            iTabTitles +
+            1 + 7 + // rdftTabTransform
+            iTabTransformHeader +
+            // iTabTransformFooter + ...do only for rdftTransformData
+            7 + 1 + // rdftTabTransform
+            1 + // rdfTabs
+            15 + // dialogBody
+            iFooter
+        );
+
+        // Get the base data heights as the initial heights...
+        this.#iBaseTransformDataHeight = iRemains - iTabTransformFooter;
+        this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight);
+        this.#elements.rdftTransformData.css({ "min-height" : "" + this.#iBaseTransformDataHeight + "px" });
+        this.#iBasePreviewDataHeight = iRemains;
+        this.#elements.rdftPreviewData.height(this.#iBasePreviewDataHeight);
+        this.#elements.rdftPreviewData.css({ "min-height" : "" + this.#iBasePreviewDataHeight + "px" });
+
+        // Set the base tab heights as the initial heights...
+        this.#iBaseTransformTabHeight = this.#elements.rdftTabTransform.height();
+        this.#elements.rdftTabTransform.css({ "min-height" : "" + this.#iBaseTransformTabHeight + "px" });
+        this.#iBasePreviewTabHeight = this.#elements.rdftTabPreview.height();
+        this.#elements.rdftTabPreview.css({ "min-height" : "" + this.#iBasePreviewTabHeight + "px" });
 
         // Get the initial Body Header div height as its initial height...
         this.#iBodyHeadInit = this.#elements.dialogBodyHead.height();
+
     }
 
     #functionalizeDialog() {
@@ -653,7 +696,6 @@ class RDFTransformDialog {
         );
 
         // Hook up resize...
-        this.#iDiffFrameHeight = 0;
         this.#iLastDiffFrameHeight = 0;
         this.#iResize = 0;
         this.#dialog
@@ -662,13 +704,16 @@ class RDFTransformDialog {
                     clearTimeout(this.#iResize);
                     this.#iResize = setTimeout(
                         () => {
-                            this.#iDiffFrameHeight = ui.size.height - 600;
-                            if (this.#iDiffFrameHeight != this.#iLastDiffFrameHeight) {
-                                const iDiff = this.#iDiffFrameHeight +
-                                                ( this.#iBodyHeadInit - this.#elements.dialogBodyHead.height() );
-                                this.#elements.rdftTransformData.height(this.#iBaseTransformPaneHeight + iDiff);
-                                this.#elements.rdftPreviewData.height(this.#iBasePreviewPaneHeight + iDiff);
-                                this.#iLastDiffFrameHeight = this.#iDiffFrameHeight;
+                            let iDiff = ui.size.height - this.#iFrameInit;
+                            if (iDiff < 0) {
+                                iDiff = 0;
+                            }
+                            if (iDiff != this.#iLastDiffFrameHeight) {
+                                this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight + iDiff);
+                                this.#elements.rdftPreviewData.height(this.#iBasePreviewDataHeight + iDiff);
+                                this.#elements.rdftTabTransform.height(this.#iBaseTransformTabHeight + iDiff);
+                                this.#elements.rdftTabPreview.height(this.#iBasePreviewTabHeight + iDiff);
+                                this.#iLastDiffFrameHeight = iDiff;
                             }
                         },
                         100 // ...do it 1/10 second after no more resizing,
@@ -698,7 +743,7 @@ class RDFTransformDialog {
             return;
         }
         //DialogSystem.dismissUntil(this.#level - 1); // ...kill this dialog
-        this.#elements.rdftTransformData.empty().append(this.#imgLargeSpinner);
+        this.waitOnData();
         this.#initTransform(theTransform);
     }
 
@@ -738,20 +783,21 @@ class RDFTransformDialog {
 
     async #getPreferences() {
         var params = {};
-        var data = {};
+        let data = null;
         try {
             data = await RDFTransformCommon.getPreferences(params);
         }
         catch (evt) {
-            data.good = 0; // ...force bad result
+            // ...ignore error, no preferences...
         }
-        if (data.good == 1) {
-            RDFTransform.gPreferences.iVerbosity     = data.iVerbosity;
-            RDFTransform.gPreferences.iExportLimit   = data.iExportLimit;
-            RDFTransform.gPreferences.bPreviewStream = data.bPreviewStream;
-            RDFTransform.gPreferences.bDebugMode     = data.bDebugMode;
-            RDFTransform.gPreferences.bDebugJSON     = data.bDebugJSON;
-            RDFTransform.gPreferences.iSampleLimit   = data.iSampleLimit;
+        if (data !== null && data.code === "ok") {
+            var prefs = JSON.parse(data.message);
+            RDFTransform.gPreferences.iVerbosity     = prefs.iVerbosity;
+            RDFTransform.gPreferences.iExportLimit   = prefs.iExportLimit;
+            RDFTransform.gPreferences.bPreviewStream = prefs.bPreviewStream;
+            RDFTransform.gPreferences.bDebugMode     = prefs.bDebugMode;
+            RDFTransform.gPreferences.bDebugJSON     = prefs.bDebugJSON;
+            RDFTransform.gPreferences.iSampleLimit   = prefs.iSampleLimit;
         }
     }
 
@@ -761,11 +807,15 @@ class RDFTransformDialog {
         await this.#namespacesManager.init();
     }
 
+    waitOnData() {
+        this.#elements.rdftTransformData.empty().append(this.#imgLargeSpinner);
+    }
+
     #processTransformTab() {
         //
         // Process Transform Tab
         //
-        this.#elements.rdftTransformData.empty().append(this.#imgLargeSpinner);
+        this.waitOnData();
 
         var table = $('<table />').addClass("rdf-transform-pane-table-layout");
         this.#tableNodes = table[0];
@@ -939,7 +989,6 @@ class RDFTransformDialog {
         var bPreviewStream = this.#elements.rdftPreviewStream.prop('checked');
         if (bPreviewStream != RDFTransform.gPreferences.bPreviewStream) {
             RDFTransform.gPreferences.bPreviewStream = bPreviewStream;
-            //this.#updatePreviewType();
 
             // Set up Preview Tab processing...
             this.updatePreview();
@@ -958,7 +1007,6 @@ class RDFTransformDialog {
             ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") )
         );
         this.#elements.rdftPreviewPretty.prop('checked', true); // ...default to pretty
-        //this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-turtle-pretty") );
     }
 
     #updatePreviewSettings() {
@@ -969,15 +1017,7 @@ class RDFTransformDialog {
         else {
             this.#elements.rdftPreviewPretty.prop('checked', true);
         }
-        //this.#updatePreviewType();
     }
-
-    //#updatePreviewType() {
-    //    this.#elements.rdftPreviewStreamLabel.text(
-    //        ( RDFTransform.gPreferences.bPreviewStream ? $.i18n("rdft-menu/rdf-turtle-stream") : $.i18n("rdft-menu/rdf-turtle-pretty") ) +
-    //        " " + $.i18n("rdft-dialog/shown-below") + "..."
-    //    );
-    //}
 
     getTransformExport() {
         var theTransform = {};
