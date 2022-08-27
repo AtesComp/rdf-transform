@@ -2,6 +2,8 @@ package org.openrefine.rdf.command;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -123,35 +125,52 @@ public class InitializationCommand extends Command {
          *  Server-side Ajax Commands...
          *    Each registration calls the class' init() method.
          */
-        String strSaveRDFTransform = "save-rdf-transform";
-        RefineServlet.registerCommand( this.theModule, "initialize", this);
-        RefineServlet.registerCommand( this.theModule, "get-preferences",         new PreferencesCommand() );
-        RefineServlet.registerCommand( this.theModule, "preview-rdf",             new PreviewRDFCommand() );
-        RefineServlet.registerCommand( this.theModule, "preview-rdf-expression",  new PreviewRDFTExpressionCommand() );
-        RefineServlet.registerCommand( this.theModule, strSaveRDFTransform,       new SaveRDFTransformCommand() );
-        RefineServlet.registerCommand( this.theModule, "save-baseIRI",            new SaveBaseIRICommand() );
-        RefineServlet.registerCommand( this.theModule, "validate-iri",            new ValidateIRICommand() );
-        RefineServlet.registerCommand( this.theModule, "convert-to-iri",          new ToIRICommand() );
+        class RDFTCommandItem
+        {
+            public String strCommand;
+            public Command command;
+            RDFTCommandItem(String strCmd, Command cmd) {
+                strCommand = strCmd;
+                command = cmd;
+            }
+        };
+        String strSaveRDFTransform = "save-rdf-transform"; // ...also for operation registry later
+
+        List<RDFTCommandItem> aCommands = new ArrayList<RDFTCommandItem>();
+        aCommands.add(new RDFTCommandItem( "initialize", this ));
+        aCommands.add(new RDFTCommandItem( "get-preferences", new PreferencesCommand() ));
+        aCommands.add(new RDFTCommandItem( "preview-rdf", new PreviewRDFCommand() ));
+        aCommands.add(new RDFTCommandItem( "preview-rdf-expression", new PreviewRDFTExpressionCommand() ));
+        aCommands.add(new RDFTCommandItem( strSaveRDFTransform, new SaveRDFTransformCommand() ));
+        aCommands.add(new RDFTCommandItem( "save-baseIRI", new SaveBaseIRICommand() ));
+        aCommands.add(new RDFTCommandItem( "validate-iri", new ValidateIRICommand() ));
+        aCommands.add(new RDFTCommandItem( "convert-to-iri", new ToIRICommand() ));
         // Vocabs commands
-        RefineServlet.registerCommand( this.theModule, "get-default-namespaces",  new NamespacesGetDefaultCommand() );
-        RefineServlet.registerCommand( this.theModule, "save-namespaces",         new NamespacesSaveCommand() );
-        RefineServlet.registerCommand( this.theModule, "add-namespace",           new NamespaceAddCommand() );
-        RefineServlet.registerCommand( this.theModule, "add-namespace-from-file", new NamespaceAddFromFileCommand() );
-        RefineServlet.registerCommand( this.theModule, "refresh-prefix",          new NamespaceRefreshCommand() );
-        RefineServlet.registerCommand( this.theModule, "remove-prefix",           new NamespaceRemoveCommand() );
-        RefineServlet.registerCommand( this.theModule, "suggest-namespace",       new SuggestNamespaceCommand() );
-        RefineServlet.registerCommand( this.theModule, "suggest-term",            new SuggestTermCommand() );
-        RefineServlet.registerCommand( this.theModule, "add-suggest-term",        new SuggestTermAddCommand() );
+        aCommands.add(new RDFTCommandItem( "get-default-namespaces", new NamespacesGetDefaultCommand() ));
+        aCommands.add(new RDFTCommandItem( "save-namespaces", new NamespacesSaveCommand() ));
+        aCommands.add(new RDFTCommandItem( "add-namespace", new NamespaceAddCommand() ));
+        aCommands.add(new RDFTCommandItem( "add-namespace-from-file", new NamespaceAddFromFileCommand() ));
+        aCommands.add(new RDFTCommandItem( "refresh-prefix", new NamespaceRefreshCommand() ));
+        aCommands.add(new RDFTCommandItem( "remove-prefix", new NamespaceRemoveCommand() ));
+        aCommands.add(new RDFTCommandItem( "suggest-namespace", new SuggestNamespaceCommand() ));
+        aCommands.add(new RDFTCommandItem( "suggest-term", new SuggestTermCommand() ));
+        aCommands.add(new RDFTCommandItem( "add-suggest-term", new SuggestTermAddCommand() ));
         // Others:
         //   CodeResponse - Standard Response Class for Commands
         //   RDFTransformCommand - Abstract RDF Command Class
+
+        for (RDFTCommandItem citem : aCommands) {
+            if (citem.command != null) {
+                RefineServlet.registerCommand( this.theModule, citem.strCommand, citem.command);
+            }
+        };
 
         /*
          *  Server-side Custom Change Class...
          */
         RefineServlet.registerClassMapping(
             // Non-existent name--we are adding, not renaming, so this can be a dummy...
-            "com.google.refine.model.changes.DataExtensionChange",
+            "org.openrefine.model.changes.DataExtensionChange",
             // Added Change Class name...
             "org.openrefine.rdf.model.operation.RDFTransformChange"
         );
@@ -175,37 +194,71 @@ public class InitializationCommand extends Command {
         /*
          *  Server-side Exporters...
          */
+        class RDFTExportPrinter
+        {
+            public RDFFormat rdfFormat;
+            public String strFormat;
+            RDFTExportPrinter(RDFFormat fmt, String strFmt) {
+                rdfFormat = fmt;
+                strFormat = strFmt;
+            }
+        };
 
         //
         // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
         //
-        ExporterRegistry.registerExporter( "RDFXML_PRETTY", new RDFPrettyExporter(RDFFormat.RDFXML_PRETTY, "RDFXML_PRETTY") );
-        ExporterRegistry.registerExporter( "TURTLE_PRETTY", new RDFPrettyExporter(RDFFormat.TURTLE_PRETTY, "TURTLE_PRETTY") );
-        ExporterRegistry.registerExporter( "TRIG_PRETTY", new RDFPrettyExporter(RDFFormat.TRIG_PRETTY, "TRIG_PRETTY") );
-        ExporterRegistry.registerExporter( "JSONLD_PRETTY", new RDFPrettyExporter(RDFFormat.JSONLD_PRETTY, "JSONLD_PRETTY") );
-        //ExporterRegistry.registerExporter( "NDJSONLD_PRETTY", new RDFPrettyExporter(NDJSONLD, "NDJSONLD_PRETTY") ); // RDF4J NewLine Delimited JSONLD
-        ExporterRegistry.registerExporter( "RDFJSON", new RDFPrettyExporter(RDFFormat.RDFJSON, "RDFJSON") );
+        List<RDFTExportPrinter> aPretty = new ArrayList<RDFTExportPrinter>();
+        aPretty.add(new RDFTExportPrinter(RDFFormat.RDFXML_PRETTY, "RDFXML_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.TURTLE_PRETTY, "TURTLE_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.TRIG_PRETTY, "TRIG_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.JSONLD_PRETTY, "JSONLD_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(null /* NDJSONLD_PRETTY */, "NDJSONLD_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.RDFJSON, "RDFJSON"));
+
+        for (RDFTExportPrinter ptr : aPretty) {
+            if (ptr.rdfFormat != null) {
+                ExporterRegistry.registerExporter( ptr.strFormat, new RDFPrettyExporter(ptr.rdfFormat, ptr.strFormat) );
+            }
+        }
 
         //
         // STREAM PRINTERS:
         //
+        List<RDFTExportPrinter> aStream = new ArrayList<RDFTExportPrinter>();
         // BLOCKS PRINTERS: per Subject (Stream)
-        ExporterRegistry.registerExporter( "TURTLE_BLOCKS", new RDFStreamExporter(RDFFormat.TURTLE_BLOCKS, "TURTLE_BLOCKS") );
-        ExporterRegistry.registerExporter( "TRIG_BLOCKS", new RDFStreamExporter(RDFFormat.TRIG_BLOCKS, "TRIG_BLOCKS") );
+        aStream.add(new RDFTExportPrinter(RDFFormat.TURTLE_BLOCKS, "TURTLE_BLOCKS"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.TRIG_BLOCKS, "TRIG_BLOCKS"));
         // LINE PRINTERS: triple, quad (Stream)
-        ExporterRegistry.registerExporter( "NTRIPLES", new RDFStreamExporter(RDFFormat.NTRIPLES_UTF8, "NTRIPLES") );
-        ExporterRegistry.registerExporter( "NQUADS", new RDFStreamExporter(RDFFormat.NQUADS_UTF8, "NQUADS") );
-        ExporterRegistry.registerExporter( "TRIX", new RDFStreamExporter(RDFFormat.TRIX, "TRIX") );
+        aStream.add(new RDFTExportPrinter(RDFFormat.NTRIPLES_UTF8, "NTRIPLES"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.NQUADS_UTF8, "NQUADS"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.TRIX, "TRIX"));
         // DUMMY PRINTERS: (Stream)
-        ExporterRegistry.registerExporter( "RDFNULL", new RDFStreamExporter(RDFFormat.RDFNULL, "RDFNULL") );
+        aStream.add(new RDFTExportPrinter(RDFFormat.RDFNULL, "RDFNULL"));
         // BINARY PRINTERS: (Stream)
-        ExporterRegistry.registerExporter( "RDF_PROTO", new RDFStreamExporter(RDFFormat.RDF_PROTO, "RDF_PROTO") );
-        ExporterRegistry.registerExporter( "RDF_THRIFT", new RDFStreamExporter(RDFFormat.RDF_THRIFT, "RDF_THRIFT") );
-        //ExporterRegistry.registerExporter( "BinaryRDF", new RDFExporter(BINARY, "BinaryRDF") ); // RDF4J
-        //ExporterRegistry.registerExporter( "HDT", new RDFExporter(HDT, "HDT") );
-        // TODO: Special RDFExporters - Are these even doable???
-        //ExporterRegistry.registerExporter( "RDFa", new RDFExporter(RDFA, "RDFa") );
-        //ExporterRegistry.registerExporter( "SHACLC", new RDFExporter(RDFFormat.SHACLC, "SHACLC") );
+        aStream.add(new RDFTExportPrinter(RDFFormat.RDF_PROTO, "RDF_PROTO"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.RDF_THRIFT, "RDF_THRIFT"));
+        aStream.add(new RDFTExportPrinter(null /* BINARY_RDF */, "BinaryRDF"));
+        aStream.add(new RDFTExportPrinter(null /* HDT */, "HDT"));
+
+        for (RDFTExportPrinter ptr : aStream) {
+            if (ptr.rdfFormat != null) {
+                ExporterRegistry.registerExporter( ptr.strFormat, new RDFStreamExporter(ptr.rdfFormat, ptr.strFormat) );
+            }
+        }
+
+        // //
+        // // SPECIAL PRINTERS:
+        // //
+        // List<RDFTExportPrinter> aSpecial = new ArrayList<RDFTExportPrinter>();
+        // // TODO: Are these even doable???
+        // aSpecial.add(new RDFTExportPrinter(null /* RDFA */, "RDFa"));
+        // aSpecial.add(new RDFTExportPrinter(null /* RDFFormat.SHACLC */, "SHACLC"));
+
+        // for (RDFTExportPrinter ptr : aSpecial) {
+        //     if (ptr.rdfFormat != null) {
+        //         ExporterRegistry.registerExporter( ptr.strFormat, new RDFSpecialExporter(ptr.rdfFormat, ptr.strFormat) );
+        //     }
+        // }
 
         /*
          *  Server-side Overlay Models - Attach an RDFTransform object to the project...
