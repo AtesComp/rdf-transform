@@ -12,6 +12,8 @@ This project uses a graphical user interface (GUI) for transforming OpenRefine p
 
 RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been thoroughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
 
+The latest releases (2.1.2 and above) only work with OpenRefine 3.6 or better.
+
 ## Documentation
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
 
@@ -44,11 +46,15 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 ### OpenRefine
 As an extension, RDF Transform runs under the control of OpenRefine and its JVM. As such, the libraries included with OpenRefine override any of the same libraries included with the extension. This limits the extension to OpenRefine's version of those library functions and features.
 
+The latest releases (2.1.2 and above) only work with OpenRefine 3.6 or better due to upgraded Apache Jena library features that are not backward compatible.
+
+See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
+
 ### OSes
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for related information.
 
 #### Linux
-RDF Transform has been tested against OpenRefine 3.5.2 and the rolling 3.6-SNAPSHOT on a modern Debian-based OS (Ubuntu derivative) using Chrome. No system related issue were found under these conditions.
+RDF Transform has been tested against OpenRefine 3.5.2 and above on a modern Debian-based OS (Ubuntu derivative) using Chrome. No system related issue were found under these conditions.
 
 #### Windows
 Test runs on MS Windows 10 have indicated the JVM opertate slightly different than on Linux. The MS Windows version tends to be more sensitive to certain statements.
