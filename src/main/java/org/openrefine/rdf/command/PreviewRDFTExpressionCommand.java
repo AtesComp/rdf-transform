@@ -93,25 +93,33 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
             //
             // Process the command...
             //
+            boolean bGood = false;
             if (bIsIRI) {
-                this.respondIRIPreview();
+                bGood = this.respondIRIPreview();
             }
             else {
-                this.respondLiteralPreview();
+                bGood = this.respondLiteralPreview();
             }
+
+            String strCode = "error";
+            if (bGood) {
+                strCode = "ok";
+            }
+            this.theWriter.writeStringField("code", strCode);
+            this.theWriter.writeEndObject();
 
             //
             // Clean up...
             //
-            theWriter.flush();
-            theWriter.close();
+            this.theWriter.flush();
+            this.theWriter.close();
         }
         catch (Exception ex) {
             PreviewRDFTExpressionCommand.respondException(response, ex);
         }
     }
 
-    private void respondIRIPreview() throws IOException {
+    private boolean respondIRIPreview() throws IOException {
         int iRows = this.theRowIndices.size();
 
         this.theWriter.writeStartObject();
@@ -279,16 +287,10 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
                 if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
             }
         }
-
-        String strCode = "error";
-        if (bGood) {
-            strCode = "ok";
-        }
-        this.theWriter.writeStringField("code", strCode);
-        this.theWriter.writeEndObject();
+        return bGood;
     }
 
-    private void respondLiteralPreview() throws IOException {
+    private boolean respondLiteralPreview() throws IOException {
         int iRows = this.theRowIndices.size();
 
         this.theWriter.writeStartObject();
@@ -406,12 +408,6 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
             }
             bGood = false; // ...no good anymore
         }
-
-        String strCode = "error";
-        if (bGood) {
-            strCode = "ok";
-        }
-        this.theWriter.writeStringField("code", strCode);
-        this.theWriter.writeEndObject();
+        return bGood;
     }
 }

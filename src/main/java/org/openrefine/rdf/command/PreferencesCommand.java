@@ -21,15 +21,8 @@ public class PreferencesCommand extends Command {
         if ( Util.isVerbose(3) ) PreferencesCommand.logger.info("Setting and Getting preferences...");
         // NOTE: No CSRFToken required for this command.
 
-        String strPreferences = "{ \"good\" : 0 }";
+        String strPreferences = null;
         try {
-            //
-            // Set up response...
-            //   ...cause we're hand-jamming JSON responses directly...
-            //
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-Type", "application/json");
-
             // // Set Preview Stream if given...
             // String strPreviewStream = request.getParameter("bPreviewStream");
             // if (strPreviewStream != null) {
@@ -44,8 +37,7 @@ public class PreferencesCommand extends Command {
 
             // Get Preferences...
             strPreferences =
-                "{ \"good\" : 1, " +
-                  "\"iVerbosity\" : " +     Util.getVerbose() + ", " +
+                "{ \"iVerbosity\" : " +     Util.getVerbose() + ", " +
                   "\"iExportLimit\" : " +   Util.getExportLimit() + ", " +
                   "\"bPreviewStream\" : " + Util.isPreviewStream() + ", " +
                   "\"bDebugMode\" : " +     Util.isDebugMode() + ", " +
@@ -59,6 +51,6 @@ public class PreferencesCommand extends Command {
             return;
         }
         if ( Util.isVerbose(3) ) PreferencesCommand.logger.info("...got preferences.");
-        PreferencesCommand.respond(response, strPreferences);
+        PreferencesCommand.respondJSON( response, new CodeResponse(strPreferences) );
     }
 }

@@ -308,7 +308,7 @@ class RDFTransformCommon {
                         data : params,
                         dataType : "json",
                         success : (data, strStatus, xhr) => { resolve(data); },
-                        error   : (xhr, strStatus, error) => { resolve( { "good" : 0 } ) }
+                        error   : (xhr, strStatus, error) => { resolve(null) }
                     }
                 );
             }
