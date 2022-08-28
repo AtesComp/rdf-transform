@@ -16,8 +16,23 @@
   <!-- RDF Transform Version Control -->
   <h2>News</h2>
   <dl>
+    <dt>2.2.0 Released</dt>
+    <dd>This version updated the Exporters for use with the latest Apache Jena library used by
+        OpenRefine. This requires OpenRefine 3.6 or better. The Export menu has been recoded for Stream
+        and Pretty formats. The exports have been optimized to process the RDF statements in critical
+        sections. Resizing the display tabs have been updated to correctly calculate the initial sizes.
+        The Transform tab has been updated for proper Prefix vertical alignment. Export server calls
+        have been normalized to use the Jena library RDFFormat names to simplify Command Line use for
+        batch processing transforms. Server results returned to the client have been normalized to use
+        common code responses. Preview controls have been updated to better select between Stream and
+        Pretty mode. Corrections for some outling UTF-8 encoding issues are included. A Japanese
+        translation file was added and resulted in an OpenRefine 3.7 update to rename Japanese
+        translation files from ".jp" to ".ja". POM file updates have reduced the RDF Transform
+        extension file to 8.9 MiB!  </dd>
+  </dl>
+  <dl>
     <dt>2.1.1 Beta Released</dt>
-    <dd>This version correct Literal processing for record-based literals at the Tier 2 level and below.
+    <dd>This version corrects Literal processing for record-based literals at the Tier 2 level and below.
         Literals not directly connected to a root node would not process properly when in OpenRefine
         "record" mode. These literals would not be present in the preview or in export files. Other
         enhancements include preview controls for setting 1) the sample size for records or rows to

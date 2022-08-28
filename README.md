@@ -12,7 +12,7 @@ This project uses a graphical user interface (GUI) for transforming OpenRefine p
 
 RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been thoroughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
 
-The latest releases (2.1.2 and above) only work with OpenRefine 3.6 or better.
+The latest releases (2.2.0 and above) only work with OpenRefine 3.6 or better.
 
 ## Documentation
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
@@ -24,9 +24,10 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install#prerequisites) for important Java version information.
 
 ### Latest Release
-[RDF Transform v2.1.1-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.1-beta/rdf-transform-2.1.1.zip)
+[RDF Transform v2.2.0-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.0.zip)
 
 ### Previous Releases
+[RDF Transform v2.1.1-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.1-beta/rdf-transform-2.1.1.zip)
 [RDF Transform v2.1.0-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.0-beta/rdf-transform-2.1.0.zip)<br />
 [RDF Transform v2.0.5-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.5-alpha/rdf-transform-2.0.5.zip)<br />
 [RDF Transform v2.0.4-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.4-beta/rdf-transform-2.0.4.zip)<br />
@@ -46,7 +47,7 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 ### OpenRefine
 As an extension, RDF Transform runs under the control of OpenRefine and its JVM. As such, the libraries included with OpenRefine override any of the same libraries included with the extension. This limits the extension to OpenRefine's version of those library functions and features.
 
-The latest releases (2.1.2 and above) only work with OpenRefine 3.6 or better due to upgraded Apache Jena library features that are not backward compatible.
+The latest releases (2.2.0 and above) only work with OpenRefine 3.6 or better due to upgraded Apache Jena library features that are not backward compatible.
 
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
 

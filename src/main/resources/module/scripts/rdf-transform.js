@@ -11,8 +11,8 @@ class RDFTransform {
     static get strEXTENSION() { return "RDFTransform"; }
     // RDF Transform Version Control
     static strVERSION_MAJOR = "2";
-    static strVERSION_MINOR = "1";
-    static strVERSION_MICRO = "2";
+    static strVERSION_MINOR = "2";
+    static strVERSION_MICRO = "0";
     static strVERSION =
         RDFTransform.strVERSION_MAJOR + "." +
         RDFTransform.strVERSION_MINOR + "." +
