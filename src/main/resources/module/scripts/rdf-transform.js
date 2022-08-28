@@ -167,9 +167,7 @@ class RDFTransformDialog {
     #bPreviewUpdate;
 
     #iResize;
-    #iDiffFrameHeight;
-    #iLastDiffFrameHeight;
-    #iBodyHeadInit;
+    #iLastDiff;
     #iFrameInit;
     #iBaseTransformDataHeight;
     #iBasePreviewDataHeight;
@@ -522,60 +520,69 @@ class RDFTransformDialog {
         //   AFTER show...
         //
 
+        // Set Description Paragraph box minimum height to its initial height...
+        //      ...and it's size should never change...
+        this.#elements.rdftDescParagraph.css(
+            { "min-height" : "" + this.#elements.rdftDescParagraph.height() + "px" }
+        );
+
+        // Set Description box minimum height to its initial height...
+        //      ...and it's size should never change...
+        this.#elements.rdftDescription.css(
+            { "min-height" : "" + this.#elements.rdftDescription.height() + "px" }
+        );
+
         // Get the initial Frame div height as its initial height...
         this.#iFrameInit = this.#elements.dialogFrame.height();
 
-        const iHeader = 10 + this.#elements.dialogHeader.height() + 10;
+        // Get the inner elements heights minus the Data boxes for the Transform and the Preview...
+        const iOHHeader = this.#elements.dialogHeader.outerHeight(true);
+        const iOHODialogBody = // ...contains Data box, so only the padding, borders, margins...
+            this.#elements.dialogBody.outerHeight(true) - this.#elements.dialogBody.height();
+        const iOHDescParaHeight = this.#elements.rdftDescParagraph.outerHeight(true);
+        const iOHBaseIRI = this.#elements.rdftBaseIRI.outerHeight(true);
+        const iOHORDFTabs = // ...contains Data box, so only the padding, borders, margins...
+            this.#elements.rdftTabs.outerHeight(true) - this.#elements.rdftTabs.height();
+        const iOHTabTitles = this.#elements.rdftTabTitles.outerHeight(true);
+        const iOHORDFTTabTransform =  // ...contains Data box, so only the padding, borders, margins...
+            // ...alternatively, this could be rdftTabPreview (same size)...
+            this.#elements.rdftTabTransform.outerHeight(true) - this.#elements.rdftTabTransform.height();
+        const iOHTabTransformHeader =
+            // ...alternatively, this could be rdftTabPreviewHeader (same size)...
+            this.#elements.rdftTabTransformHeader.outerHeight(true);
+        const iOHFooter = this.#elements.dialogFooter.outerHeight(true);
 
-        // Set Description Paragraph box minimum height to its initial height...
-        const iDescParaHeight = this.#elements.rdftDescParagraph.height();
-        this.#elements.rdftDescParagraph.css({ "min-height" : "" + iDescParaHeight + "px" });
-
-        // Set Description box minimum height to its initial height...
-        const iDescHeight = this.#elements.rdftDescription.height();
-        this.#elements.rdftDescription.css({ "min-height" : "" + iDescHeight + "px" });
-
-        const iBaseIRI = 6 + this.#elements.rdftBaseIRI.height() + 4;
-
-        const iTabTitles = this.#elements.rdftTabTitles.height();
-        const iTabTransformHeader = 2 + this.#elements.rdftTabTransformHeader.height() + 2;
-        const iTabTransformFooter = 2 + this.#elements.rdftTabTransformFooter.height() + 2;
-
-        const iFooter = 10 + this.#elements.dialogFooter.height() + 10;
-
+        // Calculate the remaining height available for the Data boxes...
         const iRemains = this.#iFrameInit - (
-            iHeader +
-            15 + // dialogBody
-            iDescParaHeight +
-            iBaseIRI +
-            1 + // rdfTabs
-            iTabTitles +
-            1 + 7 + // rdftTabTransform
-            iTabTransformHeader +
-            // iTabTransformFooter + ...do only for rdftTransformData
-            7 + 1 + // rdftTabTransform
-            1 + // rdfTabs
-            15 + // dialogBody
-            iFooter
-        );
+                iOHHeader + iOHODialogBody + iOHDescParaHeight + iOHBaseIRI +
+                iOHORDFTabs + iOHTabTitles + iOHORDFTTabTransform + iOHTabTransformHeader +
+                iOHFooter
+            );
 
-        // Get the base data heights as the initial heights...
-        this.#iBaseTransformDataHeight = iRemains - iTabTransformFooter;
-        this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight);
-        this.#elements.rdftTransformData.css({ "min-height" : "" + this.#iBaseTransformDataHeight + "px" });
+        // The Transform Data height must be additionally reduced by the Transform inner footer
+        //      (Preview does not have an inner footer)...
+        const iOHTabTransformFooter =
+        this.#elements.rdftTabTransformFooter.outerHeight(true);
+
+        // Get the base Data box heights...
+        this.#iBaseTransformDataHeight = iRemains - iOHTabTransformFooter;
         this.#iBasePreviewDataHeight = iRemains;
+
+        // Set Data boxes' initial heights...
+        this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight);
         this.#elements.rdftPreviewData.height(this.#iBasePreviewDataHeight);
+
+        // Set Data boxes' minimum heights to their initial heights...
+        this.#elements.rdftTransformData.css({ "min-height" : "" + this.#iBaseTransformDataHeight + "px" });
         this.#elements.rdftPreviewData.css({ "min-height" : "" + this.#iBasePreviewDataHeight + "px" });
 
-        // Set the base tab heights as the initial heights...
+        // Get the new base tab heights from the initial heights...
         this.#iBaseTransformTabHeight = this.#elements.rdftTabTransform.height();
-        this.#elements.rdftTabTransform.css({ "min-height" : "" + this.#iBaseTransformTabHeight + "px" });
         this.#iBasePreviewTabHeight = this.#elements.rdftTabPreview.height();
+
+        // Set the tab minimum heights to their initial heights...
+        this.#elements.rdftTabTransform.css({ "min-height" : "" + this.#iBaseTransformTabHeight + "px" });
         this.#elements.rdftTabPreview.css({ "min-height" : "" + this.#iBasePreviewTabHeight + "px" });
-
-        // Get the initial Body Header div height as its initial height...
-        this.#iBodyHeadInit = this.#elements.dialogBodyHead.height();
-
     }
 
     #functionalizeDialog() {
@@ -681,6 +688,7 @@ class RDFTransformDialog {
                 }
             );
 
+        // Hook up the OK Button...
         this.#elements.buttonOK
             .on("click", () => {
                     this.#doSave();
@@ -688,6 +696,8 @@ class RDFTransformDialog {
                     DialogSystem.dismissUntil(this.#level - 1);
                 }
             );
+
+        // Hook up the Cancel Button...
         this.#elements.buttonCancel
             .on("click", () => {
                 $(document).off("keydown", this.#doKeypress);
@@ -696,7 +706,7 @@ class RDFTransformDialog {
         );
 
         // Hook up resize...
-        this.#iLastDiffFrameHeight = 0;
+        this.#iLastDiff = 0;
         this.#iResize = 0;
         this.#dialog
             .on("resize",
@@ -708,12 +718,12 @@ class RDFTransformDialog {
                             if (iDiff < 0) {
                                 iDiff = 0;
                             }
-                            if (iDiff != this.#iLastDiffFrameHeight) {
+                            if (iDiff != this.#iLastDiff) {
                                 this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight + iDiff);
                                 this.#elements.rdftPreviewData.height(this.#iBasePreviewDataHeight + iDiff);
                                 this.#elements.rdftTabTransform.height(this.#iBaseTransformTabHeight + iDiff);
                                 this.#elements.rdftTabPreview.height(this.#iBasePreviewTabHeight + iDiff);
-                                this.#iLastDiffFrameHeight = iDiff;
+                                this.#iLastDiff = iDiff;
                             }
                         },
                         100 // ...do it 1/10 second after no more resizing,
