@@ -27,7 +27,7 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 [RDF Transform v2.2.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.0.zip)
 
 ### Previous Releases
-[RDF Transform v2.1.1-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.1-beta/rdf-transform-2.1.1.zip)
+[RDF Transform v2.1.1-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.1-beta/rdf-transform-2.1.1.zip)<br />
 [RDF Transform v2.1.0-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.0-beta/rdf-transform-2.1.0.zip)<br />
 [RDF Transform v2.0.5-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.5-alpha/rdf-transform-2.0.5.zip)<br />
 [RDF Transform v2.0.4-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.4-beta/rdf-transform-2.0.4.zip)<br />
