@@ -1,4 +1,11 @@
 /*
+ * RDF Transform License
+ */
+
+RDF Transform in whole or part is licensed under the Apache License 2.0.
+  See the 'licenses' directory for a copy of the Apache License.
+
+/*
  *  External Licenses
  */
 
@@ -6,8 +13,8 @@ See the 'licenses' directory for a list of the licenses for the libraries we dep
 ordered here by license:
 
 Apache Jena (jena)
-	Apache License
-	http://www.apache.org/licenses/LICENSE-2.0.html
+  Apache License
+  http://www.apache.org/licenses/LICENSE-2.0.html
 
 Lucene 8.9.0
   Apache License
