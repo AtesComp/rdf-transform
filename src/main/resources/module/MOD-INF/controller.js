@@ -1,12 +1,26 @@
-//
-// ***** CONTROLLER *****
-//
-// NOTE: This is a Server-Side JavaScript
-//
-//   The Server-Side JavaScript processor may be a limited funtionality
-//   processor, so many functions taken for granted in modern JavaScript
-//   processors may not be present in this implementation.
-//
+/*
+ *  ***** CONTROLLER *****
+ * 
+ *  The Server-Side JavaScript processor may be a limited funtionality
+ *  processor, so many functions taken for granted in modern JavaScript
+ *  processors may not be present in this implementation.
+ * 
+ *  NOTE: This is a Server-Side JavaScript
+ *
+ *  Copyright 2022 Keven L. Ates
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 var logger = Packages.org.slf4j.LoggerFactory.getLogger("RDFT:Controller");
 

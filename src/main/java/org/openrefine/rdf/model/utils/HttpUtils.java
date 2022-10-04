@@ -1,3 +1,24 @@
+/*
+ *  Class HttpUtils
+ * 
+ *  A class to hold the static HTTP Utility functions.  Provides "get"
+ *  functionality given a URL.
+ *
+ *  Copyright 2022 Keven L. Ates
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.openrefine.rdf.model.utils;
 
 import java.io.IOException;
@@ -6,27 +27,13 @@ import java.util.concurrent.TimeUnit;
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 
-//import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-//import org.apache.hc.client5.http.protocol.RedirectStrategy;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.core5.http.HttpEntity;
-
-//import org.apache.http.HttpEntity;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.client.ClientProtocolException;
-//import org.apache.http.client.HttpClient;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.client.params.ClientPNames;
-//import org.apache.http.impl.client.DefaultHttpClient;
-//import org.apache.http.params.BasicHttpParams;
-//import org.apache.http.params.CoreConnectionPNames;
-//import org.apache.http.params.CoreProtocolPNames;
-//import org.apache.http.params.HttpParams;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +42,7 @@ public class HttpUtils {
     private static Logger logger = LoggerFactory.getLogger("RDFT:HttpUtils"); // HttpUtils.class.getSimpleName()
 
     public static final String USER_AGENT =
-        "Mozilla/5.0 (compatible;) OpenRefine/3.5.1 " +
+        "Mozilla/5.0 (compatible;) OpenRefine/3.6.2 " +
         RDFTransform.EXTENSION + "/" + RDFTransform.VERSION;
     public static final int CONNECTION_TIMEOUT = 10;
     public static final int SOCKET_TIMEOUT = 60;
@@ -80,18 +87,18 @@ public class HttpUtils {
     public static HttpEntity get(String strURL) throws IOException {
         if ( Util.isDebugMode() ) HttpUtils.logger.info("DEBUG: GET request at " + strURL);
         HttpGet getter = new HttpGet(strURL);
-        return get(getter);
+        return HttpUtils.get(getter);
     }
 
     public static HttpEntity get(String strURL, String accept) throws IOException {
         if ( Util.isDebugMode() ) HttpUtils.logger.info("DEBUG: GET request at " + strURL);
         HttpGet getter = new HttpGet(strURL);
         getter.setHeader("Accept", accept);
-        return get(getter);
+        return HttpUtils.get(getter);
     }
 
     private static HttpEntity get(HttpGet getter) throws IOException {
-        CloseableHttpClient client = createClient();
+        CloseableHttpClient client = HttpUtils.createClient();
         CloseableHttpResponse response = client.execute(getter);
         if ( response.getCode() == 200 ) {
             return response.getEntity();

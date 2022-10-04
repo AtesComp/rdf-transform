@@ -1,13 +1,30 @@
+/*
+ *  Class SuggestTermCommand
+ * 
+ *  Get a list of suggestion terms from the Lucene Indexer.
+ *
+ *  Copyright 2022 Keven L. Ates
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.openrefine.rdf.command;
 
-//import com.google.refine.ProjectManager;
-//import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.IVocabularySearcher;
-//import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.SearchResultItem;
 import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyList;
@@ -23,13 +40,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SuggestTermCommand extends RDFTransformCommand {
-    //private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
-
-    //private HttpServletRequest theRequest = null;
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:SuggTermCmd");
 
     public SuggestTermCommand() {
         super();
@@ -38,7 +53,8 @@ public class SuggestTermCommand extends RDFTransformCommand {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //theRequest = request;
+        if ( Util.isDebugMode() ) SuggestTermCommand.logger.info("DEBUG: Getting suggestion terms...");
+        // NOTE: No CSRFToken required for this command.
 
         // Parameters names are defined in the Suggest Term (rdf-transform-suggest-term.js) JavaScript code.
         // The "project" holds the project ID of the project to search...
@@ -71,12 +87,12 @@ public class SuggestTermCommand extends RDFTransformCommand {
 
         // Augment with the local curated namespaces vocabulary matches...
         RDFTransform theTransform = RDFTransform.getRDFTransform( this.getProject(request) );
-        List<SearchResultItem> listVocabResults = this.search(theTransform, strQueryPrefix);
+        List<SearchResultItem> listLocalResults = this.search(theTransform, strQueryPrefix);
         if (listSearchResults == null) {
-            listSearchResults = listVocabResults;
+            listSearchResults = listLocalResults;
         }
         else {
-            listSearchResults.addAll(listVocabResults);
+            listSearchResults.addAll(listLocalResults);
         }
 
         // Write the results...

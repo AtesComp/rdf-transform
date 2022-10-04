@@ -1,8 +1,24 @@
 /*
- *  CLASS RDFTransformUINode
+ *  Class RDFTransformUINode
  *
- *  The Node Manager UI for the RDF Transform Dialog
+ *  The Node Manager UI for the RDF Transform Dialog.
+ * 
+ *  Copyright 2022 Keven L. Ates
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
+
 class RDFTransformUINode {
     /** @type RDFTransformDialog */
     #dialog;
@@ -810,10 +826,12 @@ class RDFTransformUINode {
             }
         }
 
-        if ( theNode === {} ) {
-            return null;
+        // If there are any key-value pairs in theNode...
+        for (const key in theNode) {
+            return theNode; // ... return theNode
         }
-        return theNode;
+        // Otherwise, there is nothing...
+        return null;
     }
 
     static getTransformImport(theDialog, theJSONNode, bIsRoot = true, theSubjectPropertyUI = null) {

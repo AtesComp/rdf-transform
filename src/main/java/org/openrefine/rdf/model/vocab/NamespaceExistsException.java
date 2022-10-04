@@ -1,8 +1,9 @@
-<!--
- *  404 HTML
- *
- *  The RDF Transform 404 HTML fragment.
+/*
+ *  Class NamespaceExistsException
  * 
+ *  A Namespace Exists exception class used when attemping to set a new
+ *  namespace.
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +17,13 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
--->
-<p>
-  This page does not exist. The content you are looking for may have been
-  moved elsewhere or removed, or you followed a faulty link.
-</p>
-<p>
-  Please use the navigation links at the top of this page, or your
-  search engine of choice, to locate your intended resource.
-</p>
+ */
+
+package org.openrefine.rdf.model.vocab;
+
+public class NamespaceExistsException extends Exception {
+
+    public NamespaceExistsException(String message) {
+        super(message);
+    }
+}

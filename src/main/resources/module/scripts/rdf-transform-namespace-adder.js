@@ -1,8 +1,24 @@
 /*
- *  CLASS RDFTransformNamespaceAdder
+ *  Class RDFTransformNamespaceAdder
  *
- *  A class for adding a new Prefix to the Prefix Manager list
+ *  Adds a Namespace to the current RDF Transform.
+ * 
+ *  Copyright 2022 Keven L. Ates
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
+
 class RDFTransformNamespaceAdder {
     #namespacesManager;
     #dialog;
@@ -47,14 +63,14 @@ class RDFTransformNamespaceAdder {
 
     }
 
-    show(message, prefix, onDoneAdding) {
-        if (message) {
-            this.#elements.message.addClass('message').html(message);
+    show(strMessage, strPrefix, onDoneAdding) {
+        if (strMessage) {
+            this.#elements.message.addClass('message').html(strMessage);
         }
 
-        if (prefix) {
-            this.#elements.prefix.val(prefix);
-            this.#suggestNamespace(prefix);
+        if (strPrefix) {
+            this.#elements.prefix.val(strPrefix);
+            this.#suggestNamespace(strPrefix);
         }
 
         this.#onDoneAdding = onDoneAdding;
@@ -195,30 +211,34 @@ class RDFTransformNamespaceAdder {
         .focus();
     }
 
-    #suggestNamespace(prefix) {
-        $.get(
-            'command/rdf-transform/suggest-namespace',
-            { prefix: prefix },
-            (data) => {
-                if ( !this.#elements.namespace.val() && data.namespace ) {
-                    this.#elements.namespace.val(data.namespace);
-                    if ( this.#elements.message.text() ) {
-                        this.#elements.namespace_note.html(
-                            '(' + $.i18n('rdft-prefix/suggestion') +
-                            ' <em><a target="_blank" href="http://prefix.cc">prefix.cc</a></em> ' +
-                            $.i18n('rdft-prefix/provided') + ')'
-                        );
+    #suggestNamespace(strPrefix) {
+        if ( ! this.#elements.namespace.val() )
+        {
+            $.get(
+                'command/rdf-transform/suggest-namespace',
+                { "prefix": strPrefix },
+                (data) => {
+                    if (data !== null && data.code === "ok") {
+                        let message = JSON.parse(data.message);
+                        if ( message.namespace ) {
+                            this.#elements.namespace.val(message.namespace);
+                            let strNamespaceNote = '(';
+                            let strPrefixCC = '<a target="_blank" href="http://prefix.cc">prefix.cc</a>';
+                            if ( this.#elements.message.text() ) {
+                                strNamespaceNote += $.i18n('rdft-prefix/suggestion') +
+                                    ' <em>' + strPrefixCC + '</em> ' + $.i18n('rdft-prefix/provided');
+                            }
+                            else {
+                                strNamespaceNote += $.i18n('rdft-prefix/suggested') + ' ' + strPrefixCC;
+                            }
+                            strNamespaceNote += ')';
+                            this.#elements.namespace_note.html( strNamespaceNote );
+                        }
                     }
-                    else {
-                        this.#elements.namespace_note.html(
-                            '(' + $.i18n('rdft-prefix/suggested') +
-                            ' <a target="_blank" href="http://prefix.cc">prefix.cc</a>)'
-                        );
-                    }
-                }
-            },
-            "json"
-        );
+                },
+                "json"
+            );
+        }
     }
 
     #dismiss() {
