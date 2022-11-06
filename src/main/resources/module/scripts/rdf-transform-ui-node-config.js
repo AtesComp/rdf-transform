@@ -2,7 +2,7 @@
  *  Class RDFTransformUINodeConfig
  *
  *  The Configuration UI for the Node Manager UI.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,9 +97,11 @@ class RDFTransformUINodeConfig {
                 .addClass("dialog-body")
                 .addClass("rdf-transform");
 
-        var html = $(DOM.loadHTML(RDFTransform.KEY, 'scripts/dialogs/rdf-transform-node-config.html'));
+        var tableNodes =
+            $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-node-config.html"))
+                .filter('.rdf-transform-node-table');
 
-        this.#elements = DOM.bind(html);
+        this.#elements = DOM.bind(tableNodes);
         this.#elements.prefixSelect.text( $.i18n('rdft-prefix/prefix') + ": " );
 
         this.#elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
@@ -164,7 +166,7 @@ class RDFTransformUINodeConfig {
         // Initilize inputs...
         this.#initInputs();
 
-        body.append(html);
+        body.append(tableNodes);
 
         /*--------------------------------------------------
          * Footer

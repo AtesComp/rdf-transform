@@ -2,7 +2,7 @@
  *  Class RDFTransformNamespaceAdder
  *
  *  Adds a Namespace to the current RDF Transform.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,9 @@ class RDFTransformNamespaceAdder {
     constructor(namespacesManager) {
         this.#namespacesManager = namespacesManager;
 
-        this.#dialog = $( DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-prefix-add.html") );
+        this.#dialog =
+            $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-prefix-add.html"))
+                .filter(".dialog-frame");
         this.#elements = DOM.bind(this.#dialog);
         this.#level = DialogSystem.showDialog(this.#dialog);
 

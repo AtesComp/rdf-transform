@@ -2,7 +2,7 @@
  *  Class RDFTransformVocabManager
  *
  *  The Vocabulary Manager UI for the RDF Transform Dialog.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,9 @@ class RDFTransformVocabManager {
     }
 
     show(onDone) {
-        var dialog = $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"));
+        var dialog =
+            $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"))
+                .filter('.dialog-frame');
         this.#level = DialogSystem.showDialog(dialog);
         this.#elements = DOM.bind(dialog);
 
