@@ -1,6 +1,6 @@
 /*
  *  Class SuggestNamespaceCommand
- * 
+ *
  *  Suggest a Namespace from the user provided Prefix.
  *
  *  Copyright 2022 Keven L. Ates

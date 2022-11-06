@@ -1,6 +1,6 @@
 /*
  *  Class LiteralNode
- * 
+ *
  *  The Literal Node base class use by other Literal based nodes in an RDF
  *  Transform.
  *
@@ -139,7 +139,7 @@ abstract public class LiteralNode extends Node {
      *  Method createLiterals() for Literal Node types
      *
      *  Return: void
-     * 
+     *
      *  Stores the Literals as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with resources.
      */

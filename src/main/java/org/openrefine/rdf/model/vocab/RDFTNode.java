@@ -1,6 +1,6 @@
 /*
  *  Class RDFTNode
- * 
+ *
  *  The RDF Transform Node base class used by other RDF node type classes
  *  used to manage RDF vocabularies.
  *

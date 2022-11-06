@@ -1,6 +1,6 @@
 /*
  *  Class Property
- * 
+ *
  *  The Property class use to manage RDF properties with their objects.
  *
  *  Copyright 2022 Keven L. Ates

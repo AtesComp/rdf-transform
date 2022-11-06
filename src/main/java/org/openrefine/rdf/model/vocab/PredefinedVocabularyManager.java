@@ -1,6 +1,6 @@
 /*
  *  Class PredefinedVocabularyManager
- * 
+ *
  *  A Predefined Vocabulary Manager class used to manage RDF Transform
  *  predefined vocabularies.
  *

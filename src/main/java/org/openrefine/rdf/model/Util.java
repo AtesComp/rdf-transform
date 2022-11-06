@@ -1,6 +1,6 @@
 /*
  *  Class Util
- * 
+ *
  *  The Util Node class use to hold generic static utility functions.
  *
  *  Copyright 2022 Keven L. Ates

@@ -1,6 +1,6 @@
 /*
  *  Class VocabularyList
- * 
+ *
  *  A Vocabulary List class used to manage a list of vocabularies for an
  *  RDF Transform.
  *

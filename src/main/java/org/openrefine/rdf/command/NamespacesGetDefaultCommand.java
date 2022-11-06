@@ -1,6 +1,6 @@
 /*
  *  Class NamespacesGetDefaultCommand
- * 
+ *
  *  Adds a default configured set of Namespaces to the current RDF Transform
  *  including importing the ontology terms to the Lucene indexer.
  *

@@ -1,6 +1,6 @@
 /*
  *  Class NamespaceAddCommand
- * 
+ *
  *  Adds a Namespace to the current RDF Transform.
  *
  *  Copyright 2022 Keven L. Ates

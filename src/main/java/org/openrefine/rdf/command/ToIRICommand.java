@@ -1,6 +1,6 @@
 /*
  *  Class ToIRICommand
- * 
+ *
  *  Convert a string into an IRI.
  *
  *  Copyright 2022 Keven L. Ates

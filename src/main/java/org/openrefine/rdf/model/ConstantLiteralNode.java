@@ -1,6 +1,6 @@
 /*
  *  Class ConstantLiteralNode
- * 
+ *
  *  A Literal Node Constant class for managing constant based Literal nodes
  *  in an RDF Transform.
  *

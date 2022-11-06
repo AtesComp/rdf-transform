@@ -1,6 +1,6 @@
 /*
  *  Class SuggestTermAddCommand
- * 
+ *
  *  Add a suggestion term to the Lucene Indexer.
  *
  *  Copyright 2022 Keven L. Ates

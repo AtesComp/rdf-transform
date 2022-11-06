@@ -1,6 +1,6 @@
 /*
  *  Class CellBlankNode
- * 
+ *
  *  A Blank Node Cell class for managing cell based blank nodes in an RDF
  *  Transform.
  *

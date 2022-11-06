@@ -263,7 +263,7 @@ class RDFExpressionPreviewDialog {
                         this.#iLastFrameHeight = this.#frame.height();
                         this.#iLastFrameWidth = this.#frame.width();
                     }
-                } 
+                }
             );
 
         const resizeObserver =

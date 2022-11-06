@@ -1,6 +1,6 @@
 /*
  *  Class CellResourceNode
- * 
+ *
  *  A Resource Node Cell class for managing cell based Resource nodes in an RDF
  *  Transform.
  *

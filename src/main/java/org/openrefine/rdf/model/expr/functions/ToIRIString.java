@@ -1,6 +1,6 @@
 /*
  *  Class ToIRIString
- * 
+ *
  *  A GREL based function that processes a string into an IRI representation.
  *
  *  Copyright 2022 Keven L. Ates

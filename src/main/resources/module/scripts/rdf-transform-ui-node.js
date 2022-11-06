@@ -2,7 +2,7 @@
  *  Class RDFTransformUINode
  *
  *  The Node Manager UI for the RDF Transform Dialog.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");

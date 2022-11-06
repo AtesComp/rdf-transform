@@ -1,6 +1,6 @@
 /*
  *  Class NodeResolver
- * 
+ *
  *  The Node Resolver class use to resolve nodes to RDF Transform node types.
  *
  *  Copyright 2022 Keven L. Ates
@@ -42,7 +42,7 @@ public class NodeResolver extends TypeIdResolverBase  {
             put( CellBlankNode.getNODETYPE(),           CellBlankNode.class        );
             put( CellResourceNode.getNODETYPE(),        CellResourceNode.class     );
         }};
-    
+
 
     @Override
     public Id getMechanism() {

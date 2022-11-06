@@ -1,6 +1,6 @@
 /*
  *  Class PreviewRDFTExpressionCommand
- * 
+ *
  *  Processes an RDF Transform Expression for preview from the OpenRefine
  *  Data.
  *

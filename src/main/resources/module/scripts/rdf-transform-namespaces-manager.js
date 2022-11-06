@@ -2,7 +2,7 @@
  *  Class RDFTransformNamespacesManager
  *
  *  Manages the Namespaces for the current RDF Transform.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,6 +1,6 @@
 /*
  *  Class CellNode
- * 
+ *
  *  The Cell Node base class use by other cell based nodes in an RDF
  *  Transform.
  *

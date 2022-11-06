@@ -1,6 +1,6 @@
 /*
  *  Class SaveRDFTransformCommand
- * 
+ *
  *  Saves the current RDF Transform as the last entry in the OpenRefine
  *  project history.
  *

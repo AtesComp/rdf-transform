@@ -1,6 +1,6 @@
 /*
  *  Class PreviewRDFCommand
- * 
+ *
  *  Processes the RDF Transform preview from the OpenRefine Data.
  *
  *  Copyright 2022 Keven L. Ates

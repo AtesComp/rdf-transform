@@ -1,6 +1,6 @@
 /*
  *  Class RDFTClass
- * 
+ *
  *  The RDF Transform Class class used to manage RDF Classes in vocabularies.
  *
  *  Copyright 2022 Keven L. Ates

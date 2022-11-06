@@ -1,6 +1,6 @@
 /*
  *  Class ConstantResourceNode
- * 
+ *
  *  A Resource Node Constant class for managing constant based Resource nodes
  *  in an RDF Transform.
  *

@@ -1,6 +1,6 @@
 /*
  *  Class ExportRDFRecordVisitor
- * 
+ *
  *  The RDF Transform's Export RDF as Record Visitor.
  *
  *  Copyright 2022 Keven L. Ates

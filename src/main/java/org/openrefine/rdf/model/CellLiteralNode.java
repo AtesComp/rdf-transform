@@ -1,6 +1,6 @@
 /*
  *  Class CellLiteralNode
- * 
+ *
  *  A Literal Node Cell class for managing cell based Literal nodes in an RDF
  *  Transform.
  *

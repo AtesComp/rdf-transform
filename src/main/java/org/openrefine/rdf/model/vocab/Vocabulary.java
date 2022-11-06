@@ -1,6 +1,6 @@
 /*
  *  Class Vocabulary
- * 
+ *
  *  The Vocabulary class used to manage vocabularies for an RDF TRansform.
  *
  *  Copyright 2022 Keven L. Ates

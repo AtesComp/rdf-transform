@@ -1,6 +1,6 @@
 /*
  *  Class CodeResponse
- * 
+ *
  *  A class to hold a general server code response indicating success ("ok")
  *  or failure ("error") and its associated message.
  *
@@ -26,11 +26,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CodeResponse {
     private String strCode;
     private String strMessage;
-    
+
     public CodeResponse() {
         this.strCode = "ok";
     }
-    
+
     public CodeResponse(String strMessage) {
         setResponse(false, strMessage);
     }
@@ -56,7 +56,7 @@ public class CodeResponse {
         }
         this.strMessage = strMessage;
     };
-    
+
     public static final CodeResponse ok = new CodeResponse("ok");
     public static final CodeResponse error = new CodeResponse("error", true);
 }

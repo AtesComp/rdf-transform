@@ -1,6 +1,6 @@
 /*
  *  Class NamespaceExistsException
- * 
+ *
  *  A Namespace Exists exception class used when attemping to set a new
  *  namespace.
  *

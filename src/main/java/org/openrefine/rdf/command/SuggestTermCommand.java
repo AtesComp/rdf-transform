@@ -1,6 +1,6 @@
 /*
  *  Class SuggestTermCommand
- * 
+ *
  *  Get a list of suggestion terms from the Lucene Indexer.
  *
  *  Copyright 2022 Keven L. Ates

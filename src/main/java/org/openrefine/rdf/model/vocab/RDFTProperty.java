@@ -1,6 +1,6 @@
 /*
  *  Class RDFTProperty
- * 
+ *
  *  The RDF Transform Property class used to manage RDF properties in
  *  vocabularies.
  *

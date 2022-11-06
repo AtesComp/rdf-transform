@@ -1,6 +1,6 @@
 /*
  *  Interface IVocabularySearcher
- * 
+ *
  *  A Vocabulary Searcher interface use by classes requiring
  *  vocabulary search capability.
  *

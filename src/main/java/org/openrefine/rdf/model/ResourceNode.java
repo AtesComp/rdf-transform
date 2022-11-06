@@ -1,6 +1,6 @@
 /*
  *  Class ResourceNode
- * 
+ *
  *  The Resource Node base class use by other Resource based nodes in an RDF
  *  Transform.
  *
@@ -263,7 +263,7 @@ abstract public class ResourceNode extends Node {
      *  Method createResources() for Resource Node types
      *
      *  Return: void
-     * 
+     *
      *  Stores the Resources as generic Values since these are "object" elements in
      *    ( source, predicate, object ) triples and need to be compatible with literals.
      */

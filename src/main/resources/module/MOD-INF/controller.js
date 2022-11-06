@@ -1,10 +1,10 @@
 /*
  *  ***** CONTROLLER *****
- * 
+ *
  *  The Server-Side JavaScript processor may be a limited funtionality
  *  processor, so many functions taken for granted in modern JavaScript
  *  processors may not be present in this implementation.
- * 
+ *
  *  NOTE: This is a Server-Side JavaScript
  *
  *  Copyright 2022 Keven L. Ates

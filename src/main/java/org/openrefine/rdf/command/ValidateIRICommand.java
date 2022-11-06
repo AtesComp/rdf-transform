@@ -1,6 +1,6 @@
 /*
  *  Class ValidateIRICommand
- * 
+ *
  *  Validate (test) a string as an IRI.
  *
  *  Copyright 2022 Keven L. Ates

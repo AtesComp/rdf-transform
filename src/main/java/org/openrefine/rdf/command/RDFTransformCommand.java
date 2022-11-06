@@ -1,6 +1,6 @@
 /*
  *  Class PreviewRDFTExpressionCommand
- * 
+ *
  *  The RDF Transform Command base class used by many RDF Transform commands.
  *
  *  Copyright 2022 Keven L. Ates

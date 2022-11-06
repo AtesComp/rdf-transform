@@ -4,7 +4,7 @@
  *  Set up the Extension Menubar for all RDF exports file types managed by the
  *  Export Manager.
  *  NOTE: Executes the menu for display with the end code.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");

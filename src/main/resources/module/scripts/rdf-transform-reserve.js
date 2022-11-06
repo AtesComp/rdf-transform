@@ -5,7 +5,7 @@
  *
  *  This file is NOT intended to be loaded for use by the controller for this extension.
  *  See: src/main/resources/module/MOD-INF/controller.js
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@
  *  * DO NOT REPLACE RDFTransformCommon WITH THIS CODE!!! *
  *  *******************************************************
  *  Instead, add or modify code as needed.
- * 
+ *
  */
 
 class Reserve_RDFTransformCommon {

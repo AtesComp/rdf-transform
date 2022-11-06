@@ -1,6 +1,6 @@
 /*
  *  Class SaveRDFTransformOperation
- * 
+ *
  *  The RDF Transform Save Operation used to save the current RDF Transform as
  *  an OpenRefine history entry.
  *

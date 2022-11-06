@@ -1,6 +1,6 @@
 /*
  *  Class Node
- * 
+ *
  *  The Node base class use by other nodes in an RDF Transform.
  *
  *  Copyright 2022 Keven L. Ates

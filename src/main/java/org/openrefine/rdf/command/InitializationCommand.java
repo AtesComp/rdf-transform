@@ -1,6 +1,6 @@
 /*
  *  Class InitializationCommand
- * 
+ *
  *  Initializes the RDF Transform extension.
  *
  *  Copyright 2022 Keven L. Ates

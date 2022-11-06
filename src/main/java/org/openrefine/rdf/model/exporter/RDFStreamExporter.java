@@ -1,6 +1,6 @@
 /*
  *  Class RDFStreamExporter
- * 
+ *
  *  A Stream optimized RDF Exporter.
  *
  *  Copyright 2022 Keven L. Ates

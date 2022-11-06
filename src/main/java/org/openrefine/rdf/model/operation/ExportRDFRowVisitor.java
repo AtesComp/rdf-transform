@@ -1,6 +1,6 @@
 /*
  *  Class ExportRDFRowVisitor
- * 
+ *
  *  The RDF Transform's Export RDF as Row Visitor.
  *
  *  Copyright 2022 Keven L. Ates

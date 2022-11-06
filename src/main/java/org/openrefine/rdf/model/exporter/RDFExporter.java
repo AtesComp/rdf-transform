@@ -1,6 +1,6 @@
 /*
  *  Class RDFExporter
- * 
+ *
  *  The RDF Exporter base class used by other RDF exporters.
  *
  *  Copyright 2022 Keven L. Ates

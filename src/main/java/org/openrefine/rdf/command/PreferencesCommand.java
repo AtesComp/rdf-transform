@@ -1,6 +1,6 @@
 /*
  *  Class PreferencesCommand
- * 
+ *
  *  Gets the RDF Transform global preferences from the server.
  *
  *  Copyright 2022 Keven L. Ates

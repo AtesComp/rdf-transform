@@ -1,6 +1,6 @@
 /*
  *  Class NamespaceManager
- * 
+ *
  *  A Namespace Manager class used to manage RDF Transform namespaces.
  *
  *  Copyright 2022 Keven L. Ates

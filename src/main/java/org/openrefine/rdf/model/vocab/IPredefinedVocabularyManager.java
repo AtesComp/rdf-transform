@@ -1,6 +1,6 @@
 /*
  *  Interface IPredefinedVocabularyManager
- * 
+ *
  *  A Predefined Vocabulary Manager interface use by classes requiring
  *  predefined vocabulary management.
  *

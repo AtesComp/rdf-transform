@@ -1,6 +1,6 @@
 /*
  *  Class PreviewRDFRowVisitor
- * 
+ *
  *  The RDF Transform's Preview RDF as Row Visitor.
  *
  *  Copyright 2022 Keven L. Ates

@@ -1,6 +1,6 @@
 /*
  *  Class RDFRecordVisitor
- * 
+ *
  *  The RDF Record Visitor base class used by other RDF record visitors.
  *
  *  Copyright 2022 Keven L. Ates

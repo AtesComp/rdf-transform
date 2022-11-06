@@ -1,6 +1,6 @@
 /*
  *  Class VocabularySearcher
- * 
+ *
  *  A Vocabulary Searcher class used to search a Lucene Indexer for
  *  vocabulary terms in an RDF Transform.
  *

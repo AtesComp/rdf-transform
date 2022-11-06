@@ -1,6 +1,6 @@
 /*
  *  Class RDFPrettyExporter
- * 
+ *
  *  A Pretty Printer RDF Exporter.
  *
  *  Copyright 2022 Keven L. Ates

@@ -1,6 +1,6 @@
 /*
  *  Class VocabularyImportException
- * 
+ *
  *  A Vocabulary Import Exception class used to manage vocabulary import
  *  exceptions.
  *

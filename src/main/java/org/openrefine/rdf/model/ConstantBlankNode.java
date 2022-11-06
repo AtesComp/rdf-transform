@@ -1,6 +1,6 @@
 /*
  *  Class ConstantBlankNode
- * 
+ *
  *  A Blank Node Constant class for managing constant based blank nodes in an
  *  RDF Transform.
  *

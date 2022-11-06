@@ -1,6 +1,6 @@
 /*
  *  Class RDFType
- * 
+ *
  *  The RDFType class use to manage RDF Types (specialized property) with their
  *  class objects.
  *

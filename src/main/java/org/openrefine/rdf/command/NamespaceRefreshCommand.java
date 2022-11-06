@@ -1,6 +1,6 @@
 /*
  *  Class NamespaceRefreshCommand
- * 
+ *
  *  Refreshes a known Namespace in the current RDF Transform including removing
  *  the current ontology terms and reimporting the ontology terms to the
  *  Lucene indexer.

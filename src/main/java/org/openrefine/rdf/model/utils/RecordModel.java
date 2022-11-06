@@ -1,6 +1,6 @@
 /*
  *  Class RecordModel
- * 
+ *
  *  A Record Model utility class to manage the OpenRefine Record / Row modes
  *  at a particular RDF Transform node.
  *

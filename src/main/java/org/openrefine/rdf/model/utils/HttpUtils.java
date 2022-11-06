@@ -1,6 +1,6 @@
 /*
  *  Class HttpUtils
- * 
+ *
  *  A class to hold the static HTTP Utility functions.  Provides "get"
  *  functionality given a URL.
  *

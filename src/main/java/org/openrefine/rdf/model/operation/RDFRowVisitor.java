@@ -1,6 +1,6 @@
 /*
  *  Class RDFRowVisitor
- * 
+ *
  *  The RDF Row Visitor base class used by other RDF row visitors.
  *
  *  Copyright 2022 Keven L. Ates

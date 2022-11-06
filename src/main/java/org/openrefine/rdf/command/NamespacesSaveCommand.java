@@ -1,6 +1,6 @@
 /*
  *  Class NamespacesSaveCommand
- * 
+ *
  *  Sets a set of Namespaces in the current RDF Transform overwriting
  *  the previous set.
  *

@@ -1,6 +1,6 @@
 /*
  *  Class SearchResultItem
- * 
+ *
  *  The Search Result Item class used to manage vocabulary searches in the
  *  Lucene Indexer.
  *

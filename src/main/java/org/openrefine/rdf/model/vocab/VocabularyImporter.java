@@ -1,6 +1,6 @@
 /*
  *  Class VocabularyImporter
- * 
+ *
  *  A Vocabulary Importer class used to manage and parse vocabulary imports for
  *  an RDF Transform.
  *

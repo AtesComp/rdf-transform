@@ -1,8 +1,8 @@
 /*
  *  Class RDFExportTemplate
  *
- *  Export the RDF Transform template 
- * 
+ *  Export the RDF Transform template
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");

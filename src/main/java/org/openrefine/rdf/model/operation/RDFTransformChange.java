@@ -1,6 +1,6 @@
 /*
  *  Class RDFTransformChange
- * 
+ *
  *  The RDF Transform Change class used to manage OpenRefine history entry
  *  changes.
  *

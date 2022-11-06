@@ -1,6 +1,6 @@
 /*
  *  Class ToStrippedLiteral
- * 
+ *
  *  A GREL based function that end strips a string and converts other consecutive
  *  whitespace to a single space for an RDF Literal.
  *

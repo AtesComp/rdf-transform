@@ -1,6 +1,6 @@
 /*
  *  Class ConstantNode
- * 
+ *
  *  The Constant Node base class use by other constant based nodes in an RDF
  *  Transform.
  *

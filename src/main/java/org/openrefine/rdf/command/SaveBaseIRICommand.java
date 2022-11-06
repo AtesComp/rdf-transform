@@ -1,6 +1,6 @@
 /*
  *  Class SaveBaseIRICommand
- * 
+ *
  *  Sets the Base IRI in the current RDF Transform.  Used for base prefixed
  *  IRIs.
  *

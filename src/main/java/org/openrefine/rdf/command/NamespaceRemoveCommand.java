@@ -1,6 +1,6 @@
 /*
  *  Class NamespaceRemoveCommand
- * 
+ *
  *  Removes a known Namespace in the current RDF Transform including removing
  *  the current ontology terms from the Lucene indexer.
  *

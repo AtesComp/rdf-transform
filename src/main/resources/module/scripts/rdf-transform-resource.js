@@ -2,7 +2,7 @@
  *  Class RDFTransformResourceDialog
  *
  *  Manages the resources for the RDF Transform dialog.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
