@@ -4,7 +4,7 @@
  *  The Main RDF Transform JavaScript file containing:
  *      Class RDFTransform - holds a RDF Transform structure
  *      Class RDFTransformDialog - UI to manage an RDF Transform structure
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,26 +89,42 @@ class RDFTransform {
     static gstrConvertToIRI = "convert";
 
     // Setup default Master Root Node (copy as needed)...
-    static gnodeMasterRoot = {};
-    static {
-        this.gnodeMasterRoot.valueSource = {};
-        this.gnodeMasterRoot.valueSource.source = null; // ...to be replaced with row / record index
-        this.gnodeMasterRoot.expression = {};
-        this.gnodeMasterRoot.expression.language = RDFTransform.gstrDefaultExpLang;
-        this.gnodeMasterRoot.expression.code = null; // ...to be replaced with default language expression
-        this.gnodeMasterRoot.propertyMappings = [];
-    }
+    static gnodeMasterRoot = {
+        valueSource : {
+            source : null
+        } ,
+        expression : {
+            language : RDFTransform.gstrDefaultExpLang ,
+            code : null
+        } ,
+        propertyMappings : [] ,
+    };
+    // static {
+    //     this.gnodeMasterRoot.valueSource = {};
+    //     this.gnodeMasterRoot.valueSource.source = null; // ...to be replaced with row / record index
+    //     this.gnodeMasterRoot.expression = {};
+    //     this.gnodeMasterRoot.expression.language = RDFTransform.gstrDefaultExpLang;
+    //     this.gnodeMasterRoot.expression.code = null; // ...to be replaced with default language expression
+    //     this.gnodeMasterRoot.propertyMappings = [];
+    // }
 
     // Setup Preferences...
-    static gPreferences = {};
-    static {
-        this.gPreferences.iVerbosity = 0;
-        this.gPreferences.iExportLimit = 10737418;
-        this.gPreferences.bPreviewStream = null;
-        this.gPreferences.bDebugMode = false;
-        this.gPreferences.bDebugJSON = false;
-        this.gPreferences.iSampleLimit = null;
-    }
+    static gPreferences = {
+        iVerbosity : 0 ,
+        iExportLimit : 10737418 ,
+        bPreviewStream : null ,
+        bDebugMode : false ,
+        bDebugJSON : false ,
+        iSampleLimit : null ,
+    };
+    // static {
+    //     this.gPreferences.iVerbosity = 0;
+    //     this.gPreferences.iExportLimit = 10737418;
+    //     this.gPreferences.bPreviewStream = null;
+    //     this.gPreferences.bDebugMode = false;
+    //     this.gPreferences.bDebugJSON = false;
+    //     this.gPreferences.iSampleLimit = null;
+    // }
 
     static setDefaults() {
         // NOTE: We can't set these variables as static class statements since they depend on
@@ -488,7 +504,9 @@ class RDFTransformDialog {
     }
 
     #buildBody() {
-        this.#dialog = $(DOM.loadHTML(RDFTransform.KEY, 'scripts/dialogs/rdf-transform.html'));
+        this.#dialog =
+            $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform.html"))
+                .filter(".rdf-transform-dialog-frame");
         this.#dialog.resizable();
 
         this.#elements = DOM.bind(this.#dialog);
