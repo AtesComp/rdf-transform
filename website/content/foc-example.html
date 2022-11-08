@@ -2,7 +2,7 @@
  *  Example HTML
  *
  *  The RDF Transform Example HTML fragment.
- * 
+ *
  *  Copyright 2022 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -118,7 +118,7 @@ ingred:Sugar
         <ol type="1">
           <li>Create
             <div>
-              For example, create a new type <em>EntryGroup</em> with the "choc" prefixed namespace on
+              For example, create a new type <em>Reference</em> with the "choc" prefixed namespace on
               the <em>REF</em> object node.
             </div>
           </li>
@@ -134,6 +134,16 @@ ingred:Sugar
             </div>
           </li>
         </ol>
+        <div>
+          The figure below shows an example of a RDF Node dialog (the <em>Bean Type IRI</em> resource):
+          <div class="image">
+            <img src="images/example/rdf_node.png" alt="RDF Node Dialog Example" border="1" />
+          </div>
+          Notice the custom expression used to define the IRI. The <em>Edit & Preview</em> command displays
+          the "Preview Expression: IRI" dialog allowing edits and showing sample values from the first 10
+          rows:
+          <p><img src="images/example/edit_grel.png" alt="Preview Expression Dialog Example" border="1" /></p>
+        </div>
       <li>
         <div>
           Use the "Preview" tab to check your results for correctness.
@@ -141,10 +151,41 @@ ingred:Sugar
       </li>
       <li>
         <div>
-          As an additional exercise, use GREL to breakdown the "Ingredience" string
-          into actual ingredience resource IRIs and add those IRIs as new root nodes
-          referenceing actual Internet resources for those ingredience (see Wikidata,
-          DBpedia, or any other favored location).
+          As an additional exercise, use GREL to breakdown the "Ingredients" string
+          into actual ingredient resource IRIs. There are 7 total ingredients available in
+          all ingredients strings. Change your "ingredients" as follows:<br />
+          NOTE For reference, an ingredents string looks like "n- i1,i2,...,in" where "n" is the
+          number of ingredents and "i1" to "in" is a 1-2 character string representing the ingredient.<br />
+          I.e, B = Beans, S = Sugar, S* = Sweetener other than white cane or beet sugar, C = Cocoa Butter,
+          V = Vanilla, L = Lecithin, Sa = Salt (see the
+          <a href="https://flavorsofcacao.com/chocolate_database.html">FoC Database page</a>
+          for related info).
+          <ol type="1">
+            <li>
+              Use your "ingredients" property to point to a Blank Node with type "rdf:Bag"
+            </li>
+            <li>
+              From the Blank Node, use property "rdf:li" to point to 7 new nodes created by breaking down the
+              string into components to use some name (from the above ingredient reference) to create the
+              "ingred:someName" IRI.<br />
+              <b>Hint</b>: You will need to test the number (toNumber) againts an index (> 0, > 1, ..., > 6) for a node,
+              then compare the short strings to get a name string. This value will be used to create the IRI.
+              GREL smartSplit() is your friend.
+            </li>
+            <li>
+              Type these new nodes as "choc:Ingredient"
+            </li>
+            <li>
+              Create a label (rdfs:label) for each ingredient using the same GREL expression for the node IRI
+              (or nearly the same if your want to be different)
+            </li>
+            <li>
+              Create a reference (rdfs:seeAlso) to actual Internet resources for each ingredient (see
+              Wikidata, DBpedia, or any other favored location) using nearly same GREL expression for
+              the node IRI.  Example result: "wiki:Cocoa_bean" for "B" where "wiki" is the prefix for
+              namespace "https://en.wikipedia.org/wiki/"
+            </li>
+          </ol>
         </div>
       </li>
       <li>
@@ -152,27 +193,17 @@ ingred:Sugar
           As an additional exercise, use GREL to breakdown the "Most Memorable
           Characteristics" string into individual characteristics strings. There are
           at most 5 characteristics mostly separated by a comma. There are a few that
-          alternatively use the word "and" to separate 2 characteristics.
+          alternatively use the string " and " to separate 2 characteristics.<br />
+          <b>Hint</b>: GREL with() to help convert " and " and smartSplit() is your friend.
         </div>
       </li>
     </ol>
+    <br />
     <div class="note">
-      For the above additional exercises, the provided
+      SPOILER ALERT! For the above additional exercises, the provided
       <a href="example/foc.json.html">Flavors of Cacao JSON Template</a> contains the
       structure (pretty printed for your reading enjoyment) and the GREL expressions
       used to break down these strings.
-    </div>
-    <p>
-      The figure below shows an example of a RDF Node dialog (the <em>Bean Type IRI</em> resource):
-      <div class="image">
-        <img src="images/example/rdf_node.png" alt="RDF Node Dialog Example" border="1" />
-      </div>
-    </p>
-    <div class="note">
-      Notice the custom expression used to define the IRI. The <em>Edit & Preview</em> command displays
-      the "Preview Expression: IRI" dialog allowing edits and showing sample values from the first 10
-      rows:
-      <p><img src="images/example/edit_grel.png" alt="Preview Expression Dialog Example" border="1" /></p>
     </div>
   </li>
   <li class="step step3">
@@ -186,7 +217,7 @@ ingred:Sugar
     <p><img src="images/example/rdf_export.png" alt="Export RDF Menu Item Example" border="1" /></p>
     <p>Stream output types are exports that work on discreet blocks or lines of output. They are
        readable but may duplicate triple information during output. Their best feature is that they
-       scale well for large datasets</p>
+       scale well for the output processing of large datasets</p>
     <p>Pretty output types are exports that optimize an entire graph to minimize duplicative triples.
        They look good, but they don't scale well.  As such, use these with caution for large datasets.</p>
     <ol>
@@ -196,6 +227,7 @@ ingred:Sugar
       <li>RDF as N-Quads (Stream) - A basic "Line per Quad" stream optimized export (identical to N-Triple)</li>
       <li>RDF as TriX (Stream) - A basic "Triples in XML" stream optimized export</li>
       <li>RDF as RDFNull (Test) - A NULL test, yet stream optimized, export (produces a zero byte file)</li>
+      <li>RDF as ProtoBuf (Stream) - A binary condensed, stream optimized export</li>
       <li>RDF as RDFThrift (Stream) - A binary condensed, stream optimized export</li>
     </ol>
   </li>

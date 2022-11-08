@@ -86,6 +86,12 @@
             window.location.reload();
         }
 
+        // Control reload on history change...
+        window.onpopstate = function(event)
+        {
+            window.location.reload();
+        };
+
         function theLoader() {
             // ==========================================
             //
@@ -97,7 +103,8 @@
                 'Home' : '',
                 'Showcases' : 'showcases',
                 'Docs' : 'docs',
-                'Support' : 'support-dev'
+                'Support' : 'support-dev',
+                'Download' : 'download'
             };
 
             const listSectionLinks = {
@@ -111,12 +118,18 @@
                 },
                 'support-dev' : {
                     'Overview' : 'support-dev',
+                    'Download Latest' : 'download-latest',
                     'Issue Tracker' : 'issues',
                     'Source Code' : 'source'
                 },
                 'showcases' : {
                     'Overview' : 'showcases',
-                    'RDF Transform' : 'example'
+                    'Flavors of Cacao' : 'foc-example'
+                },
+                'download' : {
+                    'Overview' : 'download',
+                    'Latest Release' : 'download-latest',
+                    'Other Releases' : 'releases'
                 }
             };
 
@@ -141,6 +154,11 @@
                     'head_title' : 'Showcase',
                     'title' : 'Showcases',
                     'text' : 'showcases',
+                },
+                'download' : {
+                    'head_title' : 'Download',
+                    'title' : 'Download',
+                    'text' : 'download',
                 },
                 'installationDoc' : {
                     'head_title' : 'Install',
@@ -172,11 +190,11 @@
                     'section' : 'docs',
                     'text' : 'publications',
                 },
-                'example' : {
-                    'head_title' : 'Example',
-                    'title' : 'RDF Transform Example',
+                'foc-example' : {
+                    'head_title' : 'FoC Example',
+                    'title' : 'Example Transform: Flavors of Cacao',
                     'section' : 'showcases',
-                    'text' : 'example',
+                    'text' : 'foc-example',
                 },
                 'about' : {
                     'head_title' : 'About',
@@ -187,8 +205,8 @@
                     'title' : 'GNU Public License',
                     'redirect' : 'http://www.gnu.org/licenses/gpl-3.0-standalone.html'
                 },
-                'download' : {
-                    'title' : 'Downloads',
+                'releases' : {
+                    'title' : 'Releases',
                     'redirect' : 'https://github.com/AtesComp/rdf-transform/releases'
                 },
                 'download-latest' : { // RDF Transform Version Control
@@ -302,10 +320,11 @@
                     strNav += '<li class="active"><span>' + strKey + '</span></li>';
                 }
                 else {
-                    strNav += '<li><a href="#' + strValue + '">' + strKey + '</a></li>';
+                    strNav += '<li' + (strValue === 'download' ? ' class="' + strValue + '"' : '') + '>' +
+                                '<a href="#' + strValue + '">' + strKey + '</a>' +
+                              '</li>';
                 }
             }
-            strNav += '<li class="download"><a href="#download">Download</a></li>';
             document.getElementById("main-nav").innerHTML = strNav;
 
             const elemTitle = document.getElementById("title");
