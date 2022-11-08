@@ -158,13 +158,13 @@ class RDFExpressionPreviewDialog {
 
     #bFrameNotShown;
 
-    static #generateWidgetHTMLforGREL() {
+    static #generateExpPreviewDialog() {
         //
         // As per OpenRefine's ExpressionPreviewDialog.generateWidgetHTML() with our modifications....
         //
 
-        // Load OpenRefine's Expression Preview Dialog...
-        var html = DOM.loadHTML("core", "scripts/dialogs/expression-preview-dialog.html");
+        // Load OpenRefine's Expression Preview Dialog for modification...
+        var dlgExpPreview = DOM.loadHTML("core", "scripts/dialogs/expression-preview-dialog.html");
 
         // ...and set it for the current default expression language...
         var languageOptions = [];
@@ -174,9 +174,9 @@ class RDFExpressionPreviewDialog {
             info.name +
             '</option>'
         );
-        html = html.replace( "$LANGUAGE_OPTIONS$", languageOptions.join("") );
+        dlgExpPreview = dlgExpPreview.replace( "$LANGUAGE_OPTIONS$", languageOptions.join("") );
 
-        return html;
+        return dlgExpPreview;
     }
 
     constructor(dtvManager, onDone)
@@ -187,18 +187,22 @@ class RDFExpressionPreviewDialog {
         //
         this.#onDone = onDone;
 
+        // Create this RDF Expression Preview Dialog's main parts...
         this.#frame = DialogSystem.createDialog();
         this.#frame
             .addClass("dialog-frame")
             .addClass("rdf-transform-exp-preview-frame");
-
         var header = $('<div />').addClass("dialog-header");
         var body   = $('<div />').addClass("dialog-body");
         var footer = $('<div />').addClass("dialog-footer");
-        var html   = $( RDFExpressionPreviewDialog.#generateWidgetHTMLforGREL() );
-        this.#elements = DOM.bind(html);
 
-        // Substitute our button for OpenRefine's ExpressionPreviewDialog button...
+        // Get the Expression Preview Dialog component...
+        var dlgExpPreview = $( RDFExpressionPreviewDialog.#generateExpPreviewDialog() );
+
+        // Connect all the dialog's "bind" elements to this RDF Expression Preview Dialog instance...
+        this.#elements = DOM.bind(dlgExpPreview);
+
+        // Substitute our "OK" button for OpenRefine's ExpressionPreviewDialog button...
         var buttonOK = $('<button />').addClass('button').text( $.i18n('rdft-buttons/ok') );
         buttonOK.on("click",
             () => {
@@ -207,18 +211,16 @@ class RDFExpressionPreviewDialog {
             }
         );
 
-        // Substitute our button for OpenRefine's ExpressionPreviewDialog button...
+        // Substitute our "Cancel" button for OpenRefine's ExpressionPreviewDialog button...
         var buttonCancel = $('<button />').addClass('button').text( $.i18n('rdft-buttons/cancel') );
         buttonCancel.on("click",
             () => { DialogSystem.dismissUntil(this.#level - 1); }
         );
 
+        // Assemble our dialog...
         header.text( this.#dtvManager.getTitle() );
-
-        body.append(html);
-
+        body.append(dlgExpPreview);
         footer.append(buttonOK, buttonCancel);
-
         this.#frame
             .append(header, body, footer)
             .css({ "min-width" : "700px" })

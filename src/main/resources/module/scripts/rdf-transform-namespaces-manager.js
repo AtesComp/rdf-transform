@@ -146,12 +146,12 @@ class RDFTransformNamespacesManager {
     }
 
     addNamespace(strMessage, strPrefixGiven, onDoneAdd) {
-        var widget = new RDFTransformNamespaceAdder(this);
-        widget.show(
+        var dlgNamespaceAdder = new RDFTransformNamespaceAdder(this);
+        dlgNamespaceAdder.show(
             strMessage,
             strPrefixGiven,
             (strPrefix, strNamespace) => {
-                // NOTE: The RDFTransformNamespaceAdder should have validated the
+                // NOTE: RDFTransformNamespaceAdder should have validated the
                 //      prefix information, so no checks are required here.
 
                 // Add the Prefix and its Namespace...

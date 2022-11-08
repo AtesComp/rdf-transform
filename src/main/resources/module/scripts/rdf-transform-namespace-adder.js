@@ -21,7 +21,7 @@
 
 class RDFTransformNamespaceAdder {
     #namespacesManager;
-    #dialog;
+    #dlgPrefixAdd;
     #elements;
     #level;
 
@@ -30,11 +30,14 @@ class RDFTransformNamespaceAdder {
     constructor(namespacesManager) {
         this.#namespacesManager = namespacesManager;
 
-        this.#dialog =
+        // Load RDF Transform's Prefix Add Dialog...
+        this.#dlgPrefixAdd =
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-prefix-add.html"))
                 .filter(".dialog-frame");
-        this.#elements = DOM.bind(this.#dialog);
-        this.#level = DialogSystem.showDialog(this.#dialog);
+
+        // Connect all the Prefix Add Dialog's "bind" elements to this
+        //      RDF Transform Namespace Adder instance...
+        this.#elements = DOM.bind(this.#dlgPrefixAdd);
 
         this.#elements.dialogHeader.html(                   $.i18n('rdft-prefix/header')          );
         this.#elements.rdf_transform_prefix_prefix.html(    $.i18n('rdft-prefix/prefix') + ":"    );
@@ -59,10 +62,11 @@ class RDFTransformNamespaceAdder {
 
         this.#elements.rdf_transform_prefix_note.html( $.i18n('rdft-prefix/namespace-note') );
 
-        this.#elements.buttonOK.html(       $.i18n('rdft-buttons/ok')                  );
-        this.#elements.buttonCancel.html(   $.i18n('rdft-buttons/cancel')              );
+        this.#elements.buttonOK.html(          $.i18n('rdft-buttons/ok')                   );
+        this.#elements.buttonCancel.html(      $.i18n('rdft-buttons/cancel')               );
         this.#elements.buttonVocabImport.html( $.i18n('rdft-buttons/vocab-import') + "..." );
 
+        this.#level = DialogSystem.showDialog(this.#dlgPrefixAdd);
     }
 
     show(strMessage, strPrefix, onDoneAdding) {

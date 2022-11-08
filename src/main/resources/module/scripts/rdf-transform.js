@@ -99,16 +99,8 @@ class RDFTransform {
         } ,
         propertyMappings : [] ,
     };
-    // static {
-    //     this.gnodeMasterRoot.valueSource = {};
-    //     this.gnodeMasterRoot.valueSource.source = null; // ...to be replaced with row / record index
-    //     this.gnodeMasterRoot.expression = {};
-    //     this.gnodeMasterRoot.expression.language = RDFTransform.gstrDefaultExpLang;
-    //     this.gnodeMasterRoot.expression.code = null; // ...to be replaced with default language expression
-    //     this.gnodeMasterRoot.propertyMappings = [];
-    // }
 
-    // Setup Preferences...
+    // Setup default Preferences...
     static gPreferences = {
         iVerbosity : 0 ,
         iExportLimit : 10737418 ,
@@ -117,14 +109,6 @@ class RDFTransform {
         bDebugJSON : false ,
         iSampleLimit : null ,
     };
-    // static {
-    //     this.gPreferences.iVerbosity = 0;
-    //     this.gPreferences.iExportLimit = 10737418;
-    //     this.gPreferences.bPreviewStream = null;
-    //     this.gPreferences.bDebugMode = false;
-    //     this.gPreferences.bDebugJSON = false;
-    //     this.gPreferences.iSampleLimit = null;
-    // }
 
     static setDefaults() {
         // NOTE: We can't set these variables as static class statements since they depend on
@@ -199,7 +183,7 @@ class RDFTransformDialog {
     #theTransform; // ...holds all the stuffs
     #nodeUIs;
 
-    #dialog;
+    #dlgMain;
     #elements;
     #imgLargeSpinner;
     #imgLineBounce;
@@ -504,12 +488,14 @@ class RDFTransformDialog {
     }
 
     #buildBody() {
-        this.#dialog =
+        // Load RDF Transform's Main Dialog...
+        this.#dlgMain =
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform.html"))
                 .filter(".rdf-transform-dialog-frame");
-        this.#dialog.resizable();
+        this.#dlgMain.resizable();
 
-        this.#elements = DOM.bind(this.#dialog);
+        // Connect all the Main Dialog's "bind" elements to this RDF Transform instance...
+        this.#elements = DOM.bind(this.#dlgMain);
 
         this.#elements.dialogHeader.text(           $.i18n('rdft-dialog/header') );
         this.#elements.rdftDescription.text(        $.i18n('rdft-dialog/desc') );
@@ -558,7 +544,7 @@ class RDFTransformDialog {
 
         this.#functionalizeDialog();
 
-        this.#level = DialogSystem.showDialog(this.#dialog);
+        this.#level = DialogSystem.showDialog(this.#dlgMain);
 
         //
         //   AFTER show...
@@ -752,7 +738,7 @@ class RDFTransformDialog {
         // Hook up resize...
         this.#iLastDiff = 0;
         this.#iResize = 0;
-        this.#dialog
+        this.#dlgMain
             .on("resize",
                 (evt, ui) => {
                     clearTimeout(this.#iResize);

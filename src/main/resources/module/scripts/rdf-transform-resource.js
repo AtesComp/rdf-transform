@@ -252,7 +252,7 @@ class RDFTransformResourceDialog {
                         // ...create prefix (which may change in here) and add (re-prefixed) resource...
                         //
                         // NOTE: We are passing a function to RDFTransformNamespacesManager.addNamespace() which,
-                        //      in turn, passes it in an event function to RDFTransformNamespaceAdder.show().
+                        //      in turn, passes it as an event function to RDFTransformNamespaceAdder.show().
                         this.#dialog.getNamespacesManager().addNamespace(
                             $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                             strPrefix,

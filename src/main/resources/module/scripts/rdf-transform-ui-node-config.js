@@ -66,42 +66,22 @@ class RDFTransformUINodeConfig {
             return;
         }
 
+        // Create this RDF Transform Node Configuration Dialog's main parts...
         var frame = DialogSystem.createDialog();
+        var header = $('<div />').addClass("dialog-header");
+        var body = $('<div />')
+            .addClass("grid-layout")
+            .addClass("layout-full")
+            .addClass("dialog-body")
+            .addClass("rdf-transform");
+        var footer = $('<div />').addClass("dialog-footer");
 
-        frame.css(
-            {   "min-width" : "500px",
-                "width" : "500px",
-                "min-height" : "300px"
-            }
-        );
-
-        /*--------------------------------------------------
-         * Header
-         *--------------------------------------------------
-         */
-
-        var header =
-            $('<div />')
-                .addClass("dialog-header")
-                .text( $.i18n('rdft-dialog/rdf-node') );
-
-        /*--------------------------------------------------
-         * Body
-         *--------------------------------------------------
-         */
-
-        var body =
-            $('<div />')
-                .addClass("grid-layout")
-                .addClass("layout-full")
-                .addClass("dialog-body")
-                .addClass("rdf-transform");
-
-        var tableNodes =
+        // Load RDF Transform's Node Configuration Table...
+        var tableNodeConfig =
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-node-config.html"))
-                .filter('.rdf-transform-node-table');
+                .filter('.rdf-transform-node-config-table');
 
-        this.#elements = DOM.bind(tableNodes);
+        this.#elements = DOM.bind(tableNodeConfig);
         this.#elements.prefixSelect.text( $.i18n('rdft-prefix/prefix') + ": " );
 
         this.#elements.useContent.text(     $.i18n('rdft-dialog/use-content') + '...'  );
@@ -121,63 +101,49 @@ class RDFTransformUINodeConfig {
         this.#elements.useExpression.text(  $.i18n('rdft-dialog/use-exp') + '...'      );
         this.#elements.expEditPreview.text( $.i18n('rdft-dialog/edit-preview')         );
 
-        this.#elements.columnLeft.append($('<table></table>')[0]);
-        var tableColumns = $('<table></table>')[0];
-        this.#elements.columnLeft.append(tableColumns)
+        // Table Columns Left and Right:
+        // ----------------------------------------------------------------------
+        //  The Left Table Column is constructed dynamically from the
+        //      1. Row/Record,
+        //      2. data columns, and
+        //      3. constant controls
+        //  The Right Table Column is constructed statically from the given HTML
 
-        //
-        // Add Row/Record Radio Row...
-        //
-        // NOTE: Always ResourceNode
-        this.#buildIndexChoice(tableColumns);
+        //  Create the Left Table Column...
+        var tableColumnLeft = $('<table></table>')[0];
+        this.#elements.columnLeft.append(tableColumnLeft)
 
-        //
-        // Add Column Name Radio Rows...
-        //
-        // NOTE: A ResourceNode OR A LiteralNode
+        // Add Row/Record Radio Row (NOTE: Always ResourceNode)...
+        this.#buildIndexChoice(tableColumnLeft);
+
+        // Add Column Name Radio Rows (NOTE: A ResourceNode OR A LiteralNode)...
         var columns = theProject.columnModel.columns;
         if (columns.length === 1) {
             // Process first and last column...
             // NOTE: Pad top and bottom for SINGLE column
-            this.#buildColumnChoice(tableColumns, columns[0], 2);
+            this.#buildColumnChoice(tableColumnLeft, columns[0], 2);
         }
         else {
-            // Process first column...
-            // NOTE: Pad top of top row
-            this.#buildColumnChoice(tableColumns, columns[0], 1);
+            // Process first column (pad top of top row)...
+            this.#buildColumnChoice(tableColumnLeft, columns[0], 1);
             // Loop through all but first and last column...
             const iLoopLast = columns.length - 1;
             for (var iColumn = 1; iColumn < iLoopLast; iColumn++) {
-                // Process column...
-                // NOTE: No pad for middle rows
-                this.#buildColumnChoice(tableColumns, columns[iColumn]);
+                // Process column (no padding for middle rows)...
+                this.#buildColumnChoice(tableColumnLeft, columns[iColumn]);
             }
-            // Process last column...
-            // NOTE: Pad bottom of bottom row
-            this.#buildColumnChoice(tableColumns, columns[iLoopLast], -1);
+            // Process last column (pad bottom of bottom row)...
+            this.#buildColumnChoice(tableColumnLeft, columns[iLoopLast], -1);
         }
 
-        //
-        // Add Constant Value Radio Row...
-        //
-        // NOTE: A ResourceNode OR A LiteralNode
-        this.#buildConstantChoice(tableColumns);
+        // Add Constant Value Radio Row (NOTE: A ResourceNode OR A LiteralNode)...
+        this.#buildConstantChoice(tableColumnLeft);
 
         // Initilize inputs...
         this.#initInputs();
 
-        body.append(tableNodes);
-
-        /*--------------------------------------------------
-         * Footer
-         *--------------------------------------------------
-         */
-
-         var footer =
-            $('<div />')
-                .addClass("dialog-footer");
-
-         var buttonOK =
+        // Create the "OK" button...
+        var buttonOK =
             $('<button />')
             .addClass('button')
             .html( $.i18n('rdft-buttons/ok') )
@@ -191,6 +157,7 @@ class RDFTransformUINodeConfig {
                 }
             );
 
+        // Create the "Cancel" button...
         var buttonCancel =
             $('<button />')
             .addClass('button')
@@ -201,21 +168,25 @@ class RDFTransformUINodeConfig {
                 }
             );
 
+        // Assemble the dialog...
+        header.text( $.i18n('rdft-dialog/rdf-node') );
+        body.append(tableNodeConfig);
         footer.append(buttonOK, buttonCancel);
-
-        /*--------------------------------------------------
-         * Assemble Dialog
-         *--------------------------------------------------
-         */
-
-        frame.append(header, body, footer)
+        frame
+            .append(header, body, footer)
+            .css(
+                {   "min-width" : "500px",
+                    "width" : "500px",
+                    "min-height" : "300px"
+                }
+            );
 
         this.#level = DialogSystem.showDialog(frame);
     }
 
-    #buildIndexChoice(tableColumns) {
+    #buildIndexChoice(tableColumn) {
         // Prepare NEW Radio Control Row...
-        var tr = tableColumns.insertRow();
+        var tr = tableColumn.insertRow();
 
         var td;
 
@@ -268,9 +239,9 @@ class RDFTransformUINodeConfig {
         $(td).append(label);
     }
 
-    #buildColumnChoice(tableColumns, column, iPad = 0) {
+    #buildColumnChoice(tableColumn, column, iPad = 0) {
         // Prepare NEW Radio Control Row...
-        var tr = tableColumns.insertRow();
+        var tr = tableColumn.insertRow();
 
         var td;
         var strID = this.#strRadioColumn + column.cellIndex;
@@ -345,9 +316,9 @@ class RDFTransformUINodeConfig {
         $(td).append(label);
     }
 
-    #buildConstantChoice(tableColumns) {
+    #buildConstantChoice(tableColumn) {
         // Prepare NEW Radio Control Row...
-        var tr = tableColumns.insertRow();
+        var tr = tableColumn.insertRow();
 
         var td;
 
@@ -400,7 +371,7 @@ class RDFTransformUINodeConfig {
         $(td).append(label);
 
         // Prepare NEW Text Control Row for this Radio Control...
-        tr = tableColumns.insertRow();
+        tr = tableColumn.insertRow();
 
         // Text Control for Radio...
         tr.insertCell(); // ...spacer

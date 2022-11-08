@@ -387,8 +387,6 @@ class Reserve_RDFTransformResourceDialog {
             // Is there an existing prefix matching the given prefix?
             if ( strPrefix === "" || this.#dialog.getNamespacesManager().hasPrefix(strPrefix) ) {
                 // ...yes (BaseIRI or already managed), add resource...
-                // IRI   = Namespace of Prefix + strLocalPart
-                // CIRIE = strResPrefix + ":" + strLocalPart
                 obj = {};
                 obj.prefix    = strPrefix;    // Given Prefix
                 obj.localPart = strLocalPart; // Path portion of IRI
@@ -399,7 +397,7 @@ class Reserve_RDFTransformResourceDialog {
                 // ...create prefix (which may change in here) and add (re-prefixed) resource...
                 //
                 // NOTE: We are passing a function to RDFTransformNamespacesManager.addNamespace() which,
-                //      in turn, passes it in an event function to RDFTransformNamespaceAdder.show().
+                //      in turn, passes it as an event function to RDFTransformNamespaceAdder.show().
                 this.#dialog.getNamespacesManager().addNamespace(
                     $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                     strPrefix,
@@ -411,8 +409,6 @@ class Reserve_RDFTransformResourceDialog {
                         // NOTE: It can change via edits in RDFTransformNamespaceAdder.show()
                         if ( strPrefix.normalize() === strResPrefix.normalize() ) {
                             // ...yes, set as before...
-                            // IRI   = Namespace of Prefix + strLocalPart
-                            // CIRIE = strResPrefix + ":" + strLocalPart
                             obj = {};
                             obj.prefix    = strPrefix;    // Given Prefix
                             obj.localPart = strLocalPart; // Path portion of IRI
@@ -424,8 +420,6 @@ class Reserve_RDFTransformResourceDialog {
                                 this.#dialog.getNamespacesManager().getNamespaceOfPrefix(strResPrefix);
                             // Ensure the prefix's IRI was added...
                             if ( strResNamespace != null ) {
-                                // IRI   = Namespace of Prefix + strLocalPart
-                                // CIRIE = strResPrefix + ":" + strLocalPart
                                 obj = {};
                                 obj.prefix    = strResPrefix; // New Prefix
                                 obj.localPart = strLocalPart; // Path portion of IRI

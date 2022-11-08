@@ -31,19 +31,18 @@ class RDFTransformVocabManager {
     }
 
     show(onDone) {
+        // Load RDF Transform's Vocabulary Manager Dialog...
         var dialog =
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"))
                 .filter('.dialog-frame');
-        this.#level = DialogSystem.showDialog(dialog);
+
+        // Connect all the Vocabulary Manager Dialog's "bind" elements to this
+        //      RDF Transform Vocabulary Manager instance...
         this.#elements = DOM.bind(dialog);
 
-        this.#elements.dialogHeader.html($.i18n('rdft-vocab/header'));
-        this.#elements.buttonAddNamespace.html($.i18n('rdft-buttons/add-namespace'));
-        this.#elements.buttonOK.html($.i18n('rdft-buttons/ok'));
-        //this.#elements.buttonCancel.html($.i18n('rdft-buttons/cancel'));
-
-        //this.#elements.buttonCancel
-        //.on("click", () => { this.#dismiss(); } );
+        this.#elements.dialogHeader.html(       $.i18n('rdft-vocab/header')          );
+        this.#elements.buttonAddNamespace.html( $.i18n('rdft-buttons/add-namespace') );
+        this.#elements.buttonOK.html(           $.i18n('rdft-buttons/ok')            );
 
         this.#elements.buttonAddNamespace
         .on("click",
@@ -58,8 +57,6 @@ class RDFTransformVocabManager {
             }
         );
 
-        this.#renderBody();
-
         this.#elements.buttonOK
         .on("click",
             () => {
@@ -69,6 +66,10 @@ class RDFTransformVocabManager {
                 this.#dismiss();
             }
         );
+
+        this.#level = DialogSystem.showDialog(dialog);
+
+        this.#renderBody();
     }
 
     #handlerRemove(strPrefix) {
