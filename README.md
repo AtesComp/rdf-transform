@@ -41,9 +41,9 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 ![](website/images/rdf-transform_annotated.png)
 
 ## Download
-<!-- RDF Transform Version Control -->
 See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install#prerequisites) for important Java version information.
 
+<!-- RDF Transform Version Control -->
 ### Latest Release
 [RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.1.zip)
 
