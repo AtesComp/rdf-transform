@@ -45,7 +45,7 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 
 <!-- RDF Transform Version Control -->
 ### Latest Release
-[RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.1.zip)
+[RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.1/rdf-transform-2.2.1.zip)
 
 ### Previous Releases
 [RDF Transform v2.2.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.0.zip)<br />
