@@ -3,7 +3,7 @@
  *
  *  The Property Manager UI for the RDF Transform Dialog.
  *
- *  Copyright 2022 Keven L. Ates
+ *  Copyright 2024 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -102,8 +102,8 @@ class RDFTransformUIProperty {
                 }
             );
         this.#imgNone = $('<img />');
-        this.#imgArrowStart = $('<img />').attr("src", "images/arrow-start.png");
-        this.#imgArrowEnd = $('<img />').attr("src", "images/arrow-end.png");
+        this.#imgArrowStart = $('<img />').attr("src", ModuleWirings[RDFTransform.KEY] + "images/arrow-start.png");
+        this.#imgArrowEnd = $('<img />').attr("src", ModuleWirings[RDFTransform.KEY] + "images/arrow-end.png");
     }
 
     #processNode(theNodeUI, theNode) {

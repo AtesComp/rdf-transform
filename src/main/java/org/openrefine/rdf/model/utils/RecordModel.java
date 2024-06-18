@@ -4,7 +4,7 @@
  *  A Record Model utility class to manage the OpenRefine Record / Row modes
  *  at a particular RDF Transform node.
  *
- *  Copyright 2022 Keven L. Ates
+ *  Copyright 2024 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

@@ -4,7 +4,7 @@
  *  Removes a known Namespace in the current RDF Transform including removing
  *  the current ontology terms from the Lucene indexer.
  *
- *  Copyright 2022 Keven L. Ates
+ *  Copyright 2024 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

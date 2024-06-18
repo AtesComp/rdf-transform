@@ -4,7 +4,7 @@
  *  The RDFType class use to manage RDF Types (specialized property) with their
  *  class objects.
  *
- *  Copyright 2022 Keven L. Ates
+ *  Copyright 2024 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
