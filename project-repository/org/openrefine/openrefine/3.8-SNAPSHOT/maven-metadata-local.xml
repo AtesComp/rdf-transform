@@ -2,23 +2,23 @@
 <metadata modelVersion="1.1.0">
   <groupId>org.openrefine</groupId>
   <artifactId>openrefine</artifactId>
-  <version>3.6-SNAPSHOT</version>
   <versioning>
+    <lastUpdated>20240618131718</lastUpdated>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
-    <lastUpdated>20220508044952</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>3.6-SNAPSHOT</value>
-        <updated>20220508044952</updated>
+        <value>3.8-SNAPSHOT</value>
+        <updated>20240618131718</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>3.6-SNAPSHOT</value>
-        <updated>20220508044952</updated>
+        <value>3.8-SNAPSHOT</value>
+        <updated>20240618131718</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
+  <version>3.8-SNAPSHOT</version>
 </metadata>

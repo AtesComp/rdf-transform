@@ -24,7 +24,7 @@
         To include OpenRefine:
             In OpenRefine project directory:
                 ./refine build
-                ./refine dist 3.6-SNAPSHOT
+                mvn package -DskipTests=true
             Then, in rdf-transform extension project directory:
                 mvn install:install-file -Dfile=../OpenRefine/main/target/openrefine-main.jar -DpomFile=openrefine-shim-pom.xml -DcreateChecksum=true -DlocalRepositoryPath=./project-repository
     -->
@@ -48,17 +48,16 @@
         <!--
              OpenRefine Dependent: 3.4.1, 3.5-beta1, 3.6-SNAPSHOT, etc.
         -->
-        <openrefine.version>3.8.1</openrefine.version>
-        <butterfly.version>1.2.3</butterfly.version><!-- matches 3.6-SNAPSHOT -->
-        <slf4j.version>1.7.36</slf4j.version><!-- matches 3.6-SNAPSHOT -->
+        <openrefine.version>3.8-SNAPSHOT</openrefine.version>
+        <butterfly.version>1.2.4</butterfly.version><!-- matches 3.8-SNAPSHOT -->
+        <slf4j.version>2.0.9</slf4j.version><!-- matches 3.8-SNAPSHOT -->
 
-        <jena.version>4.5.0</jena.version><!-- matches 3.6-SNAPSHOT -->
-        <!--<javax.version>4.0.1</javax.version>--><!-- matches 3.6-SNAPSHOT for servlet-api -->
-        <jsonld.version>1.3.0</jsonld.version>
-        <velocity.version>1.6.3</velocity.version><!-- matches 3.6-SNAPSHOT : to exclude older dependancies than butterfly's-->
-        <httpclient5.version>5.1.3</httpclient5.version><!-- matches 3.6-SNAPSHOT -->
-        <commons-fileupload.version>1.4</commons-fileupload.version><!-- matches 3.6-SNAPSHOT -->
-        <commons-io.version>2.11.0</commons-io.version><!-- matches 3.6-SNAPSHOT -->
+        <jena.version>4.9.0</jena.version><!-- matches 3.8-SNAPSHOT -->
+        <jsonld.version>1.4.0</jsonld.version>
+        <velocity.version>2.3</velocity.version><!-- matches 3.6-SNAPSHOT : to exclude older dependancies than butterfly's-->
+        <httpclient5.version>5.2.1</httpclient5.version><!-- matches 3.8-SNAPSHOT -->
+        <commons-fileupload.version>1.5</commons-fileupload.version><!-- matches 3.8-SNAPSHOT -->
+        <commons-io.version>2.14.0</commons-io.version><!-- matches 3.8-SNAPSHOT -->
 
         <!--
              RDF Transform Dependent

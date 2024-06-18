@@ -12,7 +12,7 @@
 
     <groupId>org.openrefine</groupId>
     <artifactId>openrefine</artifactId>
-    <version>3.8.1</version>
+    <version>3.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>OpenRefine</name>
