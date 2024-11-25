@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.openrefine</groupId>
+  <artifactId>core</artifactId>
+  <versioning>
+    <versions>
+      <version>3.9-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20241124233440</lastUpdated>
+  </versioning>
+</metadata>

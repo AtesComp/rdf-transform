@@ -170,7 +170,7 @@ public class Property {
             //
             // Get Property's Expression...
             //
-            String strExpLang = Util.gstrGREL; // ...default
+            String strExpLang = Util.gstrGREL; // ...default, TODO: Implement use
             String strExpCode = null;          // ...default, Node instances report "value" when null
             if ( jnodeProperty.has(Util.gstrExpression) ) {
                 JsonNode jnodeExp = jnodeProperty.get(Util.gstrExpression);

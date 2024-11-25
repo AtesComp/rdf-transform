@@ -473,7 +473,7 @@ public class VocabularySearcher implements IVocabularySearcher {
             throws IOException {
         List<SearchResultItem> results = new ArrayList<SearchResultItem>();
         for (ScoreDoc sdoc : docs.scoreDocs) {
-            Document doc = this.searcher.doc(sdoc.doc);
+            Document doc = this.searcher.storedFields().document(sdoc.doc);
             String strIRI       = doc.get(Util.gstrIRI);
             String strLabel     = doc.get(Util.gstrLabel);
             String strDesc      = doc.get(Util.gstrDescription);
@@ -500,7 +500,7 @@ public class VocabularySearcher implements IVocabularySearcher {
         // Iterate through the Global documents...
         for (ScoreDoc sdoc : docs.scoreDocs) {
             // Get an existing Global document...
-            Document docGlobal = this.searcher.doc(sdoc.doc);
+            Document docGlobal = this.searcher.storedFields().document(sdoc.doc);
 
             // Prepare a new project document...
             Document docProject = new Document();
@@ -534,7 +534,7 @@ public class VocabularySearcher implements IVocabularySearcher {
         Query query = new TermQuery(new Term(Util.gstrProject, strProjectID));
         TopDocs docs =  searcher.search( query, this.getMaxDoc() );
         for (ScoreDoc sdoc : docs.scoreDocs) {
-            Document doc = searcher.doc(sdoc.doc);
+            Document doc = this.searcher.storedFields().document(sdoc.doc);
             namespaces.add( doc.get(Util.gstrPrefix) );
         }
         return namespaces;

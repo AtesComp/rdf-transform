@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.openrefine</groupId>
+  <artifactId>main</artifactId>
+  <versioning>
+    <lastUpdated>20241125032038</lastUpdated>
+    <snapshot>
+      <localCopy>true</localCopy>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>3.9-SNAPSHOT</value>
+        <updated>20241125032038</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>3.9-SNAPSHOT</value>
+        <updated>20241125032038</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>3.9-SNAPSHOT</version>
+</metadata>

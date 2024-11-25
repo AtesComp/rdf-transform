@@ -23,7 +23,8 @@ package org.openrefine.rdf.model.exporter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.nio.charset.Charset;
+//import java.nio.charset.Charset;
+//import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.openrefine.rdf.RDFTransform;
@@ -65,20 +66,18 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
         super(format, strName);
     }
 
-    public void export(Project theProject, Properties options, Engine theEngine,
-                        OutputStream outputStream)
+    public void export(Project theProject, Properties options, Engine theEngine, OutputStream outputStream)
             throws IOException {
         if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.strName + " via OutputStream");
         this.outputStream = outputStream;
         this.export(theProject, options, theEngine);
     }
 
-    public void export(Project theProject, Properties options, Engine theEngine,
-                        Writer theWriter)
+    public void export(Project theProject, Properties options, Engine theEngine, Writer theWriter)
              throws IOException
     {
         if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");
-        this.outputStream = new WriterOutputStream(theWriter, Charset.forName("UTF-8"));
+        this.outputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
         this.export(theProject, options, theEngine);
     }
 

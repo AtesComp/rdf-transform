@@ -23,7 +23,7 @@ package org.openrefine.rdf.model.exporter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.nio.charset.Charset;
+//import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.openrefine.rdf.RDFTransform;
@@ -76,7 +76,7 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
              throws IOException
     {
         if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");
-        this.outputStream = new WriterOutputStream(theWriter, Charset.forName("UTF-8"));
+        this.outputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
         this.export(theProject, options, theEngine);
     }
 

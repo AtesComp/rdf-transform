@@ -198,7 +198,7 @@ abstract public class Node {
         //
         // Get Subject's Expression...
         //
-        String strExpLang = Util.gstrGREL; // ...default
+        String strExpLang = Util.gstrGREL; // ...default, TODO: Implement use
         String strExpCode = null;          // ...default, Node instances report "value" when null
         if ( jnodeSubject.has(Util.gstrExpression) ) {
             JsonNode jnodeExp = jnodeSubject.get(Util.gstrExpression);

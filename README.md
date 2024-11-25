@@ -33,7 +33,7 @@ This project uses a graphical user interface (GUI) for transforming OpenRefine p
 
 RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been thoroughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
 
-The latest releases (2.2.2 and above) only work with OpenRefine 3.6 or better.
+The latest releases (2.2.3 and above) only work with OpenRefine 3.8 or better.
 
 ## Documentation
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
@@ -45,10 +45,11 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 
 <!-- RDF Transform Version Control -->
 ### Latest Release
-[RDF Transform v2.2.2](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.2/rdf-transform-2.2.2.zip)
+[RDF Transform v2.2.3](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.3/rdf-transform-2.2.3.zip)
 
 ### Previous Releases
-[RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.1a/rdf-transform-2.2.1.zip)<br />
+[RDF Transform v2.2.2](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.2/rdf-transform-2.2.2.zip)<br />
+[RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.1/rdf-transform-2.2.1.zip)<br />
 [RDF Transform v2.2.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.0.zip)<br />
 [RDF Transform v2.1.1-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.1-beta/rdf-transform-2.1.1.zip)<br />
 [RDF Transform v2.1.0-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.0-beta/rdf-transform-2.1.0.zip)<br />

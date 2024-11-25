@@ -35,7 +35,7 @@ import org.apache.jena.iri.IRIFactory;
 import org.apache.jena.iri.IRIException;
 import org.apache.jena.irix.SetupJenaIRI;
 
-import java.nio.charset.StandardCharsets;
+//import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

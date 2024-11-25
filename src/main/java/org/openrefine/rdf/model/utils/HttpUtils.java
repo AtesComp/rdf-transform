@@ -22,19 +22,21 @@
 package org.openrefine.rdf.model.utils;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
-
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +44,28 @@ public class HttpUtils {
     private static Logger logger = LoggerFactory.getLogger("RDFT:HttpUtils"); // HttpUtils.class.getSimpleName()
 
     public static final String USER_AGENT =
-        "Mozilla/5.0 (compatible;) OpenRefine/3.6.2 " +
+        "Mozilla/5.0 (compatible;) OpenRefine/3.8.7 " +
         RDFTransform.EXTENSION + "/" + RDFTransform.VERSION;
     public static final int CONNECTION_TIMEOUT = 10;
     public static final int SOCKET_TIMEOUT = 60;
     private static final int MAX_REDIRECTS = 3;
+    private static PoolingHttpClientConnectionManager sConnectionMgr = null;
+    private static HttpClientResponseHandler<HttpEntity> sHandlerResp =
+        new HttpClientResponseHandler<HttpEntity>() {
+            @Override
+            public HttpEntity handleResponse(ClassicHttpResponse response) throws ClientProtocolException, IOException {
+                if ( response.getCode() == 200 ) {
+                    return response.getEntity();
+                }
+                else {
+                    String strErrorMessage =
+                        "GET request failed: " +
+                        response.getCode() + " " + response.getReasonPhrase();
+                    HttpUtils.logger.error("ERROR: " + strErrorMessage);
+                    throw new ClientProtocolException(strErrorMessage);
+                }
+            }
+        };
 
     private static CloseableHttpClient createClient() {
         //HttpParams httpParams = new BasicHttpParams();
@@ -56,6 +75,16 @@ public class HttpUtils {
         //httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS ,true);
         //httpParams.setIntParameter(ClientPNames.MAX_REDIRECTS, MAX_REDIRECTS);
         //return new DefaultHttpClient(httpParams);
+
+        if (sConnectionMgr == null) {
+            sConnectionMgr = new PoolingHttpClientConnectionManager();
+            sConnectionMgr
+                .setDefaultConnectionConfig(
+                    ConnectionConfig.custom()
+                        .setConnectTimeout( Timeout.ofSeconds(CONNECTION_TIMEOUT) )
+                        .setSocketTimeout(  Timeout.ofSeconds(SOCKET_TIMEOUT) )
+                        .build() );
+        }
 
         CloseableHttpClient client =
             HttpClients.custom()
@@ -71,10 +100,10 @@ public class HttpUtils {
 //                      .setSoTimeout(SOCKET_TIMEOUT)
 //                      .build() )
                 .setUserAgent(USER_AGENT)
+                .setConnectionManager( sConnectionMgr )
+                .setConnectionManagerShared(true)
                 .setDefaultRequestConfig(
                     RequestConfig.custom()
-                        .setConnectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)
-                        .setResponseTimeout(SOCKET_TIMEOUT, TimeUnit.SECONDS)
                         .setRedirectsEnabled(true)
                         .setMaxRedirects(MAX_REDIRECTS)
 //                      .setCookieSpec(CookieSpecs.STANDARD_STRICT)
@@ -99,16 +128,6 @@ public class HttpUtils {
 
     private static HttpEntity get(HttpGet getter) throws IOException {
         CloseableHttpClient client = HttpUtils.createClient();
-        CloseableHttpResponse response = client.execute(getter);
-        if ( response.getCode() == 200 ) {
-            return response.getEntity();
-        }
-        else {
-            String strErrorMessage =
-                "GET request failed: " +
-                response.getCode() + " " + response.getReasonPhrase();
-            HttpUtils.logger.error("ERROR: " + strErrorMessage);
-            throw new ClientProtocolException(strErrorMessage);
-        }
+        return client.execute(getter, sHandlerResp);
     }
 }
