@@ -58,56 +58,57 @@ public class ToIRIString implements Function {
 
     static public String toIRIString(String strConvert) {
         String strUnderscore = "_";
+
+        // As basic cleaning:
+        // 1. always replace whitespace and unallowed characters with underscores
+        // 2. condense underscores
+        strConvert =
+            Util.replaceAll(strConvert,
+                    "[" + Util.WHITESPACE + Pattern.quote("<>\"{}|\\^`") + "]+",
+                    strUnderscore)
+            .replaceAll("__+", strUnderscore);
+
         int iTry = 0;
         do {
             // Test if it's an acceptable IRI now (absolute or relative)...
             IRI theIRI = Util.buildIRI(strConvert, true);
             if (theIRI == null) {
-                if (iTry > 7) {
+                if (iTry > 6) {
                     strConvert = null; // ...cannot convert to IRI
                     break;
                 }
                 // ...continue by narrowing the conversion string...
             }
-            else {
-                break;
-            }
+            else break;
 
             switch (iTry) {
                 case 0:
-                    // Replace whitespace and unallowed characters with underscores...
-                    strConvert =
-                        Util.replaceAll(strConvert,
-                                "[" + Util.WHITESPACE + Pattern.quote("<>\"{}|\\^`") + "]+",
-                                strUnderscore);
-                    break;
-                case 1:
                     // Replace any unsupported characters with underscores...
                     strConvert =
                         Util.replaceAll(strConvert,
                             "[^-\\p{N}\\p{L}_\\.~:/\\?#\\[\\]@\\%!\\$&'\\(\\)\\*\\+,;=]+",
                             strUnderscore);
                     break;
-                case 2:
+                case 1:
                     // Replace (multiple) leading ":/+" or "/+" with underscores...
                     strConvert = Util.replaceFirst(strConvert, "^(:?/+)+", strUnderscore);
                     break;
-                case 3:
+                case 2:
                     // Replace sub-delim characters with underscores...
                     strConvert =
                         Util.replaceAll(strConvert, "[!\\$&'\\(\\)\\*\\+,;=]+", strUnderscore);
                     break;
-                case 4:
+                case 3:
                     // Replace gen-delim (but not ":" and "/") characters with underscores...
                     strConvert =
                         Util.replaceAll(strConvert, "[\\?#\\[\\]@]+", strUnderscore);
                     break;
-                case 5:
+                case 4:
                     // Replace "/" characters with underscores...
                     strConvert =
                         Util.replaceAll(strConvert, "/+", strUnderscore);
                     break;
-                case 6:
+                case 5:
                     // Replace ":" characters with underscores...
                     strConvert =
                         Util.replaceAll(strConvert, ":+", strUnderscore);

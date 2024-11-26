@@ -420,7 +420,8 @@ public class Util {
             iriNew = Util.iriFactory.construct(strIRI);
         }
         catch (Exception ex) {
-            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
+            else Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">");
         }
 
         return iriNew;
