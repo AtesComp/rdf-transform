@@ -7,14 +7,14 @@
         <format>zip</format>
     </formats>
     <fileSets>
-		<fileSet> <!-- Zip everything from target/classes except **/*module/** related directories -->
+        <fileSet> <!-- Zip everything from target/classes except **/*module/** related directories -->
             <directory>target/classes</directory>
             <outputDirectory>rdf-transform/module/MOD-INF/classes</outputDirectory>
             <excludes>
                 <exclude>module/**</exclude>
             </excludes>
         </fileSet>
-		<fileSet> <!-- Zip the module for the resources (src/main/resources/module) -->
+        <fileSet> <!-- Zip the module for the resources (src/main/resources/module) -->
             <directory>target/classes/module</directory>
             <outputDirectory>rdf-transform/module</outputDirectory>
             <excludes>
