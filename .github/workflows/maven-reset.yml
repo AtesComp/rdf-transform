@@ -20,7 +20,7 @@ jobs:
         cache: maven
         check-latest: true
     - name: Delete JONLD repository files
-      run: rm -r ~/.m2/repository/com/github/jsonld-java/*
+      run: rm -rf ~/.m2/repository/com/github/jsonld-java/*
     - name: Reset Maven Dependencies
       run: mvn dependency:purge-local-repository
     - name: Reload Maven Dependencies
