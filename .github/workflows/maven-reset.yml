@@ -24,6 +24,6 @@ jobs:
     - name: Reset Maven Dependencies
       run: mvn dependency:purge-local-repository
     - name: Reload Maven Dependencies
-      run: mvn clean install:install -U
+      run: mvn clean dependency:resolve -U
     - name: Build with Maven
       run: mvn -B package --file pom.xml
