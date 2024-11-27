@@ -43,7 +43,7 @@
 
         <!-- Maven Build -->
         <java.minversion>11</java.minversion>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
         <java.maxversion>21</java.maxversion>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
