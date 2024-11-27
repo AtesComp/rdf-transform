@@ -66,9 +66,13 @@ public class InitializationCommand extends Command {
     public InitializationCommand(ButterflyModule theModule) {
         super();
         this.theModule = theModule;
-        //String strJVMVersion = System.getProperty("java.version");
-        //InitializationCommand.logger.info("Current Java VM Version: " + strJVMVersion);
-        this.initialize();
+        try {
+            this.initialize();
+        }
+        catch (Throwable ex) { // ...try to catch all Exceptions and Errors...
+            InitializationCommand.logger.error("ERROR: initialize: " + ex.getMessage(), ex);
+            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+        }
     }
 
     private void initialize() {
@@ -143,7 +147,9 @@ public class InitializationCommand extends Command {
 
         /*
          *  Server-side Ajax Commands...
-         *    Each registration calls the class' init() method.
+         *    Each call to registerCommand() calls the command item's command init() method.
+         *    Then, the "initialize" command registers with the InitializationCommand init() method.
+         *    Other commands generally DO NOT contain overridden init() methods.
          */
         class RDFTCommandItem
         {

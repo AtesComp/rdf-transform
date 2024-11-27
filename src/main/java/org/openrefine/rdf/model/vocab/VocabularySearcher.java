@@ -43,6 +43,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.IndexFormatTooOldException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -64,10 +65,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VocabularySearcher implements IVocabularySearcher {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:VocabSearcher");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:VocabSearcher");
 
-    public static final String LUCENE_DIR = "luceneIndex";
-    public static final String LUCENE_DIR_OLD = "luceneIndex_OLD";
+    static public final String LUCENE_DIR = "luceneIndex";
+    static public final String LUCENE_DIR_OLD = "luceneIndex_OLD";
 
     static private final String CLASS_TYPE = "class";
     static private final String PROPERTY_TYPE = "property";
@@ -82,35 +83,66 @@ public class VocabularySearcher implements IVocabularySearcher {
     // Since the Project ID is always a number, it is safe to use "g" as the global marker placeholder...
     static private final String GLOBAL_VOCABULARY_PLACE_HOLDER = "g";
 
-    private Directory dirLucene;
-    private IndexWriter writer;
-    private IndexSearcher searcher;
-    private DirectoryReader reader;
+    private Directory dirLucene = null;
+    private IndexWriter writer = null;
+    private DirectoryReader reader = null;
+    private IndexSearcher searcher = null;
 
     public VocabularySearcher(File dir)
             throws IOException {
-        if ( Util.isVerbose(3) ) VocabularySearcher.logger.info("Creating vocabulary searcher...");
+        if ( Util.isDebugMode() || Util.isVerbose(3) ) VocabularySearcher.logger.info("Creating vocabulary searcher...");
 
-        this.dirLucene = FSDirectory.open( new File(dir, LUCENE_DIR).toPath() );
+        try {
+            this.dirLucene = FSDirectory.open( new File(dir, LUCENE_DIR).toPath() );
+        }
+        catch (IOException e) {
+            VocabularySearcher.logger.error("  ERROR: ABORTED - Cannot open Lucene directory!");
+            if ( Util.isDebugMode() || Util.isVerbose() ) VocabularySearcher.logger.error("  ERROR: ABORTED!", e);
+            throw e;
+        }
         Analyzer analyzer = new StandardAnalyzer();
-        // IndexWriterConfig conf = new IndexWriterConfig(a);
 
         try {
             this.writer = new IndexWriter(this.dirLucene, new IndexWriterConfig(analyzer));
             this.writer.commit();
         }
-        catch (org.apache.lucene.index.IndexFormatTooOldException e) {
-            Files.move(
-                new File(dir, LUCENE_DIR).toPath(),
-                new File(dir, LUCENE_DIR_OLD).toPath(),
-                StandardCopyOption.REPLACE_EXISTING
-            );
-            this.writer = new IndexWriter(this.dirLucene, new IndexWriterConfig(analyzer));
-            this.writer.commit();
+        // NOTE: IndexFormatTooOldException is an IOException
+        catch (IndexFormatTooOldException | IllegalArgumentException e) {
+            VocabularySearcher.logger.warn("  WARNING: Lucene Index format incompatible. Attempting new indexing...");
+
+            // Move current Lucene files to OLD directory so that a new directory can be built...
+            try {
+                Files.move(
+                    new File(dir, LUCENE_DIR).toPath(),
+                    new File(dir, LUCENE_DIR_OLD).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+                );
+                this.writer = new IndexWriter(this.dirLucene, new IndexWriterConfig(analyzer));
+                this.writer.commit();
+            }
+            catch (IOException e2) {
+                VocabularySearcher.logger.error("  ERROR: ABORTED - Cannot open Lucene directory (2)!");
+                if ( Util.isDebugMode() || Util.isVerbose() ) VocabularySearcher.logger.error("  ERROR: ABORTED!", e2);
+                throw e2;
+            }
         }
-        this.reader = DirectoryReader.open(this.writer);
+        catch (IOException e) { // ...other IOException
+            VocabularySearcher.logger.error("  ERROR: ABORTED - IO Error!");
+            if ( Util.isDebugMode() || Util.isVerbose() ) VocabularySearcher.logger.error("  ERROR: ABORTED!", e);
+            throw e;
+        }
+
+        try {
+            this.reader = DirectoryReader.open(this.writer);
+        }
+        catch (IOException e) { // ...including CorruptIndexException
+            VocabularySearcher.logger.error("  ERROR: ABORTED - Cannot create Lucene Directory Reader!");
+            if ( Util.isDebugMode() || Util.isVerbose() ) VocabularySearcher.logger.error("  ERROR: ABORTED!", e);
+            throw e;
+        }
         this.searcher = new IndexSearcher(this.reader);
-        if ( Util.isVerbose(3) ) VocabularySearcher.logger.info("...created vocabulary searcher");
+
+        if ( Util.isDebugMode() || Util.isVerbose(3) ) VocabularySearcher.logger.info("...created vocabulary searcher");
     }
 
     @Override
@@ -197,7 +229,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 
     @Override
     public void addPredefinedVocabulariesToProject(long liProjectID)
-            throws IOException {
+            throws IllegalArgumentException, IOException {
         // Get all documents from the global scope...
         TopDocs docs = this.getDocumentsOfProjectID(GLOBAL_VOCABULARY_PLACE_HOLDER);
         // Add all of them to the current project...
@@ -489,7 +521,7 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     private void addGlobalDocumentsToProject(TopDocs docs, String strProjectID)
-            throws IOException {
+            throws IllegalArgumentException, IOException {
         // The TopDocs are documents with the Global (Non-Project related) Vocabulary.
         // These docs are "copied" for use in the specified project.
         // See the calling function: addPredefinedVocabulariesToProject()

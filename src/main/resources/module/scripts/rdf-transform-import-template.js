@@ -47,10 +47,6 @@ class RDFImportTemplate
         catch (evt) {
             return null;
         }
-        //    .catch( (error) => {
-        //        theTransform = null;
-        //        // ...ignore...
-        //    });
         return JSON.parse(strTemplate);
     }
 }

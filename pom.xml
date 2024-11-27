@@ -67,8 +67,8 @@
         <!--
              RDF Transform Dependent
         -->
-        <lucene.version>10.0.0</lucene.version>
-        <lucene-analysis.version>10.0.0</lucene-analysis.version>
+        <lucene.version>9.12.0</lucene.version><!-- 9.12.0 for Java 11+, 10.0.0 for Java 21+ -->
+        <lucene-analysis.version>9.12.0</lucene-analysis.version><!-- 9.12.0 for Java 11+, 10.0.0 for Java 21+ -->
 
     </properties>
 

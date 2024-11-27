@@ -39,11 +39,11 @@ function init() {
     var strJVMVersion = Packages.java.lang.System.getProperty("java.version");
     logger.info('Current Java VM Version: ' + strJVMVersion);
     if (strJVMVersion < "11.0") {
-        logger.error('ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!');
-        logger.error('       Install a Java JDK from version 11 to 17 and use it for OpenRefine by');
-        logger.error('       setting your JAVA_HOME envirenment variable to point to its Java');
-        logger.error('       directory.');
-        logger.error('       Ending RDF Transform load...');
+        logger.error("ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!");
+        logger.error("       Install a Java JDK from version 11 to 21.  Use it for OpenRefine by");
+        logger.error("       setting your JAVA_HOME environment variable to point to its Java");
+        logger.error("       directory OR set it as your system's default Java language.");
+        logger.error("       Ending RDF Transform load...");
         return;
     }
 

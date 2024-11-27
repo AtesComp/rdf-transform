@@ -89,7 +89,7 @@ public class RDFTransform implements OverlayModel {
     // Reconstruction Validator
     static private final Reconstructor theReconstructor = new Reconstructor();
 
-    static private ApplicationContext theGlobalContext;
+    static private ApplicationContext theGlobalContext = null;
 
     /****************************************************************************************************
      ****************************************************************************************************
@@ -380,6 +380,12 @@ public class RDFTransform implements OverlayModel {
                 RDFTransform.logger.info("{}Creating default transform{}...", strSpace, strContext);
         }
 
+        // Sanity Checks...
+        if (RDFTransform.theGlobalContext == null) {
+            RDFTransform.logger.error("ERROR: The Global Context is missing!");
+            return;
+        }
+
         this.theBaseIRI = Util.buildIRI( RDFTransform.theGlobalContext.getDefaultBaseIRI() );
 
         this.theNamespaces = RDFTransform.theGlobalContext.getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
@@ -390,7 +396,7 @@ public class RDFTransform implements OverlayModel {
             try {
                 RDFTransform.theGlobalContext.getVocabularySearcher().addPredefinedVocabulariesToProject(theProject.id);
             }
-            catch(IOException ex) {
+            catch (Throwable ex) { // ...try to catch all Exceptions and Errors...
                 RDFTransform.logger.error("ERROR: Cannot add predefined vocabularies to transform!", ex);
             }
         }

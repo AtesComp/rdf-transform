@@ -84,7 +84,7 @@ public interface IVocabularySearcher {
                     throws IOException;
 
     public void addPredefinedVocabulariesToProject(long liProjectID)
-                    throws IOException;
+                    throws IllegalArgumentException, IOException;
 
     public void update()
                     throws IOException;

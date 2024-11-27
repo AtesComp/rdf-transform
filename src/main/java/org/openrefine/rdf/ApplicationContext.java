@@ -43,10 +43,10 @@ public class ApplicationContext {
     private String strPort;
     private String strHost;
     private String strIFace;
-    private File fileWorkingDir;
-    private IPredefinedVocabularyManager predefinedVocabularyManager;
-    private IVocabularySearcher vocabularySearcher;
-    private NamespaceManager nsManager;
+    private File fileWorkingDir = null;
+    private IPredefinedVocabularyManager predefinedVocabularyManager = null;
+    private IVocabularySearcher vocabularySearcher = null;
+    private NamespaceManager nsManager = null;
 
     public IPredefinedVocabularyManager getPredefinedVocabularyManager() {
         return predefinedVocabularyManager;
@@ -64,15 +64,21 @@ public class ApplicationContext {
         this.fileWorkingDir = fileWorkingDir;
         if ( Util.isDebugMode() ) {
             ApplicationContext.logger.info(
-                "Init: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
+                "Default Context: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
                 "IFace=" + ( this.strIFace == null ? "<undef>" : this.strIFace ) + ", " +
                 "Port=" + ( this.strPort  == null ? "<undef>" : this.strPort ) );
         }
 
-        this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
-        this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
-        InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
-        this.nsManager = new NamespaceManager(inStream);
+        try {
+            this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
+            this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
+            InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
+            this.nsManager = new NamespaceManager(inStream);
+        }
+        catch (Exception e) {
+            ApplicationContext.logger.error("  ERROR: ABORTED - Context failed to initialize!");
+            throw e;
+        }
         if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("...Context initialized.");
     }
 

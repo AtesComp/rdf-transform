@@ -52,8 +52,5 @@ class RDFExportTemplate
         catch (evt) {
             // ...ignore...
         }
-        //.catch( (error) => {
-        //    // ...ignore...
-        //});
     }
 }
