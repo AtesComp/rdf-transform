@@ -103,9 +103,9 @@ The MacOS versions of OpenRefine bundled with a Java 11 JRE. Since RDF Transform
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
 
 #### Java, JDKs, and JREs
-A later Java install, up to Java 21 JDK / JRE, can be installed.
+Java versions up to Java 21 JDK / JRE can be used.
 
-* NOTE: So calle "official" Java installs later than 8 do not have a separate JRE install. Therefore, in general, install the JDK. Your OS's packaging system may have a separate, general FRE install. For "JRE only" installs, a custom JRE should be created with the `jlink` command. See the wiki Install section [Java JDKs, JREs, and JVMs! Oh, My!](https://github.com/AtesComp/rdf-transform/wiki/Install#java-jdks-jres-and-jvms-oh-my) for more.
+* NOTE: So called "official" Java installs later than 8 do not have a separate JRE install. Therefore, in general, install the JDK. Your OS's packaging system may have a separate, general JRE install. For "JRE only" installs, a custom JRE can be created with the `jlink` command. See the wiki Install section [Java JDKs, JREs, and JVMs! Oh, My!](https://github.com/AtesComp/rdf-transform/wiki/Install#java-jdks-jres-and-jvms-oh-my) for more.
 
 Set the `JAVA_HOME` env variable to the preferred Java directory in the `refine.ini` file if not using the OS's default Java version or the OpenRefine packaged Java version.
 
