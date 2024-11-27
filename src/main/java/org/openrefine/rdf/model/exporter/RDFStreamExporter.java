@@ -63,16 +63,15 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
         super(format, strName);
     }
 
-    public void export(Project theProject, Properties options, Engine theEngine,
-                        OutputStream outputStream)
+    public void export(Project theProject, Properties options, Engine theEngine, OutputStream outputStream)
             throws IOException {
         if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.strName + " via OutputStream");
         this.outputStream = outputStream;
         this.export(theProject, options, theEngine);
     }
 
-    public void export(Project theProject, Properties options, Engine theEngine,
-                        Writer theWriter)
+    @Override
+    public void export(Project theProject, Properties options, Engine theEngine, final Writer theWriter)
              throws IOException
     {
         if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");

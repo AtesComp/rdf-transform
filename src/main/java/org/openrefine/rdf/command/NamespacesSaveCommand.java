@@ -66,10 +66,10 @@ public class NamespacesSaveCommand extends RDFTransformCommand {
             this.getRDFTransform(request).setNamespaces(listVocabs);
 
             // ...and the namespaces' vocabulary searcher...
-            String projectID = request.getParameter(Util.gstrProject);
+            String strProjectID = request.getParameter(Util.gstrProject);
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
-                    synchronize( projectID, listVocabs.getPrefixSet() );
+                    synchronize( strProjectID, listVocabs.getPrefixSet() );
         }
         catch (Exception ex) {
             NamespacesSaveCommand.respondJSON(response, CodeResponse.error);

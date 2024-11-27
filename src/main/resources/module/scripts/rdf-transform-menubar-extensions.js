@@ -286,6 +286,17 @@ class RDFExporterMenuBar
             return;
         }
 
+        Refine.wrapCSRF( (token) => {
+            let form = RDFExporterMenuBar.#prepareExportRDFForm(format, ext, token);
+
+            document.body.appendChild(form);
+            window.open("Export " + format, "gridworks-export");
+            form.submit();
+            document.body.removeChild(form);
+        });
+    }
+
+    static #prepareExportRDFForm(format, ext, token) {
         var strProjectName =
             theProject.metadata.name
             .replace(/^\p{White_Space}+/u, '') // Leading Whitespace to none
@@ -296,32 +307,23 @@ class RDFExporterMenuBar
         var form = document.createElement("form");
 
         $(form)
+        .css("display", "none")
         .attr("method", "post")
-        .attr("action", "command/core/export-rows/" +  strProjectName + "." + ext)
-        .attr("target", "gridworks-export")
-        .hide();
+        .attr("action", "command/core/export-rows/" +  strProjectName + "." + ext + "?" + $.param( {csrf_token: token} ))
+        .attr("target", "gridworks-export");
 
-        $('<input />')
-        .attr("name", "engine")
-        .val( JSON.stringify( ui.browsingEngine.getJSON() ) )
-        .appendTo(form);
+        var appendField = (name, value) => {
+            $('<input />')
+                .attr("name", name)
+                .val(value)
+                .appendTo(form);
+        };
+    
+        appendField("engine",   JSON.stringify( ui.browsingEngine.getJSON() ));
+        appendField("project",  theProject.id);
+        appendField("format",   format);
 
-        $('<input />')
-        .attr("name", "project")
-        .val(theProject.id)
-        .appendTo(form);
-
-        $('<input />')
-        .attr("name", "format")
-        .val(format)
-        .appendTo(form);
-
-        document.body.appendChild(form);
-
-        window.open("Export " + format, "gridworks-export");
-        form.submit();
-
-        document.body.removeChild(form);
+        return form;
     }
 
     /*

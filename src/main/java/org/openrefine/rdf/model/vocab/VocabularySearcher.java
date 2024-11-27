@@ -343,16 +343,21 @@ public class VocabularySearcher implements IVocabularySearcher {
 
         if ( Util.isDebugMode() ) VocabularySearcher.logger.info("Indexing: ");
 
+        // NOTES:
+        //  TextField is indexed and analyzed
+        //  StringField is indexed but not analyzed
+        //  StoredField is not indexed
+
         doc.add( new StoredField( Util.gstrIRI,         node.getIRI() ) );
-        doc.add( new TextField(   Util.gstrLabel,       strLabel,     Field.Store.YES) );
-        doc.add( new TextField(   Util.gstrDescription, strDesc,      Field.Store.YES) );
-        doc.add( new StringField( Util.gstrPrefix,      strPrefix,    Field.Store.YES) );
+        doc.add( new TextField(   Util.gstrLabel,       strLabel,      Field.Store.YES) );
+        doc.add( new TextField(   Util.gstrDescription, strDesc,       Field.Store.YES) );
+        doc.add( new StringField( Util.gstrPrefix,      strPrefix,     Field.Store.YES) );
         doc.add( new StoredField( Util.gstrNamespace,   strNamespace ) );
-        doc.add( new TextField(   Util.gstrLocalPart,   strLocalPart, Field.Store.YES) );
+        doc.add( new TextField(   Util.gstrLocalPart,   strLocalPart,  Field.Store.YES) );
         // From Node Type (Class or Property)...
-        doc.add( new StringField( Util.gstrType,        strNodeType,  Field.Store.YES ) );
+        doc.add( new StringField( Util.gstrType,        strNodeType,   Field.Store.YES ) );
         // From Project ID...
-        doc.add( new StringField( Util.gstrProject,     strProjectID, Field.Store.NO ) );
+        doc.add( new StringField( Util.gstrProject,     strProjectID,  Field.Store.NO ) );
 
         this.writer.addDocument(doc);
     }
@@ -526,8 +531,8 @@ public class VocabularySearcher implements IVocabularySearcher {
         // These docs are "copied" for use in the specified project.
         // See the calling function: addPredefinedVocabulariesToProject()
 
-        // Set new Project ID for "copied" documents...
-        IndexableField fieldProjectID = new StoredField(Util.gstrProject, strProjectID);
+        // Set new Project ID for "copied" documents ( just like in indexRDFTNode() )...
+        IndexableField fieldProjectID = new StringField(Util.gstrProject, strProjectID, Field.Store.NO);
 
         // Iterate through the Global documents...
         for (ScoreDoc sdoc : docs.scoreDocs) {

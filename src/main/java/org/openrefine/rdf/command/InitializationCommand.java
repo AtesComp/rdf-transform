@@ -338,7 +338,7 @@ public class InitializationCommand extends Command {
 
     //
     // DUMMY OVERRIDES ================
-    //      The InitializationCommand is s dummy Command class that does not actually process
+    //      The InitializationCommand is a dummy Command class that does not actually process
     //      POST or GET requests.  Instead, it absorbs all the "controller.js" server-side
     //      JavaScript functionality in a more performant code processor...Java
     //

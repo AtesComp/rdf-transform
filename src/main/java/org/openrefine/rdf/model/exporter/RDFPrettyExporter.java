@@ -73,7 +73,8 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
         this.export(theProject, options, theEngine);
     }
 
-    public void export(Project theProject, Properties options, Engine theEngine, Writer theWriter)
+    @Override
+    public void export(Project theProject, Properties options, Engine theEngine, final Writer theWriter)
              throws IOException
     {
         if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");
