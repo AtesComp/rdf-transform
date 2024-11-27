@@ -3,7 +3,7 @@
   <groupId>org.openrefine</groupId>
   <artifactId>grel</artifactId>
   <versioning>
-    <lastUpdated>20241126195256</lastUpdated>
+    <lastUpdated>20241127182621</lastUpdated>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
@@ -11,7 +11,7 @@
       <snapshotVersion>
         <extension>jar</extension>
         <value>3.9-SNAPSHOT</value>
-        <updated>20241126195256</updated>
+        <updated>20241127182621</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>

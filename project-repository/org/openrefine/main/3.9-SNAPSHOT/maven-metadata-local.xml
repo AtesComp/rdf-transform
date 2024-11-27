@@ -3,7 +3,7 @@
   <groupId>org.openrefine</groupId>
   <artifactId>main</artifactId>
   <versioning>
-    <lastUpdated>20241126195254</lastUpdated>
+    <lastUpdated>20241127182619</lastUpdated>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
@@ -11,7 +11,7 @@
       <snapshotVersion>
         <extension>jar</extension>
         <value>3.9-SNAPSHOT</value>
-        <updated>20241126195254</updated>
+        <updated>20241127182619</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
