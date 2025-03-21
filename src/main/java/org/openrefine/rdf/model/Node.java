@@ -31,8 +31,9 @@ import org.openrefine.rdf.model.utils.RecordModel;
 import org.openrefine.rdf.model.vocab.VocabularyList;
 
 import org.apache.jena.iri.IRI;
-import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.sparql.core.DatasetGraph;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -349,7 +350,8 @@ abstract public class Node {
     protected IRI baseIRI = null;
 
     @JsonIgnore
-    protected Model theModel = null;
+    //protected Model theModel = null;
+    protected DatasetGraph theDSGraph = null;
 
     @JsonIgnore
     protected Project theProject = null;
@@ -395,10 +397,11 @@ abstract public class Node {
     }
 
     protected String expandPrefixedIRI(String strObjectIRI) {
-        if (this.theModel == null) {
+        if (this.theDSGraph == null) {
             return null;
         }
-        return this.theModel.expandPrefix(strObjectIRI);
+        //return this.theModel.expandPrefix(strObjectIRI);
+        return this.theDSGraph.prefixes().expand(strObjectIRI);
 
         // String strExpanded = strObjectIRI;
         // int iIndex = strObjectIRI.indexOf(':'); // ...get index of first ':'...
@@ -424,7 +427,8 @@ abstract public class Node {
     @JsonIgnore
     protected void setObjectParameters(ResourceNode nodeProperty) {
         this.baseIRI = nodeProperty.baseIRI;
-        this.theModel = nodeProperty.theModel;
+        //this.theModel = nodeProperty.theModel;
+        this.theDSGraph = nodeProperty.theDSGraph;
         this.theProject = nodeProperty.theProject;
     }
 

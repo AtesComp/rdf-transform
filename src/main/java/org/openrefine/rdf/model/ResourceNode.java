@@ -38,12 +38,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
 import org.apache.jena.iri.IRI;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.PropertyImpl;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.util.NodeUtils;
 import org.apache.jena.vocabulary.RDF;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,7 +147,8 @@ abstract public class ResourceNode extends Node {
         String strLocalPart = strIRI; // ...for "prefix:localPart" IRI
         if (strPrefix != null) { // ...on prefix, attempt namespace...
             strIRI = strPrefix + ":" + strLocalPart;
-            strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+            //strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+            strNamespace = this.theDSGraph.prefixes().get(strPrefix);
         }
         if ( Util.isDebugMode() ) {
             String strDebug = "DEBUG: normalizeResource: Given: ";
@@ -188,11 +190,12 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatements() for Root Resource Node types on OpenRefine Rows
      */
-    public void createStatements(IRI baseIRI, Model theModel, Project theProject, int iRowIndex)
+    public void createStatements(IRI baseIRI, DatasetGraph theDSGraph, Project theProject, int iRowIndex)
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
-        this.theModel = theModel;
+        //this.theModel = theModel;
+        this.theDSGraph = theDSGraph;
         this.theProject = theProject;
 
         this.theRec.setRootRow(iRowIndex);
@@ -203,11 +206,12 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatements() for Root Resource Node types on OpenRefine Records
      */
-    public void createStatements(IRI baseIRI, Model theModel, Project theProject, Record theRecord)
+    public void createStatements(IRI baseIRI, DatasetGraph theDSGraph, Project theProject, Record theRecord)
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
-        this.theModel = theModel;
+        //this.theModel = theModel;
+        this.theDSGraph = theDSGraph;
         this.theProject = theProject;
 
         this.theRec.setRootRecord(theRecord);
@@ -374,7 +378,8 @@ abstract public class ResourceNode extends Node {
             if (strPrefix != null) { // ...prefixed...
                 strLocalPart = strType;
                 strType = strPrefix + ":" + strLocalPart; // ...CIRIE
-                strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+                //strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+                strNamespace = this.theDSGraph.prefixes().get(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
             if ( strType == null || strType.isEmpty() ) {
@@ -403,9 +408,16 @@ abstract public class ResourceNode extends Node {
         //
         // Process statements...
         //
+        org.apache.jena.graph.Node nodeGraph = NodeUtils.asNode( Util.getGraphIRIString( this.baseIRI.toString() ) );
         for (RDFNode theSource : this.listNodes) {
             for (RDFNode theType : listTypesForStmts) {
-                this.theModel.add( (Resource) theSource, RDF.type, (RDFNode) theType );
+                //this.theModel.add( (Resource) theSource, RDF.type, theType );
+                this.theDSGraph.add(
+                    nodeGraph,
+                    theSource.asNode(),
+                    RDF.type.asNode(),
+                    theType.asNode()
+                );
             }
         }
     }
@@ -471,7 +483,8 @@ abstract public class ResourceNode extends Node {
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
                 strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
-                strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+                //strNamespace = this.theModel.getNsPrefixURI(strPrefix);
+                strNamespace = this.theDSGraph.prefixes().get(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
             if ( strProperty == null || strProperty.isEmpty() ) {
@@ -514,16 +527,23 @@ abstract public class ResourceNode extends Node {
         //
         // Process statements...
         //
+        org.apache.jena.graph.Node nodeGraph = NodeUtils.asNode( Util.getGraphIRIString( this.baseIRI.toString() ) );
         for (RDFNode theSource : this.listNodes) {
             for ( PropertyObjectList polPropItem : listPropsForStmts )
             {
                 theProperty = polPropItem.getProperty();
                 listObjects = polPropItem.getObjects();
                 for (RDFNode theObject : listObjects) {
-                    this.theModel.add(
-                        (Resource) theSource,
-                        (org.apache.jena.rdf.model.Property) theProperty,
-                        (RDFNode) theObject
+                    //this.theModel.add(
+                    //    (Resource) theSource,
+                    //    (org.apache.jena.rdf.model.Property) theProperty,
+                    //    theObject
+                    //);
+                    this.theDSGraph.add(
+                        nodeGraph,
+                        theSource.asNode(),
+                        theProperty.asNode(),
+                        theObject.asNode()
                     );
                 }
             }

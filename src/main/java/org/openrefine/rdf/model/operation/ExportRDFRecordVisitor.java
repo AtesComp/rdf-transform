@@ -30,7 +30,7 @@ import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
 import org.apache.jena.iri.IRI;
-import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
@@ -50,14 +50,16 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
             IRI baseIRI = this.getRDFTransform().getBaseIRI();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                this.theModel.enterCriticalSection(Model.WRITE);
-                root.createStatements(baseIRI, theModel, theProject, theRecord);
-                this.theModel.leaveCriticalSection();
+                //this.theModel.enterCriticalSection(Model.WRITE);
+                //root.createStatements(baseIRI, this.theModel, theProject, theRecord);
+                //this.theModel.leaveCriticalSection();
+                root.createStatements(baseIRI, this.theDSGraph, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
                     ExportRDFRecordVisitor.logger.info("DEBUG:   " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
-                        "Model Size: " + theModel.size()
+                        //"Model Size: " + theModel.size()
+                        "DatasetGraph Size: " + this.theDSGraph.size()
                     );
                 }
                 //
@@ -67,7 +69,7 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
                 // as the transformed statements use in-memory resources until flushed to disk.
                 // Otherwise, large files would use excessive memory!
                 //
-                if ( theModel.size() > Util.getExportLimit() ) {
+                if ( this.theDSGraph.size() > Util.getExportLimit() ) {
                     this.flushStatements();
                     if ( this.isNoWriter() && bLimitWarning) {
                         this.bLimitWarning = false;

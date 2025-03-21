@@ -30,7 +30,7 @@ import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
 import org.apache.jena.iri.IRI;
-import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
@@ -58,14 +58,16 @@ public class PreviewRDFRecordVisitor extends RDFRecordVisitor {
             IRI baseIRI = this.getRDFTransform().getBaseIRI();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                this.theModel.enterCriticalSection(Model.WRITE);
-                root.createStatements(baseIRI, this.theModel, theProject, theRecord);
-                this.theModel.leaveCriticalSection();
+                //this.theModel.enterCriticalSection(Model.WRITE);
+                //root.createStatements(baseIRI, this.theModel, theProject, theRecord);
+                //this.theModel.leaveCriticalSection();
+                root.createStatements(baseIRI, this.theDSGraph, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
                     PreviewRDFRecordVisitor.logger.info("DEBUG:   " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
-                        "Model Size: " + this.theModel.size()
+                        //"Model Size: " + this.theModel.size()
+                        "DatasetGraph Size: " + this.theDSGraph.size()
                     );
                 }
             }

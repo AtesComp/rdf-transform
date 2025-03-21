@@ -115,7 +115,7 @@ public class PreviewRDFCommand extends Command {
                 try {
                     iSampleLimit = Integer.parseInt(strSampleLimit); // ...set to sample limit
                 }
-                catch (NumberFormatException ex) {
+                catch (NumberFormatException ex) { 
                     // ignore, use default...
                 }
             }
@@ -124,16 +124,26 @@ public class PreviewRDFCommand extends Command {
             }
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Sample Limit processed: " + strSampleLimit + ", " + iSampleLimit);
 
-            // Setup writer for output...
+            //
+            // Process Output...
+            //
+            //  NOTE: The output is processed as a graph for either Stream or Pretty variations.
+            //      The Stream variation is RDFFormat.TRIG_BLOCKS
+            //      The Pretty variation is RDFFormat.TRIG (RDFFormat.TRIG_PRETTY)
+            //
+
+            //
+            // Setup output...
+            //
             ByteArrayOutputStream osOut = new ByteArrayOutputStream();
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   BAOS Setup.");
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ByteArrayOutputStream Setup.");
 
             //
             // Get the Stream Writer if applicable...
             //
             StreamRDF theWriter = null;
             if ( bPreviewStream )  {
-                theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TURTLE_BLOCKS);
+                theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TRIG_BLOCKS);
                 if (theWriter == null) {
                     PreviewRDFCommand.logger.warn("WARN: Cannot construct Stream-based writer. Using pretty printer.");
                 }
@@ -142,44 +152,47 @@ public class PreviewRDFCommand extends Command {
                 }
             }
 
+            //
             // Start writing...
+            //
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Starting RDF Processing...");
-            if (theWriter != null) {
-                theWriter.start();
-            }
+            if (theWriter != null) theWriter.start();
 
             //
-            // Process sample records/rows of data for statements...
+            // Process sample records / rows of data for statements...
             //
             RDFVisitor theVisitor = null;
+            // If Record mode...
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Record Visitor...");
                 theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
             }
+            // Otherwise, Row mode...
             else {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Row Visitor...");
                 theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
             }
-            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the model...");
-            theVisitor.buildModel(theProject, theEngine);
 
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the RDF graph...");
+            theVisitor.buildDSGraph(theProject, theEngine);
+
+            //
+            // End writing...
+            //
             // If Stream Writer, end Stream Writer...
-            if (theWriter != null) {
-                theWriter.finish();
-            }
+            if (theWriter != null) theWriter.finish();
             // Otherwise, write and end Pretty Writer...
-            else {
-                RDFDataMgr.write(osOut, theVisitor.getModel(), RDFFormat.TURTLE);
-                theVisitor.getModel().close();
-            }
+            else RDFDataMgr.write(osOut, theVisitor.getDSGraph(), RDFFormat.TRIG);
 
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
-            // ...end writing
+            theVisitor.closeDSGraph();
 
+            //
+            // Send back to client...
+            //
             String strStatements = osOut.toString(StandardCharsets.UTF_8);
             if ( Util.isVerbose(4) || Util.isDebugMode() ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
 
-            // Send back to client...
             PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );
         }
         catch (Exception ex) {

@@ -42,7 +42,7 @@ public abstract class RDFRecordVisitor extends RDFVisitor implements RecordVisit
 
     abstract public boolean visit(Project theProject, Record theRecord);
 
-    public void buildModel(Project theProject, Engine theEngine) {
+    public void buildDSGraph(Project theProject, Engine theEngine) {
         FilteredRecords filteredRecords = theEngine.getFilteredRecords();
         if ( Util.isVerbose(3) ) RDFRecordVisitor.logger.info("buildModel: visit matching filtered records");
         filteredRecords.accept(theProject, this);

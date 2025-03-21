@@ -32,21 +32,21 @@ import org.slf4j.LoggerFactory;
 public class RDFExporter implements Exporter  {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFExporter");
 
-    protected RDFFormat format;
-    protected String strName;
+    protected RDFFormat theFormat;
+    protected String theExportName;
 
     public RDFExporter(RDFFormat format, String strName) {
-        this.format = format;
-        this.strName = strName;
+        this.theFormat = format;
+        this.theExportName = strName;
         if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Preparing exporter " + strName + "...");
     }
 
     public String getContentType() {
-        if (this.format != null) {
-            return this.format.getLang().getContentType().getContentTypeStr();
+        if (this.theFormat != null) {
+            return this.theFormat.getLang().getContentType().getContentTypeStr();
         }
-        else { // ...export as Turtle...
-            return RDFFormat.TURTLE_PRETTY.getLang().getContentType().getContentTypeStr();
+        else { // ...export as TriG...
+            return RDFFormat.TRIG.getLang().getContentType().getContentTypeStr();
         }
     }
 }

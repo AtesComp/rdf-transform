@@ -59,7 +59,8 @@ import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.document.StringField;
 
-import org.apache.jena.rdf.model.Model;
+import org.apache.jena.sparql.core.DatasetGraph;
+//import org.apache.jena.rdf.model.Model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,7 +177,7 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, Model theModel, String strProjectID)
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, DatasetGraph theDSGraph, String strProjectID)
             throws VocabularyImportException, IOException {
         VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
         List<RDFTClass> classes = new ArrayList<RDFTClass>();
@@ -187,7 +188,7 @@ public class VocabularySearcher implements IVocabularySearcher {
             VocabularySearcher.logger.info("DEBUG: Import And Index vocabulary " +
                     strPrefix + ": <" + strNamespace + ">");
         }
-        importer.importVocabulary(theModel, classes, properties);
+        importer.importVocabulary(theDSGraph, classes, properties);
         this.indexTerms(strProjectID, classes, properties);
     }
 

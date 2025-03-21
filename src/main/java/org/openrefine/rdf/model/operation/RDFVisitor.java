@@ -21,6 +21,7 @@
 package org.openrefine.rdf.model.operation;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 import com.google.refine.model.Project;
@@ -28,13 +29,18 @@ import com.google.refine.model.Project;
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.Vocabulary;
+
 import com.google.refine.browsing.Engine;
 
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+//import org.apache.jena.graph.Triple;
+//import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.Quad;
+//import org.apache.jena.util.iterator.ExtendedIterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +50,17 @@ public abstract class RDFVisitor {
 
     private final RDFTransform theTransform;
     private final StreamRDF theWriter;
-    protected final Model theModel;
+    protected final DatasetGraph theDSGraph;
+    //protected final Model theModel;
     protected boolean bLimitWarning = true;
 
     public RDFVisitor(RDFTransform theTransform, StreamRDF theWriter) {
         this.theTransform = theTransform;
         this.theWriter = theWriter;
 
-        // Initializing model...
-        this.theModel = ModelFactory.createDefaultModel();
+        // Initializing dataset graph...
+        //this.theModel = ModelFactory.createDefaultModel();
+        this.theDSGraph = DatasetGraphFactory.create();
 
         //
         // Populate the namespaces in the repository...
@@ -73,13 +81,16 @@ public abstract class RDFVisitor {
         }
 
         //this.theModel.begin();
-        this.theModel.clearNsPrefixMap();
-        this.theModel.enterCriticalSection(Model.WRITE);
+        //this.theModel.clearNsPrefixMap();
+        //this.theModel.enterCriticalSection(Model.WRITE);
+        PrefixMap thePrefixes = this.theDSGraph.prefixes();
+        thePrefixes.clear();
 
         // Set Default Namespace for repository...
         if ( bUseBaseIRI && ! strBaseIRI.isEmpty() ) {
             if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Using BaseIRI " + strBaseIRI);
-            this.theModel.setNsPrefix("", strBaseIRI); // ...default namespace
+            //this.theModel.setNsPrefix("", strBaseIRI); // ...default namespace
+            thePrefixes.add("", strBaseIRI);
         }
         else {
             if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Not using BaseIRI");
@@ -87,27 +98,30 @@ public abstract class RDFVisitor {
 
         // Set Prefix Namespaces for repository...
         for (Vocabulary vocab : theNamespaces) {
-            this.theModel.setNsPrefix( vocab.getPrefix(), vocab.getNamespace() );
+            //this.theModel.setNsPrefix( vocab.getPrefix(), vocab.getNamespace() );
+            thePrefixes.add( vocab.getPrefix(), vocab.getNamespace() );
         }
 
-        this.theModel.leaveCriticalSection();
-        //this.theModel.commit();
-        this.theModel.lock();
+        //this.theModel.leaveCriticalSection();
+        //this.theModel.lock();
     }
 
     public RDFTransform getRDFTransform() {
         return this.theTransform;
     }
 
-    public Model getModel() {
-        return this.theModel;
+    //public Model getModel() {
+    //    return this.theModel;
+    //}
+    public DatasetGraph getDSGraph() {
+        return this.theDSGraph;
     }
 
     public boolean isNoWriter() {
         return (this.theWriter == null);
     }
 
-    abstract public void buildModel(Project theProject, Engine theEngine);
+    abstract public void buildDSGraph(Project theProject, Engine theEngine);
 
     /**
      * Performs any necessary processing before visiting the selected (filtered) data rows or records.
@@ -124,7 +138,8 @@ public abstract class RDFVisitor {
 
         // Export namespace information previously populated in the model...
         try {
-            Map<String, String> nsMap = this.theModel.getNsPrefixMap();
+            //Map<String, String> nsMap = this.theModel.getNsPrefixMap();
+            Map<String, String> nsMap = this.theDSGraph.prefixes().getMapping();
             for ( Map.Entry<String, String> ns : nsMap.entrySet() ) {
                 String strPrefix = ns.getKey();
                 String strNamespace = ns.getValue();
@@ -152,9 +167,10 @@ public abstract class RDFVisitor {
             return;
         }
 
-        // Close the model automatically...
+        // Close the dataset graph automatically...
         try {
-            this.theModel.close();
+            //this.theModel.close();
+            this.theDSGraph.close();
         }
         catch (Exception ex) {
             RDFVisitor.logger.error("ERROR: Closing Model: " + ex.getMessage(), ex);
@@ -167,24 +183,28 @@ public abstract class RDFVisitor {
         if ( this.theWriter == null ) {
             return;
         }
-        // TODO: Code for future context upgrade (quads)
 
         // Export statements...
-        this.theModel.enterCriticalSection(Model.READ);
-        ExtendedIterator<Triple> stmtIter = this.theModel.getGraph().find();
+        //this.theModel.enterCriticalSection(Model.READ);
+        //ExtendedIterator<Triple> stmtIter = this.theModel.getGraph().find();
+        Iterator<Quad> stmtIter = this.theDSGraph.find();
         try {
             while ( stmtIter.hasNext() ) {
-                this.theWriter.triple( stmtIter.next() );
+                this.theWriter.quad( stmtIter.next() );
             }
         }
         finally {
-            stmtIter.close();
+        //    stmtIter.close();
         }
-        this.theModel.leaveCriticalSection();
+        //this.theModel.leaveCriticalSection();
 
         // Remove the exported statements from the model...
-        this.theModel.enterCriticalSection(Model.WRITE);
-        this.theModel.removeAll();
-        this.theModel.leaveCriticalSection();
+        //this.theModel.enterCriticalSection(Model.WRITE);
+        //this.theModel.removeAll();
+        //this.theModel.leaveCriticalSection();
+    }
+
+    public void closeDSGraph() {
+        this.theDSGraph.close();
     }
 }

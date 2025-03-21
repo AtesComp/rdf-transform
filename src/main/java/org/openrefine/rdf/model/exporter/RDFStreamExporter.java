@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 public class RDFStreamExporter extends RDFExporter implements WriterExporter, StreamExporter {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFStreamExporter");
 
-    private OutputStream outputStream = null;
+    private OutputStream theOutputStream = null;
 
     public RDFStreamExporter(RDFFormat format, String strName) {
         super(format, strName);
@@ -65,8 +65,8 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
 
     public void export(Project theProject, Properties options, Engine theEngine, OutputStream outputStream)
             throws IOException {
-        if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.strName + " via OutputStream");
-        this.outputStream = outputStream;
+        if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.theExportName + " via OutputStream");
+        this.theOutputStream = outputStream;
         this.export(theProject, options, theEngine);
     }
 
@@ -74,8 +74,8 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
     public void export(Project theProject, Properties options, Engine theEngine, final Writer theWriter)
              throws IOException
     {
-        if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");
-        this.outputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
+        if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG: Exporting " + this.theExportName + " via Writer");
+        this.theOutputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
         this.export(theProject, options, theEngine);
     }
 
@@ -83,7 +83,7 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
             throws IOException
     {
         StreamRDF theWriter = null;
-        theWriter = StreamRDFWriter.getWriterStream(this.outputStream, this.format);
+        theWriter = StreamRDFWriter.getWriterStream(this.theOutputStream, this.theFormat);
         if (theWriter == null) {
             String strMsg = "ERROR: The writer is invalid! Cannot construct export.";
             RDFStreamExporter.logger.error(strMsg);
@@ -106,13 +106,13 @@ public class RDFStreamExporter extends RDFExporter implements WriterExporter, St
                 if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:     Process by Row Visitor...");
                 theVisitor = new ExportRDFRowVisitor(theTransform, theWriter);
             }
-            theVisitor.buildModel(theProject, theEngine);
+            theVisitor.buildDSGraph(theProject, theEngine);
 
             theWriter.finish();
-            if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:   ...Ended RDF Export " + this.strName);
+            if ( Util.isDebugMode() ) RDFStreamExporter.logger.info("DEBUG:   ...Ended RDF Export " + this.theExportName);
         }
         catch (Exception ex) {
-            if ( Util.isDebugMode() ) RDFStreamExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);
+            if ( Util.isDebugMode() ) RDFStreamExporter.logger.error("DEBUG: Error exporting " + this.theExportName, ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             throw new IOException(ex.getMessage(), ex);
         }

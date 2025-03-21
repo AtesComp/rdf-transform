@@ -37,8 +37,8 @@ class RDFTransform {
     static get strEXTENSION() { return "RDFTransform"; }
     // RDF Transform Version Control
     static strVERSION_MAJOR = "2";
-    static strVERSION_MINOR = "2";
-    static strVERSION_MICRO = "4";
+    static strVERSION_MINOR = "3";
+    static strVERSION_MICRO = "0";
     static strVERSION =
         RDFTransform.strVERSION_MAJOR + "." +
         RDFTransform.strVERSION_MINOR + "." +
@@ -506,8 +506,8 @@ class RDFTransformDialog {
         this.#elements.rdftTabTransformText.text(   $.i18n('rdft-dialog/tab-transform') );
         this.#elements.rdftTabPreviewText.text(     $.i18n('rdft-dialog/tab-preview') );
         this.#elements.rdftPreviewShown.text(       $.i18n('rdft-dialog/shown-below') + ":" );
-        this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-turtle-stream") );
-        this.#elements.rdftPreviewPrettyLabel.text( $.i18n("rdft-menu/rdf-turtle-pretty") );
+        this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-trig-stream") );
+        this.#elements.rdftPreviewPrettyLabel.text( $.i18n("rdft-menu/rdf-trig-pretty") );
         this.#elements.rdftPrefixesText.text(       $.i18n('rdft-dialog/available-prefix') + ':' );
         this.#elements.buttonAddRootNode.text(      $.i18n('rdft-buttons/add-root') );
         this.#elements.buttonImpTemplate.text(      $.i18n('rdft-buttons/import-template') );

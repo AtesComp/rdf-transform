@@ -185,9 +185,10 @@ public class Property {
             //
             // Process Property into a Node...
             //
-            //  TODO NOTE: At this time, we are doing nothing more than checking that a node can be created
-            //      from the property information.  We should store it and use it like root nodes to manage
-            //      IRI declarations, expressions, etc (no literals)
+            //  NOTE: At this time, we are doing nothing more than checking that a node can be created
+            //      from the property information
+            //  TODO: We should store it and use it like root nodes to manage IRI declarations, expressions,
+            //      etc (no literals)
             //
             ResourceNode rnodeResource = null;
             if ( bValueNode ) {

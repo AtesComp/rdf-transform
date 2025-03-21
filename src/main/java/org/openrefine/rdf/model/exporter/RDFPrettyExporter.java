@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFPrettyExporter");
 
-    private OutputStream outputStream = null;
+    private OutputStream theOutputStream = null;
 
     public RDFPrettyExporter(RDFFormat format, String strName) {
         super(format, strName);
@@ -68,8 +68,8 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
 
     public void export(Project theProject, Properties options, Engine theEngine, OutputStream outputStream)
             throws IOException {
-        if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.strName + " via OutputStream");
-        this.outputStream = outputStream;
+        if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.theExportName + " via OutputStream");
+        this.theOutputStream = outputStream;
         this.export(theProject, options, theEngine);
     }
 
@@ -77,8 +77,8 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
     public void export(Project theProject, Properties options, Engine theEngine, final Writer theWriter)
              throws IOException
     {
-        if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.strName + " via Writer");
-        this.outputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
+        if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.theExportName + " via Writer");
+        this.theOutputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
         this.export(theProject, options, theEngine);
     }
 
@@ -99,13 +99,13 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
                 if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Process by Row Visitor...");
                 theVisitor = new ExportRDFRowVisitor(theTransform, null);
             }
-            theVisitor.buildModel(theProject, theEngine);
+            theVisitor.buildDSGraph(theProject, theEngine);
 
-            RDFDataMgr.write(this.outputStream, theVisitor.getModel(), this.format) ;
-            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:   ...Ended RDF Export " + this.strName);
+            RDFDataMgr.write(this.theOutputStream, theVisitor.getDSGraph(), this.theFormat) ;
+            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:   ...Ended RDF Export " + this.theExportName);
         }
         catch (Exception ex) {
-            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.error("DEBUG: Error exporting " + this.strName, ex);
+            if ( Util.isDebugMode() ) RDFPrettyExporter.logger.error("DEBUG: Error exporting " + this.theExportName, ex);
             if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
             throw new IOException(ex.getMessage(), ex);
         }

@@ -410,7 +410,7 @@ public class Util {
     static public IRI buildIRI(String strIRI, boolean bTest) {
         String strHeader = (bTest ? "TEST: " : "ERROR: ") + "buildIRI(): ";
 
-        if (strIRI == null) {
+        if (strIRI == null || strIRI.isEmpty() || strIRI.isBlank() ) {
             if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error(strHeader + "Null IRI");
             return null;
         }
@@ -425,6 +425,27 @@ public class Util {
         }
 
         return iriNew;
+    }
+
+    static public String getGraphIRIString(String strIRI) {
+        String strEmpty = "";
+
+        IRI iriGraph = Util.buildIRI(strIRI, false);
+        if (iriGraph == null || iriGraph.isRelative() ) return strEmpty;
+
+        String strGraphIRI = strIRI;
+        int iLast = strGraphIRI.length() - 1;
+        char charLast = strGraphIRI.charAt(iLast);
+        while (charLast == '/' || charLast == '?' || charLast == '#') {
+            strGraphIRI = strGraphIRI.substring(0, iLast);
+            iLast = strGraphIRI.length() - 1;
+            charLast = strGraphIRI.charAt(iLast);
+        }
+
+        iriGraph = Util.buildIRI(strGraphIRI, false);
+        if (iriGraph == null || iriGraph.isRelative() ) return strEmpty;
+
+        return strGraphIRI;
     }
 
     static public Object evaluateExpression(Project theProject, String strExpression, String strColumnName, int iRowIndex)

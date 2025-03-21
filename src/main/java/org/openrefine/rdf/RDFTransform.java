@@ -77,8 +77,8 @@ public class RDFTransform implements OverlayModel {
     static public final String EXTENSION = "RDFTransform";
     // RDF Transform Version Control
     static public final String VERSION_MAJOR = "2";
-    static public final String VERSION_MINOR = "2";
-    static public final String VERSION_MICRO = "4";
+    static public final String VERSION_MINOR = "3";
+    static public final String VERSION_MICRO = "0";
     static public final String VERSION =
         RDFTransform.VERSION_MAJOR + "." +
         RDFTransform.VERSION_MINOR + "." +

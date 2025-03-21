@@ -22,9 +22,12 @@
 package org.openrefine.rdf.model.vocab;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryException;
 import org.apache.jena.query.QueryExecution;
@@ -32,8 +35,8 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+//import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.riot.Lang;
 import org.openrefine.rdf.model.Util;
@@ -88,7 +91,8 @@ public class VocabularyImporter {
 
     private String strPrefix;
     private String strNamespace;
-    private Model modelImport = null;
+    private DatasetGraph theDSGraph;
+    //private Model modelImport = null;
 
     // Faulty Content Negotiators to Modify Processing...
     private boolean bStrictlyRDF = false;
@@ -106,28 +110,34 @@ public class VocabularyImporter {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! URL is null.");
             return;
         }
-        this.getModel(strFetchURL);
-        if (this.modelImport == null) {
+        this.getDatasetGraph(strFetchURL);
+        if (this.theDSGraph == null) {
+        //if (this.modelImport == null) {
             return;
         }
         this.getTerms(classes, properties);
     }
 
-    public void importVocabulary(Model model, List<RDFTClass> classes, List<RDFTProperty> properties)
+    public void importVocabulary(DatasetGraph dsGraph, List<RDFTClass> classes, List<RDFTProperty> properties)
+    //public void importVocabulary(Model model, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
-        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given model...");
-        this.modelImport = model;
-        if (this.modelImport == null) {
-            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import model is null.");
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given dataset graph...");
+        this.theDSGraph = dsGraph;
+        //this.modelImport = model;
+        if (this.theDSGraph == null) {
+        //if (this.modelImport == null) {
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import dataset graph is null.");
         }
+        this.theDSGraph.clear(); // ...erase all the old data
         this.getTerms(classes, properties);
     }
 
-    private void getModel(String strFetchURL)
+    private void getDatasetGraph(String strFetchURL)
             throws VocabularyImportException
     {
-        this.modelImport = null;
+        this.theDSGraph = null;
+        //this.modelImport = null;
 
         // Check the Namespace for process modification...
         if ( this.faultyContentNegotiation(strFetchURL) ) {
@@ -135,19 +145,22 @@ public class VocabularyImporter {
         }
 
         try {
-            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Creating model for URL");
-            this.modelImport = ModelFactory.createDefaultModel();
+            //if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Creating model for URL");
+            //this.modelImport = ModelFactory.createDefaultModel();
 
-            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Reading model from URL");
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Load dataset graph from URL");
             if (this.bStrictlyRDF) {
-                this.modelImport.read( strFetchURL, Lang.RDFXML.getName() );
+                this.theDSGraph = RDFDataMgr.loadDatasetGraph( strFetchURL, Lang.RDFXML );
+                //this.modelImport.read( strFetchURL, Lang.RDFXML.getName() );
             }
             else {
-                this.modelImport.read(strFetchURL);
+                this.theDSGraph = RDFDataMgr.loadDatasetGraph(strFetchURL);
+                //this.modelImport.read(strFetchURL);
             }
         }
         catch (Exception ex) {
-            this.modelImport = null;
+            this.theDSGraph = null;
+            //this.modelImport = null;
             throw new VocabularyImportException("Importing vocabulary: " + strFetchURL, ex);
         }
     }
@@ -192,7 +205,8 @@ public class VocabularyImporter {
             throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
         }
         try {
-            QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
+            QueryExecution qexec = QueryExecutionFactory.create(query, this.theDSGraph);
+            //QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
             ResultSet results = qexec.execSelect();
             while ( results.hasNext() ) {
                 QuerySolution solution = results.next();
@@ -233,13 +247,21 @@ public class VocabularyImporter {
             throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
         }
         try {
-            QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
+            QueryExecution qexec = QueryExecutionFactory.create(query, this.theDSGraph);
+            //QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
             ResultSet results = qexec.execSelect();
             while ( results.hasNext() ) {
+                if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Has solution...\n");
                 QuerySolution solution = results.nextSolution();
                 try {
                     if ( this.processSolution(solution, astrLoader, seen) ) {
                         properties.add( new RDFTProperty(astrLoader) );
+                    }
+                    if ( Util.isDebugMode() ) {
+                        VocabularyImporter.logger.info("DEBUG: Solution IRI: ");
+                        VocabularyImporter.logger.info(
+                            ( ( astrLoader[RDFTNode.iIRI] == null ) ? "NULL" : astrLoader[RDFTNode.iIRI] ) + "\n"
+                        );
                     }
                 }
                 catch (Exception ex) {

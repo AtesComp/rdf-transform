@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.jena.rdf.model.Model;
+import org.apache.jena.sparql.core.DatasetGraph;
+//import org.apache.jena.rdf.model.Model;
 
 public interface IVocabularySearcher {
 
@@ -64,7 +65,7 @@ public interface IVocabularySearcher {
      * @throws VocabularyImportException
      * @throws IOException
      */
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, Model theModel,
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, DatasetGraph theDSGraph,
                                             String strProjectID)
                     throws VocabularyImportException, IOException;
 

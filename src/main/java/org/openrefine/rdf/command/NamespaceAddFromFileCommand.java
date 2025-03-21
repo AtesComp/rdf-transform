@@ -36,9 +36,12 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+
+//import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.DatasetGraph;
 
 import com.google.refine.ProjectManager;
 import com.google.refine.model.Project;
@@ -95,23 +98,26 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
             theTransform = getProjectTransform();
 
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Creating model for this ontology file...");
+            //if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Creating dataset graph for this ontology file...");
             // NOTE: use createOntologyModel() to do ontology include processing.
             //      createDefaultModel() just processes the given file without including.
-            Model theModel = ModelFactory.createDefaultModel();
+            //Model theModel = ModelFactory.createDefaultModel();
 
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Reading model from ontology file...");
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Reading dataset graph from ontology file...");
+            DatasetGraph theDSGraph = null;
             if (this.theRDFLang != null) {
-                theModel.read(this.instreamFile, "", this.theRDFLang.getName());
+                //theModel.read( this.instreamFile, "", this.theRDFLang.getName() );
+                theDSGraph = RDFDataMgr.loadDatasetGraph(strFilename, theRDFLang);
             }
             else {
-                theModel.read(this.instreamFile, "");
+                //theModel.read( this.instreamFile, "" ); // ...assumes the concrete syntax is RDF/XML
+                theDSGraph = RDFDataMgr.loadDatasetGraph(strFilename);
             }
 
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from RDF model...");
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from dataset graph...");
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
-                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, theModel, this.strProjectID);
+                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, theDSGraph, this.strProjectID);
         }
         catch (Exception ex) {
             NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
