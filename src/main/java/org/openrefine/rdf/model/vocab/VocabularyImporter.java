@@ -77,7 +77,7 @@ public class VocabularyImporter {
         VocabularyImporter.PREFIXES +
         "SELECT ?resource ?label ?en_label ?description ?en_description ?definition ?en_definition " +
         "WHERE { " +
-        "?resource rdf:type rdf:Property . " +
+        "?resource rdf:type ?type . " +
         "OPTIONAL { ?resource rdfs:label ?label . } " +
         "OPTIONAL { ?resource rdfs:label ?en_label . " +
                     "FILTER langMatches( lang(?en_label), \"EN\" ) } " +
@@ -87,6 +87,7 @@ public class VocabularyImporter {
         "OPTIONAL { ?resource skos:definition ?definition.} " +
         "OPTIONAL { ?resource skos:definition ?en_definition . " +
                     "FILTER langMatches( lang(?en_definition), \"EN\" ) } " +
+        "VALUES ?type { rdf:Property owl:ObjectProperty owl:DatatypeProperty } " +
         "FILTER regex(str(?resource), \"^%s\") }"; // ..starts with given namespace
 
     private String strPrefix;
@@ -111,8 +112,9 @@ public class VocabularyImporter {
             return;
         }
         this.getDatasetGraph(strFetchURL);
+        //if (this.modelImport == null) return;
         if (this.theDSGraph == null) {
-        //if (this.modelImport == null) {
+            if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import dataset graph is null.");
             return;
         }
         this.getTerms(classes, properties);
@@ -125,9 +127,10 @@ public class VocabularyImporter {
         if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given dataset graph...");
         this.theDSGraph = dsGraph;
         //this.modelImport = model;
-        if (this.theDSGraph == null) {
         //if (this.modelImport == null) {
+        if (this.theDSGraph == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import dataset graph is null.");
+            return;
         }
         this.theDSGraph.clear(); // ...erase all the old data
         this.getTerms(classes, properties);
@@ -201,29 +204,40 @@ public class VocabularyImporter {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create class query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
-        catch (QueryException ex) {
-            throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
+        catch (Exception ex) {
+            VocabularyImporter.logger.error( "ERROR: Query " + ex.getMessage() );
+            throw new VocabularyImportException("Query " + strMessage + ex.getMessage(), ex);
         }
         try {
             QueryExecution qexec = QueryExecutionFactory.create(query, this.theDSGraph);
             //QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
             ResultSet results = qexec.execSelect();
-            while ( results.hasNext() ) {
-                QuerySolution solution = results.next();
-                try {
-                    if ( this.processSolution(solution, astrLoader, seen) ) {
-                        classes.add( new RDFTClass(astrLoader) );
+            if ( results.hasNext() ) {
+                while ( results.hasNext() ) {
+                    QuerySolution solution = results.next();
+                    try {
+                        if ( this.processSolution(solution, astrLoader, seen) ) {
+                            classes.add( new RDFTClass(astrLoader) );
+                        }
+                        if ( Util.isDebugMode() ) {
+                            VocabularyImporter.logger.info(
+                                "DEBUG: Solution IRI: " +
+                                ( ( astrLoader[RDFTNode.iIRI] == null ) ? "NULL" : astrLoader[RDFTNode.iIRI] )
+                            );
+                        }
                     }
-                }
-                catch (Exception ex) {
-                    if ( Util.isVerbose(2) || Util.isDebugMode() ) {
-                        VocabularyImporter.logger.warn(
-                            "WARNING: Processing" + strMessage +
-                                "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]" );
+                    catch (Exception ex) {
+                        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+                            VocabularyImporter.logger.warn(
+                                "WARNING: Processing" + strMessage +
+                                    "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]"
+                            );
+                        }
+                        // ...continue processing...
                     }
-                    // ...continue processing...
                 }
             }
+            else if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: NO Solution!");
         }
         catch (Exception ex) {
             VocabularyImporter.logger.error("ERROR: Class query and results: " + ex.getMessage(), ex);
@@ -243,36 +257,40 @@ public class VocabularyImporter {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create property query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
-        catch (QueryException ex) {
-            throw new VocabularyImportException("Query" + strMessage + ex.getMessage(), ex);
+        catch (Exception ex) {
+            VocabularyImporter.logger.error( "ERROR: Query " + ex.getMessage() );
+            throw new VocabularyImportException("Query " + strMessage + ex.getMessage(), ex);
         }
         try {
             QueryExecution qexec = QueryExecutionFactory.create(query, this.theDSGraph);
             //QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
             ResultSet results = qexec.execSelect();
-            while ( results.hasNext() ) {
-                if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Has solution...\n");
-                QuerySolution solution = results.nextSolution();
-                try {
-                    if ( this.processSolution(solution, astrLoader, seen) ) {
-                        properties.add( new RDFTProperty(astrLoader) );
+            if ( results.hasNext() ) {
+                while ( results.hasNext() ) {
+                    QuerySolution solution = results.nextSolution();
+                    try {
+                        if ( this.processSolution(solution, astrLoader, seen) ) {
+                            properties.add( new RDFTProperty(astrLoader) );
+                        }
+                        if ( Util.isDebugMode() ) {
+                            VocabularyImporter.logger.info(
+                                "DEBUG: Solution IRI: " +
+                                ( ( astrLoader[RDFTNode.iIRI] == null ) ? "NULL" : astrLoader[RDFTNode.iIRI] )
+                            );
+                        }
                     }
-                    if ( Util.isDebugMode() ) {
-                        VocabularyImporter.logger.info("DEBUG: Solution IRI: ");
-                        VocabularyImporter.logger.info(
-                            ( ( astrLoader[RDFTNode.iIRI] == null ) ? "NULL" : astrLoader[RDFTNode.iIRI] ) + "\n"
-                        );
+                    catch (Exception ex) {
+                        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+                            VocabularyImporter.logger.warn(
+                                "WARNING: Processing" + strMessage +
+                                    "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]"
+                            );
+                        }
+                        // ...continue processing...
                     }
-                }
-                catch (Exception ex) {
-                    if ( Util.isVerbose(2) || Util.isDebugMode() ) {
-                        VocabularyImporter.logger.warn(
-                            "WARNING: Processing" + strMessage +
-                                "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]" );
-                    }
-                    // ...continue processing...
                 }
             }
+            else if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: NO Solution!");
         }
         catch (Exception ex) {
             VocabularyImporter.logger.error("ERROR: Property query and results: " + ex.getMessage(), ex);
