@@ -1,81 +1,68 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build clean assembly and update",
-            "type": "shell",
-			"dependsOrder": "sequence",
-			"dependsOn": [
-				"clean",
-				"depend",
-				"compile",
-				"assemble",
-				"update ext"
-			],
-            "group": "build"
-        },
-        {
-            "label": "build assembly and update",
-            "type": "shell",
-			"dependsOrder": "sequence",
-			"dependsOn": [
-				"compile",
-				"assemble",
-				"update ext"
-			],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "update ext",
-            "type": "shell",
-			"dependsOrder": "sequence",
-			"dependsOn": [
-				"remove ext",
-				"copy ext"
-			],
-            "group": "test"
-        },
-		{
-			"label": "clean",
-			"type": "shell",
-			"command": "mvn clean",
-			"group": "build"
-		},
-		{
-			"label": "depend",
-			"type": "shell",
-			"command": "mvn dependency:resolve -U",
-			"group": "build"
-		},
-		{
-			"label": "compile",
-			"type": "shell",
-			"command": "mvn compile",
-			"group": "build"
-		},
-		{
-			"label": "assemble",
-			"type": "shell",
-			"command": "mvn assembly:single",
-			"group": "build"
-		},
-		{
-			"label": "remove ext",
-			"type": "shell",
-			"command": "rm -rf ~/.local/share/openrefine/extensions/rdf-transform*",
-			"group": "test"
-		},
-		{
-			"label": "copy ext",
-			"type": "shell",
-			"command": "unzip target/rdf-transform-$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout).zip -d ~/.local/share/openrefine/extensions",
-			"group": "test"
-		}
-    ]
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build clean assembly and update",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": ["clean", "depend", "compile", "assemble", "update ext"],
+      "group": "build"
+    },
+    {
+      "label": "build assembly and update",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": ["compile", "assemble", "update ext"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "update ext",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": ["remove ext", "copy ext"],
+      "group": "test"
+    },
+    {
+      "label": "clean",
+      "type": "shell",
+      "command": "mvn clean",
+      "group": "build"
+    },
+    {
+      "label": "depend",
+      "type": "shell",
+      "command": "mvn dependency:resolve -U",
+      "group": "build"
+    },
+    {
+      "label": "compile",
+      "type": "shell",
+      "command": "mvn compile",
+      "group": "build"
+    },
+    {
+      "label": "assemble",
+      "type": "shell",
+      "command": "mvn assembly:single",
+      "group": "build"
+    },
+    {
+      "label": "remove ext",
+      "type": "shell",
+      "command": "rm -rf ~/.local/share/openrefine/extensions/rdf-transform*",
+      "group": "test"
+    },
+    {
+      "label": "copy ext",
+      "type": "shell",
+      "command": "unzip target/rdf-transform-$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout).zip -d ~/.local/share/openrefine/extensions",
+      "group": "test"
+    }
+  ]
 }
