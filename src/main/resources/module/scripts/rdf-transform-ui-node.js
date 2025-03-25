@@ -3,7 +3,7 @@
  *
  *  The Node Manager UI for the RDF Transform Dialog.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ class RDFTransformUINode {
         this.#initializeNodeControls();
 
         this.#imgExpand =
+            // @ts-ignore
             $('<img />')
             .attr("src", ModuleWirings[RDFTransform.KEY] +
                         (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"))
@@ -99,12 +100,14 @@ class RDFTransformUINode {
                 (evt) => {
                     evt.preventDefault();
                     this.#bIsExpanded = ! this.#bIsExpanded;
+                    // @ts-ignore
                     $(evt.currentTarget)
                         .attr("src", ModuleWirings[RDFTransform.KEY] +
                                 (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"));
                     this.#show();
                 }
             );
+        // @ts-ignore
         this.#imgNone = $('<img />');
     }
 
@@ -206,6 +209,7 @@ class RDFTransformUINode {
         this.#eType = RDFTransformCommon.NodeType.getType(strNodeType);
 
         if ( this.#eType === null ) {
+            // @ts-ignore
             alert( $.i18n('rdft-data/alert-RDF-type') );
             return false;
         }
@@ -247,17 +251,22 @@ class RDFTransformUINode {
         this.#tdToggle  = this.#tr.insertCell(); // 1
         this.#tdDetails = this.#tr.insertCell(); // 2
 
+        // @ts-ignore
         this.#collapsedDetailDiv = $('<div />').addClass("padded");
+        // @ts-ignore
         this.#expandedDetailDiv = $('<div />').addClass("rdf-transform-property-container");
 
+        // @ts-ignore
         $(this.#tdMain)
             .addClass("rdf-transform-node-main")
             .addClass("padded");
+        // @ts-ignore
         $(this.#tdToggle)
             .addClass("rdf-transform-node-toggle")
             .addClass("padded")
             .append(this.#imgExpand)
             .append(this.#imgNone);
+        // @ts-ignore
         $(this.#tdDetails)
             .addClass("rdf-transform-node-details")
             .append(this.#collapsedDetailDiv)
@@ -297,7 +306,9 @@ class RDFTransformUINode {
       '<tr bind="rdftAddTypeTR">' +
         '<td>' +
           '<div class="padded">' +
-            '<a href="javascript:{}" class="action" bind="rdftAddType">&nbsp;&nbsp;' + $.i18n('rdft-dialog/add-type') + '...' + '</a>' +
+            '<a href="javascript:{}" class="action" bind="rdftAddType">&nbsp;&nbsp;' +
+                // @ts-ignore
+                $.i18n('rdft-dialog/add-type') + '...' + '</a>' +
           '</div>' +
         '</td>' +
       '</tr>' +
@@ -305,6 +316,8 @@ class RDFTransformUINode {
   '</td>' +
 '</tr>';
         }
+
+        // @ts-ignore
         var strHTML = $(
 '<table width="100%">' +
   '<tr>' +
@@ -314,6 +327,7 @@ class RDFTransformUINode {
 '</table>'
         );
 
+        // @ts-ignore
         $(this.#tdMain).empty().append(strHTML);
 
         var elements = DOM.bind(strHTML);
@@ -341,6 +355,7 @@ class RDFTransformUINode {
         strNodeLabel = strNodeLabel + ": ";
 
         // When a Node is not well defined, defaults...
+        // @ts-ignore
         var strNodeText = $.i18n("rdft-dialog/configure"); // Configure?
         var bNodeLabel = false;
 
@@ -353,6 +368,7 @@ class RDFTransformUINode {
                 if (this.#node.valueSource.source !== null) {
                     // If a Blank Resource...
                     if (this.#eType === RDFTransformCommon.NodeType.Blank) {
+                        // @ts-ignore
                         strNodeText = $.i18n('rdft-as/blank');
                         bNodeLabel = true;
                     }
@@ -364,6 +380,7 @@ class RDFTransformUINode {
                     }
                     // Otherwise, an Index-based (row or record) Resource or Literal...
                     else {
+                        // @ts-ignore
                         strNodeText = "[" + $.i18n("rdft-dialog/index") + "]";
                         bNodeLabel = true;
                     }
@@ -378,6 +395,7 @@ class RDFTransformUINode {
                     var strConst = this.#node.valueSource.constant;
 
                     if (this.#eType === RDFTransformCommon.NodeType.Resource) {
+                        // @ts-ignore
                         strNodeText = $.i18n('rdft-dialog/which-res');
                         if (strConst !== null) {
                             strNodeText = RDFTransformCommon.shortenResource(strConst);
@@ -385,6 +403,7 @@ class RDFTransformUINode {
                         }
                     }
                     else if (this.#eType === RDFTransformCommon.NodeType.Blank) {
+                        // @ts-ignore
                         strNodeText = $.i18n('rdft-dialog/constant-val');
                         if (strConst !== null) {
                             // Even though it's a Resource, treat the name like a Literal...
@@ -393,6 +412,7 @@ class RDFTransformUINode {
                         }
                     }
                     else if (this.#eType === RDFTransformCommon.NodeType.Literal) {
+                        // @ts-ignore
                         strNodeText = $.i18n('rdft-dialog/what-val');
                         if (strConst !== null) {
                             strNodeText = RDFTransformCommon.shortenLiteral(strConst);
@@ -410,6 +430,7 @@ class RDFTransformUINode {
         // Add the Node Label as a Span reference since text contains an IRI and
         // can be interpreted as an IRL (HTML would render a link)...
         var refNode =
+            // @ts-ignore
             $('<a href="javascript:{}" />')
                 .addClass("rdf-transform-node")
                 .on("click",
@@ -420,12 +441,16 @@ class RDFTransformUINode {
                     }
                 );
         refNode.append(
+            // @ts-ignore
             $("<span />")
                 .addClass("rdf-transform-node-label")
                 .text(strNodeText)
         );
 
-        var imgDeleteNode = $('<img />')
+        var imgDeleteNode =
+            // @ts-ignore
+            $('<img />')
+            // @ts-ignore
             .attr("title", $.i18n('rdft-dialog/remove-node'))
             .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
             .css("cursor", "pointer")
@@ -462,7 +487,10 @@ class RDFTransformUINode {
                 var tr = typesTable.insertRow();
                 var td = tr.insertCell();
 
-                var imgDeleteType = $('<img />')
+                var imgDeleteType =
+                    // @ts-ignore
+                    $('<img />')
+                    // @ts-ignore
                     .attr("title", $.i18n('rdft-dialog/remove-type'))
                     .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
                     .css("cursor", "pointer")
@@ -473,6 +501,7 @@ class RDFTransformUINode {
                         }
                     );
 
+                // @ts-ignore
                 var refType = $('<a href="#" class="action" />')
                     .text(
                         RDFTransformCommon.shortenResource(
@@ -482,10 +511,12 @@ class RDFTransformUINode {
                     .on("click",
                         (evt) => {
                             evt.preventDefault();
+                            // @ts-ignore
                             this.#renderNodeRDFType( $(evt.target), theType );
                         }
                     );
 
+                // @ts-ignore
                 $(td).append("&nbsp;&nbsp;", imgDeleteType, "&nbsp;", refType);
             }
             elements.rdftTypesTD.html(typesTable);
@@ -509,7 +540,10 @@ class RDFTransformUINode {
         menuViewType.html(
 '<div bind="rdftTypeContainer">' +
   '<span class="rdf-transform-iri-text" bind="rdftTypeText" style="overflow: hidden;" /></span>' +
-  '<button class="button" bind="buttonOK">' + $.i18n('rdft-buttons/ok') + '</button>' +
+  '<button class="button" bind="buttonOK">' +
+    // @ts-ignore
+    $.i18n('rdft-buttons/ok') +
+  '</button>' +
 '</div>'
         );
 
@@ -556,14 +590,17 @@ class RDFTransformUINode {
             .on('change',
                 (evt, divContainer, menuContainer) => {
                     evt.preventDefault();
+                    // @ts-ignore
                     $(evt.target)
                         .width(1)
                         .height(1)
                         .width(evt.target.scrollWidth)
                         .height(evt.target.scrollHeight);
+                    // @ts-ignore
                     $(divContainer)
                         .width(1)
                         .width(divContainer.context.scrollWidth);
+                    // @ts-ignore
                     $(menuContainer)
                         .width(1)
                         .width(menuContainer[0].scrollWidth);
@@ -577,6 +614,7 @@ class RDFTransformUINode {
         if (this.#tableDetails) {
             this.#tableDetails.remove();
         }
+        // @ts-ignore
         this.#tableDetails = $('<table />').addClass("rdf-transform-property-table-layout");
         this.#expandedDetailDiv.append(this.#tableDetails);
 
@@ -589,8 +627,11 @@ class RDFTransformUINode {
         //
         // Append "Add property..." to property list...
         //
-        var refAddProp = $('<a href="javascript:{}" />')
+        var refAddProp =
+            // @ts-ignore
+            $('<a href="javascript:{}" />')
             .addClass("action")
+            // @ts-ignore
             .text( $.i18n('rdft-dialog/add-prop') + '...' )
             .on("click",
                 (evt) => {
@@ -608,6 +649,7 @@ class RDFTransformUINode {
                     }
                 }
             );
+        // @ts-ignore
         var divPropDetail = $('<div></div>').addClass("padded");
         divPropDetail.append(refAddProp);
         this.#expandedDetailDiv.append(divPropDetail);
@@ -629,14 +671,20 @@ class RDFTransformUINode {
     }
 
     #showExpandable() {
+        // @ts-ignore
         $(this.#imgExpand).show();
+        // @ts-ignore
         $(this.#imgNone).hide();
+        // @ts-ignore
         $(this.#tdDetails).show();
     }
 
     #hideExpandable() {
+        // @ts-ignore
         $(this.#imgExpand).hide();
+        // @ts-ignore
         $(this.#imgNone).show();
+        // @ts-ignore
         $(this.#tdDetails).hide();
     }
 

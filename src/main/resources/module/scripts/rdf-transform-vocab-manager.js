@@ -3,7 +3,7 @@
  *
  *  The Vocabulary Manager UI for the RDF Transform Dialog.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ class RDFTransformVocabManager {
     show(onDone) {
         // Load RDF Transform's Vocabulary Manager Dialog...
         var dialog =
+            // @ts-ignore
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-vocab-manager.html"))
                 .filter('.dialog-frame');
 
@@ -40,8 +41,11 @@ class RDFTransformVocabManager {
         //      RDF Transform Vocabulary Manager instance...
         this.#elements = DOM.bind(dialog);
 
+        // @ts-ignore
         this.#elements.dialogHeader.html(       $.i18n('rdft-vocab/header')          );
+        // @ts-ignore
         this.#elements.buttonAddNamespace.html( $.i18n('rdft-buttons/add-namespace') );
+        // @ts-ignore
         this.#elements.buttonOK.html(           $.i18n('rdft-buttons/ok')            );
 
         this.#elements.buttonAddNamespace
@@ -75,6 +79,7 @@ class RDFTransformVocabManager {
     #handlerRemove(strPrefix) {
         return (evtHandler) => {
             evtHandler.preventDefault();
+            // @ts-ignore
             var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
 
             Refine.postCSRF(
@@ -84,6 +89,7 @@ class RDFTransformVocabManager {
                 },
                 (data) => {
                     if (data.code === "error") {
+                        // @ts-ignore
                         alert($.i18n('rdft-vocab/error-deleting') + ': ' + strPrefix);
                     }
                     else {
@@ -101,10 +107,13 @@ class RDFTransformVocabManager {
         return (evtHandler) => {
             evtHandler.preventDefault();
             if ( window.confirm(
+                    // @ts-ignore
                     $.i18n('rdft-vocab/desc-one') + ' "' + strNamespace + '"\n' +
+                    // @ts-ignore
                     $.i18n('rdft-vocab/desc-two') ) )
             {
                 var dismissBusy =
+                    // @ts-ignore
                     DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
 
                 Refine.postCSRF(
@@ -115,6 +124,7 @@ class RDFTransformVocabManager {
                     },
                     (data) => {
                         if (data.code === "error") {
+                            // @ts-ignore
                             alert($.i18n('rdft-vocab/alert-wrong') + ': ' + data.message);
                         }
                         this.#renderBody();
@@ -130,10 +140,15 @@ class RDFTransformVocabManager {
         var table = this.#elements.namespacesTable;
         table.empty();
         table.append(
+            // @ts-ignore
             $('<tr>').addClass('rdf-transform-table-even')
+            // @ts-ignore
             .append($('<th/>').text($.i18n('rdft-vocab/prefix')))
+            // @ts-ignore
             .append($('<th/>').text($.i18n('rdft-vocab/iri')))
+            // @ts-ignore
             .append($('<th/>').text($.i18n('rdft-vocab/delete')))
+            // @ts-ignore
             .append($('<th/>').text($.i18n('rdft-vocab/refresh')))
         );
 
@@ -142,23 +157,31 @@ class RDFTransformVocabManager {
         for (const strPrefix in theNamespaces) {
             const strNamespace = theNamespaces[strPrefix];
             /** @type {HTMLElement} */
-            // @ts-ignore
             var htmlRemoveNamespace =
+                // @ts-ignore
                 $('<a/>')
+                // @ts-ignore
                 .text( $.i18n('rdft-vocab/delete') )
                 .attr('href', '#')
                 .on("click", this.#handlerRemove(strPrefix) );
             /** @type {HTMLElement} */
-            // @ts-ignore
             var htmlRefreshNamespace =
+                // @ts-ignore
                 $('<a/>')
+                // @ts-ignore
                 .text( $.i18n('rdft-vocab/refresh') )
                 .attr('href', '#')
                 .on("click", this.#handlerRefresh(strPrefix, strNamespace) );
-            var tr = $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
+            var tr =
+                // @ts-ignore
+                $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
+                // @ts-ignore
                 .append( $('<td>').text(strPrefix) )
+                // @ts-ignore
                 .append( $('<td>').text(strNamespace) )
+                // @ts-ignore
                 .append( $('<td>').html(htmlRemoveNamespace) )
+                // @ts-ignore
                 .append( $('<td>').html(htmlRefreshNamespace) );
             table.append(tr);
             bEven = !bEven;

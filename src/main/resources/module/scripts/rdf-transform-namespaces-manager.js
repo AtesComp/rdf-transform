@@ -3,7 +3,7 @@
  *
  *  Manages the Namespaces for the current RDF Transform.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ class RDFTransformNamespacesManager {
             }
             // We might have namespace errors...
             if (bError) {
+                // @ts-ignore
                 alert( $.i18n('rdft-vocab/error-retrieve-default') );
             }
         }
@@ -87,6 +88,7 @@ class RDFTransformNamespacesManager {
         return new Promise(
             (resolve, reject) => {
                 // GET default namespaces in ajax
+                // @ts-ignore
                 $.ajax(
                     {   url  : "command/rdf-transform/get-default-namespaces",
                         type : "GET",

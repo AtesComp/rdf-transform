@@ -3,7 +3,7 @@
  *
  *  Gets the RDF Transform global preferences from the server.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -57,13 +57,17 @@ public class PreferencesCommand extends Command {
 
             // Get Preferences...
             strPreferences =
-                "{ \"iVerbosity\" : " +     Util.getVerbose() + ", " +
-                  "\"iExportLimit\" : " +   Util.getExportLimit() + ", " +
-                  "\"bPreviewStream\" : " + Util.isPreviewStream() + ", " +
-                  "\"bDebugMode\" : " +     Util.isDebugMode() + ", " +
-                  "\"bDebugJSON\" : " +     Util.isDebugJSON() + ", " +
-                  "\"iSampleLimit\" : " +   Util.getSampleLimit() + "" +
-                  " }";
+                "{ \"iVerbosity\" : " +     Util.getVerbose()      + ",\n" +
+                "  \"iExportLimit\" : " +   Util.getExportLimit()  + ",\n" +
+                "  \"bPreviewStream\" : " + Util.isPreviewStream() + ",\n" +
+                "  \"bDebugMode\" : " +     Util.isDebugMode()     + ",\n" +
+                "  \"bDebugJSON\" : " +     Util.isDebugJSON()     + ",\n" +
+                // NOTE: Use DOUBLE quotes to encapsulate SINGLE quotes used in VocabQuery... strings.
+                "  \"strVocabQueryPrefixes\" : \""   + Util.getVocabQueryPrefixes()   + "\",\n" +
+                "  \"strVocabQueryClasses\" : \""    + Util.getVocabQueryClasses()    + "\",\n" +
+                "  \"strVocabQueryProperties\" : \"" + Util.getVocabQueryProperties() + "\",\n" +
+                "  \"iSampleLimit\" : " +   Util.getSampleLimit()  + "\n" +
+                "}";
         }
         catch (Exception ex) { // ...any other exception...
             if ( Util.isDebugMode() ) PreferencesCommand.logger.error("DEBUG: Preferences: Exception: " + ex.getMessage(), ex);

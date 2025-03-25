@@ -3,7 +3,7 @@
  *
  *  Manages the resources for the RDF Transform dialog.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,7 +43,9 @@ class RDFTransformResourceDialog {
         // Can we finish?  If not, there is no point in continuing...
         if ( ! this.#onDone ) {
             alert(
+                // @ts-ignore
                 $.i18n('rdft-dialog/error') + "\n" +
+                // @ts-ignore
                 $.i18n("rdft-dialog/missing-proc") );
             return;
         }
@@ -52,6 +54,7 @@ class RDFTransformResourceDialog {
         menu.html(
 '<div id="rdf-transform-menu-search" class="rdf-transform-menu-search">' +
   '<span>' +
+    // @ts-ignore
     $.i18n('rdft-dialog/search-for') + ' ' + this.#strLookForType + ":" +
   '</span>' +
   '<input type="text" bind="rdftNewResourceIRI" >' +
@@ -59,6 +62,7 @@ class RDFTransformResourceDialog {
         );
 
         MenuSystem.showMenu(menu, () => {} );
+        // @ts-ignore
         MenuSystem.positionMenuLeftRight(menu, $(this.#elemPosition));
 
         var elements = DOM.bind(menu);
@@ -151,7 +155,9 @@ class RDFTransformResourceDialog {
                 }
                 else {
                     alert(
+                        // @ts-ignore
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
+                        // @ts-ignore
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
                         "Invalid Resource object for selection!\n" + // TODO: $.i18n()
                         "IRI: " + strIRI
@@ -254,6 +260,7 @@ class RDFTransformResourceDialog {
                         // NOTE: We are passing a function to RDFTransformNamespacesManager.addNamespace() which,
                         //      in turn, passes it as an event function to RDFTransformNamespaceAdder.show().
                         this.#dialog.getNamespacesManager().addNamespace(
+                            // @ts-ignore
                             $.i18n('rdft-dialog/unknown-pref') + ': <em>' + strPrefix + '</em> ',
                             strPrefix,
                             (strResPrefix) => {
@@ -331,7 +338,9 @@ class RDFTransformResourceDialog {
                 }
                 else {
                     alert(
+                        // @ts-ignore
                         $.i18n('rdft-dialog/alert-iri') + "\n" +
+                        // @ts-ignore
                         $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
                         "Invalid Resource object for selection!\n" + // TODO: $.i18n()
                         "IRI: " + strIRI
@@ -349,6 +358,7 @@ class RDFTransformResourceDialog {
         params.project = theProject.id;
         params.type = strType;
 
+        // @ts-ignore
         var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/adding-term') + ' ' + params.iri);
 
         Refine.postCSRF(
@@ -356,6 +366,7 @@ class RDFTransformResourceDialog {
             params,
             (data) => {
                 if (data.code === "error") {
+                    // @ts-ignore
                     alert($.i18n('rdft-vocab/error-adding-term') + ': [' + params.iri + "]");
                 }
                 dismissBusy();

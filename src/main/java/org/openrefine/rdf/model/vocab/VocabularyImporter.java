@@ -4,7 +4,7 @@
  *  A Vocabulary Importer class used to manage and parse vocabulary imports for
  *  an RDF Transform.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,14 +22,12 @@
 package org.openrefine.rdf.model.vocab;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryException;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
@@ -48,47 +46,6 @@ public class VocabularyImporter {
     static private final Logger logger = LoggerFactory.getLogger("RDFT:VocabImporter");
 
     //static private final String USER_AGENT = "OpenRefine.Extension.RDF-Transform";
-
-    static private final String PREFIXES = // Default Namespaces...
-        "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
-        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-        "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
-        "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ";
-
-    static private final String CLASSES_QUERY =
-        VocabularyImporter.PREFIXES +
-        "SELECT ?resource ?label ?en_label ?description ?en_description ?definition ?en_definition " +
-        "WHERE { " +
-        "?resource rdf:type ?type . " +
-        "OPTIONAL { ?resource rdfs:label ?label . } " +
-        "OPTIONAL { ?resource rdfs:label ?en_label . " +
-                    "FILTER langMatches( lang(?en_label), \"EN\" ) } " +
-        "OPTIONAL { ?resource rdfs:comment ?description . } " +
-        "OPTIONAL { ?resource rdfs:comment ?en_description . " +
-                    "FILTER langMatches( lang(?en_description), \"EN\" ) } " +
-        "OPTIONAL { ?resource skos:definition ?definition . } " +
-        "OPTIONAL { ?resource skos:definition ?en_definition . " +
-                    "FILTER langMatches( lang(?en_definition), \"EN\" ) } " +
-        "VALUES ?type { rdfs:Class owl:Class } " +
-        "FILTER regex(str(?resource), \"^%s\") }"; // ..starts with given namespace
-
-
-    static private final String PROPERTIES_QUERY =
-        VocabularyImporter.PREFIXES +
-        "SELECT ?resource ?label ?en_label ?description ?en_description ?definition ?en_definition " +
-        "WHERE { " +
-        "?resource rdf:type ?type . " +
-        "OPTIONAL { ?resource rdfs:label ?label . } " +
-        "OPTIONAL { ?resource rdfs:label ?en_label . " +
-                    "FILTER langMatches( lang(?en_label), \"EN\" ) } " +
-        "OPTIONAL { ?resource rdfs:comment ?description . } " +
-        "OPTIONAL { ?resource rdfs:comment ?en_description . " +
-                    "FILTER langMatches( lang(?en_description), \"EN\" ) } " +
-        "OPTIONAL { ?resource skos:definition ?definition.} " +
-        "OPTIONAL { ?resource skos:definition ?en_definition . " +
-                    "FILTER langMatches( lang(?en_definition), \"EN\" ) } " +
-        "VALUES ?type { rdf:Property owl:ObjectProperty owl:DatatypeProperty } " +
-        "FILTER regex(str(?resource), \"^%s\") }"; // ..starts with given namespace
 
     private String strPrefix;
     private String strNamespace;
@@ -200,7 +157,8 @@ public class VocabularyImporter {
 
         Query query = null;
         try {
-            String strQuery = String.format( VocabularyImporter.CLASSES_QUERY, this.strNamespace );
+            String strRawQuery = Util.getVocabQueryPrefixes() + " " + Util.getVocabQueryClasses();
+            String strQuery = String.format(strRawQuery, this.strNamespace);
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create class query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
@@ -253,7 +211,8 @@ public class VocabularyImporter {
 
         Query query = null;
         try {
-            String strQuery = String.format( VocabularyImporter.PROPERTIES_QUERY, this.strNamespace );
+            String strRawQuery = Util.getVocabQueryPrefixes() + " " + Util.getVocabQueryProperties();
+            String strQuery = String.format(strRawQuery, this.strNamespace);
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create property query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }

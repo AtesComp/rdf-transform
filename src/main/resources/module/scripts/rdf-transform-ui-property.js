@@ -3,7 +3,7 @@
  *
  *  The Property Manager UI for the RDF Transform Dialog.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -89,20 +89,25 @@ class RDFTransformUIProperty {
         //      column with expression (Variable).
 
         this.#imgExpand =
+            // @ts-ignore
             $('<img />')
             .attr("src", ModuleWirings[RDFTransform.KEY] +
                         (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"))
             .on("click",
                 (evt) => {
                     this.#bIsExpanded = !this.#bIsExpanded;
+                    // @ts-ignore
                     $(evt.currentTarget)
                         .attr("src", ModuleWirings[RDFTransform.KEY] +
                                 (this.#bIsExpanded ? "images/collapse.png" : "images/expand.png"));
                     this.#show();
                 }
             );
+        // @ts-ignore
         this.#imgNone = $('<img />');
+        // @ts-ignore
         this.#imgArrowStart = $('<img />').attr("src", ModuleWirings[RDFTransform.KEY] + "images/arrow-start.png");
+        // @ts-ignore
         this.#imgArrowEnd = $('<img />').attr("src", ModuleWirings[RDFTransform.KEY] + "images/arrow-end.png");
     }
 
@@ -186,17 +191,22 @@ class RDFTransformUIProperty {
         this.#tdToggle  = this.#tr.insertCell(); // 1
         this.#tdDetails = this.#tr.insertCell(); // 2
 
+        // @ts-ignore
         this.#collapsedDetailDiv = $('<div />').addClass("padded");
+        // @ts-ignore
         this.#expandedDetailDiv = $('<div />').addClass("rdf-transform-node-container");
 
+        // @ts-ignore
         $(this.#tdMain)
             .addClass("rdf-transform-property-main")
             .addClass("padded");
+        // @ts-ignore
         $(this.#tdToggle)
             .addClass("rdf-transform-property-toggle")
             .addClass("padded")
             .append(this.#imgExpand)
             .append(this.#imgNone);
+        // @ts-ignore
         $(this.#tdDetails)
             .addClass("rdf-transform-property-details")
             .append(this.#collapsedDetailDiv)
@@ -223,6 +233,7 @@ class RDFTransformUIProperty {
 
     #renderMain() {
         var refProperty =
+            // @ts-ignore
             $('<a href="javascript:{}" />')
                 .addClass("rdf-transform-property")
                 .on("click",
@@ -234,12 +245,16 @@ class RDFTransformUIProperty {
                     }
                 );
         refProperty.append(
+            // @ts-ignore
             $("<span />")
                 .addClass("rdf-transform-property-label")
                 .text( RDFTransformCommon.shortenResource( this.#getPropertyName(this.#property) ) )
         );
 
-        var imgDeleteProp = $('<img />')
+        var imgDeleteProp =
+            // @ts-ignore
+            $('<img />')
+            // @ts-ignore
             .attr("title", $.i18n('rdft-dialog/remove-property'))
             .attr("src", ModuleWirings[RDFTransform.KEY] + "images/delete.png")
             .css("cursor", "pointer")
@@ -255,6 +270,7 @@ class RDFTransformUIProperty {
                 }
             );
 
+        // @ts-ignore
         $(this.#tdMain)
             .empty()
             .append(imgDeleteProp, this.#imgArrowStart, refProperty, this.#imgArrowEnd);
@@ -264,6 +280,7 @@ class RDFTransformUIProperty {
         if (this.#tableDetails) {
             this.#tableDetails.remove();
         }
+        // @ts-ignore
         this.#tableDetails = $('<table />').addClass("rdf-transform-node-table-layout");
         this.#expandedDetailDiv.append(this.#tableDetails);
 
@@ -276,8 +293,11 @@ class RDFTransformUIProperty {
         //
         // Append "Add object..." to node list...
         //
-        var refAddObjNode = $('<a href="javascript:{}" />')
+        var refAddObjNode =
+            // @ts-ignore
+            $('<a href="javascript:{}" />')
             .addClass("action")
+            // @ts-ignore
             .text( $.i18n('rdft-dialog/add-object') + '...' )
             .on("click",
                 () => {
@@ -294,6 +314,7 @@ class RDFTransformUIProperty {
                     }
                 }
             );
+        // @ts-ignore
         var divNodeDetail = $('<div />').addClass("padded");
         divNodeDetail.append(refAddObjNode);
         this.#expandedDetailDiv.append(divNodeDetail);
@@ -315,12 +336,16 @@ class RDFTransformUIProperty {
     }
 
     #showExpandable() {
+        // @ts-ignore
         $(this.#imgExpand).show();
+        // @ts-ignore
         $(this.#imgNone).hide();
     }
 
     #hideExpandable() {
+        // @ts-ignore
         $(this.#imgExpand).hide();
+        // @ts-ignore
         $(this.#imgNone).show();
     }
 

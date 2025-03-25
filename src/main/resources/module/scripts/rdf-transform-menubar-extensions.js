@@ -5,7 +5,7 @@
  *  Export Manager.
  *  NOTE: Executes the menu for display with the end code.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ class RDFExporterMenuBar
               Note that the language is set by the 'userLang' user preference setting.  You can change that by
               clicking on 'Language Settings' on the landing page.
             */
+           // @ts-ignore
             await $.ajax({
                 url: "command/core/load-language?",
                 type: "POST",
@@ -72,6 +73,7 @@ class RDFExporterMenuBar
                     }
                 }
             }).fail(function( jqXhr, textStatus, errorThrown ) {
+                // @ts-ignore
                 var errorMessage = $.i18n('core-index/prefs-loading-failed');
                 if (errorMessage != "" && errorMessage != 'core-index/prefs-loading-failed') {
                     alert(errorMessage);
@@ -80,7 +82,9 @@ class RDFExporterMenuBar
                     alert( textStatus + ':' + errorThrown );
                 }
             });
+            // @ts-ignore
             $.i18n().load(dictionary, lang);
+            // @ts-ignore
             $.i18n( { locale: lang } );
         }
     }
@@ -104,6 +108,7 @@ class RDFExporterMenuBar
 
         objExports = {
             id : "rdf-transform",
+            // @ts-ignore
             label : $.i18n('rdft'),
             submenu : []
         };
@@ -113,12 +118,14 @@ class RDFExporterMenuBar
         //
         objTypeSubMenuItem = {
             id : "rdf-transform/pretty",
+            // @ts-ignore
             label : $.i18n('rdft-menu/export-pretty'),
             submenu : []
         };
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFXML",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-xml-pretty"),
             click : () => RDFExporterMenuBar.#exportRDF("RDFXML_PRETTY", "rdf")
         };
@@ -126,6 +133,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFTurtle",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-turtle-pretty"),
             click : () => RDFExporterMenuBar.#exportRDF("TURTLE_PRETTY", "ttl")
          } ;
@@ -133,6 +141,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFTriG",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-trig-pretty"),
             click : () => RDFExporterMenuBar.#exportRDF("TRIG_PRETTY", "trig")
         };
@@ -140,6 +149,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFJSONLD",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-jsonld-pretty"),
             click : () => RDFExporterMenuBar.#exportRDF("JSONLD_PRETTY", "jsonld")
         };
@@ -154,6 +164,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/pretty/exportRDFJSON",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-json-pretty"),
             click : () => RDFExporterMenuBar.#exportRDF("RDFJSON", "rj")
         };
@@ -166,6 +177,7 @@ class RDFExporterMenuBar
         //
         objTypeSubMenuItem = {
             id : "rdf-transform/stream",
+            // @ts-ignore
             label : $.i18n('rdft-menu/export-stream'),
             submenu : []
         };
@@ -174,6 +186,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFTurtle",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-turtle-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("TURTLE_BLOCKS", "ttl")
         };
@@ -181,6 +194,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFTriG",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-trig-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("TRIG_BLOCKS", "trig")
         };
@@ -190,6 +204,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNTriples",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-n-triples-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("NTRIPLES", "nt")
         };
@@ -197,6 +212,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNQuads",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-nquads-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("NQUADS", "nq")
         };
@@ -204,6 +220,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFTriX",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-trix-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("TRIX", "xml")
         };
@@ -213,6 +230,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFNull",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-null-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("RDFNULL", "rn")
         };
@@ -222,6 +240,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFProto",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-proto-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("RDF_PROTO", "rp")
         };
@@ -229,6 +248,7 @@ class RDFExporterMenuBar
 
         objTypeSubSubMenuItem = {
             id : "rdf-transform/stream/exportRDFThrift",
+            // @ts-ignore
             label : $.i18n("rdft-menu/rdf-thrift-stream"),
             click : () => RDFExporterMenuBar.#exportRDF("RDF_THRIFT", "rt")
         };
@@ -236,6 +256,7 @@ class RDFExporterMenuBar
 
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/stream/exportRDFBinaryRDF",
+        //    // @ts-ignore
         //    label : $.i18n("rdft-menu/rdf-binary"),
         //    click : () => RDFExporterMenuBar.#exportRDF("BinaryRDF", "brf")
         //};
@@ -243,6 +264,7 @@ class RDFExporterMenuBar
 
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/stream/exportRDFHDT",
+        //    // @ts-ignore
         //    label : $.i18n("rdft-menu/rdf-hdt"),
         //    click : () => RDFExporterMenuBar.#exportRDF("HDT", "hdt")
         //};
@@ -253,14 +275,16 @@ class RDFExporterMenuBar
         //
         // TODO: SPECIAL PRINTERS - Are these even doable???
         //
-        // objTypeSubMenuItem = {
-        //     id : "rdf-transform/special",
-        //     label : $.i18n('rdft-menu/export-special'),
-        //     submenu : []
+        //objTypeSubMenuItem = {
+        //    id : "rdf-transform/special",
+        //    // @ts-ignore
+        //    label : $.i18n('rdft-menu/export-special'),
+        //    submenu : []
         // };
 
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/special/exportRDFa",
+        //    // @ts-ignore
         //    label : $.i18n("rdft-menu/rdf-a-special"),
         //    click : () => RDFExporterMenuBar.#exportRDF("RDFa", "xhtml")
         //};
@@ -268,6 +292,7 @@ class RDFExporterMenuBar
 
         //objTypeSubSubMenuItem = {
         //    id : "rdf-transform/special/exportRDFSHACLC",
+        //    // @ts-ignore
         //    label : $.i18n("rdft-menu/rdf-shaclc-special"),
         //    click : () => RDFExporterMenuBar.#exportRDF("SHACLC", "sc")
         //};
@@ -282,6 +307,7 @@ class RDFExporterMenuBar
         console.log('Exporting with Format: ' + format + ' Extension: ' + ext);
 
         if (! theProject.overlayModels.RDFTransform) {
+            // @ts-ignore
             alert( $.i18n("rdft-menu/alert-no-transform") );
             return;
         }
@@ -306,13 +332,16 @@ class RDFExporterMenuBar
 
         var form = document.createElement("form");
 
+        // @ts-ignore
         $(form)
         .css("display", "none")
         .attr("method", "post")
+        // @ts-ignore
         .attr("action", "command/core/export-rows/" +  strProjectName + "." + ext + "?" + $.param( {csrf_token: token} ))
         .attr("target", "gridworks-export");
 
         var appendField = (name, value) => {
+            // @ts-ignore
             $('<input />')
                 .attr("name", name)
                 .val(value)
@@ -333,10 +362,12 @@ class RDFExporterMenuBar
         barExtension.addExtensionMenu(
             {
                 "id"        : "rdf-transform",
+                // @ts-ignore
                 "label"     : $.i18n('rdft'),
                 "submenu"   : [
                     {
                         "id"    : "rdft/edit-rdf-transform",
+                        // @ts-ignore
                         "label" : $.i18n('rdft-menu/edit') + "...",
                         "click" : () => {
                             const theTransform = theProject.overlayModels.RDFTransform;
@@ -350,6 +381,7 @@ class RDFExporterMenuBar
                     },
                     {
                         "id"    : "rdft/reset-rdf-transform",
+                        // @ts-ignore
                         "label" : $.i18n('rdft-menu/reset') + "...",
                         "click" : () => {
                             // Use setTimeout() to end menuitem and display dialog...

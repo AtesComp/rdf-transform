@@ -3,7 +3,7 @@
  *
  *  The RDF Transform Project ReadMe Markdown.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,9 +45,10 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 
 <!-- RDF Transform Version Control -->
 ### Latest Release
-[RDF Transform v2.2.4](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.4/rdf-transform-2.2.4.zip)
+[RDF Transform v2.3.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.3.0/rdf-transform-2.3.0.zip)
 
 ### Previous Releases
+[RDF Transform v2.2.4](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.4/rdf-transform-2.2.4.zip)
 [RDF Transform v2.2.3](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.3/rdf-transform-2.2.3.zip)<br />
 [RDF Transform v2.2.2](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.2/rdf-transform-2.2.2.zip)<br />
 [RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.1/rdf-transform-2.2.1.zip)<br />
@@ -63,6 +64,12 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 
 ## Install
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for more information.
+
+## Build
+In VSCode, there are several task to build and configure the extension to run:
+* build clean assembly - Cleans, updates dependencies, and builds the extension's Maven assembly 
+* build assembly - (Default) Builds the extension's Maven assembly
+* update ext - Updates the extension location with the new build package
 
 ## Issues
 ***General interaction issue with OpenRefine versions, Web Browsers, OSes, etc., not specifically code related.***
@@ -84,7 +91,9 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 #### Linux
 RDF Transform has been tested against OpenRefine 3.5.2 and above on a modern Debian-based OS (Ubuntu derivative) using Chrome. In general, use the latest OpenRefine release with the latest RDF Transform extension release.
 
-Use the Linux distributions preferred package manager to ensure--at a minimum--that a Java 11 JRE version is installed. RDF Transform requires Java 11 to 21. Use a java version manager, such as `update-java-alternatives` to ensure a working default Java version is used.
+RDF Transform requires Java 11 to 21. Use the Linux distributions preferred package manager to ensure--at a minimum--that a Java 11 JRE version is installed.
+* Check your java version with `java -version` 
+* Use a java version manager, such as `update-java-alternatives` to ensure a working default Java version is used.
 
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
 
@@ -93,12 +102,12 @@ Test runs on MS Windows 10 have indicated the JVM opertate slightly different th
 1. The version of Simile Butterfly that processes the limited server-side JavaScript engine can fail on unused declarative statements such as "importPackage()". If the package is not found, Windows systems may silently fail to run any following statements whereas Linux systems will continue. To mitigate against server-side JavaScript issues, all possible server-side JavaScript code has been migrated to Java.
 2. The JVM relies on OS specific services to process network connections. It may process web-based content negotiation differently on a particular OS. On Windows, if the URL does not produce the expected response, negotiation and the related response processing may lock the process for an unreasonably long time whereas Linux may fail safe and quickly. To mitigate against web content negotiation issues, a Faulty Content Negotiation processor is used identify known fault intolerant processing.  As faults become known, they are added to the processor.
 
-The Windows versions of OpenRefine bundled with a Java 11 JRE. Since RDF Transform requires Java 11 to 21, no upgrade is required.
+The Windows versions of OpenRefine are bundled with a Java 11 JRE. Since RDF Transform requires Java 11 to 21, no upgrade is required.
 
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
 
 #### Mac
-The MacOS versions of OpenRefine bundled with a Java 11 JRE. Since RDF Transform requires Java 11 to 21, no upgrade is required.
+The MacOS versions of OpenRefine are bundled with a Java 11 JRE. Since RDF Transform requires Java 11 to 21, no upgrade is required.
 
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
 

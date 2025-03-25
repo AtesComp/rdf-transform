@@ -3,7 +3,7 @@
  *
  *  The Util Node class use to hold generic static utility functions.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -186,6 +186,44 @@ public class Util {
             put("bPreviewStream", false);
             put("bDebugMode", false);
             put("bDebugJSON", false);
+            put("strVocabQueryPrefixes", // Only use SINGLE quotes if needed
+                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+                "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
+                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> "
+            );
+            put("strVocabQueryClasses",  // Only use SINGLE quotes if needed
+                "SELECT ?resource ?label ?en_label ?description ?en_description ?definition ?en_definition " +
+                "WHERE { " +
+                "?resource rdf:type ?type . " +
+                "OPTIONAL { ?resource rdfs:label ?label . } " +
+                "OPTIONAL { ?resource rdfs:label ?en_label . " +
+                            "FILTER langMatches( lang(?en_label), 'EN' ) } " +
+                "OPTIONAL { ?resource rdfs:comment ?description . } " +
+                "OPTIONAL { ?resource rdfs:comment ?en_description . " +
+                            "FILTER langMatches( lang(?en_description), 'EN' ) } " +
+                "OPTIONAL { ?resource skos:definition ?definition . } " +
+                "OPTIONAL { ?resource skos:definition ?en_definition . " +
+                            "FILTER langMatches( lang(?en_definition), 'EN' ) } " +
+                "VALUES ?type { rdfs:Class owl:Class } " +
+                "FILTER regex(str(?resource), '^%s') }"
+            );
+            put("strVocabQueryProperties", // Only use SINGLE quotes if needed
+                "SELECT ?resource ?label ?en_label ?description ?en_description ?definition ?en_definition " +
+                "WHERE { " +
+                "?resource rdf:type ?type . " +
+                "OPTIONAL { ?resource rdfs:label ?label . } " +
+                "OPTIONAL { ?resource rdfs:label ?en_label . " +
+                            "FILTER langMatches( lang(?en_label), 'EN' ) } " +
+                "OPTIONAL { ?resource rdfs:comment ?description . } " +
+                "OPTIONAL { ?resource rdfs:comment ?en_description . " +
+                            "FILTER langMatches( lang(?en_description), 'EN' ) } " +
+                "OPTIONAL { ?resource skos:definition ?definition.} " +
+                "OPTIONAL { ?resource skos:definition ?en_definition . " +
+                            "FILTER langMatches( lang(?en_definition), 'EN' ) } " +
+                "VALUES ?type { rdf:Property owl:ObjectProperty owl:DatatypeProperty } " +
+                "FILTER regex(str(?resource), '^%s') }"
+            );
             // Settable only in RDF Transform UI...
             put("iSampleLimit", 20);
         }};
@@ -527,7 +565,7 @@ public class Util {
     }
 
     //
-    // Preview Stream:
+    // Preview Stream: settable via OpenRefine Preferences and internally
     //
     // The preview preference: Pretty or Stream.
     // NOTE: When set to false, use Pretty.
@@ -547,6 +585,18 @@ public class Util {
 
     static public boolean isDebugJSON() {
         return (boolean) Util.Preferences.get("bDebugJSON");
+    }
+
+    static public String getVocabQueryPrefixes() {
+        return (String) Util.Preferences.get("strVocabQueryPrefixes");
+    }
+
+    static public String getVocabQueryClasses() {
+        return (String) Util.Preferences.get("strVocabQueryClasses");
+    }
+
+    static public String getVocabQueryProperties() {
+        return (String) Util.Preferences.get("strVocabQueryProperties");
     }
 
     //
@@ -576,15 +626,15 @@ public class Util {
         //
         // Output RDFTranform Preferences...
         //
-        String strPrefs = "Preferences: { ";
-        String strComma = ", ";
+        String strPrefs = "Preferences: {\n";
+        String strComma = ",\n";
         boolean bNotFirstEntry = false;
         Set<Map.Entry<String, Object>> entrySet = Preferences.entrySet();
         for (Map.Entry<String, Object> entry : entrySet) {
             if (bNotFirstEntry) {
                 strPrefs += strComma;
             }
-            strPrefs += entry.getKey() + ":" + entry.getValue().toString();
+            strPrefs += entry.getKey() + " : " + entry.getValue().toString();
             bNotFirstEntry = true;
         }
         strPrefs +=   " }";
@@ -692,6 +742,54 @@ public class Util {
         if (obj != null) {
             try {
                 Util.Preferences.put("bDebugJSON", Boolean.parseBoolean( obj.toString() ) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+
+        //
+        // Set Vocabulary Query Prefixes...
+        //
+        // The Vocabulary Query Prefixes (strVocabQueryPrefixes) is used to manage the external vocabulary queries.
+        //  The prefixes are appended to the Vocabulary Classes and Properties Queries.
+        //
+        obj = prefStore.get("RDFTransform.strVocabQueryPrefixes"); // RDFTransform Debug JSON Mode
+        if (obj != null) {
+            try {
+                Util.Preferences.put("strVocabQueryPrefixes", String.valueOf(obj) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+
+        //
+        // Set Vocabulary Query Classes...
+        //
+        // The Vocabulary Query Classes (strVocabQueryClasses) is used to manage the external vocabulary queries.
+        //  The class query should represent a SPARQL query to extracts Classes from an ontology.
+        //
+        obj = prefStore.get("RDFTransform.strVocabQueryClasses"); // RDFTransform Debug JSON Mode
+        if (obj != null) {
+            try {
+                Util.Preferences.put("strVocabQueryClasses", String.valueOf(obj) );
+            }
+            catch (Exception ex) {
+                // No problem: take default and continue...
+            }
+        }
+
+        //
+        // Set Vocabulary Query Properties...
+        //
+        // The Vocabulary Query Properties (strVocabQueryProperties) is used to manage the external vocabulary queries.
+        //  The properties query should represent a SPARQL query to extracts Properties from an ontology.
+        //
+        obj = prefStore.get("RDFTransform.strVocabQueryProperties"); // RDFTransform Debug JSON Mode
+        if (obj != null) {
+            try {
+                Util.Preferences.put("strVocabQueryProperties", String.valueOf(obj) );
             }
             catch (Exception ex) {
                 // No problem: take default and continue...

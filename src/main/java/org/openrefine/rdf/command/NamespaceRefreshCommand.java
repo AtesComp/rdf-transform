@@ -5,7 +5,7 @@
  *  the current ontology terms and reimporting the ontology terms to the
  *  Lucene indexer.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

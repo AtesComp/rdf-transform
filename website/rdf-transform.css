@@ -3,7 +3,7 @@
  *
  *  The General CSS for the RDF Transform Website.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -116,10 +116,4 @@ ul.features {
   /*padding-left: 3.2em;*/
   min-width: 17em;
   max-width: 31em;
-}
-
-#features_title {
-  /*margin-left: 460px;*/
-  /*margin-bottom:0;*/
-  /*padding-left: 3.2em;*/
 }

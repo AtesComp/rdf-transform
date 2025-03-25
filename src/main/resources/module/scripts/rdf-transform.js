@@ -5,7 +5,7 @@
  *      Class RDFTransform - holds a RDF Transform structure
  *      Class RDFTransformDialog - UI to manage an RDF Transform structure
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -100,13 +100,18 @@ class RDFTransform {
         propertyMappings : [] ,
     };
 
-    // Setup default Preferences...
+    // Setup dummy default Preferences...
+    //  NOTE: Not real defaults. See Util.java Preferences for actual defaults.
     static gPreferences = {
-        iVerbosity : 0 ,
-        iExportLimit : 10737418 ,
-        bPreviewStream : null ,
+        iVerbosity : null ,
+        iExportLimit : null ,
+        bPreviewStream : false ,
         bDebugMode : false ,
         bDebugJSON : false ,
+        strVocabQueryPrefixes : "",
+        strVocabQueryClasses : "",
+        strVocabQueryProperties : "",
+
         iSampleLimit : null ,
     };
 
@@ -133,11 +138,13 @@ class RDFTransform {
         if (RDFTransform.gbRowBased) { // ...Row Based...
             RDFTransform.gstrExpressionIndex = RDFTransform.gstrExpressionIndexRow;
             RDFTransform.gstrValueSourceIndex = RDFTransform.gstrValueSourceRow;
+            // @ts-ignore
             RDFTransform.gstrIndexTitle = $.i18n("rdft-dialog/title-row");
         }
         else { // ...Record Based...
             RDFTransform.gstrExpressionIndex = RDFTransform.gstrExpressionIndexRec;
             RDFTransform.gstrValueSourceIndex = RDFTransform.gstrValueSourceRec;
+            // @ts-ignore
             RDFTransform.gstrIndexTitle = $.i18n("rdft-dialog/title-rec");
         }
 
@@ -208,11 +215,14 @@ class RDFTransformDialog {
         RDFTransform.setDefaults();
 
         this.#imgLargeSpinner =
+            // @ts-ignore
             $('<img />')
                 .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/large_spinner.gif')
+                // @ts-ignore
                 .attr('title', $.i18n('rdft-dialog/loading') + '...');
 
         this.#imgLineBounce =
+            // @ts-ignore
             $('<img />')
                 .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/line_bounce.gif');
 
@@ -490,6 +500,7 @@ class RDFTransformDialog {
     #buildBody() {
         // Load RDF Transform's Main Dialog...
         this.#dlgMain =
+            // @ts-ignore
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform.html"))
                 .filter(".rdf-transform-dialog-frame");
         this.#dlgMain.resizable();
@@ -497,43 +508,66 @@ class RDFTransformDialog {
         // Connect all the Main Dialog's "bind" elements to this RDF Transform instance...
         this.#elements = DOM.bind(this.#dlgMain);
 
+        // @ts-ignore
         this.#elements.dialogHeader.text(           $.i18n('rdft-dialog/header') );
+        // @ts-ignore
         this.#elements.rdftDescription.text(        $.i18n('rdft-dialog/desc') );
+        // @ts-ignore
         this.#elements.rdftDocLink.text(            $.i18n('rdft-dialog/doc-link') );
+        // @ts-ignore
         this.#elements.rdftBaseIRIText.text(        $.i18n('rdft-dialog/base-iri') + ':' );
+        // @ts-ignore
         this.#elements.rdftBaseIRIValue.text(       $.i18n('rdft-dialog/base-iri-waiting') + "..." );
+        // @ts-ignore
         this.#elements.rdftEditBaseIRI.text(        $.i18n('rdft-dialog/edit') );
+        // @ts-ignore
         this.#elements.rdftTabTransformText.text(   $.i18n('rdft-dialog/tab-transform') );
+        // @ts-ignore
         this.#elements.rdftTabPreviewText.text(     $.i18n('rdft-dialog/tab-preview') );
+        // @ts-ignore
         this.#elements.rdftPreviewShown.text(       $.i18n('rdft-dialog/shown-below') + ":" );
+        // @ts-ignore
         this.#elements.rdftPreviewStreamLabel.text( $.i18n("rdft-menu/rdf-trig-stream") );
+        // @ts-ignore
         this.#elements.rdftPreviewPrettyLabel.text( $.i18n("rdft-menu/rdf-trig-pretty") );
+        // @ts-ignore
         this.#elements.rdftPrefixesText.text(       $.i18n('rdft-dialog/available-prefix') + ':' );
+        // @ts-ignore
         this.#elements.buttonAddRootNode.text(      $.i18n('rdft-buttons/add-root') );
+        // @ts-ignore
         this.#elements.buttonImpTemplate.text(      $.i18n('rdft-buttons/import-template') );
+        // @ts-ignore
         this.#elements.buttonExpTemplate.text(      $.i18n('rdft-buttons/export-template') );
+        // @ts-ignore
         this.#elements.buttonSaveTransform.text(    $.i18n('rdft-buttons/save') );
+        // @ts-ignore
         this.#elements.buttonOK.text(               $.i18n('rdft-buttons/ok') );
+        // @ts-ignore
         this.#elements.buttonCancel.text(           $.i18n('rdft-buttons/cancel') );
 
         var imgAddPrefix =
+            // @ts-ignore
             $('<img />')
             .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/add.png')
             .css('cursor', 'pointer');
         this.#elements.buttonAddPrefix
             .append(imgAddPrefix)
+            // @ts-ignore
             .append(" " + $.i18n('rdft-prefix/add'));
 
         var imgManagePrefixes =
+            // @ts-ignore
             $('<img />')
             .attr('src', ModuleWirings[RDFTransform.KEY] + 'images/configure.png')
             .css('cursor', 'pointer');
         this.#elements.buttonManagePrefixes
             .append(imgManagePrefixes)
+            // @ts-ignore
             .append(" " + $.i18n('rdft-prefix/manage'));
 
         // TODO: Add refresh all button
 
+        // @ts-ignore
         const strPreviewText = $.i18n('rdft-dialog/sample-preview');
         this.#elements.rdftPreviewText.html( strPreviewText );
         this.#initPreviewSettings();
@@ -635,6 +669,7 @@ class RDFTransformDialog {
         this.#elements.rdftEditBaseIRI
             .on("click", (evt) => {
                     evt.preventDefault();
+                    // @ts-ignore
                     this.#editBaseIRI( $(evt.target) );
                 }
             );
@@ -702,6 +737,7 @@ class RDFTransformDialog {
             );
         this.#elements.rdftSampleLimit
             .on("focusout", (evt) => {
+                    // @ts-ignore
                     this.#editSampleLimit( $(evt.target) );
                 }
             );
@@ -709,11 +745,13 @@ class RDFTransformDialog {
         // Hook up the Preview Stream / Pretty Radio buttons...
         this.#elements.rdftPreviewStream
             .on("click", (evt) => {
+                    // @ts-ignore
                     this.#editPreviewStream( $(evt.target) );
                 }
             );
         this.#elements.rdftPreviewPretty
             .on("click", (evt) => {
+                    // @ts-ignore
                     this.#editPreviewStream( $(evt.target) );
                 }
             );
@@ -722,6 +760,7 @@ class RDFTransformDialog {
         this.#elements.buttonOK
             .on("click", () => {
                     this.#doSave();
+                    // @ts-ignore
                     $(document).off("keydown", this.#doKeypress);
                     DialogSystem.dismissUntil(this.#level - 1);
                 }
@@ -730,6 +769,7 @@ class RDFTransformDialog {
         // Hook up the Cancel Button...
         this.#elements.buttonCancel
             .on("click", () => {
+                // @ts-ignore
                 $(document).off("keydown", this.#doKeypress);
                 DialogSystem.dismissUntil(this.#level - 1);
             }
@@ -763,6 +803,7 @@ class RDFTransformDialog {
             );
 
         // Prevent OpenRefine from processing ESC and closing
+        // @ts-ignore
         $(document).on("keydown", this.#doKeypress);
     }
 
@@ -810,6 +851,7 @@ class RDFTransformDialog {
             {   onDone: (data) => { // callbacks
                     theProject.overlayModels.RDFTransform = theTransform;
                     if (data.code === "error") {
+                        // @ts-ignore
                         alert($.i18n('rdft-dialog/error') + ": " + "Save failed!"); // TODO: $.i18n()
                     }
                     else if (data.code === "pending") {
@@ -837,6 +879,9 @@ class RDFTransformDialog {
             RDFTransform.gPreferences.bPreviewStream = prefs.bPreviewStream;
             RDFTransform.gPreferences.bDebugMode     = prefs.bDebugMode;
             RDFTransform.gPreferences.bDebugJSON     = prefs.bDebugJSON;
+            RDFTransform.gPreferences.strVocabQueryPrefixes   = prefs.strVocabQueryPrefixes;
+            RDFTransform.gPreferences.strVocabQueryClasses    = prefs.strVocabQueryClasses;
+            RDFTransform.gPreferences.strVocabQueryProperties = prefs.strVocabQueryProperties;
             RDFTransform.gPreferences.iSampleLimit   = prefs.iSampleLimit;
         }
     }
@@ -857,6 +902,7 @@ class RDFTransformDialog {
         //
         this.waitOnData();
 
+        // @ts-ignore
         var table = $('<table />').addClass("rdf-transform-pane-table-layout");
         this.#tableNodes = table[0];
 
@@ -882,7 +928,8 @@ class RDFTransformDialog {
         */
         this.#elements.rdftPreviewData.empty().append(this.#imgLargeSpinner);
 
-        var params = { [RDFTransform.KEY] : JSON.stringify( theTransform ) };
+        var params = {};
+        params[RDFTransform.KEY] = JSON.stringify( theTransform );
         params.engine = JSON.stringify( ui.browsingEngine.getJSON() );
         if (RDFTransform.gPreferences.bPreviewStream != null) {
             params.bPreviewStream = RDFTransform.gPreferences.bPreviewStream;
@@ -926,8 +973,12 @@ class RDFTransformDialog {
         menu.html(
 '<div id="rdf-transform-base-iri-value">' +
   '<input type="text" bind="rdftNewBaseIRIValue" size="50" />' +
-  '<button class="button" bind="buttonApply">'  + $.i18n('rdft-buttons/apply')  + '</button>' +
-  '<button class="button" bind="buttonCancel">' + $.i18n('rdft-buttons/cancel') + '</button>' +
+  '<button class="button" bind="buttonApply">' +
+    // @ts-ignore
+    $.i18n('rdft-buttons/apply')  + '</button>' +
+  '<button class="button" bind="buttonCancel">' +
+    // @ts-ignore
+    $.i18n('rdft-buttons/cancel') + '</button>' +
 '</div>'
         );
 
@@ -976,6 +1027,7 @@ class RDFTransformDialog {
                 },
                 (data) => {
                     if (data.code === "error") {
+                        // @ts-ignore
                         alert($.i18n('rdft-dialog/error') + ": " + data.message);
                         return; // ...don't replace or update anything
                     }
@@ -1002,6 +1054,7 @@ class RDFTransformDialog {
         this.#elements.rdftPrefixesContainer.empty();
         for (const strPrefix in theNamespaces) {
             this.#elements.rdftPrefixesContainer.append(
+                // @ts-ignore
                 $('<span/>')
                     .addClass('rdf-transform-prefix-box')
                     .attr('title', theNamespaces[strPrefix])
@@ -1044,6 +1097,7 @@ class RDFTransformDialog {
 
     #initPreviewSettings() {
         this.#elements.rdftSampleLimitLabel.text( " " +
+            // @ts-ignore
             ( RDFTransform.gbRowBased ? $.i18n("rdft-dialog/sample-row") : $.i18n("rdft-dialog/sample-rec") )
         );
         this.#elements.rdftPreviewPretty.prop('checked', true); // ...default to pretty

@@ -3,7 +3,7 @@
  *
  *  Adds a Namespace to the current RDF Transform.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ class RDFTransformNamespaceAdder {
 
         // Load RDF Transform's Prefix Add Dialog...
         this.#dlgPrefixAdd =
+            // @ts-ignore
             $(DOM.loadHTML(RDFTransform.KEY, "scripts/dialogs/rdf-transform-prefix-add.html"))
                 .filter(".dialog-frame");
 
@@ -39,31 +40,55 @@ class RDFTransformNamespaceAdder {
         //      RDF Transform Namespace Adder instance...
         this.#elements = DOM.bind(this.#dlgPrefixAdd);
 
+        // @ts-ignore
         this.#elements.dialogHeader.html(                   $.i18n('rdft-prefix/header')          );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_prefix.html(    $.i18n('rdft-prefix/prefix') + ":"    );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_namespace.html( $.i18n('rdft-prefix/namespace') + ":" );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_voc.html(       $.i18n('rdft-prefix/vocab-terms')     );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_only.html(      $.i18n('rdft-prefix/prefix-add-only') );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_fetch.html(     $.i18n('rdft-prefix/fetch')           );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_imp.html(       $.i18n('rdft-prefix/import')          );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_file.html(      $.i18n('rdft-prefix/file') + ":"      );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_format.html(    $.i18n('rdft-prefix/format') + ":"    );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_auto.html(      $.i18n('rdft-prefix/auto')            );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_turtle.html(    $.i18n('rdft-prefix/turtle')          );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_rdfxml.html(    $.i18n('rdft-prefix/rdfxml')          );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_n3.html(        $.i18n('rdft-prefix/n3')              );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_ntriple.html(   $.i18n('rdft-prefix/ntriple')         );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_jsonld.html(    $.i18n('rdft-prefix/jsonld')          );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_nquads.html(    $.i18n('rdft-prefix/nquads')          );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_rdfjson.html(   $.i18n('rdft-prefix/rdfjson')         );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_trig.html(      $.i18n('rdft-prefix/trig')            );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_trix.html(      $.i18n('rdft-prefix/trix')            );
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_rdfthrift.html( $.i18n('rdft-prefix/rdfthrift')       );
 
+        // @ts-ignore
         this.#elements.rdf_transform_prefix_note.html( $.i18n('rdft-prefix/namespace-note') );
 
+        // @ts-ignore
         this.#elements.buttonOK.html(          $.i18n('rdft-buttons/ok')                   );
+        // @ts-ignore
         this.#elements.buttonCancel.html(      $.i18n('rdft-buttons/cancel')               );
+        // @ts-ignore
         this.#elements.buttonVocabImport.html( $.i18n('rdft-buttons/vocab-import') + "..." );
 
         this.#level = DialogSystem.showDialog(this.#dlgPrefixAdd);
@@ -104,10 +129,13 @@ class RDFTransformNamespaceAdder {
             var bDefinedPrefix = this.#namespacesManager.hasPrefix(strPrefix);
             if (bUndefinedNamespace || bDefinedPrefix) {
                 var strAlert =
+                    // @ts-ignore
                     $.i18n('rdft-prefix/prefix') +
                     ' "' + strPrefix + '" ' +
                     ( bUndefinedNamespace ?
+                        // @ts-ignore
                         $.i18n('rdft-prefix/must-define') :
+                        // @ts-ignore
                         $.i18n('rdft-prefix/already-defined')
                     );
                 alert(strAlert);
@@ -123,6 +151,7 @@ class RDFTransformNamespaceAdder {
             let funcSuccess = (data) => {
                 if (data.code === "error") {
                     alert(
+                        // @ts-ignore
                         $.i18n('rdft-vocab/error-adding') + ': ' + strPrefix + "\n" +
                         data.message );
                 }
@@ -137,12 +166,16 @@ class RDFTransformNamespaceAdder {
 
             if (strFetchOption === 'file') {
                 // Prepare the form values by id attributes...
+                // @ts-ignore
                 $('#vocab-project').val(theProject.id);
+                // @ts-ignore
                 $('#vocab-prefix').val(strPrefix);
+                // @ts-ignore
                 $('#vocab-namespace').val(strNamespace);
 
                 funcDismissBusy =
                     DialogSystem.showBusy(
+                        // @ts-ignore
                         $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
                         '<br />File: ' + this.#elements.file[0].files[0].name );
 
@@ -172,9 +205,11 @@ class RDFTransformNamespaceAdder {
                 postData.fetchURL  = strNamespace;
 
                 if (strFetchOption === 'web') {
+                    // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
                 }
                 else { // if (fetchOption === 'prefix') {
+                    // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
                 }
 
@@ -196,7 +231,9 @@ class RDFTransformNamespaceAdder {
         this.#elements.buttonVocabImport
         .on("click", () => {
                 this.#elements.vocab_import_table.show();
+                // @ts-ignore
                 $('#button-vocab-import').hide();
+                // @ts-ignore
                 $('#button-vocab-import').prop("disabled", "true");
             }
         );
@@ -205,6 +242,7 @@ class RDFTransformNamespaceAdder {
         .hide()
         .find('input[name="vocab_fetch_method"]')
         .on("click", (evt) => {
+                // @ts-ignore
                 var bHideUpload = ( $(evt.currentTarget).val() !== 'file' );
                 this.#elements.vocab_import_table
                 .find('.upload_file_inputs')
@@ -213,6 +251,7 @@ class RDFTransformNamespaceAdder {
         );
 
         this.#elements.prefix
+        // @ts-ignore
         .change( (evt) => { this.#suggestNamespace( $(evt.currentTarget).val() ); } )
         .focus();
     }
@@ -220,6 +259,7 @@ class RDFTransformNamespaceAdder {
     #suggestNamespace(strPrefix) {
         if ( ! this.#elements.namespace.val() )
         {
+            // @ts-ignore
             $.get(
                 'command/rdf-transform/suggest-namespace',
                 { "prefix": strPrefix },
@@ -231,10 +271,15 @@ class RDFTransformNamespaceAdder {
                             let strNamespaceNote = '(';
                             let strPrefixCC = '<a target="_blank" href="http://prefix.cc">prefix.cc</a>';
                             if ( this.#elements.message.text() ) {
-                                strNamespaceNote += $.i18n('rdft-prefix/suggestion') +
-                                    ' <em>' + strPrefixCC + '</em> ' + $.i18n('rdft-prefix/provided');
+                                strNamespaceNote +=
+                                    // @ts-ignore
+                                    $.i18n('rdft-prefix/suggestion') +
+                                    ' <em>' + strPrefixCC + '</em> ' +
+                                    // @ts-ignore
+                                    $.i18n('rdft-prefix/provided');
                             }
                             else {
+                                // @ts-ignore
                                 strNamespaceNote += $.i18n('rdft-prefix/suggested') + ' ' + strPrefixCC;
                             }
                             strNamespaceNote += ')';

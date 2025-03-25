@@ -13,7 +13,7 @@
  *  editor.  However, it does harness the fundamental dialog display used by the
  *  ExpressionPreviewDialog.Widget.
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ class RDFDataTableView {
     constructor(baseIRI, bIsResource, strPrefix) {
         this.#strTitle =
             ( bIsResource ?
+                // @ts-ignore
                 $.i18n('rdft-dialog/preview-iri-val') :
+                // @ts-ignore
                 $.i18n('rdft-dialog/preview-lit-val') );
         this.#strBaseIRI = baseIRI;
         this.#bIsResource = bIsResource;
@@ -192,17 +194,22 @@ class RDFExpressionPreviewDialog {
         this.#frame
             .addClass("dialog-frame")
             .addClass("rdf-transform-exp-preview-frame");
+        // @ts-ignore
         var header = $('<div />').addClass("dialog-header");
+        // @ts-ignore
         var body   = $('<div />').addClass("dialog-body");
+        // @ts-ignore
         var footer = $('<div />').addClass("dialog-footer");
 
         // Get the Expression Preview Dialog component...
+        // @ts-ignore
         var dlgExpPreview = $( RDFExpressionPreviewDialog.#generateExpPreviewDialog() );
 
         // Connect all the dialog's "bind" elements to this RDF Expression Preview Dialog instance...
         this.#elements = DOM.bind(dlgExpPreview);
 
         // Substitute our "OK" button for OpenRefine's ExpressionPreviewDialog button...
+        // @ts-ignore
         var buttonOK = $('<button />').addClass('button').text( $.i18n('rdft-buttons/ok') );
         buttonOK.on("click",
             () => {
@@ -212,6 +219,7 @@ class RDFExpressionPreviewDialog {
         );
 
         // Substitute our "Cancel" button for OpenRefine's ExpressionPreviewDialog button...
+        // @ts-ignore
         var buttonCancel = $('<button />').addClass('button').text( $.i18n('rdft-buttons/cancel') );
         buttonCancel.on("click",
             () => { DialogSystem.dismissUntil(this.#level - 1); }
@@ -230,10 +238,14 @@ class RDFExpressionPreviewDialog {
     }
 
     preview(strColumnName, iRowLimit, strExpression, bIsIndex) {
+        // @ts-ignore
         this.#elements.or_dialog_preview.text( $.i18n('rdft-dialog/tab-preview') );
+        // @ts-ignore
         this.#elements.or_dialog_history.text( $.i18n('rdft-dialog/tab-history') );
+        // @ts-ignore
         this.#elements.or_dialog_help.text( $.i18n('rdft-dialog/tab-help') );
 
+        // @ts-ignore
         $( "#expression-preview-tabs", this.#frame ).tabs();
 
         // Substitute our widget for OpenRefine's ExpressionPreviewDialog widget...
@@ -525,9 +537,11 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         // Skip unneeded Widget or_dialog_* elements
 
         // Reset history to default display value...
+        // @ts-ignore
         $("#expression-preview-tabs-history").attr("display", "");
 
         // Reset help to default display value...
+        // @ts-ignore
         $("#expression-preview-tabs-help").attr("display", "");
     }
 
@@ -603,6 +617,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         };
         //this._prepareUpdate(params); // ...empty function, not overridden
 
+        // @ts-ignore
         $.get(
             // URL:
             "command/rdf-transform/preview-rdf-expression",
@@ -636,6 +651,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         if (data.code === "error" || data.results == null) {
             // General error...
             statusElem.addClass("error");
+            // @ts-ignore
             statusMessage = $.i18n('rdft-data/internal-error');
             // Defined error...
             if (data.message) {
@@ -655,6 +671,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         }
         // Otherwise, all good...
         else {
+            // @ts-ignore
             statusMessage = $.i18n('rdft-data/no-syntax-error');
         }
         statusElem.text(statusMessage);
@@ -677,11 +694,16 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         // Create table column headings...
         var tr = tableBody.insertRow(0);
         var tdValue = (this.#bIsIndex ? "Index" : "Value");
+        // @ts-ignore
         $( tr.insertCell(0) ).addClass("expression-preview-heading").text(RDFTransform.gstrIndexTitle);
+        // @ts-ignore
         $( tr.insertCell(1) ).addClass("expression-preview-heading").text(tdValue);
+        // @ts-ignore
         $( tr.insertCell(2) ).addClass("expression-preview-heading").text("Expression");
         if (this.#bIsResource) { // ...for resources, add the IRI resolution column...
+            // @ts-ignore
             tdValue = $.i18n('rdft-data/table-resolved');
+            // @ts-ignore
             $( tr.insertCell(3) ).addClass("expression-preview-heading").text(tdValue);
         }
 
@@ -711,6 +733,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
                 if (bIndices) {
                     tdValue = String( parseInt( data.indicies[iIndex] ) + 1 ) + ".";
                 }
+                // @ts-ignore
                 tdElem = $( tr.insertCell(0) ); //.width("1%");
                 tdElem.html( tdValue );
 
@@ -724,16 +747,19 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
                     // Row values (raw) for real column...
                     tdValue = this.#astrRowValues[iIndex];
                 }
+                // @ts-ignore
                 tdElem = $( tr.insertCell(1) ).addClass("expression-preview-value");
                 tdElem.html( tdValue );
 
                 // Populate results for expression evaluation...
+                // @ts-ignore
                 tdElem = $( tr.insertCell(2) ).addClass("expression-preview-value");
                 tdValue = data.results[iIndex];
                 this.#renderValue(tdElem, tdValue);
 
                 // Populate Absolute IRI of results, if applicable...
                 if (bAbsolutes) {
+                    // @ts-ignore
                     tdElem = $( tr.insertCell(3) ).addClass("expression-preview-value");
                     tdValue = data.absolutes[iIndex];
                     //if (!tdValue) {
@@ -757,12 +783,15 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         // Does a value exist?
         if (tdValue != null) {
             // Is the value an error message? (value created as an object {"message":"..."})
+            // @ts-ignore
             if ( $.isPlainObject(tdValue) ) {
                 /* DEBUG
                 console.log(tdValue);
                 */
+               // @ts-ignore
                 $('<span></span>')
                 .addClass("expression-preview-special-value")
+                // @ts-ignore
                 .text($.i18n('rdft-data/error') + ": " + tdValue.message)
                 .appendTo(tdElem);
             }
@@ -773,6 +802,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         }
         // Otherwise, no value (that's ok, no problem)...
         else {
+            // @ts-ignore
             $('<span>null</span>')
             .addClass("expression-preview-special-value")
             .appendTo(tdElem);

@@ -3,7 +3,7 @@
  *
  *  Utility class for all occasions
  *
- *  Copyright 2024 Keven L. Ates
+ *  Copyright 2025 Keven L. Ates
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -109,6 +109,7 @@ class RDFTransformCommon {
             (resolve, reject) => {
                 let params = { [RDFTransform.gstrConvertToIRI] : strConvert };
 
+                // @ts-ignore
                 $.ajax(
                     {   url  : "command/rdf-transform/convert-to-iri",
                         type : 'GET',
@@ -149,6 +150,7 @@ class RDFTransformCommon {
             (resolve, reject) => {
                 var params = { [RDFTransform.gstrIRI] : strIRI };
 
+                // @ts-ignore
                 $.ajax(
                     {   url  : "command/rdf-transform/validate-iri",
                         type : 'GET',
@@ -176,7 +178,9 @@ class RDFTransformCommon {
 
         if ( ! await RDFTransformCommon.validateIRI(strIRI) ) {
             alert(
+                // @ts-ignore
                 $.i18n('rdft-dialog/alert-iri') + "\n" +
+                // @ts-ignore
                 $.i18n('rdft-dialog/alert-iri-invalid') + "\n" +
                 strIRI
             );
@@ -185,7 +189,9 @@ class RDFTransformCommon {
 
         if ( !endsWith(strIRI, "/") && !endsWith(strIRI, "#") ) {
             var ans = confirm(
+                // @ts-ignore
                 $.i18n('rdft-dialog/confirm-one') + "\n" +
+                // @ts-ignore
                 $.i18n('rdft-dialog/confirm-two'));
             if (ans == false)
                 return false;
@@ -317,6 +323,7 @@ class RDFTransformCommon {
     static getPreferences(params) {
         return new Promise(
             (resolve, reject) => {
+                // @ts-ignore
                 $.ajax(
                     {   url  : "command/rdf-transform/get-preferences",
                         type : 'GET',
