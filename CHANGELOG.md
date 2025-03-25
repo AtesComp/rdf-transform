@@ -2,7 +2,7 @@
 This version added the initial Context IRI support for Quad-enabled formats. The Preview screen
 output is changed from Turtle to TriG. Fixed VocabularyImporter to import owl:ObjectProperty and
 owl:DatatypeProperty. Changed hardcodes vocabulary queries to preference values. Added
-CHANGELOG.md file.
+CHANGELOG.md file. Update Copyright to 2025.
 
 ## 2.2.4 Release
 This version corrects the Lucene ontology copy process from Global space to a Project and adds
