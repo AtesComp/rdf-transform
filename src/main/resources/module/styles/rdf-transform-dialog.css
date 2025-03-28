@@ -113,6 +113,9 @@ table.rdf-transform-pane-table-layout > tbody > tr > td.padded {
     padding: 2px 2px;
 }
 */
+div.rdf-transform-column-scroll {
+    overflow: auto;
+}
 
 div.rdf-transform-tab-footer {
     background: none repeat scroll 0 0 #E0EDFE;

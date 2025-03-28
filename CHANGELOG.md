@@ -1,3 +1,11 @@
+## 2.3.1 Released
+This version is a minor update. The RDF Node dialog is updated with a resizer. Additionally,
+the dialog's left column "Content" resizes with the dialog and adds scrollbars when needed. The
+dialog and related left column Content are initialize to their minimum size when opened. This
+fixes an issue when displaying a long "Content" (column names) lists where the bottom of the list
+was not reachable--it extended down beyond the visible screen. This issue also made the "OK" and
+"Cancel" buttons inaccessible. The dialog also allows widening to better view long column names.
+
 ## 2.3.0 Release
 This version added the initial Context IRI support for Quad-enabled formats. The Preview screen
 output is changed from Turtle to TriG. Fixed VocabularyImporter to import owl:ObjectProperty and

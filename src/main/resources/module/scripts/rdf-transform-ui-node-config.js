@@ -46,6 +46,14 @@ class RDFTransformUINodeConfig {
     #disabledTrue;
     #disabledFalse;
 
+    #iLastFrameHeight;
+    #iLastFrameWidth;
+
+    #iLastColLeftHeight;
+    #iLastColLeftWidth;
+    #iMinColLeftHeight;
+    #iMinColLeftWidth;
+
     constructor(theDialog, theNodeUI, theEType) {
         this.#dialog = theDialog
         this.#nodeUI = theNodeUI;
@@ -58,7 +66,6 @@ class RDFTransformUINodeConfig {
         this.#checkedTrue = { "checked" : true };
         this.#disabledTrue = { "disabled" : true };
         this.#disabledFalse = { "disabled" : false };
-
     }
 
     processView() {
@@ -68,6 +75,7 @@ class RDFTransformUINodeConfig {
 
         // Create this RDF Transform Node Configuration Dialog's main parts...
         var frame = DialogSystem.createDialog();
+
         // @ts-ignore
         var header = $('<div />').addClass("dialog-header");
         // @ts-ignore
@@ -131,7 +139,9 @@ class RDFTransformUINodeConfig {
         //  Create the Left Table Column...
         // @ts-ignore
         var tableColumnLeft = $('<table></table>')[0];
-        this.#elements.columnLeft.append(tableColumnLeft)
+        this.#elements.columnLeft
+            .addClass("rdf-transform-column-scroll")
+            .append(tableColumnLeft);
 
         // Add Row/Record Radio Row (NOTE: Always ResourceNode)...
         this.#buildIndexChoice(tableColumnLeft);
@@ -200,14 +210,79 @@ class RDFTransformUINodeConfig {
         frame
             .append(header, body, footer)
             .css(
-                {   "min-width" : "500px",
-                    "width" : "500px",
-                    "min-height" : "300px"
+                { "min-height" : "400px",
+                  "min-width"  : "500px"
+                }
+            )
+            .resizable();
+
+        this.#level = DialogSystem.showDialog(frame);
+
+        //
+        //   AFTER show...
+        //
+
+        // Hook up resize...
+        frame
+            .on("resize",
+                () => {
+                    // Diff = Current - Last
+                    const iDiffFrameHeight = frame.height() - this.#iLastFrameHeight;
+                    const iDiffFrameWidth = frame.width() - this.#iLastFrameWidth;
+                    // If there is a detected change...
+                    if ( iDiffFrameHeight != 0 || iDiffFrameWidth != 0 )
+                    {
+                        // ...update the Column Left height and width...
+                        this.#resizeColumnLeft(iDiffFrameHeight, iDiffFrameWidth);
+
+                        this.#iLastFrameHeight = frame.height();
+                        this.#iLastFrameWidth = frame.width();
+                    }
                 }
             );
 
-        this.#level = DialogSystem.showDialog(frame);
+        // Force Frame and ColumnLeft to initial minimal sizes...
+        this.#iLastFrameHeight = frame.height();
+        this.#iLastFrameWidth  = frame.width();
+        this.#iLastColLeftHeight = this.#elements.columnLeft.height();
+        this.#iLastColLeftWidth  = this.#elements.columnLeft.width();
+        var iDiffHeight = 400 - this.#iLastFrameHeight;
+        var iDiffWidth  = 500 - this.#iLastFrameWidth;
+        this.#iMinColLeftHeight = this.#iLastColLeftHeight + iDiffHeight;
+        this.#iMinColLeftWidth  = this.#iLastColLeftWidth  + iDiffWidth;
+        frame.height(400);
+        frame.width(500);
+        this.#elements.columnLeft.height(this.#iMinColLeftHeight);
+        this.#elements.columnLeft.width(this.#iMinColLeftWidth);
+        this.#iLastFrameHeight = 400;
+        this.#iLastFrameWidth  = 500;
+        this.#iLastColLeftHeight = this.#iMinColLeftHeight;
+        this.#iLastColLeftWidth  = this.#iMinColLeftWidth;
     }
+
+    //
+    // Method resizeColumnLeft(): Resize the ColumnLeft with a Frame resize...
+    //
+    #resizeColumnLeft(iDiffHeight, iDiffWidth) {
+        if (iDiffHeight != 0) {
+            var iNewH = this.#iLastColLeftHeight + iDiffHeight;
+            if (iNewH < this.#iMinColLeftHeight) {
+                iNewH = this.#iMinColLeftHeight;
+            }
+            this.#elements.columnLeft.height(iNewH);
+            this.#iLastColLeftHeight = iNewH;
+        }
+
+        if (iDiffWidth != 0) {
+            var iNewW = this.#iLastColLeftWidth + iDiffWidth;
+            if (iNewW < this.#iMinColLeftWidth) {
+                iNewW = this.#iMinColLeftWidth;
+            }
+            this.#elements.columnLeft.width(iNewW);
+            this.#iLastColLeftWidth = iNewW;
+        }
+    }
+
 
     #buildIndexChoice(tableColumn) {
         // Prepare NEW Radio Control Row...

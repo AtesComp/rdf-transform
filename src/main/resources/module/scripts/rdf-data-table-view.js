@@ -231,7 +231,7 @@ class RDFExpressionPreviewDialog {
         footer.append(buttonOK, buttonCancel);
         this.#frame
             .append(header, body, footer)
-            .css({ "min-width" : "700px" })
+            .css( { "min-width" : "700px" } )
             .resizable();
 
         this.#bFrameNotShown = true;
@@ -270,7 +270,7 @@ class RDFExpressionPreviewDialog {
                     if ( iDiffFrameHeight != 0 || iDiffFrameWidth != 0 )
                     {
                         // ...update the editor width...
-                        this.#resizeEditor(0, iDiffFrameWidth)
+                        this.#resizeEditor(0, iDiffFrameWidth);
                         // ...update the tabs height...
                         this.#previewWidget.resizeTabs(iDiffFrameHeight, 0);
 
