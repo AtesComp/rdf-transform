@@ -33,7 +33,11 @@ This project uses a graphical user interface (GUI) for transforming OpenRefine p
 
 RDF Transform is based on the venerable "RDF Extension" ([grefine-rdf-extension](https://github.com/stkenny/grefine-rdf-extension)). However, it has been thoroughly rewritten to incorporate the newer Java and JavaScript technologies, techniques, and processing enhancements.
 
-The latest releases (2.2.3 and above) only work with OpenRefine 3.8 or better.
+**The latest RDF Transform 2.3+ releases only work with the OpenRefine 3.9+ series.**<br />
+RDF Transform uses processes and libraries provided by OpenRefine. Therefore, RDF Transform releases are updated to match OpenRefine releases. Later RDF Transform releases mixed with earlier OpenRefine releases are problematic due to various changes such as:
+* Updated Jena library (a primary requirement)
+* Updated language function registration
+* Expanded CSRF protections
 
 ## Documentation
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
@@ -68,7 +72,7 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 
 ## Build
 In VSCode, there are several task to build and configure the extension to run:
-* build clean assembly - Cleans, updates dependencies, and builds the extension's Maven assembly 
+* build clean assembly - Cleans, updates dependencies, and builds the extension's Maven assembly
 * build assembly - (Default) Builds the extension's Maven assembly
 * update ext - Updates the extension location with the new build package
 
@@ -93,7 +97,7 @@ See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wik
 RDF Transform has been tested against OpenRefine 3.5.2 and above on a modern Debian-based OS (Ubuntu derivative) using Chrome. In general, use the latest OpenRefine release with the latest RDF Transform extension release.
 
 RDF Transform requires Java 11 to 21. Use the Linux distributions preferred package manager to ensure--at a minimum--that a Java 11 JRE version is installed.
-* Check your java version with `java -version` 
+* Check your java version with `java -version`
 * Use a java version manager, such as `update-java-alternatives` to ensure a working default Java version is used.
 
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
