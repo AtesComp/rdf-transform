@@ -237,8 +237,8 @@ public class InitializationCommand extends Command {
         aPretty.add(new RDFTExportPrinter(RDFFormat.RDFXML_PRETTY, "RDFXML_PRETTY"));
         aPretty.add(new RDFTExportPrinter(RDFFormat.TURTLE_PRETTY, "TURTLE_PRETTY"));
         aPretty.add(new RDFTExportPrinter(RDFFormat.TRIG_PRETTY, "TRIG_PRETTY"));
-        aPretty.add(new RDFTExportPrinter(RDFFormat.JSONLD_PRETTY, "JSONLD_PRETTY"));
-        aPretty.add(new RDFTExportPrinter(null /* NDJSONLD_PRETTY */, "NDJSONLD_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.JSONLD_PRETTY, "JSONLD_PRETTY")); // default version is JSON-LD 1.1
+        //aPretty.add(new RDFTExportPrinter(null /* NDJSONLD_PRETTY */, "NDJSONLD_PRETTY"));
         aPretty.add(new RDFTExportPrinter(RDFFormat.RDFJSON, "RDFJSON"));
 
         for (RDFTExportPrinter ptr : aPretty) {

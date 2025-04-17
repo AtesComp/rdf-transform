@@ -151,7 +151,7 @@ class RDFExporterMenuBar
             id : "rdf-transform/pretty/exportRDFJSONLD",
             // @ts-ignore
             label : $.i18n("rdft-menu/rdf-jsonld-pretty"),
-            click : () => RDFExporterMenuBar.#exportRDF("JSONLD_PRETTY", "jsonld")
+            click : () => RDFExporterMenuBar.#exportRDF("JSONLD_PRETTY", "jsonld") // default version is JSON-LD 1.1
         };
         objTypeSubMenuItem.submenu.push(objTypeSubSubMenuItem);
 

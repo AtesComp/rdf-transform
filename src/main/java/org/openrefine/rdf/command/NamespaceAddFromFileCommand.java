@@ -140,7 +140,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             throws IOException {
         String strFormat = null;
         // Get the form values by attribute names...
-        //      NOTE: See file "rdf-transform-prefix-add.html" for matching keys.
+        //      NOTE: See file "rdf-transform-prefix-add.html" and "rdf-transform-namespace-adder.js" for matching keys.
         for (FileItem item : items) {
             String strItemName = item.getFieldName();
             if (strItemName.equals("vocab_prefix")) {
@@ -180,7 +180,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             else if (strFormat.equals("NTRIPLE")) {
                 this.theRDFLang = Lang.NTRIPLES;
             }
-            else if (strFormat.equals("JSON-LD")) {
+            else if (strFormat.equals("JSON-LD")) { // default version is JSON-LD 1.1
                 this.theRDFLang = Lang.JSONLD;
             }
             else if (strFormat.equals("NQUADS")) {
@@ -223,7 +223,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             else if (strExtension.equals("nt")) {
                 theLang = Lang.NTRIPLES;
             }
-            else if (strExtension.equals("jsonld")) {
+            else if (strExtension.equals("jsonld")) { // default version is JSON-LD 1.1
                 theLang = Lang.JSONLD;
             }
             else if (strExtension.equals("nq")) {

@@ -69,7 +69,7 @@ class RDFTransformNamespaceAdder {
         // @ts-ignore
         this.#elements.rdf_transform_prefix_ntriple.html(   $.i18n('rdft-prefix/ntriple')         );
         // @ts-ignore
-        this.#elements.rdf_transform_prefix_jsonld.html(    $.i18n('rdft-prefix/jsonld')          );
+        this.#elements.rdf_transform_prefix_jsonld.html(    $.i18n('rdft-prefix/jsonld')          ); // default version is JSON-LD 1.1
         // @ts-ignore
         this.#elements.rdf_transform_prefix_nquads.html(    $.i18n('rdft-prefix/nquads')          );
         // @ts-ignore
