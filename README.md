@@ -71,10 +71,9 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for more information.
 
 ## Build
-In VSCode, there are several task to build and configure the extension to run:
-* build clean assembly - Cleans, updates dependencies, and builds the extension's Maven assembly
-* build assembly - (Default) Builds the extension's Maven assembly
-* update ext - Updates the extension location with the new build package
+See the wiki [Build](https://github.com/AtesComp/rdf-transform/wiki/Build) page.
+
+In particular, see the wiki [VSCode IDE](https://github.com/AtesComp/rdf-transform/wiki/Build#vscode) subsection.
 
 ## Issues
 ***General interaction issue with OpenRefine versions, Web Browsers, OSes, etc., not specifically code related.***
