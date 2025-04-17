@@ -19,8 +19,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
         check-latest: true
-    - name: Delete JSONLD repository files
-      run: rm -rf ~/.m2/repository/com/github/jsonld-java/*
     - name: Reset Maven Dependencies
       run: mvn dependency:purge-local-repository
     - name: Reload Maven Dependencies
