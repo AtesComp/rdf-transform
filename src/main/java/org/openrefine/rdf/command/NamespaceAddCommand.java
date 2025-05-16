@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
+import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyImportException;
 
 public class NamespaceAddCommand extends RDFTransformCommand {
@@ -46,15 +47,17 @@ public class NamespaceAddCommand extends RDFTransformCommand {
         // For Project, DO NOT USE this.getProject(request) as we only need the string...
         String strProjectID = request.getParameter(Util.gstrProject);
 
-        String strPrefix       = request.getParameter(Util.gstrPrefix).strip();
-        String strNamespace    = request.getParameter(Util.gstrNamespace).strip();
-        String strFetchOption  = request.getParameter("fetch").strip();
+        String strPrefix    = request.getParameter(Util.gstrPrefix).strip();
+        String strNamespace = request.getParameter(Util.gstrNamespace).strip();
+        String strLocation  = request.getParameter(Util.gstrLocation).strip();
+        String strLocType   = request.getParameter(Util.gstrLocType).strip();
 
-        if ( strFetchOption.equals("web") ) {
-            String strFetchURL = request.getParameter("fetchURL");
-            if (strFetchURL == null) {
-                strFetchURL = strNamespace;
-            }
+        Vocabulary.LocationType loctype = Vocabulary.fromLocTypeString(strLocType);
+
+        if (strLocation == null) strLocation = "";
+        if ( strLocation.isEmpty() ) loctype = Vocabulary.LocationType.NONE;
+
+        if ( loctype == Vocabulary.LocationType.URL ) {
 
             Exception except = null;
             boolean bError = false; // ...not fetchable
@@ -64,7 +67,7 @@ public class NamespaceAddCommand extends RDFTransformCommand {
                 RDFTransform.getGlobalContext().
                     getVocabularySearcher().
                         importAndIndexVocabulary(
-                            strPrefix, strNamespace, strFetchURL, strProjectID);
+                            strPrefix, strNamespace, strLocation, Vocabulary.LocationType.URL, strProjectID);
             }
             catch (VocabularyImportException ex) {
                 bFormatted = true;
@@ -87,7 +90,7 @@ public class NamespaceAddCommand extends RDFTransformCommand {
         // Otherwise, all good...
 
         // Add the namespace...
-        this.getRDFTransform(request).addNamespace(strPrefix, strNamespace);
+        this.getRDFTransform(request).addNamespace(strPrefix, strNamespace, strLocation, loctype);
 
         NamespaceAddCommand.respondJSON(response, CodeResponse.ok);
     }

@@ -147,37 +147,41 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strFetchURL)
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType)
             throws VocabularyImportException, IOException {
         // Since no Project ID was given, use a Global ID and pass to regular method...
-        this.importAndIndexVocabulary(strPrefix, strNamespace, strFetchURL, GLOBAL_VOCABULARY_PLACE_HOLDER);
+        this.importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, GLOBAL_VOCABULARY_PLACE_HOLDER);
     }
 
     @Override
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strFetchURL,
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType,
                                             String strProjectID)
             throws VocabularyImportException, IOException {
         String strDebug = null;
         if ( Util.isDebugMode() ) {
             strDebug = "DEBUG: Import And Index vocabulary " + strPrefix + ": <" + strNamespace + "> ";
         }
-        if (strFetchURL == null) {
+        if ( strLocation == null || strLocation.isEmpty() ) {
             if ( Util.isDebugMode() ) VocabularySearcher.logger.info(strDebug + "nothing to fetch!");
             return;
         }
-        if ( Util.isDebugMode() ) VocabularySearcher.logger.info(strDebug + "from " + strFetchURL);
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info( strDebug + "from " + strLocation + " as type " + theLocType.toString() );
 
-        VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
-        List<RDFTClass> classes = new ArrayList<RDFTClass>();
-        List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
+        if (theLocType == Vocabulary.LocationType.URL) {
+            VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
+            List<RDFTClass> classes = new ArrayList<RDFTClass>();
+            List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
 
-        // Import classes & properties from Namespace at URL...
-        importer.importVocabulary(strFetchURL, classes, properties);
-        this.indexTerms(strProjectID, classes, properties);
+            // Import classes & properties from Namespace at URL...
+            importer.importVocabulary(strLocation, classes, properties);
+            this.indexTerms(strProjectID, classes, properties);
+        }
+        else if (theLocType == Vocabulary.LocationType.FILE) {
+        }
     }
 
     @Override
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, DatasetGraph theDSGraph, String strProjectID)
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, DatasetGraph theDSGraph, String strProjectID)
             throws VocabularyImportException, IOException {
         VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
         List<RDFTClass> classes = new ArrayList<RDFTClass>();

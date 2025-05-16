@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespacesGetDefaultCommand extends RDFTransformCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:NSGetDefaultCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:NamespaceGetDefaultCmd");
 
     public NamespacesGetDefaultCommand() {
         super();
@@ -91,7 +91,13 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
         // Load vocabularies for vocabulary searcher and respond each namespace...
         //
         for (Vocabulary vocab : listVocabs) {
-            if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("  Prefix: " + vocab.getPrefix() + "  Namespace: " + vocab.getNamespace());
+            if ( Util.isDebugMode() )
+                NamespacesGetDefaultCommand.logger.info(
+                    "  Prefix: " + vocab.getPrefix() +
+                    "  Namespace: " + vocab.getNamespace() +
+                    "  Location: " + vocab.getLocation() +
+                    "  LocType: " + vocab.getLocationType().toString()
+                );
             Exception except = null;
             boolean bError = false; // ...not fetchable
             boolean bFormatted = false;
@@ -99,7 +105,7 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
                 RDFTransform.getGlobalContext().
                     getVocabularySearcher().
                         importAndIndexVocabulary(
-                            vocab.getPrefix(), vocab.getNamespace(), vocab.getNamespace(), strProjectID);
+                            vocab.getPrefix(), vocab.getNamespace(), vocab.getLocation(), vocab.getLocationType(), strProjectID);
             }
             catch (VocabularyImportException ex) {
                 bFormatted = true;
@@ -116,14 +122,15 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
                 // ...continue processing the other vocabularies...
             }
 
-            theWriter.writeStringField( vocab.getPrefix(), vocab.getNamespace() );
+            //theWriter.writeStringField( vocab.getPrefix(), vocab.getNamespace() );
+            vocab.write(theWriter);
         }
 
         //
         // Finish response...
         //
-        theWriter.writeEndObject();
-        theWriter.writeEndObject();
+        theWriter.writeEndObject(); // ...Util.gstrNamespaces }
+        theWriter.writeEndObject(); // ...outer most }
 
         theWriter.flush();
         theWriter.close();

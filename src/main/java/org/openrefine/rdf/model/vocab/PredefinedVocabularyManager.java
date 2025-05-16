@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.openrefine.rdf.ApplicationContext;
+import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 
 import com.google.refine.util.ParsingUtilities;
@@ -124,7 +125,10 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             throw new IOException("File " + SAVED_VOCABS_FILE_NAME + " not found!");
         }
         BufferedReader buffReader = new BufferedReader( new InputStreamReader(inStream) );
-        String strLine, strPrefix = null, strNamespace = null, strFetchURL = null;
+        String strLine;
+        String strPrefix = null;
+        String strNamespace = null;
+        String strLocation = "";
 
         //  Read ontology file lines...
         //      There should be at least 2 entries per line but ideally 3:
@@ -143,17 +147,14 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             // Organize entries...
             strPrefix    = astrTokens[0];
             strNamespace = astrTokens[1];
-            if (astrTokens.length < 3)
-                strFetchURL = null;
-            else
-                strFetchURL = astrTokens[2];
+            if (astrTokens.length > 2) strLocation = astrTokens[2];
 
             // Import and Index the ontology...
             try {
                 this.context.
                     getVocabularySearcher().
-                        importAndIndexVocabulary(strPrefix, strNamespace, strFetchURL);
-                this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
+                        importAndIndexVocabulary(strPrefix, strNamespace, strLocation, Vocabulary.LocationType.URL);
+                this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace, strLocation, Vocabulary.LocationType.URL) );
             }
             catch (Exception ex) {
                 // Predefined vocabularies are not defined properly...
@@ -181,9 +182,8 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             JsonNode jnodeNamespaces = jnodeVocabs.get(Util.gstrNamespaces);
             Iterator<Entry<String, JsonNode>> fields = jnodeNamespaces.fields();
             fields.forEachRemaining(prefix -> {
-                String strPrefix = prefix.getKey();
-                String strNamespace = prefix.getValue().asText();
-                this.predefinedVocabularies.add( new Vocabulary(strPrefix, strNamespace) );
+                Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
+                this.predefinedVocabularies.add(vocab);
             });
         }
     }
@@ -227,7 +227,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
     private void saveToFile(File fileVocab) throws Exception {
         Writer writer = new OutputStreamWriter(new FileOutputStream(fileVocab));
         JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
-        write(jsonWriter);
+        this.write(jsonWriter);
         writer.close();
     }
 
@@ -237,8 +237,8 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         for (Vocabulary vocab : this.predefinedVocabularies) {
             vocab.write(writer);
         }
-        writer.writeEndObject();
-        writer.writeEndObject();
+        writer.writeEndObject(); // ...Util.gstrNamespaces }
+        writer.writeEndObject(); // ...outer most }
         writer.flush();
     }
 }

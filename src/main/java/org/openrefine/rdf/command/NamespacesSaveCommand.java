@@ -58,10 +58,25 @@ public class NamespacesSaveCommand extends RDFTransformCommand {
                 ParsingUtilities.evaluateJsonStringToObjectNode( request.getParameter(Util.gstrNamespaces) );
 
             Iterator< Entry < String, JsonNode > > fields = theNamespaces.fields();
+            // NOTE: The Namespaces JSON object has the form:
+            //  { namespaces: {
+            //      somePrefixString: {
+            //          namespace: "SomeNamespaceString",          <-- The namespace for the prefix
+            //          location: "SomeNamespaceLocationString"    <-- A URL or File location
+            //          loctype: "SomeNamespaceLocationTypeString" <-- NONE, URL, FILE, ...filetypes
+            //      },
+            //      ...
+            //  }
+            //
+            //  DEPRECATED ===
+            //  { namespaces: {
+            //      somePrefixString: "SomeNamespaceString",       <-- The namespace for the prefix
+            //      ...
+            //  }
+
             fields.forEachRemaining(prefix -> {
-                String strPrefix = prefix.getKey();
-                String strNamespace = prefix.getValue().asText();
-                listVocabs.add( new Vocabulary( strPrefix, strNamespace ) );
+                Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
+                listVocabs.add(vocab);
             });
             this.getRDFTransform(request).setNamespaces(listVocabs);
 

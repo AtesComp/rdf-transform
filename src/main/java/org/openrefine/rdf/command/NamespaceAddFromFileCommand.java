@@ -36,7 +36,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
-
+import org.openrefine.rdf.model.vocab.Vocabulary;
 //import org.apache.jena.rdf.model.Model;
 //import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
@@ -50,11 +50,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceAddFromFileCommand extends RDFTransformCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:NSAddFromFileCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddFromFileCmd");
 
     String strPrefix;
     String strNamespace;
     Lang theRDFLang;
+    Vocabulary.LocationType theLocType;
     String strProjectID;
     String strFilename;
     InputStream instreamFile;
@@ -66,6 +67,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         this.strPrefix = null;
         this.strNamespace = null;
         this.theRDFLang = null;
+        this.theLocType = Vocabulary.LocationType.FILE;
         this.strFilename = "";
         this.instreamFile = null;
     }
@@ -107,17 +109,17 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             DatasetGraph theDSGraph = null;
             if (this.theRDFLang != null) {
                 //theModel.read( this.instreamFile, "", this.theRDFLang.getName() );
-                theDSGraph = RDFDataMgr.loadDatasetGraph(strFilename, theRDFLang);
+                theDSGraph = RDFDataMgr.loadDatasetGraph(this.strFilename, this.theRDFLang);
             }
             else {
                 //theModel.read( this.instreamFile, "" ); // ...assumes the concrete syntax is RDF/XML
-                theDSGraph = RDFDataMgr.loadDatasetGraph(strFilename);
+                theDSGraph = RDFDataMgr.loadDatasetGraph(this.strFilename);
             }
 
             if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from dataset graph...");
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
-                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, theDSGraph, this.strProjectID);
+                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, this.strFilename, theDSGraph, this.strProjectID);
         }
         catch (Exception ex) {
             NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
@@ -129,7 +131,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
 
         // Add the namespace...
         if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Adding Namespace...");
-        theTransform.addNamespace(this.strPrefix, this.strNamespace);
+        theTransform.addNamespace(this.strPrefix, this.strNamespace, this.strFilename, this.theLocType);
 
         NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
 
@@ -155,100 +157,125 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             else if (strItemName.equals("file_format")) {
                 strFormat = item.getString();
             }
-            else { // if (strItemName.equals("uploaded_file"))
+            else if (strItemName.equals("uploaded_file")) {
                 this.strFilename = item.getName();
                 this.instreamFile = item.getInputStream();
             }
         }
 
         this.theRDFLang = Lang.RDFXML;
+        this.theLocType = Vocabulary.LocationType.RDF_XML;
         if (strFormat != null) {
             // Check the "file_format" key's value to set RDF language...
             //      NOTE: See file "rdf-transform-prefix-add.html" for matching key values.
             if (strFormat.equals("auto-detect")) {
-                this.theRDFLang = this.guessFormat(strFilename);
+                this.guessFormat(strFilename);
             }
             else if (strFormat.equals("RDF/XML")) {
                 this.theRDFLang = Lang.RDFXML;
+                this.theLocType = Vocabulary.LocationType.RDF_XML;
             }
             else if (strFormat.equals("TTL")) {
                 this.theRDFLang = Lang.TURTLE;
+                this.theLocType = Vocabulary.LocationType.TTL;
             }
             else if (strFormat.equals("N3")) {
                 this.theRDFLang = Lang.N3;
+                this.theLocType = Vocabulary.LocationType.N3;
             }
             else if (strFormat.equals("NTRIPLE")) {
                 this.theRDFLang = Lang.NTRIPLES;
+                this.theLocType = Vocabulary.LocationType.NTRIPLE;
             }
             else if (strFormat.equals("JSON-LD")) { // default version is JSON-LD 1.1
                 this.theRDFLang = Lang.JSONLD;
+                this.theLocType = Vocabulary.LocationType.JSON_LD;
             }
             else if (strFormat.equals("NQUADS")) {
                 this.theRDFLang = Lang.NQUADS;
+                this.theLocType = Vocabulary.LocationType.NQUADS;
             }
             else if (strFormat.equals("RDF/JSON")) {
                 this.theRDFLang = Lang.RDFJSON;
+                this.theLocType = Vocabulary.LocationType.RDF_JSON;
             }
             else if (strFormat.equals("TRIG")) {
                 this.theRDFLang = Lang.TRIG;
+                this.theLocType = Vocabulary.LocationType.TRIG;
             }
             else if (strFormat.equals("TRIX")) {
                 this.theRDFLang = Lang.TRIX;
+                this.theLocType = Vocabulary.LocationType.TRIX;
             }
             else if (strFormat.equals("RDFTHRIFT")) {
                 this.theRDFLang = Lang.RDFTHRIFT;
+                this.theLocType = Vocabulary.LocationType.RDFTHRIFT;
             }
         }
     }
 
-    private Lang guessFormat(String strFilename) {
-        Lang theLang = Lang.RDFXML; // ...default for unknown extension
+    private void guessFormat(String strFilename) {
+        this.theRDFLang = Lang.RDFXML; // ...default for unknown extension
+        this.theLocType = Vocabulary.LocationType.RDF_XML;
         if (strFilename.lastIndexOf('.') != -1) {
             String strExtension = strFilename.substring(strFilename.lastIndexOf('.') + 1).toLowerCase();
             if (strExtension.equals("rdf")) {
-                theLang = Lang.RDFXML;
+                this.theRDFLang = Lang.RDFXML;
+                this.theLocType = Vocabulary.LocationType.RDF_XML;
             }
             else if (strExtension.equals("rdfs")) {
-                theLang = Lang.RDFXML;
+                this.theRDFLang = Lang.RDFXML;
+                this.theLocType = Vocabulary.LocationType.RDF_XML;
             }
             else if (strExtension.equals("owl")) {
-                theLang = Lang.RDFXML;
+                this.theRDFLang = Lang.RDFXML;
+                this.theLocType = Vocabulary.LocationType.RDF_XML;
             }
             else if (strExtension.equals("ttl")) {
-                theLang = Lang.TURTLE;
+                this.theRDFLang = Lang.TURTLE;
+                this.theLocType = Vocabulary.LocationType.TTL;
             }
             else if (strExtension.equals("n3")) {
-                theLang = Lang.N3;
+                this.theRDFLang = Lang.N3;
+                this.theLocType = Vocabulary.LocationType.N3;
             }
             else if (strExtension.equals("nt")) {
-                theLang = Lang.NTRIPLES;
+                this.theRDFLang = Lang.NTRIPLES;
+                this.theLocType = Vocabulary.LocationType.NTRIPLE;
             }
             else if (strExtension.equals("jsonld")) { // default version is JSON-LD 1.1
-                theLang = Lang.JSONLD;
+                this.theRDFLang = Lang.JSONLD;
+                this.theLocType = Vocabulary.LocationType.JSON_LD;
             }
             else if (strExtension.equals("nq")) {
-                theLang = Lang.NQUADS;
+                this.theRDFLang = Lang.NQUADS;
+                this.theLocType = Vocabulary.LocationType.NQUADS;
             }
             else if (strExtension.equals("rj")) {
-                theLang = Lang.RDFJSON;
+                this.theRDFLang = Lang.RDFJSON;
+                this.theLocType = Vocabulary.LocationType.RDF_JSON;
             }
             else if (strExtension.equals("trig")) {
-                theLang = Lang.TRIG;
+                this.theRDFLang = Lang.TRIG;
+                this.theLocType = Vocabulary.LocationType.TRIG;
             }
             else if (strExtension.equals("trix")) {
-                theLang = Lang.TRIX;
+                this.theRDFLang = Lang.TRIX;
+                this.theLocType = Vocabulary.LocationType.TRIX;
             }
             else if (strExtension.equals("xml")) {
-                theLang = Lang.TRIX;
+                this.theRDFLang = Lang.TRIX;
+                this.theLocType = Vocabulary.LocationType.TRIX;
             }
             else if (strExtension.equals("trdf")) {
-                theLang = Lang.RDFTHRIFT;
+                this.theRDFLang = Lang.RDFTHRIFT;
+                this.theLocType = Vocabulary.LocationType.RDFTHRIFT;
             }
             else if (strExtension.equals("rt")) {
-                theLang = Lang.RDFTHRIFT;
+                this.theRDFLang = Lang.RDFTHRIFT;
+                this.theLocType = Vocabulary.LocationType.RDFTHRIFT;
             }
         }
-        return theLang;
     }
 
     private RDFTransform getProjectTransform()

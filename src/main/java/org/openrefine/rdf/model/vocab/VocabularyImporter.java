@@ -311,7 +311,7 @@ public class VocabularyImporter {
     }
 
     /**
-     * Method faultyContentNegotiation(String strNamespace)<br />
+     * Method faultyContentNegotiation(String strFetchURL)<br />
      * <br />
      * Processes the given namespace {@code String} to determine if the namespace
      * needs adjustments for retrieval or to stop processing altogether.<br />
@@ -321,13 +321,13 @@ public class VocabularyImporter {
      * {@code false} to indicate further processing is allowed with possible
      * modifications for the namespace via instance scoped {@code boolean} values.<br />
      *
-     * @param  strNamespace
-     *         The {@code String} namespace to process
+     * @param  strFetchURL
+     *         The {@code String} URL to process
      *
-     * @return  {@code true} if the given namespace cannot be retrieved,
+     * @return  {@code true} if the given URL cannot be retrieved,
      *          {@code false} otherwise.
      */
-    private boolean faultyContentNegotiation(String strNamespace) {
+    private boolean faultyContentNegotiation(String strFetchURL) {
         //
         // Continue Processing: Set up booleans to process by later code outside this function
         //
@@ -335,7 +335,7 @@ public class VocabularyImporter {
         // SKOS: We add an exceptional treatment for SKOS as their deployment does not handle an
         //       "Accept" header properly!  SKOS always returns "HTML" if the "Accept" header
         //       contains HTML regardless other more preferred options.
-        this.bStrictlyRDF = strNamespace.equals("http://www.w3.org/2004/02/skos/core#");
+        this.bStrictlyRDF = strFetchURL.equals("http://www.w3.org/2004/02/skos/core#");
         if (this.bStrictlyRDF) {
             return false; // ...continue
         }
@@ -344,7 +344,7 @@ public class VocabularyImporter {
         // Process Now: Set up code to process a return boolean to stop further processing
         //
 
-        if ( strNamespace.equals("http://www.w3.org/2001/XMLSchema#") ) {
+        if ( strFetchURL.equals("http://www.w3.org/2001/XMLSchema#") ) {
             VocabularyImporter.logger.info("INFO: XMLSchema is a built-in Datatype ontology...skipping import.");
             return true; // ...stop
         }

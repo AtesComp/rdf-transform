@@ -105,6 +105,9 @@ public class Util {
     static public final String gstrDescription = "description";
     static public final String gstrLocalPart = "localPart";
 
+    static public final String gstrLocation = "location"; 
+    static public final String gstrLocType = "loctype"; 
+
     // XML Schema Strings
     // --------------------------------------------------------------------------------
     static private final String XSD_PREFIX        = "xsd:"; // for namespace http://www.w3.org/2001/XMLSchema#

@@ -127,6 +127,37 @@ public class RDFTransform implements OverlayModel {
         return RDFTransform.reconstruct(theProject, jnodeTransform);
     }
 
+    static public Vocabulary getVocabFromPrefixNode(Entry<String, JsonNode> prefix) {
+        String strPrefix = prefix.getKey();
+        String[] astrValues = { null, null, null }; // 0 = Namespace, 1 = Location, 2 = Location Type
+        Vocabulary.LocationType loctype = Vocabulary.LocationType.NONE;
+        Vocabulary vocab = null;
+
+        // If the prefix does not have field, then it only has a namespace value (DEPRECATED Old Format)...
+        if ( ! prefix.getValue().fields().hasNext() ) {
+            // Upgrade to New Format...
+            astrValues[0] = prefix.getValue().asText();
+            astrValues[1] = astrValues[0];
+            loctype = Vocabulary.LocationType.URL;
+        }
+        else {
+            prefix.getValue().fields().forEachRemaining(value -> {
+                String strKey = value.getKey();
+                String strVal = value.getValue().asText();
+                if      ( strKey.equals("namespace") )  astrValues[0] = strVal;
+                else if ( strKey.equals("location") )   astrValues[1] = strVal;
+                else if ( strKey.equals("loctype") )    astrValues[2] = strVal;
+            });
+            if ( astrValues[2] != null && ! astrValues[2].isEmpty() ) loctype = Vocabulary.fromLocTypeString( astrValues[2] ) ;
+        }
+
+        if (astrValues[1] == null)
+            vocab = new Vocabulary( strPrefix, astrValues[0], "", loctype );
+        else
+            vocab = new Vocabulary( strPrefix, astrValues[0], astrValues[1], loctype );
+        return vocab;
+    }
+
     /*
      * Method reconstruct()
      *
@@ -595,12 +626,11 @@ public class RDFTransform implements OverlayModel {
             if ( jnodeNamespaces.isObject() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Namespaces set by JSON Object...");
                 Iterator<Entry<String, JsonNode>> iterNodes = jnodeNamespaces.fields();
-                Map.Entry<String, JsonNode> mePrefix;
+                Map.Entry<String, JsonNode> prefix;
                 while ( iterNodes.hasNext() ) {
-                    mePrefix = (Map.Entry<String, JsonNode>) iterNodes.next();
-                    String strPrefix    = mePrefix.getKey();
-                    String strNamespace = mePrefix.getValue().asText();
-                    this.theNamespaces.add( new Vocabulary(strPrefix, strNamespace) );
+                    prefix = (Map.Entry<String, JsonNode>) iterNodes.next();
+                    Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
+                    this.theNamespaces.add(vocab);
                 }
             }
             if ( this.theNamespaces.isEmpty() ) {
@@ -614,11 +644,15 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-    public void addNamespace(String strPrefix, String strNamespace) {
+    public void addNamespace(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType loctype) {
         if (this.theNamespaces == null) {
             this.theNamespaces = new VocabularyList();
         }
-        this.theNamespaces.add( new Vocabulary(strPrefix, strNamespace) );
+        if ( strLocation == null || strLocation.isEmpty() ) {
+            strLocation = "";
+            loctype = Vocabulary.LocationType.NONE;
+        }
+        this.theNamespaces.add( new Vocabulary(strPrefix, strNamespace, strLocation, loctype) );
     }
 
     @JsonIgnore

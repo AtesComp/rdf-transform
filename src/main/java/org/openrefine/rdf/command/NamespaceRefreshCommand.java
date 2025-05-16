@@ -30,13 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
+import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyImportException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceRefreshCommand extends RDFTransformCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PfxRefreshCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:NamespaceRefreshCmd");
 
     public NamespaceRefreshCommand() {
         super();
@@ -56,8 +57,11 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
 
         String strPrefix    = request.getParameter(Util.gstrPrefix);
         String strNamespace = request.getParameter(Util.gstrNamespace);
-        // TODO: The system does not track No Vocab, File Vocab or URL Fetchable Vocab and
-        //      assumes web fetchable.  Do we need to track fetchability???
+        String strLocation  = request.getParameter(Util.gstrLocation);
+        Vocabulary.LocationType theLocType = Vocabulary.fromLocTypeString( request.getParameter(Util.gstrLocType) );
+        
+        if (strLocation == null) strLocation = "";
+        if ( strLocation.isEmpty() ) theLocType = Vocabulary.LocationType.NONE;
 
         RDFTransform theTransform = this.getRDFTransform(request);
 
@@ -76,7 +80,7 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
             // Re-add related vocabulary...
             RDFTransform.getGlobalContext().
                 getVocabularySearcher().
-                    importAndIndexVocabulary(strPrefix, strNamespace, strNamespace, strProjectID);
+                    importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
         }
         catch (VocabularyImportException ex) {
             bFormatted = true;
@@ -98,7 +102,7 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
         // Otherwise, all good...
 
         // Re-add the namespace...
-        theTransform.addNamespace(strPrefix, strNamespace);
+        theTransform.addNamespace(strPrefix, strNamespace, strLocation, theLocType);
 
         NamespaceRefreshCommand.respondJSON(response, CodeResponse.ok);
     }

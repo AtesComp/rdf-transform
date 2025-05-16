@@ -39,7 +39,7 @@ public interface IVocabularySearcher {
      * @throws VocabularyImportException
      * @throws IOException
      */
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strFetchURL)
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType)
                     throws VocabularyImportException, IOException;
 
     /*
@@ -47,12 +47,13 @@ public interface IVocabularySearcher {
      *   This vocabulary is to be used (searched) only with a project (strProjectID).
      * @param strPrefix
      * @param strNamespace
-     * @param strFetchURL
+     * @param strFetch
+     * @param loctype
      * @param strProjectID
      * @throws VocabularyImportException
      * @throws IOException
      */
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strFetchURL,
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType,
                                             String strProjectID)
                     throws VocabularyImportException, IOException;
     /*
@@ -60,12 +61,13 @@ public interface IVocabularySearcher {
      *   This vocabulary is to be used (searched) only with a project (strProjectID).
      * @param strPrefix
      * @param strNamespace
-     * @param repository
+     * @param strFetch
+     * @param theDSGraph
      * @param strProjectID
      * @throws VocabularyImportException
      * @throws IOException
      */
-    public void importAndIndexVocabulary(String strPrefix, String strNamespace, DatasetGraph theDSGraph,
+    public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, DatasetGraph theDSGraph,
                                             String strProjectID)
                     throws VocabularyImportException, IOException;
 

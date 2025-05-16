@@ -84,7 +84,13 @@ public class VocabularyList extends ArrayList<Vocabulary> {
         VocabularyList listVocabsCopy = new VocabularyList();
 
         for ( Vocabulary entryVocab : this ) {
-            listVocabsCopy.add( new Vocabulary( entryVocab.getPrefix(), entryVocab.getNamespace() )
+            listVocabsCopy.add(
+                new Vocabulary(
+                    entryVocab.getPrefix(),
+                    entryVocab.getNamespace(),
+                    entryVocab.getLocation(),
+                    entryVocab.getLocationType()
+                )
             );
         }
 
