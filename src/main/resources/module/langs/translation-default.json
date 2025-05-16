@@ -134,7 +134,7 @@
     "rdft-prefix/prefix-add": "Adding prefix",
     "rdft-prefix/prefix-add-only": "Add prefix only",
     "rdft-prefix/prefix-by-upload": "Upload vocabulary",
-    "rdft-prefix/prefix-by-web": "Trying to import vocabulary from ",
+    "rdft-prefix/prefix-by-url": "Trying to import vocabulary from ",
     "rdft-prefix/provided": "is provided",
     "rdft-prefix/rdfjson": "RDF/JSON",
     "rdft-prefix/rdfthrift": "RDFThrift",

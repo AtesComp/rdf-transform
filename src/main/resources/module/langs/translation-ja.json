@@ -134,7 +134,7 @@
     "rdft-prefix/prefix-add": "プレフィックスを追加中",
     "rdft-prefix/prefix-add-only": "プレフィックスのみを追加",
     "rdft-prefix/prefix-by-upload": "語彙をアップロード",
-    "rdft-prefix/prefix-by-web": "語彙を以下からインポート中",
+    "rdft-prefix/prefix-by-url": "語彙を以下からインポート中",
     "rdft-prefix/provided": "提供されています",
     "rdft-prefix/rdfjson": "RDF/JSON",
     "rdft-prefix/rdfthrift": "RDFThrift",
