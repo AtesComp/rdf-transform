@@ -51,14 +51,19 @@
           </tr>
           <tr>
             <td>
-              <input type="radio" value="web" name="vocab_fetch_method" />
+              <input type="radio" value="url" name="vocab_fetch_method" />
               <span bind="rdf_transform_prefix_fetch"></span>
+              <tr>
+                <td style="padding-bottom:4px">
+                    <input type="text" bind="url_location" size="32" />
+                </td>
+              </tr>
             </td>
           </tr>
           <tr>
             <td>
               <input type="radio" bind="upload_file_radio" value="file" name="vocab_fetch_method" />
-              <span bind="rdf_transform_prefix_imp"></span>
+              <span bind="rdf_transform_prefix_import"></span>
               <form id="file-upload-form" bind="file_upload_form" enctype="multipart/form-data">
                 <input type="hidden" id="vocab-project" name="vocab_project" />
                 <input type="hidden" id="vocab-prefix" name="vocab_prefix" />

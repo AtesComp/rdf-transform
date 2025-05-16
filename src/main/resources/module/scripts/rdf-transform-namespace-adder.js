@@ -53,7 +53,7 @@ class RDFTransformNamespaceAdder {
         // @ts-ignore
         this.#elements.rdf_transform_prefix_fetch.html(     $.i18n('rdft-prefix/fetch')           );
         // @ts-ignore
-        this.#elements.rdf_transform_prefix_imp.html(       $.i18n('rdft-prefix/import')          );
+        this.#elements.rdf_transform_prefix_import.html(    $.i18n('rdft-prefix/import')          );
         // @ts-ignore
         this.#elements.rdf_transform_prefix_file.html(      $.i18n('rdft-prefix/file') + ":"      );
         // @ts-ignore
@@ -112,7 +112,8 @@ class RDFTransformNamespaceAdder {
 
             var strPrefix = this.#elements.prefix.val();
             var strNamespace = this.#elements.namespace.val();
-            var strFetchOption =
+            var strLocation = this.#elements.url_location.val();
+            var strLocType =
                 this.#elements.vocab_import_table
                 .find('input[name="vocab_fetch_method"]:checked')
                 .val();
@@ -164,7 +165,8 @@ class RDFTransformNamespaceAdder {
                 this.#dismiss();
             }
 
-            if (strFetchOption === 'file') {
+            if (strLocType === 'file') {
+                strLocation = this.#elements.file[0].files[0].name;
                 // Prepare the form values by id attributes...
                 // @ts-ignore
                 $('#vocab-project').val(theProject.id);
@@ -177,7 +179,7 @@ class RDFTransformNamespaceAdder {
                     DialogSystem.showBusy(
                         // @ts-ignore
                         $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
-                        '<br />File: ' + this.#elements.file[0].files[0].name );
+                        '<br />File: ' + strLocation );
 
                 Refine.wrapCSRF(
                     (token) => {
@@ -195,20 +197,22 @@ class RDFTransformNamespaceAdder {
                     }
                 );
             }
-            else { // strFetchOption === "prefix" or "web"
+            else { // strLocType === "prefix" or "url"
                 // Prepare the data values...
+                var isURL = (strLocType === "url");
+                var isLoc = ( typeof strLocation === 'string' && strLocation.length > 0 );
                 var postData = {};
                 postData.project   = theProject.id;
                 postData.prefix    = strPrefix;
                 postData.namespace = strNamespace;
-                postData.fetch     = strFetchOption;
-                postData.fetchURL  = strNamespace;
+                postData.location  = isURL ? ( isLoc ? strLocation : strNamespace ) : "";
+                postData.loctype   = isURL ? "URL" : "NONE";
 
-                if (strFetchOption === 'web') {
+                if (isURL) {
                     // @ts-ignore
-                    funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-web') + ' ' + strNamespace);
+                    funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-url') + ' ' + strNamespace);
                 }
-                else { // if (fetchOption === 'prefix') {
+                else { // if (strLocType === "prefix") {
                     // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
                 }
@@ -269,7 +273,7 @@ class RDFTransformNamespaceAdder {
                         if ( message.namespace ) {
                             this.#elements.namespace.val(message.namespace);
                             let strNamespaceNote = '(';
-                            let strPrefixCC = '<a target="_blank" href="http://prefix.cc">prefix.cc</a>';
+                            let strPrefixCC = '<a target="_blank" href="https://prefix.cc">prefix.cc</a>';
                             if ( this.#elements.message.text() ) {
                                 strNamespaceNote +=
                                     // @ts-ignore

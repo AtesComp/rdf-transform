@@ -103,7 +103,7 @@ class RDFTransformVocabManager {
         };
     }
 
-    #handlerRefresh(strPrefix, strNamespace) {
+    #handlerRefresh(strPrefix, strNamespace, strLocation, strLocType) {
         return (evtHandler) => {
             evtHandler.preventDefault();
             if ( window.confirm(
@@ -120,7 +120,9 @@ class RDFTransformVocabManager {
                     "command/rdf-transform/refresh-prefix",
                     {   "project" : theProject.id,
                         "prefix": strPrefix,
-                        'namespace': strNamespace,
+                        "namespace": strNamespace,
+                        "location": strLocation,
+                        "loctype": strLocType
                     },
                     (data) => {
                         if (data.code === "error") {
@@ -155,7 +157,10 @@ class RDFTransformVocabManager {
         var bEven = false;
         const theNamespaces = this.#namespacesManager.getNamespaces();
         for (const strPrefix in theNamespaces) {
-            const strNamespace = theNamespaces[strPrefix];
+            const strNamespace = theNamespaces[strPrefix].namespace;
+            const strLocation  = theNamespaces[strPrefix].location;
+            const strLocType   = theNamespaces[strPrefix].loctype;
+
             /** @type {HTMLElement} */
             var htmlRemoveNamespace =
                 // @ts-ignore
@@ -171,7 +176,7 @@ class RDFTransformVocabManager {
                 // @ts-ignore
                 .text( $.i18n('rdft-vocab/refresh') )
                 .attr('href', '#')
-                .on("click", this.#handlerRefresh(strPrefix, strNamespace) );
+                .on("click", this.#handlerRefresh(strPrefix, strNamespace, strLocation, strLocType) );
             var tr =
                 // @ts-ignore
                 $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
