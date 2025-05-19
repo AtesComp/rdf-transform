@@ -138,9 +138,8 @@ public class CellBlankNode extends ResourceNode implements CellNode {
     private void normalizeBNodeResource(Object objResult) {
         String strResult = Util.toSpaceStrippedString(objResult);
         // NOTE: The prefix "_:" is auto-added by createBNode()
-        // TODO: Use strResult or just "true" or "false"?  Currently, "true" or "false".
         // If we have a good result...
-        if ( ! ( strResult == null || strResult.isEmpty() ) ) {
+        if ( strResult != null && ! strResult.isEmpty() ) {
             Resource bnode = null;
             // If this is a row / record index-based Blank Node...
             if (this.bIsIndex) {

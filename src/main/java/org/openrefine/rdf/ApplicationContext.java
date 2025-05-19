@@ -91,7 +91,7 @@ public class ApplicationContext {
     }
 
     public NamespaceManager getNSManager() {
-        return nsManager;
+        return this.nsManager;
     }
 
     public String getDefaultBaseIRI() {

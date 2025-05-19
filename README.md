@@ -48,24 +48,8 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install#prerequisites) for important Java version information.
 
 <!-- RDF Transform Version Control -->
-### Latest Release
-[RDF Transform v2.3.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.3.1/rdf-transform-2.3.1.zip)
-
-### Previous Releases
-[RDF Transform v2.3.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.3.0/rdf-transform-2.3.0.zip)<br />
-[RDF Transform v2.2.4](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.4/rdf-transform-2.2.4.zip)<br />
-[RDF Transform v2.2.3](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.3/rdf-transform-2.2.3.zip)<br />
-[RDF Transform v2.2.2](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.2/rdf-transform-2.2.2.zip)<br />
-[RDF Transform v2.2.1](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.1/rdf-transform-2.2.1.zip)<br />
-[RDF Transform v2.2.0](https://github.com/AtesComp/rdf-transform/releases/download/v2.2.0/rdf-transform-2.2.0.zip)<br />
-[RDF Transform v2.1.1-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.1-beta/rdf-transform-2.1.1.zip)<br />
-[RDF Transform v2.1.0-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.1.0-beta/rdf-transform-2.1.0.zip)<br />
-[RDF Transform v2.0.5-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.5-alpha/rdf-transform-2.0.5.zip)<br />
-[RDF Transform v2.0.4-beta](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.4-beta/rdf-transform-2.0.4.zip)<br />
-[RDF Transform v2.0.3-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.3-alpha/rdf-transform-2.0.3.zip)<br />
-[RDF Transform v2.0.2-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.2-alpha/rdf-transform-2.0.2.zip)<br />
-[RDF Transform v2.0.1-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.1-alpha/rdf-transform-2.0.1.zip)<br />
-[RDF Transform v2.0.0-alpha](https://github.com/AtesComp/rdf-transform/releases/download/v2.0.0-alpha/rdf-transform-2.0.0.zip)
+### Releases
+See the [Releases section on the wiki Home page](https://github.com/AtesComp/rdf-transform/wiki#releases) for more information.
 
 ## Install
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for more information.
