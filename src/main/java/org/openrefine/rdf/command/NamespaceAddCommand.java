@@ -30,8 +30,12 @@ import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyImportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NamespaceAddCommand extends RDFTransformCommand {
+
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddCmd");
 
     public NamespaceAddCommand() {
         super();
@@ -51,14 +55,19 @@ public class NamespaceAddCommand extends RDFTransformCommand {
         String strNamespace = request.getParameter(Util.gstrNamespace).strip();
         String strLocation  = request.getParameter(Util.gstrLocation).strip();
         String strLocType   = request.getParameter(Util.gstrLocType).strip();
+        if ( Util.isDebugMode() ) {
+            NamespaceAddCommand.logger.info(
+                "DEBUG: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                strPrefix, strNamespace, strLocation, strLocType
+            );
+        }
 
-        Vocabulary.LocationType loctype = Vocabulary.fromLocTypeString(strLocType);
+        Vocabulary.LocationType theLocType = Vocabulary.fromLocTypeString(strLocType);
 
         if (strLocation == null) strLocation = "";
-        if ( strLocation.isEmpty() ) loctype = Vocabulary.LocationType.NONE;
+        if ( strLocation.isEmpty() ) theLocType = Vocabulary.LocationType.NONE;
 
-        if ( loctype == Vocabulary.LocationType.URL ) {
-
+        if ( theLocType == Vocabulary.LocationType.URL ) {
             Exception except = null;
             boolean bError = false; // ...not fetchable
             boolean bFormatted = false;
@@ -67,7 +76,7 @@ public class NamespaceAddCommand extends RDFTransformCommand {
                 RDFTransform.getGlobalContext().
                     getVocabularySearcher().
                         importAndIndexVocabulary(
-                            strPrefix, strNamespace, strLocation, Vocabulary.LocationType.URL, strProjectID);
+                            strPrefix, strNamespace, strLocation, theLocType, strProjectID);
             }
             catch (VocabularyImportException ex) {
                 bFormatted = true;
@@ -90,7 +99,7 @@ public class NamespaceAddCommand extends RDFTransformCommand {
         // Otherwise, all good...
 
         // Add the namespace...
-        this.getRDFTransform(request).addNamespace(strPrefix, strNamespace, strLocation, loctype);
+        this.getRDFTransform(request).addNamespace(strPrefix, strNamespace, strLocation, theLocType);
 
         NamespaceAddCommand.respondJSON(response, CodeResponse.ok);
     }

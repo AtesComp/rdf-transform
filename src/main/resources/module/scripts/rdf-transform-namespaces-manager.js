@@ -37,10 +37,11 @@ class RDFTransformNamespacesManager {
     async init() {
         this.#dialog.waitOnNamespaces();
 
-        // Get existing namespaces (clone namespaces)...
+        // Get existing namespaces...
         var theNamespaces = this.#dialog.getNamespaces();
 
         if ( ! theNamespaces ) {
+            // Get default namespaces...
             var data = null;
             this.#theNamespaces = {} // ...empty object, no namespaces
             try {
@@ -51,7 +52,8 @@ class RDFTransformNamespacesManager {
             }
             var bError = false;
             if (data !== null && "namespaces" in data) {
-                this.#theNamespaces = data.namespaces; // ...new defaults namespaces
+                // Clone default namespaces...
+                this.#theNamespaces = JSON.parse( JSON.stringify( data.namespaces ) ); // ...new defaults namespaces
             }
             else { // (data === null || data.code === "error")
                 bError = true;
@@ -63,18 +65,15 @@ class RDFTransformNamespacesManager {
             }
         }
         else {
+            // Clone existing namespaces...
             this.#theNamespaces = JSON.parse( JSON.stringify( theNamespaces ) );
-            this.#saveNamespaces();
         }
+        this.#saveNamespaces();
         this.#renderNamespaces();
     }
 
-    reset() {
-        this.#dialog.waitOnNamespaces();
-        // Get existing namespaces (clone namespaces)...
-        this.#theNamespaces = JSON.parse( JSON.stringify( this.#dialog.getNamespaces() ) );
-        this.#saveNamespaces();
-        this.#renderNamespaces();
+    async reset() {
+        await this.init();
     }
 
     /*
@@ -152,12 +151,16 @@ class RDFTransformNamespacesManager {
         dlgNamespaceAdder.show(
             strMessage,
             strPrefixGiven,
-            (strPrefix, strNamespace) => {
+            (strPrefix, strNamespace, strLocation, strLocType) => {
                 // NOTE: RDFTransformNamespaceAdder should have validated the
                 //      prefix information, so no checks are required here.
 
                 // Add the Prefix and its Namespace...
-                this.#theNamespaces[strPrefix] = strNamespace;
+                this.#theNamespaces[strPrefix] = {
+                    "namespace": strNamespace,
+                    "location": strLocation,
+                    "loctype": strLocType
+                };
                 this.#saveNamespaces();
                 this.#renderNamespaces();
 

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -93,8 +94,10 @@ public class VocabularySearcher implements IVocabularySearcher {
             throws IOException {
         if ( Util.isDebugMode() || Util.isVerbose(3) ) VocabularySearcher.logger.info("Creating vocabulary searcher...");
 
+        Path pathLuceneNew = null;
         try {
-            this.dirLucene = FSDirectory.open( new File(dir, LUCENE_DIR).toPath() );
+            pathLuceneNew = new File(dir, LUCENE_DIR).toPath();
+            this.dirLucene = FSDirectory.open(pathLuceneNew);
         }
         catch (IOException e) {
             VocabularySearcher.logger.error("  ERROR: ABORTED - Cannot open Lucene directory!");
@@ -111,25 +114,29 @@ public class VocabularySearcher implements IVocabularySearcher {
         catch (IndexFormatTooOldException | IllegalArgumentException e) {
             VocabularySearcher.logger.warn("  WARNING: Lucene Index format incompatible. Attempting new indexing...");
 
-            // Move current Lucene files to OLD directory so that a new directory can be built...
             try {
+                // Move current Lucene files to OLD directory so that a new directory can be built...
+                File dirLuceneOld = new File(dir, LUCENE_DIR_OLD);
+                if ( ! Util.recursiveDirDelete(dirLuceneOld) ) { // ...remove any existing OLD Lucene directory
+                    throw new IOException("Could not recursively delete OLD Lucene directory!");
+                }
+                Path pathLuceneOld = dirLuceneOld.toPath();
                 Files.move(
-                    new File(dir, LUCENE_DIR).toPath(),
-                    new File(dir, LUCENE_DIR_OLD).toPath(),
+                    pathLuceneNew,
+                    pathLuceneOld,
                     StandardCopyOption.REPLACE_EXISTING
                 );
-                this.writer = new IndexWriter(this.dirLucene, new IndexWriterConfig(analyzer));
+                if (this.writer == null) this.writer = new IndexWriter(this.dirLucene, new IndexWriterConfig(analyzer));
+                // Retry commit...
                 this.writer.commit();
             }
             catch (IOException e2) {
-                VocabularySearcher.logger.error("  ERROR: ABORTED - Cannot open Lucene directory (2)!");
-                if ( Util.isDebugMode() || Util.isVerbose() ) VocabularySearcher.logger.error("  ERROR: ABORTED!", e2);
+                VocabularySearcher.logger.error("  ERROR: ABORTED - Cannot open Lucene directory (2)!", e2);
                 throw e2;
             }
         }
         catch (IOException e) { // ...other IOException
-            VocabularySearcher.logger.error("  ERROR: ABORTED - IO Error!");
-            if ( Util.isDebugMode() || Util.isVerbose() ) VocabularySearcher.logger.error("  ERROR: ABORTED!", e);
+            VocabularySearcher.logger.error("  ERROR: ABORTED - IO Error!", e);
             throw e;
         }
 
@@ -177,6 +184,7 @@ public class VocabularySearcher implements IVocabularySearcher {
             this.indexTerms(strProjectID, classes, properties);
         }
         else if (theLocType == Vocabulary.LocationType.FILE) {
+            // TODO: ...
         }
     }
 

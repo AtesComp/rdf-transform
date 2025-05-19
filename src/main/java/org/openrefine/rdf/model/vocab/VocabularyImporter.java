@@ -110,7 +110,7 @@ public class VocabularyImporter {
 
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Load dataset graph from URL");
             if (this.bStrictlyRDF) {
-                this.theDSGraph = RDFDataMgr.loadDatasetGraph( strFetchURL, Lang.RDFXML );
+                this.theDSGraph = RDFDataMgr.loadDatasetGraph(strFetchURL, Lang.RDFXML);
                 //this.modelImport.read( strFetchURL, Lang.RDFXML.getName() );
             }
             else {
@@ -332,7 +332,7 @@ public class VocabularyImporter {
         // Continue Processing: Set up booleans to process by later code outside this function
         //
 
-        // SKOS: We add an exceptional treatment for SKOS as their deployment does not handle an
+        // SKOS: An exceptional treatment is provided for SKOS as their deployment does not handle an
         //       "Accept" header properly!  SKOS always returns "HTML" if the "Accept" header
         //       contains HTML regardless other more preferred options.
         this.bStrictlyRDF = strFetchURL.equals("http://www.w3.org/2004/02/skos/core#");

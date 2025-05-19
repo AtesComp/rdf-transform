@@ -35,7 +35,9 @@
         <td bind="rdf_transform_prefix_namespace"></td>
         <td style="padding-bottom:4px">
             <input type="text" bind="namespace" size="32" />
-            <div class="rdf-transform-prefix-note" bind="namespace_note"></div>
+            <div class="rdf-transform-prefix-note">
+              <span bind="namespace_note">(no suggestion)</span>
+            </div>
         </td>
       </tr>
     </table>
@@ -53,11 +55,13 @@
             <td>
               <input type="radio" value="url" name="vocab_fetch_method" />
               <span bind="rdf_transform_prefix_fetch"></span>
-              <tr>
-                <td style="padding-bottom:4px">
-                    <input type="text" bind="url_location" size="32" />
-                </td>
-              </tr>
+              <table class="rdf-transform-indented-table">
+                <tr>
+                  <td style="padding-bottom:4px">
+                      <input type="text" bind="url_location" size="48" />
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
@@ -65,9 +69,6 @@
               <input type="radio" bind="upload_file_radio" value="file" name="vocab_fetch_method" />
               <span bind="rdf_transform_prefix_import"></span>
               <form id="file-upload-form" bind="file_upload_form" enctype="multipart/form-data">
-                <input type="hidden" id="vocab-project" name="vocab_project" />
-                <input type="hidden" id="vocab-prefix" name="vocab_prefix" />
-                <input type="hidden" id="vocab-namespace" name="vocab_namespace" />
                 <table class="rdf-transform-indented-table" id="upload-file-table" bind="upload_file_table">
                   <tr>
                     <td bind="rdf_transform_prefix_file"></td>
@@ -79,7 +80,7 @@
                   <tr>
                     <td bind="rdf_transform_prefix_format"></td>
                     <td style="padding-bottom:4px">
-                      <select disabled="disabled" name="file_format" class="upload_file_inputs">
+                      <select bind="file_type" disabled="disabled" name="file_format" class="upload_file_inputs">
                         <option value="auto-detect" bind="rdf_transform_prefix_auto"></option>
                         <option value="RDF/XML" bind="rdf_transform_prefix_rdfxml"></option>
                         <option value="TTL" bind="rdf_transform_prefix_turtle"></option>

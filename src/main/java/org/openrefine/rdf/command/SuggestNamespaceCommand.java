@@ -42,8 +42,7 @@ public class SuggestNamespaceCommand extends RDFTransformCommand {
 
         String strSuggestion = null;
         try {
-            strSuggestion =
-            "{ \"" + Util.gstrNamespace + "\" : " +  strNamespace + " }";
+            strSuggestion = "{ \"" + Util.gstrNamespace + "\" : \"" +  strNamespace + "\" }";
 
             // Send back to client...
             SuggestNamespaceCommand.respondJSON( response, new CodeResponse(strSuggestion) );

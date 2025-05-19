@@ -130,15 +130,15 @@ public class RDFTransform implements OverlayModel {
     static public Vocabulary getVocabFromPrefixNode(Entry<String, JsonNode> prefix) {
         String strPrefix = prefix.getKey();
         String[] astrValues = { null, null, null }; // 0 = Namespace, 1 = Location, 2 = Location Type
-        Vocabulary.LocationType loctype = Vocabulary.LocationType.NONE;
+        Vocabulary.LocationType theLocType = Vocabulary.LocationType.NONE;
         Vocabulary vocab = null;
+        Boolean bOld = false;
 
         // If the prefix does not have field, then it only has a namespace value (DEPRECATED Old Format)...
         if ( ! prefix.getValue().fields().hasNext() ) {
             // Upgrade to New Format...
+            bOld = true;
             astrValues[0] = prefix.getValue().asText();
-            astrValues[1] = astrValues[0];
-            loctype = Vocabulary.LocationType.URL;
         }
         else {
             prefix.getValue().fields().forEachRemaining(value -> {
@@ -148,13 +148,15 @@ public class RDFTransform implements OverlayModel {
                 else if ( strKey.equals("location") )   astrValues[1] = strVal;
                 else if ( strKey.equals("loctype") )    astrValues[2] = strVal;
             });
-            if ( astrValues[2] != null && ! astrValues[2].isEmpty() ) loctype = Vocabulary.fromLocTypeString( astrValues[2] ) ;
+            if ( astrValues[2] != null && ! astrValues[2].isEmpty() ) theLocType = Vocabulary.fromLocTypeString( astrValues[2] ) ;
         }
 
-        if (astrValues[1] == null)
-            vocab = new Vocabulary( strPrefix, astrValues[0], "", loctype );
+        if (bOld)
+            vocab = new Vocabulary( strPrefix, astrValues[0] );
+        else if (astrValues[1] == null)
+            vocab = new Vocabulary( strPrefix, astrValues[0], "", theLocType );
         else
-            vocab = new Vocabulary( strPrefix, astrValues[0], astrValues[1], loctype );
+            vocab = new Vocabulary( strPrefix, astrValues[0], astrValues[1], theLocType );
         return vocab;
     }
 
@@ -644,15 +646,15 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore
-    public void addNamespace(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType loctype) {
+    public void addNamespace(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType) {
         if (this.theNamespaces == null) {
             this.theNamespaces = new VocabularyList();
         }
         if ( strLocation == null || strLocation.isEmpty() ) {
             strLocation = "";
-            loctype = Vocabulary.LocationType.NONE;
+            theLocType = Vocabulary.LocationType.NONE;
         }
-        this.theNamespaces.add( new Vocabulary(strPrefix, strNamespace, strLocation, loctype) );
+        this.theNamespaces.add( new Vocabulary(strPrefix, strNamespace, strLocation, theLocType) );
     }
 
     @JsonIgnore

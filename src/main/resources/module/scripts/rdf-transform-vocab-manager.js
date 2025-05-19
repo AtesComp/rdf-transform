@@ -106,29 +106,42 @@ class RDFTransformVocabManager {
     #handlerRefresh(strPrefix, strNamespace, strLocation, strLocType) {
         return (evtHandler) => {
             evtHandler.preventDefault();
+            if (strLocType === "NONE") return;
             if ( window.confirm(
                     // @ts-ignore
                     $.i18n('rdft-vocab/desc-one') + ' "' + strNamespace + '"\n' +
                     // @ts-ignore
                     $.i18n('rdft-vocab/desc-two') ) )
             {
-                var dismissBusy =
-                    // @ts-ignore
-                    DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
+                var postCmd = null;
+                var postData = {};
+                postData.project   = theProject.id;
+                postData.prefix    = strPrefix;
+                postData.namespace = strNamespace;
+                postData.location  = strLocation;
+                postData.loctype   = strLocType;
 
+                var dismissBusy = null;
+                var msgAlert = null;
+                if (strLocType === "URL") {
+                    // @ts-ignore
+                    dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
+                    postCmd = "command/rdf-transform/refresh-prefix";
+                    msgAlert = $.i18n('rdft-vocab/alert-wrong') + ': ';
+                }
+                else { // ...if (strLocType === a file type) {
+                    // @ts-ignore
+                    dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' +
+                                    strNamespace + '<br />File: ' + strLocation );
+                    postCmd = "command/rdf-transform/add-namespace-from-file";
+                    msgAlert = $.i18n('rdft-vocab/error-adding') + ': ' + strPrefix + "\n";
+                }
                 Refine.postCSRF(
-                    "command/rdf-transform/refresh-prefix",
-                    {   "project" : theProject.id,
-                        "prefix": strPrefix,
-                        "namespace": strNamespace,
-                        "location": strLocation,
-                        "loctype": strLocType
-                    },
+                    postCmd,
+                    postData,
                     (data) => {
-                        if (data.code === "error") {
-                            // @ts-ignore
-                            alert($.i18n('rdft-vocab/alert-wrong') + ': ' + data.message);
-                        }
+                        // @ts-ignore
+                        if (data.code === "error") alert(msgAlert + data.message);
                         this.#renderBody();
                         dismissBusy();
                     },
@@ -139,7 +152,7 @@ class RDFTransformVocabManager {
     }
 
     #renderBody() {
-        var table = this.#elements.namespacesTable;
+        var table = this.#elements.tableNamespaces;
         table.empty();
         table.append(
             // @ts-ignore
@@ -156,34 +169,52 @@ class RDFTransformVocabManager {
 
         var bEven = false;
         const theNamespaces = this.#namespacesManager.getNamespaces();
-        for (const strPrefix in theNamespaces) {
-            const strNamespace = theNamespaces[strPrefix].namespace;
-            const strLocation  = theNamespaces[strPrefix].location;
-            const strLocType   = theNamespaces[strPrefix].loctype;
+        //console.debug( "RDFTransformVocabManager : #renderBody : theNamespaces :\n" + JSON.stringify(theNamespaces, null, 2) );
+        for (const cstrPrefix in theNamespaces) {
+            let strNamespace = '';
+            let strLocation  = '';
+            let strLocType   = 'NONE';
+            // If the Namespaces are constructed as the DEPRECATED version...
+            if ( typeof theNamespaces[cstrPrefix] === 'string' ) {
+                strNamespace = theNamespaces[cstrPrefix];
+                // ...assume a URL Namespace...
+                strLocation  = strNamespace;
+                strLocType   = 'URL';
+            }
+            else {
+                strNamespace = theNamespaces[cstrPrefix].namespace;
+                strLocation  = theNamespaces[cstrPrefix].location;
+                strLocType   = theNamespaces[cstrPrefix].loctype;
+            }
 
-            /** @type {HTMLElement} */
+            const cstrNamespace = strNamespace;
+            const cstrLocation  = strLocation;
+            const cstrLocType   = strLocType;
+
             var htmlRemoveNamespace =
                 // @ts-ignore
                 $('<a/>')
                 // @ts-ignore
                 .text( $.i18n('rdft-vocab/delete') )
                 .attr('href', '#')
-                .on("click", this.#handlerRemove(strPrefix) );
-            /** @type {HTMLElement} */
-            var htmlRefreshNamespace =
-                // @ts-ignore
-                $('<a/>')
-                // @ts-ignore
-                .text( $.i18n('rdft-vocab/refresh') )
-                .attr('href', '#')
-                .on("click", this.#handlerRefresh(strPrefix, strNamespace, strLocation, strLocType) );
+                .on("click", this.#handlerRemove(cstrPrefix) );
+            var htmlRefreshNamespace = $('');
+            if ( strLocType !== 'NONE' ) {
+                htmlRefreshNamespace =
+                    // @ts-ignore
+                    $('<a/>')
+                    // @ts-ignore
+                    .text( $.i18n('rdft-vocab/refresh') )
+                    .attr('href', '#')
+                    .on("click", this.#handlerRefresh(cstrPrefix, cstrNamespace, cstrLocation, cstrLocType) );
+            }
             var tr =
                 // @ts-ignore
                 $('<tr/>').addClass(bEven ? 'rdf-transform-table-even' : 'rdf-transform-table-odd')
                 // @ts-ignore
-                .append( $('<td>').text(strPrefix) )
+                .append( $('<td>').text(cstrPrefix) )
                 // @ts-ignore
-                .append( $('<td>').text(strNamespace) )
+                .append( $('<td>').text(cstrNamespace) )
                 // @ts-ignore
                 .append( $('<td>').html(htmlRemoveNamespace) )
                 // @ts-ignore

@@ -24,6 +24,7 @@ class RDFTransformNamespaceAdder {
     #dlgPrefixAdd;
     #elements;
     #level;
+    #bNamespaceByLookup;
 
     #onDoneAdding;
 
@@ -92,6 +93,8 @@ class RDFTransformNamespaceAdder {
         this.#elements.buttonVocabImport.html( $.i18n('rdft-buttons/vocab-import') + "..." );
 
         this.#level = DialogSystem.showDialog(this.#dlgPrefixAdd);
+
+        this.#bNamespaceByLookup = false;
     }
 
     show(strMessage, strPrefix, onDoneAdding) {
@@ -113,10 +116,11 @@ class RDFTransformNamespaceAdder {
             var strPrefix = this.#elements.prefix.val();
             var strNamespace = this.#elements.namespace.val();
             var strLocation = this.#elements.url_location.val();
-            var strLocType =
+            var strType =
                 this.#elements.vocab_import_table
                 .find('input[name="vocab_fetch_method"]:checked')
                 .val();
+            var strLocType = "NONE";
 
             //
             // Test the user supplied prefix and namespace...
@@ -148,6 +152,10 @@ class RDFTransformNamespaceAdder {
             // All Good: Process the Prefix Info for addition on the server...
             //
             var funcDismissBusy = null;
+            var isFILE = (strType === "file");
+            var isURL  = (strType === "url");
+            // ...otherwise, strType === "prefix"
+            strLocType = isFILE ? "FILE" : ( isURL ? "URL" : "NONE" );
 
             let funcSuccess = (data) => {
                 if (data.code === "error") {
@@ -159,21 +167,24 @@ class RDFTransformNamespaceAdder {
                 else if (this.#onDoneAdding) {
                     // Since we've successfully added the Prefix Info on the server,
                     // add it to the client for viewing...
-                    this.#onDoneAdding(strPrefix, strNamespace);
+                    this.#onDoneAdding(strPrefix, strNamespace, strLocation, strLocType);
                 }
                 funcDismissBusy();
                 this.#dismiss();
             }
 
-            if (strLocType === 'file') {
+            var postCmd = null;
+            var postData = {};
+            postData.project   = theProject.id;
+            postData.prefix    = strPrefix;
+            postData.namespace = strNamespace;
+            //postData.location  = strLocation;
+            postData.loctype   = strLocType;
+            if (isFILE) {
                 strLocation = this.#elements.file[0].files[0].name;
-                // Prepare the form values by id attributes...
-                // @ts-ignore
-                $('#vocab-project').val(theProject.id);
-                // @ts-ignore
-                $('#vocab-prefix').val(strPrefix);
-                // @ts-ignore
-                $('#vocab-namespace').val(strNamespace);
+                strLocType = this.#elements.file_type.val();
+                if (strLocType === "auto-detect") strLocType = "FILE";
+                postData.location  = strLocation;
 
                 funcDismissBusy =
                     DialogSystem.showBusy(
@@ -181,49 +192,32 @@ class RDFTransformNamespaceAdder {
                         $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
                         '<br />File: ' + strLocation );
 
-                Refine.wrapCSRF(
-                    (token) => {
-                        // Requires JQuery Form plugin...
-                        // @ts-ignore
-                        $(evt.currentTarget).ajaxSubmit(
-                            {
-                                url      : "command/rdf-transform/add-namespace-from-file",
-                                type     : "post",
-                                dataType : "json",
-                                headers  : { 'X-CSRF-TOKEN': token },
-                                success  : funcSuccess
-                            }
-                        );
-                    }
-                );
+                postCmd = "command/rdf-transform/add-namespace-from-file";
             }
-            else { // strLocType === "prefix" or "url"
+            else { // strType === "prefix" or "url"
                 // Prepare the data values...
-                var isURL = (strLocType === "url");
                 var isLoc = ( typeof strLocation === 'string' && strLocation.length > 0 );
-                var postData = {};
-                postData.project   = theProject.id;
-                postData.prefix    = strPrefix;
-                postData.namespace = strNamespace;
-                postData.location  = isURL ? ( isLoc ? strLocation : strNamespace ) : "";
-                postData.loctype   = isURL ? "URL" : "NONE";
+                if      ( ! isURL ) strLocation = "";
+                else if ( ! isLoc ) strLocation = strNamespace;
+                postData.location  = strLocation;
 
                 if (isURL) {
                     // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-url') + ' ' + strNamespace);
                 }
-                else { // if (strLocType === "prefix") {
+                else { // if (strType === "prefix") {
                     // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
                 }
 
-                Refine.postCSRF(
-                    "command/rdf-transform/add-namespace",
-                    postData,
-                    funcSuccess,
-                    "json"
-                );
+                postCmd = "command/rdf-transform/add-namespace";
             }
+            Refine.postCSRF(
+                postCmd,
+                postData,
+                funcSuccess,
+                "json"
+            );
         });
 
         this.#elements.buttonOK
@@ -258,10 +252,13 @@ class RDFTransformNamespaceAdder {
         // @ts-ignore
         .change( (evt) => { this.#suggestNamespace( $(evt.currentTarget).val() ); } )
         .focus();
+
+        this.#elements.namespace
+        .change( () => { this.#bNamespaceByLookup = false; } );
     }
 
     #suggestNamespace(strPrefix) {
-        if ( ! this.#elements.namespace.val() )
+        if ( ! this.#elements.namespace.val() || this.#bNamespaceByLookup )
         {
             // @ts-ignore
             $.get(
@@ -269,18 +266,17 @@ class RDFTransformNamespaceAdder {
                 { "prefix": strPrefix },
                 (data) => {
                     if (data !== null && data.code === "ok") {
-                        let message = JSON.parse(data.message);
-                        if ( message.namespace ) {
+                        //console.debug( "RDFTransformNamespaceAdder : #suggestNamespace : " + data.message.toString() );
+                        let message = JSON.parse( data.message.toString() );
+                        if ( message.namespace && message.namespace != "null" ) {
                             this.#elements.namespace.val(message.namespace);
+                            this.#bNamespaceByLookup = true;
                             let strNamespaceNote = '(';
-                            let strPrefixCC = '<a target="_blank" href="https://prefix.cc">prefix.cc</a>';
+                            let strPrefixCC = '<a target="_blank" href="https://prefix.cc/' + strPrefix + '"><em>prefix.cc</em></a>';
                             if ( this.#elements.message.text() ) {
                                 strNamespaceNote +=
                                     // @ts-ignore
-                                    $.i18n('rdft-prefix/suggestion') +
-                                    ' <em>' + strPrefixCC + '</em> ' +
-                                    // @ts-ignore
-                                    $.i18n('rdft-prefix/provided');
+                                    $.i18n('rdft-prefix/suggestion') + ' ' + strPrefixCC + ' ' + $.i18n('rdft-prefix/provided');
                             }
                             else {
                                 // @ts-ignore
@@ -288,6 +284,12 @@ class RDFTransformNamespaceAdder {
                             }
                             strNamespaceNote += ')';
                             this.#elements.namespace_note.html( strNamespaceNote );
+                        }
+                        else {
+                            this.#elements.namespace.val("");
+                            this.#bNamespaceByLookup = true;
+                            let strPrefixCC = '<a target="_blank" href="https://prefix.cc"><em>prefix.cc</em></a>';
+                            this.#elements.namespace_note.html( "(no suggestion: try " + strPrefixCC + ")" );
                         }
                     }
                 },

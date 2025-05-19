@@ -42,22 +42,24 @@ public class Vocabulary {
     private LocationType loctype;   // The location type for the vocabulary
 
     static public LocationType fromLocTypeString(String strVal) {
-        if ( strVal == LocationType.NONE.toString() )       return LocationType.NONE;
-        if ( strVal == LocationType.URL.toString() )        return LocationType.URL;
-        if ( strVal == LocationType.FILE.toString() )       return LocationType.FILE;
-        if ( strVal == "RDF/XML" ||
-             strVal == LocationType.RDF_XML.toString() )    return LocationType.RDF_XML;
-        if ( strVal == LocationType.TTL.toString() )        return LocationType.TTL;
-        if ( strVal == LocationType.N3.toString() )         return LocationType.N3;
-        if ( strVal == LocationType.NTRIPLE.toString() )    return LocationType.NTRIPLE;
-        if ( strVal == "JSON-LD" ||
-             strVal == LocationType.JSON_LD.toString() )    return LocationType.JSON_LD;
-        if ( strVal == LocationType.NQUADS.toString() )     return LocationType.NQUADS;
-        if ( strVal == "RDF/JSON" ||
-             strVal == LocationType.RDF_JSON.toString() )   return LocationType.RDF_JSON;
-        if ( strVal == LocationType.TRIG.toString() )       return LocationType.TRIG;
-        if ( strVal == LocationType.TRIX.toString() )       return LocationType.TRIX;
-        if ( strVal == LocationType.RDFTHRIFT.toString() )  return LocationType.RDFTHRIFT;
+        if ( Util.isDebugMode() ) Vocabulary.logger.info("DEBUG: strVal:[{}]", strVal);
+
+        if ( strVal.equals( LocationType.NONE.toString() ) )        return LocationType.NONE;
+        if ( strVal.equals( LocationType.URL.toString() ) )         return LocationType.URL;
+        if ( strVal.equals( LocationType.FILE.toString() ) )        return LocationType.FILE;
+        if ( strVal.equals( "RDF/XML" ) ||
+             strVal.equals( LocationType.RDF_XML.toString() ) )     return LocationType.RDF_XML;
+        if ( strVal.equals( LocationType.TTL.toString() ) )         return LocationType.TTL;
+        if ( strVal.equals( LocationType.N3.toString() ) )          return LocationType.N3;
+        if ( strVal.equals( LocationType.NTRIPLE.toString() ) )     return LocationType.NTRIPLE;
+        if ( strVal.equals( "JSON-LD" ) ||
+             strVal.equals( LocationType.JSON_LD.toString() ) )     return LocationType.JSON_LD;
+        if ( strVal.equals( LocationType.NQUADS.toString() ) )      return LocationType.NQUADS;
+        if ( strVal.equals( "RDF/JSON" ) ||
+             strVal.equals( LocationType.RDF_JSON.toString() ) )    return LocationType.RDF_JSON;
+        if ( strVal.equals( LocationType.TRIG.toString() ) )        return LocationType.TRIG;
+        if ( strVal.equals( LocationType.TRIX.toString() ) )        return LocationType.TRIX;
+        if ( strVal.equals( LocationType.RDFTHRIFT.toString() ) )   return LocationType.RDFTHRIFT;
         return null;
     }
 
@@ -67,7 +69,7 @@ public class Vocabulary {
         this.strNamespace = strNamespace;
         this.strLocation = strNamespace;
         this.loctype = LocationType.URL;
-        if (strPrefix == "xsd") {
+        if ( strPrefix.equals("xsd") ) {
             this.strLocation = "";
             this.loctype = LocationType.NONE;
         }
@@ -117,7 +119,7 @@ public class Vocabulary {
     @Override
     public boolean equals(Object object) {
         if ( object != null && object.getClass().equals( this.getClass() ) ) {
-            return this.strPrefix.equals( ( (Vocabulary) object).getPrefix());
+            return this.strPrefix.equals( ( (Vocabulary) object ).getPrefix() );
         }
         return false;
     }

@@ -22,23 +22,14 @@
 package org.openrefine.rdf.command;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
-import org.openrefine.rdf.model.vocab.Vocabulary;
-//import org.apache.jena.rdf.model.Model;
-//import org.apache.jena.rdf.model.ModelFactory;
+import org.openrefine.rdf.model.vocab.Vocabulary.LocationType;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
@@ -52,24 +43,41 @@ import org.slf4j.LoggerFactory;
 public class NamespaceAddFromFileCommand extends RDFTransformCommand {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddFromFileCmd");
 
-    String strPrefix;
-    String strNamespace;
+    static private RDFTransform getProjectTransform(String strProjID)
+            throws ServletException { // ...just because
+        Project theProject = null;
+
+        if ( ! ( strProjID == null || strProjID.isEmpty() ) ) {
+            Long liProjectID;
+            try {
+                liProjectID = Long.parseLong(strProjID);
+            }
+            catch (NumberFormatException ex) {
+                throw new ServletException("Project ID not a long int!", ex);
+            }
+
+            theProject = ProjectManager.singleton.getProject(liProjectID);
+        }
+
+        if (theProject == null) {
+            throw new ServletException("Project ID [" + strProjID + "] not found! May be corrupt.");
+        }
+
+        RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
+        if (theTransform == null) {
+            throw new ServletException("RDF Transform for Project ID [" + strProjID + "] not found!");
+        }
+        return theTransform;
+    }
+
     Lang theRDFLang;
-    Vocabulary.LocationType theLocType;
-    String strProjectID;
-    String strFilename;
-    InputStream instreamFile;
+    LocationType theLocType;
 
     public NamespaceAddFromFileCommand() {
         super();
 
-        this.strProjectID = null;
-        this.strPrefix = null;
-        this.strNamespace = null;
         this.theRDFLang = null;
-        this.theLocType = Vocabulary.LocationType.FILE;
-        this.strFilename = "";
-        this.instreamFile = null;
+        this.theLocType = LocationType.NONE;
     }
 
     @Override
@@ -80,228 +88,170 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             NamespaceAddFromFileCommand.respondCSRFError(response);
             return;
         }
-        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting DiskFileItemFactory...");
-        FileItemFactory factory = new DiskFileItemFactory();
-        RDFTransform theTransform = null;
 
-        try {
-            // Create a new file upload handler...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting ServletFileUpload...");
-            ServletFileUpload upload = new ServletFileUpload(factory);
+        // For Project, DO NOT USE this.getProject(request) as we only need the string...
+        String strProjectID = request.getParameter(Util.gstrProject);
 
-            // Parse the request into a file item list...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Parsing request into this ontology's related file items...");
-            List<FileItem> items = upload.parseRequest(request);
-
-            // Parse the file into an input stream...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Parsing the ontology's file items into action elements...");
-            this.parseUploadItems(items);
-
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
-            theTransform = getProjectTransform();
-
-            //if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Creating dataset graph for this ontology file...");
-            // NOTE: use createOntologyModel() to do ontology include processing.
-            //      createDefaultModel() just processes the given file without including.
-            //Model theModel = ModelFactory.createDefaultModel();
-
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Reading dataset graph from ontology file...");
-            DatasetGraph theDSGraph = null;
-            if (this.theRDFLang != null) {
-                //theModel.read( this.instreamFile, "", this.theRDFLang.getName() );
-                theDSGraph = RDFDataMgr.loadDatasetGraph(this.strFilename, this.theRDFLang);
-            }
-            else {
-                //theModel.read( this.instreamFile, "" ); // ...assumes the concrete syntax is RDF/XML
-                theDSGraph = RDFDataMgr.loadDatasetGraph(this.strFilename);
-            }
-
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from dataset graph...");
-            RDFTransform.getGlobalContext().
-                getVocabularySearcher().
-                    importAndIndexVocabulary(this.strPrefix, this.strNamespace, this.strFilename, theDSGraph, this.strProjectID);
+        String strPrefix    = request.getParameter(Util.gstrPrefix);
+        String strNamespace = request.getParameter(Util.gstrNamespace);
+        String strLocation  = request.getParameter(Util.gstrLocation);
+        String strLocType   = request.getParameter(Util.gstrLocType);
+        if (strLocation == null) strLocation = "";
+        if ( strLocation.isEmpty() ) {
+            theLocType = LocationType.NONE;
         }
-        catch (Exception ex) {
-            NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
-            NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
-            return;
+        else {
+            RDFTransform theTransform = null;
+            this.parseRDFLang(strLocation, strLocType);
+            try {
+                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
+                theTransform = NamespaceAddFromFileCommand.getProjectTransform(strProjectID);
+
+                // Remove the namespace...
+                theTransform.removeNamespace(strPrefix);
+
+                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Reading dataset graph from ontology file...");
+                DatasetGraph theDSGraph = null;
+                if (this.theRDFLang != null) {
+                    theDSGraph = RDFDataMgr.loadDatasetGraph(strLocation, this.theRDFLang);
+                }
+                else {
+                    theDSGraph = RDFDataMgr.loadDatasetGraph(strLocation);
+                }
+
+                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from dataset graph...");
+                RDFTransform.getGlobalContext().
+                    getVocabularySearcher().
+                        importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theDSGraph, strProjectID);
+            }
+            catch (Exception ex) {
+                NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
+                NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
+                return;
+            }
+
+            // Add the namespace...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Adding Namespace...");
+            if (theTransform != null) theTransform.addNamespace(strPrefix, strNamespace, strLocation, this.theLocType);
         }
-
-        // Otherwise, all good...
-
-        // Add the namespace...
-        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Adding Namespace...");
-        theTransform.addNamespace(this.strPrefix, this.strNamespace, this.strFilename, this.theLocType);
 
         NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
 
         if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: ...Ended ontology import.");
     }
 
-    private void parseUploadItems(List<FileItem> items)
-            throws IOException {
-        String strFormat = null;
-        // Get the form values by attribute names...
-        //      NOTE: See file "rdf-transform-prefix-add.html" and "rdf-transform-namespace-adder.js" for matching keys.
-        for (FileItem item : items) {
-            String strItemName = item.getFieldName();
-            if (strItemName.equals("vocab_prefix")) {
-                this.strPrefix = item.getString();
-            }
-            else if (strItemName.equals("vocab_namespace")) {
-                this.strNamespace = item.getString();
-            }
-            else if (strItemName.equals("vocab_project")) {
-                this.strProjectID = item.getString();
-            }
-            else if (strItemName.equals("file_format")) {
-                strFormat = item.getString();
-            }
-            else if (strItemName.equals("uploaded_file")) {
-                this.strFilename = item.getName();
-                this.instreamFile = item.getInputStream();
-            }
-        }
+    private void parseRDFLang(String strLocType, String strLocation) {
+        //this.theRDFLang = null;
+        this.theLocType = LocationType.FILE;
+        if (strLocType != null) {
+            // Check the strLocType value to set RDF language...
+            //      NOTE: See file "rdf-transform-prefix-add.html".
 
-        this.theRDFLang = Lang.RDFXML;
-        this.theLocType = Vocabulary.LocationType.RDF_XML;
-        if (strFormat != null) {
-            // Check the "file_format" key's value to set RDF language...
-            //      NOTE: See file "rdf-transform-prefix-add.html" for matching key values.
-            if (strFormat.equals("auto-detect")) {
-                this.guessFormat(strFilename);
+            if ( strLocType.equals("auto-detect") || strLocType.equals( LocationType.FILE.toString() ) ) {
+                this.guessFormat(strLocation);
             }
-            else if (strFormat.equals("RDF/XML")) {
+            else if ( strLocType.equals("RDF/XML") || strLocType.equals( LocationType.RDF_XML.toString() ) ) {
                 this.theRDFLang = Lang.RDFXML;
-                this.theLocType = Vocabulary.LocationType.RDF_XML;
+                this.theLocType = LocationType.RDF_XML;
             }
-            else if (strFormat.equals("TTL")) {
+            else if ( strLocType.equals( LocationType.TTL.toString() ) ) {
                 this.theRDFLang = Lang.TURTLE;
-                this.theLocType = Vocabulary.LocationType.TTL;
+                this.theLocType = LocationType.TTL;
             }
-            else if (strFormat.equals("N3")) {
+            else if (strLocType.equals( LocationType.N3.toString() ) ) {
                 this.theRDFLang = Lang.N3;
-                this.theLocType = Vocabulary.LocationType.N3;
+                this.theLocType = LocationType.N3;
             }
-            else if (strFormat.equals("NTRIPLE")) {
+            else if ( strLocType.equals( LocationType.NTRIPLE.toString() ) ) {
                 this.theRDFLang = Lang.NTRIPLES;
-                this.theLocType = Vocabulary.LocationType.NTRIPLE;
+                this.theLocType = LocationType.NTRIPLE;
             }
-            else if (strFormat.equals("JSON-LD")) { // default version is JSON-LD 1.1
+            else if ( strLocType.equals("JSON-LD") || strLocType.equals( LocationType.JSON_LD.toString() ) ) { // default version is JSON-LD 1.1
                 this.theRDFLang = Lang.JSONLD;
-                this.theLocType = Vocabulary.LocationType.JSON_LD;
+                this.theLocType = LocationType.JSON_LD;
             }
-            else if (strFormat.equals("NQUADS")) {
+            else if ( strLocType.equals( LocationType.NQUADS.toString() ) ) {
                 this.theRDFLang = Lang.NQUADS;
-                this.theLocType = Vocabulary.LocationType.NQUADS;
+                this.theLocType = LocationType.NQUADS;
             }
-            else if (strFormat.equals("RDF/JSON")) {
+            else if ( strLocType.equals("RDF/JSON") || strLocType.equals( LocationType.RDF_JSON.toString() ) ) {
                 this.theRDFLang = Lang.RDFJSON;
-                this.theLocType = Vocabulary.LocationType.RDF_JSON;
+                this.theLocType = LocationType.RDF_JSON;
             }
-            else if (strFormat.equals("TRIG")) {
+            else if ( strLocType.equals( LocationType.TRIG.toString() ) ) {
                 this.theRDFLang = Lang.TRIG;
-                this.theLocType = Vocabulary.LocationType.TRIG;
+                this.theLocType = LocationType.TRIG;
             }
-            else if (strFormat.equals("TRIX")) {
+            else if ( strLocType.equals( LocationType.TRIX.toString() ) ) {
                 this.theRDFLang = Lang.TRIX;
-                this.theLocType = Vocabulary.LocationType.TRIX;
+                this.theLocType = LocationType.TRIX;
             }
-            else if (strFormat.equals("RDFTHRIFT")) {
+            else if ( strLocType.equals( LocationType.RDFTHRIFT.toString() ) ) {
                 this.theRDFLang = Lang.RDFTHRIFT;
-                this.theLocType = Vocabulary.LocationType.RDFTHRIFT;
+                this.theLocType = LocationType.RDFTHRIFT;
             }
         }
     }
 
-    private void guessFormat(String strFilename) {
-        this.theRDFLang = Lang.RDFXML; // ...default for unknown extension
-        this.theLocType = Vocabulary.LocationType.RDF_XML;
-        if (strFilename.lastIndexOf('.') != -1) {
-            String strExtension = strFilename.substring(strFilename.lastIndexOf('.') + 1).toLowerCase();
+    private void guessFormat(String strLocation) {
+        if (strLocation.lastIndexOf('.') != -1) {
+            String strExtension = strLocation.substring(strLocation.lastIndexOf('.') + 1).toLowerCase();
             if (strExtension.equals("rdf")) {
                 this.theRDFLang = Lang.RDFXML;
-                this.theLocType = Vocabulary.LocationType.RDF_XML;
+                this.theLocType = LocationType.RDF_XML;
             }
             else if (strExtension.equals("rdfs")) {
                 this.theRDFLang = Lang.RDFXML;
-                this.theLocType = Vocabulary.LocationType.RDF_XML;
+                this.theLocType = LocationType.RDF_XML;
             }
             else if (strExtension.equals("owl")) {
                 this.theRDFLang = Lang.RDFXML;
-                this.theLocType = Vocabulary.LocationType.RDF_XML;
+                this.theLocType = LocationType.RDF_XML;
             }
             else if (strExtension.equals("ttl")) {
                 this.theRDFLang = Lang.TURTLE;
-                this.theLocType = Vocabulary.LocationType.TTL;
+                this.theLocType = LocationType.TTL;
             }
             else if (strExtension.equals("n3")) {
                 this.theRDFLang = Lang.N3;
-                this.theLocType = Vocabulary.LocationType.N3;
+                this.theLocType = LocationType.N3;
             }
             else if (strExtension.equals("nt")) {
                 this.theRDFLang = Lang.NTRIPLES;
-                this.theLocType = Vocabulary.LocationType.NTRIPLE;
+                this.theLocType = LocationType.NTRIPLE;
             }
             else if (strExtension.equals("jsonld")) { // default version is JSON-LD 1.1
                 this.theRDFLang = Lang.JSONLD;
-                this.theLocType = Vocabulary.LocationType.JSON_LD;
+                this.theLocType = LocationType.JSON_LD;
             }
             else if (strExtension.equals("nq")) {
                 this.theRDFLang = Lang.NQUADS;
-                this.theLocType = Vocabulary.LocationType.NQUADS;
+                this.theLocType = LocationType.NQUADS;
             }
             else if (strExtension.equals("rj")) {
                 this.theRDFLang = Lang.RDFJSON;
-                this.theLocType = Vocabulary.LocationType.RDF_JSON;
+                this.theLocType = LocationType.RDF_JSON;
             }
             else if (strExtension.equals("trig")) {
                 this.theRDFLang = Lang.TRIG;
-                this.theLocType = Vocabulary.LocationType.TRIG;
+                this.theLocType = LocationType.TRIG;
             }
             else if (strExtension.equals("trix")) {
                 this.theRDFLang = Lang.TRIX;
-                this.theLocType = Vocabulary.LocationType.TRIX;
+                this.theLocType = LocationType.TRIX;
             }
             else if (strExtension.equals("xml")) {
                 this.theRDFLang = Lang.TRIX;
-                this.theLocType = Vocabulary.LocationType.TRIX;
+                this.theLocType = LocationType.TRIX;
             }
             else if (strExtension.equals("trdf")) {
                 this.theRDFLang = Lang.RDFTHRIFT;
-                this.theLocType = Vocabulary.LocationType.RDFTHRIFT;
+                this.theLocType = LocationType.RDFTHRIFT;
             }
             else if (strExtension.equals("rt")) {
                 this.theRDFLang = Lang.RDFTHRIFT;
-                this.theLocType = Vocabulary.LocationType.RDFTHRIFT;
+                this.theLocType = LocationType.RDFTHRIFT;
             }
         }
-    }
-
-    private RDFTransform getProjectTransform()
-            throws ServletException { // ...just because
-        Project theProject = null;
-
-        if ( ! ( this.strProjectID == null || this.strProjectID.isEmpty() ) ) {
-            Long liProjectID;
-            try {
-                liProjectID = Long.parseLong(this.strProjectID);
-            }
-            catch (NumberFormatException ex) {
-                throw new ServletException("Project ID not a long int!", ex);
-            }
-
-            theProject = ProjectManager.singleton.getProject(liProjectID);
-        }
-
-        if (theProject == null) {
-            throw new ServletException("Project ID [" + strProjectID + "] not found! May be corrupt.");
-        }
-
-        RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
-        if (theTransform == null) {
-            throw new ServletException("RDF Transform for Project ID [" + strProjectID + "] not found!");
-        }
-        return theTransform;
     }
 }

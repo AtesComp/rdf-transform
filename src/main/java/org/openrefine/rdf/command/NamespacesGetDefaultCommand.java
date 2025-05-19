@@ -55,6 +55,7 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
         response.setHeader("Content-Type", "application/json");
         try {
             this.getDefaultNamespaces(request, response);
+            NamespacesGetDefaultCommand.respondJSON(response, CodeResponse.ok);
         }
         catch (Exception ex) {
             NamespacesGetDefaultCommand.respondJSON(response, CodeResponse.error);

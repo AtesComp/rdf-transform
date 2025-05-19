@@ -35,7 +35,9 @@ import org.apache.jena.iri.IRIFactory;
 import org.apache.jena.iri.IRIException;
 import org.apache.jena.irix.SetupJenaIRI;
 
+import java.io.File;
 //import java.nio.charset.StandardCharsets;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -105,8 +107,8 @@ public class Util {
     static public final String gstrDescription = "description";
     static public final String gstrLocalPart = "localPart";
 
-    static public final String gstrLocation = "location"; 
-    static public final String gstrLocType = "loctype"; 
+    static public final String gstrLocation = "location";
+    static public final String gstrLocType = "loctype";
 
     // XML Schema Strings
     // --------------------------------------------------------------------------------
@@ -861,5 +863,33 @@ public class Util {
             return Util.gstrConstant;
         }
         return Util.gstrExpression;
+    }
+
+    static public Boolean recursiveDirDelete(File dirEntry) {
+        // NOTE: On false return, some error has occurred deleteing the directory
+
+        if ( ! dirEntry.exists() ) return true;
+        if ( ! dirEntry.isDirectory() ) {
+            if ( ! dirEntry.delete() ) return false;
+            if ( dirEntry.exists() ) return false;
+            return true;
+        }
+
+        // Otherwise, dirEntry should be a directory...
+
+        String[] astrEntries = dirEntry.list();
+        if (astrEntries == null) return true; // ...directory does not exist
+        for (String strEntry : astrEntries) {
+            File fileEntry = new File(dirEntry.getPath(), strEntry);
+            // If entry is a directory...
+            if ( fileEntry.isDirectory() ) {
+                // ...delete its files...
+                if ( ! Util.recursiveDirDelete(fileEntry) ) return false;
+            }
+            // Delete the entry...
+            if ( ! fileEntry.delete() ) return false;
+            if ( fileEntry.exists() ) return false;
+        }
+        return true;
     }
 }

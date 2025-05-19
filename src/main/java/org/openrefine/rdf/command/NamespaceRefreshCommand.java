@@ -46,8 +46,8 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-Type", "application/json");
+        //response.setCharacterEncoding("UTF-8");
+        //response.setHeader("Content-Type", "application/json");
         if ( ! this.hasValidCSRFToken(request) ) {
             NamespaceRefreshCommand.respondCSRFError(response);
             return;
@@ -59,7 +59,7 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
         String strNamespace = request.getParameter(Util.gstrNamespace);
         String strLocation  = request.getParameter(Util.gstrLocation);
         Vocabulary.LocationType theLocType = Vocabulary.fromLocTypeString( request.getParameter(Util.gstrLocType) );
-        
+
         if (strLocation == null) strLocation = "";
         if ( strLocation.isEmpty() ) theLocType = Vocabulary.LocationType.NONE;
 
@@ -71,6 +71,7 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
         Exception except = null;
         boolean bError = false; // ...not fetchable
         boolean bFormatted = false;
+        boolean bAdd = false;
         try{
             // Remove related vocabulary...
             RDFTransform.getGlobalContext().
@@ -78,9 +79,18 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
                     deleteTermsOfVocab(strPrefix, strProjectID);
 
             // Re-add related vocabulary...
-            RDFTransform.getGlobalContext().
-                getVocabularySearcher().
-                    importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
+            switch(theLocType) {
+                case NONE :
+                    break;
+                case URL :
+                    RDFTransform.getGlobalContext().
+                        getVocabularySearcher().
+                            importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
+                    bAdd = true;
+                    break;
+                default : // ...all remaining enums
+                    break;
+            }
         }
         catch (VocabularyImportException ex) {
             bFormatted = true;
@@ -102,7 +112,7 @@ public class NamespaceRefreshCommand extends RDFTransformCommand {
         // Otherwise, all good...
 
         // Re-add the namespace...
-        theTransform.addNamespace(strPrefix, strNamespace, strLocation, theLocType);
+        if (bAdd) theTransform.addNamespace(strPrefix, strNamespace, strLocation, theLocType);
 
         NamespaceRefreshCommand.respondJSON(response, CodeResponse.ok);
     }
