@@ -359,7 +359,7 @@ class RDFTransformResourceDialog {
         params.type = strType;
 
         // @ts-ignore
-        var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/adding-term') + ' ' + params.iri);
+        var funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/adding-term') + ' ' + params.iri);
 
         Refine.postCSRF(
             "command/rdf-transform/add-suggest-term",
@@ -369,7 +369,7 @@ class RDFTransformResourceDialog {
                     // @ts-ignore
                     alert($.i18n('rdft-vocab/error-adding-term') + ': [' + params.iri + "]");
                 }
-                dismissBusy();
+                funcDismissBusy();
             },
             "json"
         );

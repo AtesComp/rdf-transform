@@ -21,54 +21,42 @@
 
 package org.openrefine.rdf.command;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
+import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.Vocabulary.LocationType;
+import org.openrefine.rdf.model.vocab.VocabularyImportException;
+
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.DatasetGraph;
-
-import com.google.refine.ProjectManager;
-import com.google.refine.model.Project;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceAddFromFileCommand extends RDFTransformCommand {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddFromFileCmd");
-
-    static private RDFTransform getProjectTransform(String strProjID)
-            throws ServletException { // ...just because
-        Project theProject = null;
-
-        if ( ! ( strProjID == null || strProjID.isEmpty() ) ) {
-            Long liProjectID;
-            try {
-                liProjectID = Long.parseLong(strProjID);
-            }
-            catch (NumberFormatException ex) {
-                throw new ServletException("Project ID not a long int!", ex);
-            }
-
-            theProject = ProjectManager.singleton.getProject(liProjectID);
-        }
-
-        if (theProject == null) {
-            throw new ServletException("Project ID [" + strProjID + "] not found! May be corrupt.");
-        }
-
-        RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
-        if (theTransform == null) {
-            throw new ServletException("RDF Transform for Project ID [" + strProjID + "] not found!");
-        }
-        return theTransform;
-    }
 
     Lang theRDFLang;
     LocationType theLocType;
@@ -83,64 +71,229 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: Starting ontology import...");
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: Starting ontology import...");
         if ( ! this.hasValidCSRFToken(request) ) {
             NamespaceAddFromFileCommand.respondCSRFError(response);
             return;
         }
 
+        ApplicationContext theContext = RDFTransform.getGlobalContext();
+
+        Exception except = null;
+        boolean bException = false;
+        boolean bError = false; // ...not fetchable
+        boolean bFormatted = false;
+
         // For Project, DO NOT USE this.getProject(request) as we only need the string...
-        String strProjectID = request.getParameter(Util.gstrProject);
+        String strProjectID = null;
+        String strPrefix    = null;
+        String strNamespace = null;
+        String strLocation  = null;
+        String strLocType   = null;
+        StringReader strreaderFile = null;
+        Boolean bSave = true;
+        try {
+            InputStream instreamFile = null;
 
-        String strPrefix    = request.getParameter(Util.gstrPrefix);
-        String strNamespace = request.getParameter(Util.gstrNamespace);
-        String strLocation  = request.getParameter(Util.gstrLocation);
-        String strLocType   = request.getParameter(Util.gstrLocType);
-        if (strLocation == null) strLocation = "";
-        if ( strLocation.isEmpty() ) {
-            theLocType = LocationType.NONE;
+            // ============================================================
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Getting DiskFileItemFactory...");
+            FileItemFactory factory = new DiskFileItemFactory();
+
+            // Create a new file upload handler...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Getting ServletFileUpload...");
+            ServletFileUpload upload = new ServletFileUpload(factory);
+
+            // Parse the request into a file item list...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Parsing request into this ontology's related file items...");
+            List<FileItem> items = upload.parseRequest(request);
+
+            // Parse the file into an input stream...
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Parsing the ontology's file items into action elements...");
+            String strFilename  = null;
+            for (FileItem item : items) {
+                if      ( item.getFieldName().equals(Util.gstrProject) )   strProjectID = item.getString();
+                else if ( item.getFieldName().equals(Util.gstrPrefix) )    strPrefix    = item.getString();
+                else if ( item.getFieldName().equals(Util.gstrNamespace) ) strNamespace = item.getString();
+                else if ( item.getFieldName().equals(Util.gstrLocation) )  strLocation  = item.getString();
+                else if ( item.getFieldName().equals(Util.gstrLocType) )   strLocType   = item.getString();
+                else if ( item.getFieldName().equals("uploaded_file") ) {
+                    strFilename  = item.getName();
+                    instreamFile = item.getInputStream();
+                }
+            }
+            // ============================================================
+
+            if (instreamFile != null) {
+                byte[] bytes = instreamFile.readAllBytes();
+                //strFileContent = new String(bytes, StandardCharsets.UTF_8);
+                strreaderFile = new StringReader( new String(bytes) );
+                instreamFile.close();
+                bSave = true;
+            }
+            else {
+                strFilename = strLocation;
+                File fileIn = new File(theContext.getWorkingDirectory(), strFilename);
+                if ( fileIn.exists() ) {
+                    FileInputStream fileInStream = new FileInputStream(fileIn);
+                    byte[] bytes = fileInStream.readAllBytes();
+                    strreaderFile = new StringReader( new String(bytes) );
+                    fileInStream.close();
+                    bSave = false;
+                }
+            }
+
+            if ( Util.isDebugMode() ) {
+                NamespaceAddFromFileCommand.logger.info(
+                    "DEBUG: doPost: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}] File:[{}] isFile:[{}]",
+                    strPrefix, strNamespace, strLocation, strLocType, strFilename, (strreaderFile != null)
+                );
+            }
+
+            // When refreshing, the "uploaded_file" field is missing and the strLocation holds the entire file path...
+            if (strFilename == null) strFilename = strLocation;
+            // Otherwise, the "uploaded_file" field holds the entire file path...
+            else strLocation = strFilename;
         }
-        else {
-            RDFTransform theTransform = null;
-            this.parseRDFLang(strLocation, strLocType);
-            try {
-                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
-                theTransform = NamespaceAddFromFileCommand.getProjectTransform(strProjectID);
+        catch (Exception ex) {
+            // Some problem occurred....
+            bError = true;
+            except = ex;
+            bException = true;
+        }
 
-                // Remove the namespace...
-                theTransform.removeNamespace(strPrefix);
+        if ( ! bException ) {
+            LocationType theLocType = Vocabulary.fromLocTypeString(strLocType);
 
-                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Reading dataset graph from ontology file...");
-                DatasetGraph theDSGraph = null;
-                if (this.theRDFLang != null) {
-                    theDSGraph = RDFDataMgr.loadDatasetGraph(strLocation, this.theRDFLang);
+            if (strLocation == null) strLocation = "";
+            if ( strLocation.isEmpty() ) theLocType = LocationType.NONE;
+
+            if (theLocType != LocationType.NONE && theLocType != LocationType.URL) { // ...anything else is a file type
+                if (bSave) this.saveFile(theContext.getWorkingDirectory(), strLocation, strreaderFile);
+                this.parseRDFLang(strLocation, strLocType);
+
+                if ( Util.isDebugMode() ) {
+                    NamespaceAddFromFileCommand.logger.info(
+                        "DEBUG: doPost: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}] isFile:[{}]",
+                        strPrefix, strNamespace, strLocation, strLocType, (strreaderFile != null)
+                    );
                 }
-                else {
-                    theDSGraph = RDFDataMgr.loadDatasetGraph(strLocation);
+
+                try {
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Getting project's RDF Transform...");
+                    RDFTransform theTransform = this.getRDFTransformFromProject(strProjectID);
+
+                    // Remove the namespace...
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Removing Namespace " + strPrefix);
+                    theTransform.removeNamespace(strPrefix);
+
+                    // Remove related vocabulary...
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Removing relate vocabulary...");
+                    theContext.
+                        getVocabularySearcher().
+                            deleteVocabularyTerms(strPrefix, strProjectID);
+
+                    // Load Dataset Graph for related vocabulary...
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Loading dataset graph from ontology file...");
+                    DatasetGraph theDSGraph = DatasetGraphFactory.createTxnMem();
+                    if (strreaderFile != null) {
+                        if (this.theRDFLang != null) {
+                            //theDSGraph = RDFDataMgr.loadDatasetGraph(strLocation, this.theRDFLang);
+                            RDFDataMgr.read(theDSGraph, strreaderFile, strNamespace, this.theRDFLang);
+                        }
+                        else {
+                            //theDSGraph = RDFDataMgr.loadDatasetGraph(strLocation);
+                            RDFDataMgr.read(theDSGraph, strreaderFile, strNamespace, Lang.RDFXML);
+                        }
+                    }
+
+                    // (Re)Add related vocabulary...
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Importing vocabulary from dataset graph...");
+                    theContext.
+                        getVocabularySearcher().
+                            importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theDSGraph, strProjectID);
+
+                    // (Re)Add the namespace...
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Adding Namespace " + strPrefix);
+                    if (theTransform != null) theTransform.addNamespace(strPrefix, strNamespace, strLocation, this.theLocType);
                 }
-
-                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Importing ontology vocabulary from dataset graph...");
-                RDFTransform.getGlobalContext().
-                    getVocabularySearcher().
-                        importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theDSGraph, strProjectID);
+                catch (VocabularyImportException ex) {
+                    bFormatted = true;
+                    except = ex;
+                    bException = true;
+                }
+                catch (Exception ex) {
+                    bError = true;
+                    except = ex;
+                    bException = true;
+                }
             }
-            catch (Exception ex) {
-                NamespaceAddFromFileCommand.logger.error("ERROR: " + ex.getMessage(), ex);
-                NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
-                return;
-            }
+        }
 
-            // Add the namespace...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG:   Adding Namespace...");
-            if (theTransform != null) theTransform.addNamespace(strPrefix, strNamespace, strLocation, this.theLocType);
+        // If some problem occurred....
+        if (bException) {
+            this.processException(except, bError, bFormatted, logger);
+            NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.error);
+            return;
         }
 
         NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
 
-        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: ...Ended ontology import.");
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: ...Ended ontology import.");
     }
 
-    private void parseRDFLang(String strLocType, String strLocation) {
+    /*
+     * Method saveFile(File fileWorkingDirectory, String strFilename, StringReader strreaderFile)
+     *
+     *  Save an ontology file to local storage for later use/reuse
+     *      fileWorkingDirectory: the file for he parent directory
+     *      strFilename: the ontology file name
+     *      strreaderFile: the ontology file contents
+     */
+    Boolean saveFile(File fileWorkingDirectory, String strFilename, StringReader strreaderFile) {
+        synchronized(strFilename) {
+            // Get the Files...
+            File fileNew = new File(fileWorkingDirectory, strFilename);
+            File fileOld = new File(fileWorkingDirectory, strFilename + ".old");
+            try {
+                // Get the File Stream...
+                if ( fileNew.createNewFile() ) NamespaceAddFromFileCommand.logger.info("saveFile: File created:[{}]", strFilename);
+                else {
+                    fileNew.renameTo(fileOld);
+                    if ( fileNew.createNewFile() ) NamespaceAddFromFileCommand.logger.info("saveFile: File overwrite:[{}]", strFilename);
+                    else {
+                        NamespaceAddFromFileCommand.logger.error("saveFile: File could not be created:[{}]", strFilename);
+                        return false;
+                    }
+                }
+            }
+            catch (IOException ex) {
+                NamespaceAddFromFileCommand.logger.error("saveFile: File Error on [{}]", strFilename);
+                return false;
+            }
+
+            // Write the file...
+            try {
+                Writer writer = new OutputStreamWriter( new FileOutputStream(fileNew) );
+                strreaderFile.transferTo(writer);
+                writer.close();
+                NamespaceAddFromFileCommand.logger.info("saveFile: Successfully wrote File:[{}]", strFilename);
+            }
+            catch (IOException ex) {
+                NamespaceAddFromFileCommand.logger.error("saveFile: File Write Error on [{}]", strFilename);
+                return false;
+            }
+
+            if ( fileOld.exists() ) {
+                if ( ! fileOld.delete() ) {
+                    NamespaceAddFromFileCommand.logger.error("ERROR: Could not remove archived ontology file!");
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    private void parseRDFLang(String strLocation, String strLocType) {
         //this.theRDFLang = null;
         this.theLocType = LocationType.FILE;
         if (strLocType != null) {

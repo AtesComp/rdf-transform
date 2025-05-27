@@ -173,33 +173,62 @@ class RDFTransformNamespaceAdder {
                 this.#dismiss();
             }
 
-            var postCmd = null;
-            var postData = {};
-            postData.project   = theProject.id;
-            postData.prefix    = strPrefix;
-            postData.namespace = strNamespace;
-            //postData.location  = strLocation;
-            postData.loctype   = strLocType;
+            var postData = null;
             if (isFILE) {
-                strLocation = this.#elements.file[0].files[0].name;
-                strLocType = this.#elements.file_type.val();
-                if (strLocType === "auto-detect") strLocType = "FILE";
-                postData.location  = strLocation;
+                if (this.#elements.file[0].files.length > 0 ) {
+                    let file = this.#elements.file;
+                    strLocation = file[0].files[0].name; // ...just the file name
+                    strLocType = this.#elements.file_type.val();
+                    if (strLocType === "auto-detect") strLocType = "FILE";
 
-                funcDismissBusy =
-                    DialogSystem.showBusy(
-                        // @ts-ignore
-                        $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
-                        '<br />File: ' + strLocation );
+                    funcDismissBusy =
+                        DialogSystem.showBusy(
+                            // @ts-ignore
+                            $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
+                            '<br />File: ' + strLocation );
 
-                postCmd = "command/rdf-transform/add-namespace-from-file";
+                    var postCmd = "command/rdf-transform/add-namespace-from-file";
+
+                    // @ts-ignore
+                    const target = $(evt.currentTarget);
+
+                    target.append('<input type="hidden" name="project"   value="' + theProject.id + '">');
+                    target.append('<input type="hidden" name="prefix"    value="' + strPrefix + '">');
+                    target.append('<input type="hidden" name="namespace" value="' + strNamespace + '">');
+                    target.append('<input type="hidden" name="location"  value="' + strLocation + '">');
+                    target.append('<input type="hidden" name="loctype"   value="' + strLocType + '">');
+
+                    Refine.wrapCSRF(
+                        (token) => {
+                            // Requires JQuery Form plugin...
+
+                            target.ajaxSubmit(
+                                {
+                                    url         : postCmd,
+                                    type        : "POST",
+                                    dataType    : "json",
+                                    headers     : { "X-CSRF-TOKEN": token },
+                                    success     : funcSuccess
+                                }
+                            );
+                        }
+                    );
+                }
+                // Otherwise, no file!
             }
             else { // strType === "prefix" or "url"
-                // Prepare the data values...
+                // Prepare the location value...
                 var isLoc = ( typeof strLocation === 'string' && strLocation.length > 0 );
                 if      ( ! isURL ) strLocation = "";
                 else if ( ! isLoc ) strLocation = strNamespace;
-                postData.location  = strLocation;
+
+                postData = {
+                    "project":   theProject.id,
+                    "prefix":    strPrefix,
+                    "namespace": strNamespace,
+                    "location":  strLocation,
+                    "loctype":   strLocType
+                };
 
                 if (isURL) {
                     // @ts-ignore
@@ -210,14 +239,15 @@ class RDFTransformNamespaceAdder {
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
                 }
 
-                postCmd = "command/rdf-transform/add-namespace";
+                var postCmd = "command/rdf-transform/add-namespace-from-URL";
+
+                Refine.postCSRF(
+                    postCmd,
+                    postData,
+                    funcSuccess,
+                    "json"
+                );
             }
-            Refine.postCSRF(
-                postCmd,
-                postData,
-                funcSuccess,
-                "json"
-            );
         });
 
         this.#elements.buttonOK

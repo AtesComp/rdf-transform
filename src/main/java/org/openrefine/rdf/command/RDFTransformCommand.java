@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
+
+import com.google.refine.ProjectManager;
 import com.google.refine.commands.Command;
 import com.google.refine.model.Project;
 
@@ -47,6 +49,35 @@ public abstract class RDFTransformCommand extends Command {
         }
         catch (Exception ex) {
             throw new ServletException("Unable to retrieve Project or RDF Transform! (Other)", ex);
+        }
+    }
+
+    public RDFTransform getRDFTransformFromProject(String strProject)
+            throws ServletException {
+        if (strProject == null) {
+            throw new IllegalArgumentException("project string should not be null");
+        }
+        else {
+            if (strProject != null && !"".equals(strProject)) {
+                Long iID;
+                try {
+                    iID = Long.parseLong(strProject);
+                }
+                catch (NumberFormatException nfex) {
+                    throw new ServletException("Can't find project: badly formatted id #", nfex);
+                }
+
+                Project theProject = ProjectManager.singleton.getProject(iID);
+                if (theProject != null) {
+                    return RDFTransform.getRDFTransform(theProject);
+                }
+                else {
+                    throw new ServletException("Failed to find project id #" + strProject + " - may be corrupt");
+                }
+            }
+            else {
+                throw new ServletException("Can't find project: missing ID parameter");
+            }
         }
     }
 

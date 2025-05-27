@@ -76,16 +76,19 @@ class RDFTransformVocabManager {
         this.#renderBody();
     }
 
-    #handlerRemove(strPrefix) {
+    #handlerRemove(strPrefix, strNamespace, strLocation, strLocType) {
         return (evtHandler) => {
             evtHandler.preventDefault();
             // @ts-ignore
-            var dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
+            var funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
 
             Refine.postCSRF(
-                "command/rdf-transform/remove-prefix",
-                {   "project" : theProject.id,
-                    "prefix": strPrefix
+                "command/rdf-transform/remove-namespace",
+                {   "project" :  theProject.id,
+                    "prefix":    strPrefix,
+                    "namespace": strNamespace,
+                    "location":  strLocation,
+                    "loctype":   strLocType
                 },
                 (data) => {
                     if (data.code === "error") {
@@ -96,7 +99,7 @@ class RDFTransformVocabManager {
                         this.#namespacesManager.removeNamespace(strPrefix);
                     }
                     this.#renderBody();
-                    dismissBusy();
+                    funcDismissBusy();
                 },
                 "json"
             );
@@ -109,44 +112,84 @@ class RDFTransformVocabManager {
             if (strLocType === "NONE") return;
             if ( window.confirm(
                     // @ts-ignore
-                    $.i18n('rdft-vocab/desc-one') + ' "' + strNamespace + '"\n' +
-                    // @ts-ignore
-                    $.i18n('rdft-vocab/desc-two') ) )
+                    $.i18n('rdft-vocab/desc-one') + ' "' + strLocation + '"\n' + $.i18n('rdft-vocab/desc-two') ) )
             {
-                var postCmd = null;
-                var postData = {};
-                postData.project   = theProject.id;
-                postData.prefix    = strPrefix;
-                postData.namespace = strNamespace;
-                postData.location  = strLocation;
-                postData.loctype   = strLocType;
+                var postData = null;
 
-                var dismissBusy = null;
+                var funcDismissBusy = null;
                 var msgAlert = null;
+
                 if (strLocType === "URL") {
+                    postData = {
+                        "project":   theProject.id,
+                        "prefix":    strPrefix,
+                        "namespace": strNamespace,
+                        "location":  strLocation,
+                        "loctype":   strLocType
+                    };
+
                     // @ts-ignore
-                    dismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/refresh-pref') + ' ' + strPrefix);
-                    postCmd = "command/rdf-transform/refresh-prefix";
+                    funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/refresh-namespaces') + ' ' + strPrefix);
+                    var postCmd = "command/rdf-transform/add-namespace-from-URL";
+                    // @ts-ignore
                     msgAlert = $.i18n('rdft-vocab/alert-wrong') + ': ';
-                }
-                else { // ...if (strLocType === a file type) {
-                    // @ts-ignore
-                    dismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' +
-                                    strNamespace + '<br />File: ' + strLocation );
-                    postCmd = "command/rdf-transform/add-namespace-from-file";
-                    msgAlert = $.i18n('rdft-vocab/error-adding') + ': ' + strPrefix + "\n";
-                }
-                Refine.postCSRF(
-                    postCmd,
-                    postData,
-                    (data) => {
+
+                    let funcSuccess = (data) => {
                         // @ts-ignore
                         if (data.code === "error") alert(msgAlert + data.message);
                         this.#renderBody();
-                        dismissBusy();
-                    },
-                    "json"
-                );
+                        funcDismissBusy();
+                    }
+
+                    Refine.postCSRF(
+                        postCmd,
+                        postData,
+                        funcSuccess,
+                        "json"
+                    );
+                }
+                else { // ...if (strLocType === a file type) {
+                    postData = new FormData();
+                    postData.append("project", theProject.id);
+                    postData.append("prefix", strPrefix);
+                    postData.append("namespace", strNamespace);
+                    postData.append("location", strLocation);
+                    postData.append("loctype", strLocType);
+                    // ...don't include "uploaded_file" to force strLocation use!
+
+                    // @ts-ignore
+                    funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' +
+                                    strNamespace + '<br />File: ' + strLocation );
+                    var postCmd = "command/rdf-transform/add-namespace-from-file";
+                    // @ts-ignore
+                    msgAlert = $.i18n('rdft-vocab/error-adding') + ': ' + strPrefix + "\n";
+
+                    let funcSuccess = (data) => {
+                        // @ts-ignore
+                        if (data.code === "error") alert(msgAlert + data.message);
+                        this.#renderBody();
+                        funcDismissBusy();
+                    }
+
+                    Refine.wrapCSRF(
+                        (token) => {
+                            // Requires JQuery Form plugin...
+                            // @ts-ignore
+                            $.ajax(
+                                {
+                                    url         : postCmd,
+                                    type        : 'POST',
+                                    data        : postData,
+                                    dataType    : "json",
+                                    processData : false,
+                                    contentType : false,
+                                    headers     : { 'X-CSRF-TOKEN': token },
+                                    success     : funcSuccess
+                                }
+                            );
+                        }
+                    );
+                }
             }
         };
     }
@@ -197,7 +240,8 @@ class RDFTransformVocabManager {
                 // @ts-ignore
                 .text( $.i18n('rdft-vocab/delete') )
                 .attr('href', '#')
-                .on("click", this.#handlerRemove(cstrPrefix) );
+                .on("click", this.#handlerRemove(cstrPrefix, cstrNamespace, cstrLocation, cstrLocType) );
+            // @ts-ignore
             var htmlRefreshNamespace = $('');
             if ( strLocType !== 'NONE' ) {
                 htmlRefreshNamespace =

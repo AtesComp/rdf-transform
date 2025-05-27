@@ -80,10 +80,10 @@ public interface IVocabularySearcher {
     public void addTerm(RDFTNode node, String strNodeType, String strProjectID)
                     throws IOException;
 
-    public void deleteTermsOfVocabs(Set<Vocabulary> setVocabToRemove, String strProjectID)
+    public void deleteVocabularySetTerms(Set<Vocabulary> setVocabToRemove, String strProjectID)
                     throws IOException;
 
-    public void deleteTermsOfVocab(String strVocab, String strProjectID)
+    public void deleteVocabularyTerms(String strVocab, String strProjectID)
                     throws IOException;
 
     public void addPredefinedVocabulariesToProject(long liProjectID)

@@ -529,7 +529,7 @@ sail       http://www.openrdf.org/config/sail#
 sawsdl     http://www.w3.org/ns/sawsdl#
 saxon      http://saxon.sf.net/
 sc         http://umbel.org/umbel/sc/
-schema     https://schema.org/
+schema     http://schema.org/
 sco        http://purl.org/ontology/sco#
 scot       http://scot-project.org/scot/ns#
 scovo      http://purl.org/NET/scovo#

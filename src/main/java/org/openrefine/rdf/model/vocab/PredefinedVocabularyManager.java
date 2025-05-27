@@ -225,7 +225,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
     }
 
     private void saveToFile(File fileVocab) throws Exception {
-        Writer writer = new OutputStreamWriter(new FileOutputStream(fileVocab));
+        Writer writer = new OutputStreamWriter( new FileOutputStream(fileVocab) );
         JsonGenerator jsonWriter = ParsingUtilities.mapper.getFactory().createGenerator(writer);
         this.write(jsonWriter);
         writer.close();

@@ -175,23 +175,23 @@ public class VocabularySearcher implements IVocabularySearcher {
         if ( Util.isDebugMode() ) VocabularySearcher.logger.info( strDebug + "from " + strLocation + " as type " + theLocType.toString() );
 
         if (theLocType == Vocabulary.LocationType.URL) {
-            VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
+            VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace, strLocation);
             List<RDFTClass> classes = new ArrayList<RDFTClass>();
             List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
 
             // Import classes & properties from Namespace at URL...
-            importer.importVocabulary(strLocation, classes, properties);
+            importer.importVocabulary(classes, properties);
             this.indexTerms(strProjectID, classes, properties);
         }
-        else if (theLocType == Vocabulary.LocationType.FILE) {
-            // TODO: ...
+        else {
+            VocabularySearcher.logger.error( "Cannot import vocabulary from " + strLocation + " as type " + theLocType.toString() + "!" );
         }
     }
 
     @Override
     public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, DatasetGraph theDSGraph, String strProjectID)
             throws VocabularyImportException, IOException {
-        VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace);
+        VocabularyImporter importer = new VocabularyImporter(strPrefix, strNamespace, strLocation);
         List<RDFTClass> classes = new ArrayList<RDFTClass>();
         List<RDFTProperty> properties = new ArrayList<RDFTProperty>();
 
@@ -232,7 +232,7 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
-    public void deleteTermsOfVocabs(Set<Vocabulary> toRemove, String strProjectID)
+    public void deleteVocabularySetTerms(Set<Vocabulary> toRemove, String strProjectID)
             throws IOException {
         for (Vocabulary v : toRemove) {
             this.deleteTerms(v.getPrefix(), strProjectID);
@@ -278,7 +278,7 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
-    public void deleteTermsOfVocab(String strPrefix, String strProjectID)
+    public void deleteVocabularyTerms(String strPrefix, String strProjectID)
             throws IOException {
         this.deleteTerms(strPrefix, strProjectID);
         this.update();

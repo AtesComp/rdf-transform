@@ -104,4 +104,8 @@ public class ApplicationContext {
             "/";
         return strIRI;
     }
+
+    public File getWorkingDirectory() {
+        return this.fileWorkingDir;
+    }
 }

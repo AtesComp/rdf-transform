@@ -1,5 +1,5 @@
 /*
- *  Class NamespaceAddCommand
+ *  Class NamespaceAddFromURLCommand
  *
  *  Adds a Namespace to the current RDF Transform.
  *
@@ -26,63 +26,85 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.Vocabulary;
+import org.openrefine.rdf.model.vocab.Vocabulary.LocationType;
 import org.openrefine.rdf.model.vocab.VocabularyImportException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NamespaceAddCommand extends RDFTransformCommand {
-
+public class NamespaceAddFromURLCommand extends RDFTransformCommand {
     static private final Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddCmd");
 
-    public NamespaceAddCommand() {
+    public NamespaceAddFromURLCommand() {
         super();
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: Starting ontology import...");
         if ( ! this.hasValidCSRFToken(request) ) {
-            NamespaceAddCommand.respondCSRFError(response);
+            NamespaceAddFromURLCommand.respondCSRFError(response);
             return;
         }
-        // For Project, DO NOT USE this.getProject(request) as we only need the string...
-        String strProjectID = request.getParameter(Util.gstrProject);
 
+        ApplicationContext theContext = RDFTransform.getGlobalContext();
+
+        // For Project, DO NOT USE this.getProject(request) as we only need the string...
+        String strProjectID = request.getParameter(Util.gstrProject).strip();
         String strPrefix    = request.getParameter(Util.gstrPrefix).strip();
         String strNamespace = request.getParameter(Util.gstrNamespace).strip();
         String strLocation  = request.getParameter(Util.gstrLocation).strip();
         String strLocType   = request.getParameter(Util.gstrLocType).strip();
         if ( Util.isDebugMode() ) {
-            NamespaceAddCommand.logger.info(
+            NamespaceAddFromURLCommand.logger.info(
                 "DEBUG: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, strLocType
             );
         }
 
-        Vocabulary.LocationType theLocType = Vocabulary.fromLocTypeString(strLocType);
+        LocationType theLocType = Vocabulary.fromLocTypeString(strLocType);
 
         if (strLocation == null) strLocation = "";
-        if ( strLocation.isEmpty() ) theLocType = Vocabulary.LocationType.NONE;
+        if ( strLocation.isEmpty() ) theLocType = LocationType.NONE;
 
-        if ( theLocType == Vocabulary.LocationType.URL ) {
+        if (theLocType == LocationType.URL) {
             Exception except = null;
             boolean bError = false; // ...not fetchable
             boolean bFormatted = false;
             try {
-                // Add related vocabulary...
-                RDFTransform.getGlobalContext().
+                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
+                RDFTransform theTransform = this.getRDFTransform(request);
+
+                // Remove the namespace...
+                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Removing Namespace " + strPrefix);
+                theTransform.removeNamespace(strPrefix);
+
+                // Remove related vocabulary...
+                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Removing relate vocabulary...");
+                theContext.
                     getVocabularySearcher().
-                        importAndIndexVocabulary(
-                            strPrefix, strNamespace, strLocation, theLocType, strProjectID);
+                        deleteVocabularyTerms(strPrefix, strProjectID);
+
+                // (Re)Add related vocabulary...
+                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Importing vocabulary from URL...");
+                theContext.
+                    getVocabularySearcher().
+                        importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
+
+                // (Re)Add the namespace...
+                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Adding Namespace " + strPrefix);
+                theTransform.addNamespace(strPrefix, strNamespace, strLocation, theLocType);
             }
             catch (VocabularyImportException ex) {
                 bFormatted = true;
                 except = ex;
             }
-            catch (Exception ex) { // IOException
+            catch (Exception ex) {
                 bError = true;
                 except = ex;
             }
@@ -91,16 +113,13 @@ public class NamespaceAddCommand extends RDFTransformCommand {
             if (except != null) {
                 this.processException(except, bError, bFormatted, logger);
 
-                NamespaceAddCommand.respondJSON(response, CodeResponse.error);
+                NamespaceAddFromURLCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
         }
 
         // Otherwise, all good...
 
-        // Add the namespace...
-        this.getRDFTransform(request).addNamespace(strPrefix, strNamespace, strLocation, theLocType);
-
-        NamespaceAddCommand.respondJSON(response, CodeResponse.ok);
+        NamespaceAddFromURLCommand.respondJSON(response, CodeResponse.ok);
     }
 }

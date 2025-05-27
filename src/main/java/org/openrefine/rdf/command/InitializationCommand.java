@@ -174,10 +174,9 @@ public class InitializationCommand extends Command {
         // Vocabs commands
         aCommands.add(new RDFTCommandItem( "get-default-namespaces", new NamespacesGetDefaultCommand() ));
         aCommands.add(new RDFTCommandItem( "save-namespaces", new NamespacesSaveCommand() ));
-        aCommands.add(new RDFTCommandItem( "add-namespace", new NamespaceAddCommand() ));
+        aCommands.add(new RDFTCommandItem( "add-namespace-from-URL", new NamespaceAddFromURLCommand() ));
         aCommands.add(new RDFTCommandItem( "add-namespace-from-file", new NamespaceAddFromFileCommand() ));
-        aCommands.add(new RDFTCommandItem( "refresh-prefix", new NamespaceRefreshCommand() ));
-        aCommands.add(new RDFTCommandItem( "remove-prefix", new NamespaceRemoveCommand() ));
+        aCommands.add(new RDFTCommandItem( "remove-namespace", new NamespaceRemoveCommand() ));
         aCommands.add(new RDFTCommandItem( "suggest-namespace", new SuggestNamespaceCommand() ));
         aCommands.add(new RDFTCommandItem( "suggest-term", new SuggestTermCommand() ));
         aCommands.add(new RDFTCommandItem( "add-suggest-term", new SuggestTermAddCommand() ));

@@ -47,30 +47,30 @@ public class VocabularyImporter {
 
     //static private final String USER_AGENT = "OpenRefine.Extension.RDF-Transform";
 
-    private String strPrefix;
-    private String strNamespace;
-    private DatasetGraph theDSGraph;
-    //private Model modelImport = null;
+    private String m_strPrefix;
+    private String m_strNamespace;
+    private String m_strLocation;
+    private DatasetGraph m_theDSGraph;
 
     // Faulty Content Negotiators to Modify Processing...
     private boolean bStrictlyRDF = false;
 
-    public VocabularyImporter(String strPrefix, String strNamespace) {
-        this.strPrefix = strPrefix;
-        this.strNamespace = strNamespace;
+    public VocabularyImporter(String strPrefix, String strNamespace, String strLocation) {
+        this.m_strPrefix = strPrefix;
+        this.m_strNamespace = strNamespace;
+        this.m_strLocation = strLocation;
     }
 
-    public void importVocabulary(String strFetchURL, List<RDFTClass> classes, List<RDFTProperty> properties)
+    public void importVocabulary(List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
-        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given URL: " + strFetchURL);
-        if (strFetchURL == null) {
+        if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given URL: " + this.m_strLocation);
+        if (this.m_strLocation == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! URL is null.");
             return;
         }
-        this.getDatasetGraph(strFetchURL);
-        //if (this.modelImport == null) return;
-        if (this.theDSGraph == null) {
+        this.getDatasetGraph();
+        if (this.m_theDSGraph == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import dataset graph is null.");
             return;
         }
@@ -78,50 +78,40 @@ public class VocabularyImporter {
     }
 
     public void importVocabulary(DatasetGraph dsGraph, List<RDFTClass> classes, List<RDFTProperty> properties)
-    //public void importVocabulary(Model model, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
         if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given dataset graph...");
-        this.theDSGraph = dsGraph;
-        //this.modelImport = model;
-        //if (this.modelImport == null) {
-        if (this.theDSGraph == null) {
+        this.m_theDSGraph = dsGraph;
+        if (this.m_theDSGraph == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import dataset graph is null.");
             return;
         }
-        this.theDSGraph.clear(); // ...erase all the old data
+        this.m_theDSGraph.clear(); // ...erase all the old data
         this.getTerms(classes, properties);
     }
 
-    private void getDatasetGraph(String strFetchURL)
+    private void getDatasetGraph()
             throws VocabularyImportException
     {
-        this.theDSGraph = null;
-        //this.modelImport = null;
+        this.m_theDSGraph = null;
 
         // Check the Namespace for process modification...
-        if ( this.faultyContentNegotiation(strFetchURL) ) {
+        if ( this.faultyContentNegotiation(this.m_strNamespace) ) {
             return;
         }
 
         try {
-            //if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Creating model for URL");
-            //this.modelImport = ModelFactory.createDefaultModel();
-
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Load dataset graph from URL");
             if (this.bStrictlyRDF) {
-                this.theDSGraph = RDFDataMgr.loadDatasetGraph(strFetchURL, Lang.RDFXML);
-                //this.modelImport.read( strFetchURL, Lang.RDFXML.getName() );
+                this.m_theDSGraph = RDFDataMgr.loadDatasetGraph(this.m_strLocation, Lang.RDFXML);
             }
             else {
-                this.theDSGraph = RDFDataMgr.loadDatasetGraph(strFetchURL);
-                //this.modelImport.read(strFetchURL);
+                this.m_theDSGraph = RDFDataMgr.loadDatasetGraph(this.m_strLocation);
             }
         }
         catch (Exception ex) {
-            this.theDSGraph = null;
-            //this.modelImport = null;
-            throw new VocabularyImportException("Importing vocabulary: " + strFetchURL, ex);
+            this.m_theDSGraph = null;
+            throw new VocabularyImportException("Importing vocabulary: " + this.m_strNamespace, ex);
         }
     }
 
@@ -130,8 +120,8 @@ public class VocabularyImporter {
     {
         // Set RDFS Class and Property load conditions...
         String[] astrLoader = new String[6];
-        astrLoader[RDFTNode.iPrefix] = this.strPrefix;
-        astrLoader[RDFTNode.iNamespace] = this.strNamespace;
+        astrLoader[RDFTNode.iPrefix] = this.m_strPrefix;
+        astrLoader[RDFTNode.iNamespace] = this.m_strNamespace;
         astrLoader[RDFTNode.iLocalPart] = "";   // ...empty string, not null, since we purposely
                                                 // need to extract the LocalPart from the IRI later
                                                 // during the Class / Property Node creation.
@@ -152,13 +142,13 @@ public class VocabularyImporter {
     private void queryClasses(List<RDFTClass> classes, String[] astrLoader)
             throws VocabularyImportException
     {
-        String strMessage = " vocabulary [" + this.strPrefix + "] classes: ";
+        String strMessage = " vocabulary [" + this.m_strPrefix + "] classes: ";
         Set<String> seen = new HashSet<String>();
 
         Query query = null;
         try {
             String strRawQuery = Util.getVocabQueryPrefixes() + " " + Util.getVocabQueryClasses();
-            String strQuery = String.format(strRawQuery, this.strNamespace);
+            String strQuery = String.format(strRawQuery, this.m_strNamespace);
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create class query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
@@ -167,7 +157,7 @@ public class VocabularyImporter {
             throw new VocabularyImportException("Query " + strMessage + ex.getMessage(), ex);
         }
         try {
-            QueryExecution qexec = QueryExecutionFactory.create(query, this.theDSGraph);
+            QueryExecution qexec = QueryExecutionFactory.create(query, this.m_theDSGraph);
             //QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
             ResultSet results = qexec.execSelect();
             if ( results.hasNext() ) {
@@ -206,13 +196,13 @@ public class VocabularyImporter {
     private void queryProperties(List<RDFTProperty> properties, String[] astrLoader)
             throws VocabularyImportException
     {
-        String strMessage = " vocabulary [" + this.strPrefix + "] properties: ";
+        String strMessage = " vocabulary [" + this.m_strPrefix + "] properties: ";
         Set<String> seen = new HashSet<String>();
 
         Query query = null;
         try {
             String strRawQuery = Util.getVocabQueryPrefixes() + " " + Util.getVocabQueryProperties();
-            String strQuery = String.format(strRawQuery, this.strNamespace);
+            String strQuery = String.format(strRawQuery, this.m_strNamespace);
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Create property query:\n" + strQuery);
             query = QueryFactory.create(strQuery);
         }
@@ -221,7 +211,7 @@ public class VocabularyImporter {
             throw new VocabularyImportException("Query " + strMessage + ex.getMessage(), ex);
         }
         try {
-            QueryExecution qexec = QueryExecutionFactory.create(query, this.theDSGraph);
+            QueryExecution qexec = QueryExecutionFactory.create(query, this.m_theDSGraph);
             //QueryExecution qexec = QueryExecutionFactory.create(query, this.modelImport);
             ResultSet results = qexec.execSelect();
             if ( results.hasNext() ) {
@@ -311,7 +301,7 @@ public class VocabularyImporter {
     }
 
     /**
-     * Method faultyContentNegotiation(String strFetchURL)<br />
+     * Method faultyContentNegotiation(String strLocation)<br />
      * <br />
      * Processes the given namespace {@code String} to determine if the namespace
      * needs adjustments for retrieval or to stop processing altogether.<br />
@@ -321,13 +311,13 @@ public class VocabularyImporter {
      * {@code false} to indicate further processing is allowed with possible
      * modifications for the namespace via instance scoped {@code boolean} values.<br />
      *
-     * @param  strFetchURL
+     * @param  strLocation
      *         The {@code String} URL to process
      *
      * @return  {@code true} if the given URL cannot be retrieved,
      *          {@code false} otherwise.
      */
-    private boolean faultyContentNegotiation(String strFetchURL) {
+    private boolean faultyContentNegotiation(String strLocation) {
         //
         // Continue Processing: Set up booleans to process by later code outside this function
         //
@@ -335,7 +325,7 @@ public class VocabularyImporter {
         // SKOS: An exceptional treatment is provided for SKOS as their deployment does not handle an
         //       "Accept" header properly!  SKOS always returns "HTML" if the "Accept" header
         //       contains HTML regardless other more preferred options.
-        this.bStrictlyRDF = strFetchURL.equals("http://www.w3.org/2004/02/skos/core#");
+        this.bStrictlyRDF = strLocation.equals("http://www.w3.org/2004/02/skos/core#");
         if (this.bStrictlyRDF) {
             return false; // ...continue
         }
@@ -344,7 +334,7 @@ public class VocabularyImporter {
         // Process Now: Set up code to process a return boolean to stop further processing
         //
 
-        if ( strFetchURL.equals("http://www.w3.org/2001/XMLSchema#") ) {
+        if ( strLocation.equals("http://www.w3.org/2001/XMLSchema#") ) {
             VocabularyImporter.logger.info("INFO: XMLSchema is a built-in Datatype ontology...skipping import.");
             return true; // ...stop
         }

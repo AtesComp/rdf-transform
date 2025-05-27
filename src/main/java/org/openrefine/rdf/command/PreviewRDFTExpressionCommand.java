@@ -109,7 +109,7 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
             // Set up the output
             //
             ObjectMapper mapper = new ObjectMapper();
-            this.theWriter = mapper.getFactory().createGenerator(response.getWriter());
+            this.theWriter = mapper.getFactory().createGenerator( response.getWriter() );
 
             //
             // Process the command...
