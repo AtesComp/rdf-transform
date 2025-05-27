@@ -150,7 +150,7 @@
     "rdft-vocab/delete": "Delete",
     "rdft-vocab/deleting-pref": "Deleting prefix",
     "rdft-vocab/desc-one": "This will re-fetch the vocabulary from",
-    "rdft-vocab/desc-two": "If you added it by uploading a file you need to delete it and add it again to refresh the index. Continue?",
+    "rdft-vocab/desc-two": "If a file was upload, you may need to delete and add again if the file was moved or deleted. Continue?",
     "rdft-vocab/error-adding": "Error while adding prefix",
     "rdft-vocab/error-adding-term": "Error while adding suggestion term",
     "rdft-vocab/error-deleting": "Error while removing prefix",
@@ -158,6 +158,6 @@
     "rdft-vocab/header": "Defined Namespaces List",
     "rdft-vocab/iri": "IRI",
     "rdft-vocab/prefix": "Prefix",
-    "rdft-vocab/refresh-pref": "Refresh namespaces",
+    "rdft-vocab/refresh-namespaces": "Refresh namespaces",
     "rdft-vocab/refresh": "Refresh"
 }

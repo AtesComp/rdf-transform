@@ -150,7 +150,7 @@
     "rdft-vocab/delete": "削除",
     "rdft-vocab/deleting-pref": "プレフィックスを削除中",
     "rdft-vocab/desc-one": "この操作では、以下から語彙を再フェッチします",
-    "rdft-vocab/desc-two": "ファイルをアップロードして追加したら、索引をリフレッシュするにはいちど削除して再度追加する必要があります。 続けますか?",
+    "rdft-vocab/desc-two": "ファイルをアップロードして追加した場合、そのファイルが移動または削除された場合には、削除して再度追加する必要があることがあります。 続けますか?",
     "rdft-vocab/error-adding": "プレフィックスの追加中にエラー発生",
     "rdft-vocab/error-adding-term": "提案用語の追加中にエラー発生",
     "rdft-vocab/error-deleting": "プレフィックスの削除中にエラー発生",
@@ -158,6 +158,6 @@
     "rdft-vocab/header": "定義済の名前空間一覧",
     "rdft-vocab/iri": "IRI",
     "rdft-vocab/prefix": "プレフィックス",
-    "rdft-vocab/refresh-pref": "名前空間をリフレッシュ",
+    "rdft-vocab/refresh-namespaces": "名前空間をリフレッシュ",
     "rdft-vocab/refresh": "リフレッシュ"
 }
