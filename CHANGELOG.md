@@ -1,3 +1,10 @@
+## 2.3.2 Released
+This version is updates the Namespace management. The Prefix, Namespace, Location, and
+Location Type are store for each Namespace in the project. This expands on the older Prefix
+and Namespace storage. It allows the Namespace management to recall from where it loaded the
+Namespace. For URLs, they may differ from the Namespace IRI. For Files, the uploaded file is
+stored in the RDF Transform cache in a project directory.
+
 ## 2.3.1 Released
 This version is a minor update. The RDF Node dialog is updated with a resizer. Additionally,
 the dialog's left column "Content" resizes with the dialog and adds scrollbars when needed. The
