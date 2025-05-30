@@ -111,7 +111,7 @@ class RDFTransformCommon {
 
                 // @ts-ignore
                 $.ajax(
-                    {   url  : "command/rdf-transform/convert-to-iri",
+                    {   url  : gstrCommandRDFTransform + gstrConvertToIRI,
                         type : 'GET',
                         async: false, // ...wait on results
                         data : params,
@@ -152,7 +152,7 @@ class RDFTransformCommon {
 
                 // @ts-ignore
                 $.ajax(
-                    {   url  : "command/rdf-transform/validate-iri",
+                    {   url  : gstrCommandRDFTransform + gstrValidateIRI,
                         type : 'GET',
                         async: false, // ...wait on results
                         data : params,
@@ -325,7 +325,7 @@ class RDFTransformCommon {
             (resolve, reject) => {
                 // @ts-ignore
                 $.ajax(
-                    {   url  : "command/rdf-transform/get-preferences",
+                    {   url  : gstrCommandRDFTransform + gstrGetPreferences,
                         type : 'GET',
                         async: false, // ...wait on results
                         data : params,

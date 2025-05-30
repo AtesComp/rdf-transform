@@ -150,7 +150,7 @@
     "rdft-vocab/delete": "Rimuovi",
     "rdft-vocab/deleting-pref": "Cancellando prefisso",
     "rdft-vocab/desc-one": "Il vocabolario verrà recuperati nuovamente da",
-    "rdft-vocab/desc-two": "Se un file è stato caricato, potrebbe essere necessario eliminarlo e aggiungerlo di nuovo se il file è stato spostato o eliminato. Continuare?",
+    "rdft-vocab/desc-two": "Se un file è stato caricato, viene ricaricato dalla cache del progetto. Continuare?",
     "rdft-vocab/error-adding": "Errore durante l'aggiunta del prefisso",
     "rdft-vocab/error-adding-term": "Errore durante l'aggiunta del termine del suggerimento",
     "rdft-vocab/error-deleting": "Errore durante la rimozione del prefisso",

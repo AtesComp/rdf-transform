@@ -86,15 +86,11 @@ public class NamespaceAddFromURLCommand extends RDFTransformCommand {
 
                 // Remove related vocabulary...
                 if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Removing relate vocabulary...");
-                theContext.
-                    getVocabularySearcher().
-                        deleteVocabularyTerms(strPrefix, strProjectID);
+                theContext.getVocabularySearcher().deleteVocabularyTerms(strPrefix, strProjectID);
 
                 // (Re)Add related vocabulary...
                 if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Importing vocabulary from URL...");
-                theContext.
-                    getVocabularySearcher().
-                        importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
+                theContext.getVocabularySearcher().importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
 
                 // (Re)Add the namespace...
                 if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Adding Namespace " + strPrefix);

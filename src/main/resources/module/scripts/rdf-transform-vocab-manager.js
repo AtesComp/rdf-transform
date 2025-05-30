@@ -83,7 +83,7 @@ class RDFTransformVocabManager {
             var funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/deleting-pref') + ' ' + strPrefix);
 
             Refine.postCSRF(
-                "command/rdf-transform/remove-namespace",
+                gstrCommandRDFTransform + gstrRemoveNamespace,
                 {   "project" :  theProject.id,
                     "prefix":    strPrefix,
                     "namespace": strNamespace,
@@ -130,7 +130,7 @@ class RDFTransformVocabManager {
 
                     // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/refresh-namespaces') + ' ' + strPrefix);
-                    var postCmd = "command/rdf-transform/add-namespace-from-URL";
+                    var postCmd = gstrCommandRDFTransform + gstrAddNamespaceFromURL;
                     // @ts-ignore
                     msgAlert = $.i18n('rdft-vocab/alert-wrong') + ': ';
 
@@ -160,7 +160,7 @@ class RDFTransformVocabManager {
                     // @ts-ignore
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-by-upload') + ' ' +
                                     strNamespace + '<br />File: ' + strLocation );
-                    var postCmd = "command/rdf-transform/add-namespace-from-file";
+                    var postCmd = gstrCommandRDFTransform + gstrAddNamespaceFromFile;
                     // @ts-ignore
                     msgAlert = $.i18n('rdft-vocab/error-adding') + ': ' + strPrefix + "\n";
 

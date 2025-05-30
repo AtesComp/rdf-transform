@@ -89,7 +89,7 @@ class RDFTransformNamespacesManager {
                 // GET default namespaces in ajax
                 // @ts-ignore
                 $.ajax(
-                    {   url  : "command/rdf-transform/get-default-namespaces",
+                    {   url  : gstrCommandRDFTransform + gstrGetDefaultNamespaces,
                         type : "GET",
                         async: false, // ...wait on results
                         data : { "project" : theProject.id },
@@ -104,7 +104,7 @@ class RDFTransformNamespacesManager {
 
     #saveNamespaces(onDoneSave) {
         Refine.postCSRF(
-            "command/rdf-transform/save-namespaces",
+            gstrCommandRDFTransform + gstrSaveNamespaces,
             {   "project" : theProject.id,
                 "namespaces" : this.#theNamespaces
             },

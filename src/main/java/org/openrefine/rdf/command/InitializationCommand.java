@@ -41,6 +41,7 @@ import com.google.refine.operations.OperationRegistry;
 
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
+import org.openrefine.rdf.RDFTGlobals;
 import org.openrefine.rdf.model.exporter.RDFPrettyExporter;
 import org.openrefine.rdf.model.exporter.RDFStreamExporter;
 import org.openrefine.rdf.model.expr.RDFTransformBinder;
@@ -160,26 +161,26 @@ public class InitializationCommand extends Command {
                 command = cmd;
             }
         };
-        String strSaveRDFTransform = "save-rdf-transform"; // ...also for operation registry later
 
         List<RDFTCommandItem> aCommands = new ArrayList<RDFTCommandItem>();
-        aCommands.add(new RDFTCommandItem( "initialize", this ));
-        aCommands.add(new RDFTCommandItem( "get-preferences", new PreferencesCommand() ));
-        aCommands.add(new RDFTCommandItem( "preview-rdf", new PreviewRDFCommand() ));
-        aCommands.add(new RDFTCommandItem( "preview-rdf-expression", new PreviewRDFTExpressionCommand() ));
-        aCommands.add(new RDFTCommandItem( strSaveRDFTransform, new SaveRDFTransformCommand() ));
-        aCommands.add(new RDFTCommandItem( "save-baseIRI", new SaveBaseIRICommand() ));
-        aCommands.add(new RDFTCommandItem( "validate-iri", new ValidateIRICommand() ));
-        aCommands.add(new RDFTCommandItem( "convert-to-iri", new ToIRICommand() ));
-        // Vocabs commands
-        aCommands.add(new RDFTCommandItem( "get-default-namespaces", new NamespacesGetDefaultCommand() ));
-        aCommands.add(new RDFTCommandItem( "save-namespaces", new NamespacesSaveCommand() ));
-        aCommands.add(new RDFTCommandItem( "add-namespace-from-URL", new NamespaceAddFromURLCommand() ));
-        aCommands.add(new RDFTCommandItem( "add-namespace-from-file", new NamespaceAddFromFileCommand() ));
-        aCommands.add(new RDFTCommandItem( "remove-namespace", new NamespaceRemoveCommand() ));
-        aCommands.add(new RDFTCommandItem( "suggest-namespace", new SuggestNamespaceCommand() ));
-        aCommands.add(new RDFTCommandItem( "suggest-term", new SuggestTermCommand() ));
-        aCommands.add(new RDFTCommandItem( "add-suggest-term", new SuggestTermAddCommand() ));
+        // Commands
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strInitialize,           this ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strGetPreferences,       new PreferencesCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strPreviewRDF,           new PreviewRDFCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strPreviewRDFExpression, new PreviewRDFTExpressionCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strSaveRDFTransform,     new SaveRDFTransformCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strSaveBaseIRI,          new SaveBaseIRICommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strValidateIRI,          new ValidateIRICommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strConvertToIRI,         new ToIRICommand() ));
+        // Vocabs Commands
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strGetDefaultNamespaces, new NamespacesGetDefaultCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strSaveNamespaces,       new NamespacesSaveCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strAddNamespaceFromURL,  new NamespaceAddFromURLCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strAddNamespaceFromFile, new NamespaceAddFromFileCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strRemoveNamespace,      new NamespaceRemoveCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strSuggestNamespace,     new SuggestNamespaceCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strSuggestTerm,          new SuggestTermCommand() ));
+        aCommands.add(new RDFTCommandItem( RDFTGlobals.strAddSuggestTerm,       new SuggestTermAddCommand() ));
         // Others:
         //   CodeResponse - Standard Response Class for Commands
         //   RDFTransformCommand - Abstract RDF Command Class
@@ -205,14 +206,14 @@ public class InitializationCommand extends Command {
          *  Server-side Operations...
          */
         OperationRegistry.registerOperation(
-            this.theModule, strSaveRDFTransform, SaveRDFTransformOperation.class
+            this.theModule, RDFTGlobals.strSaveRDFTransform, SaveRDFTransformOperation.class
         );
 
         /*
          *  Server-side GREL Functions and Binders...
          */
-        ControlFunctionRegistry.registerFunction( "toIRIString", new ToIRIString() );
-        ControlFunctionRegistry.registerFunction( "toStrippedLiteral", new ToStrippedLiteral() );
+        ControlFunctionRegistry.registerFunction( "toIRIString",        new ToIRIString() );
+        ControlFunctionRegistry.registerFunction( "toStrippedLiteral",  new ToStrippedLiteral() );
 
         ExpressionUtils.registerBinder( new RDFTransformBinder() );
 
@@ -233,12 +234,12 @@ public class InitializationCommand extends Command {
         // PRETTY PRINTERS: (Graph) *** Not suggested for large graphs ***
         //
         List<RDFTExportPrinter> aPretty = new ArrayList<RDFTExportPrinter>();
-        aPretty.add(new RDFTExportPrinter(RDFFormat.RDFXML_PRETTY, "RDFXML_PRETTY"));
-        aPretty.add(new RDFTExportPrinter(RDFFormat.TURTLE_PRETTY, "TURTLE_PRETTY"));
-        aPretty.add(new RDFTExportPrinter(RDFFormat.TRIG_PRETTY, "TRIG_PRETTY"));
-        aPretty.add(new RDFTExportPrinter(RDFFormat.JSONLD_PRETTY, "JSONLD_PRETTY")); // default version is JSON-LD 1.1
-        //aPretty.add(new RDFTExportPrinter(null /* NDJSONLD_PRETTY */, "NDJSONLD_PRETTY"));
-        aPretty.add(new RDFTExportPrinter(RDFFormat.RDFJSON, "RDFJSON"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.RDFXML_PRETTY,  "RDFXML_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.TURTLE_PRETTY,  "TURTLE_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.TRIG_PRETTY,    "TRIG_PRETTY"));
+        aPretty.add(new RDFTExportPrinter(RDFFormat.JSONLD_PRETTY,  "JSONLD_PRETTY")); // default version is JSON-LD 1.1
+        //aPretty.add(new RDFTExportPrinter(null,                 "NDJSONLD_PRETTY")); // NDJSONLD_PRETTY
+        aPretty.add(new RDFTExportPrinter(RDFFormat.RDFJSON,        "RDFJSON"));
 
         for (RDFTExportPrinter ptr : aPretty) {
             if (ptr.rdfFormat != null) {
@@ -251,19 +252,19 @@ public class InitializationCommand extends Command {
         //
         List<RDFTExportPrinter> aStream = new ArrayList<RDFTExportPrinter>();
         // BLOCKS PRINTERS: per Subject (Stream)
-        aStream.add(new RDFTExportPrinter(RDFFormat.TURTLE_BLOCKS, "TURTLE_BLOCKS"));
-        aStream.add(new RDFTExportPrinter(RDFFormat.TRIG_BLOCKS, "TRIG_BLOCKS"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.TURTLE_BLOCKS,  "TURTLE_BLOCKS"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.TRIG_BLOCKS,    "TRIG_BLOCKS"));
         // LINE PRINTERS: triple, quad (Stream)
-        aStream.add(new RDFTExportPrinter(RDFFormat.NTRIPLES_UTF8, "NTRIPLES"));
-        aStream.add(new RDFTExportPrinter(RDFFormat.NQUADS_UTF8, "NQUADS"));
-        aStream.add(new RDFTExportPrinter(RDFFormat.TRIX, "TRIX"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.NTRIPLES_UTF8,  "NTRIPLES"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.NQUADS_UTF8,    "NQUADS"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.TRIX,           "TRIX"));
         // DUMMY PRINTERS: (Stream)
-        aStream.add(new RDFTExportPrinter(RDFFormat.RDFNULL, "RDFNULL"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.RDFNULL,        "RDFNULL"));
         // BINARY PRINTERS: (Stream)
-        aStream.add(new RDFTExportPrinter(RDFFormat.RDF_PROTO, "RDF_PROTO"));
-        aStream.add(new RDFTExportPrinter(RDFFormat.RDF_THRIFT, "RDF_THRIFT"));
-        aStream.add(new RDFTExportPrinter(null /* BINARY_RDF */, "BinaryRDF"));
-        aStream.add(new RDFTExportPrinter(null /* HDT */, "HDT"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.RDF_PROTO,      "RDF_PROTO"));
+        aStream.add(new RDFTExportPrinter(RDFFormat.RDF_THRIFT,     "RDF_THRIFT"));
+        //aStream.add(new RDFTExportPrinter(null,                 "BinaryRDF")); // BINARY_RDF
+        //aStream.add(new RDFTExportPrinter(null,                 "HDT")); // HDT
 
         for (RDFTExportPrinter ptr : aStream) {
             if (ptr.rdfFormat != null) {
@@ -318,10 +319,11 @@ public class InitializationCommand extends Command {
         String strPort =  System.getProperty("refine.port");
         if (strPort == null)
             strPort = "3333"; // Default
-        File fileWorkingDir = servlet.getCacheDir(RDFTransform.KEY);
+        File fileRDFTCacheDir = servlet.getCacheDir(RDFTransform.KEY);
+        
 
         try {
-            this.theContext.init(strHost, strIFace, strPort, fileWorkingDir);
+            this.theContext.init(strHost, strIFace, strPort, fileRDFTCacheDir);
         }
         catch (IOException ex) {
             InitializationCommand.logger.error("ERROR: App Context Init: " + ex.getMessage(), ex);

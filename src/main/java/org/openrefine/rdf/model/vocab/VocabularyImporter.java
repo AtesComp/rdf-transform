@@ -47,10 +47,10 @@ public class VocabularyImporter {
 
     //static private final String USER_AGENT = "OpenRefine.Extension.RDF-Transform";
 
-    private String m_strPrefix;
-    private String m_strNamespace;
-    private String m_strLocation;
-    private DatasetGraph m_theDSGraph;
+    private String m_strPrefix = null;
+    private String m_strNamespace = null;
+    private String m_strLocation = null;
+    private DatasetGraph m_theDSGraph = null;
 
     // Faulty Content Negotiators to Modify Processing...
     private boolean bStrictlyRDF = false;
@@ -64,6 +64,7 @@ public class VocabularyImporter {
     public void importVocabulary(List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
+        if (this.m_theDSGraph != null) this.m_theDSGraph.clear(); // ...erase all the old data
         if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given URL: " + this.m_strLocation);
         if (this.m_strLocation == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! URL is null.");
@@ -77,16 +78,16 @@ public class VocabularyImporter {
         this.getTerms(classes, properties);
     }
 
-    public void importVocabulary(DatasetGraph dsGraph, List<RDFTClass> classes, List<RDFTProperty> properties)
+    public void importVocabulary(DatasetGraph theDSGraph, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws VocabularyImportException
     {
+        if (this.m_theDSGraph != null) this.m_theDSGraph.clear(); // ...erase all the old data
         if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Import by given dataset graph...");
-        this.m_theDSGraph = dsGraph;
+        this.m_theDSGraph = theDSGraph;
         if (this.m_theDSGraph == null) {
             if ( Util.isDebugMode() ) VocabularyImporter.logger.info("DEBUG: Nothing to import! Import dataset graph is null.");
             return;
         }
-        this.m_theDSGraph.clear(); // ...erase all the old data
         this.getTerms(classes, properties);
     }
 

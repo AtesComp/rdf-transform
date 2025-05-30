@@ -29,6 +29,26 @@
  *
  */
 
+// NOTE: See matching RDFTGlobals command strings.
+var gstrCommandRDFTransform     = "command/rdf-transform/"; // ...common command header
+// Command Strings
+var gstrGetPreferences          = "get-preferences";
+var gstrPreviewRDF              = "preview-rdf";
+var gstrPreviewRDFExpression    = "preview-rdf-expression";
+var gstrSaveRDFTransform        = "save-rdf-transform";
+var gstrSaveBaseIRI             = "save-base-iri";
+var gstrValidateIRI             = "validate-iri";
+var gstrConvertToIRI            = "convert-to-iri";
+// Vocab Command Strings
+var gstrGetDefaultNamespaces    = "get-default-namespaces";
+var gstrSaveNamespaces          = "save-namespaces";
+var gstrAddNamespaceFromURL     = "add-namespace-from-url";
+var gstrAddNamespaceFromFile    = "add-namespace-from-file";
+var gstrRemoveNamespace         = "remove-namespace";
+var gstrSuggestNamespace        = "suggest-namespace";
+var gstrSuggestTerm             = "suggest-term";
+var gstrAddSuggestTerm          = "add-suggest-term";
+
 class RDFTransform {
     // This Client-side RDFTransform.KEY matches Server-side RDFTransform.KEY
     // NOTE: "get KEY()" sets "KEY" for retrieval.
@@ -82,7 +102,7 @@ class RDFTransform {
     // typeMappings
     static gstrTypeMappings = "typeMappings";
     // propertyMappings
-    static gstrPropertyMappings = "propertyMappings";
+    static gstrPropertyMappistrVERSION_MAJORngs = "propertyMappings";
     // objectMappings
     static gstrObjectMappings = "objectMappings";
 
@@ -844,7 +864,7 @@ class RDFTransformDialog {
         // Update the oracle on the RDF Transform...
         Refine.postProcess(
             RDFTransform.KEY,       // module
-            'save-rdf-transform',   // command
+            gstrSaveRDFTransform,   // command
             {},
             params,                 // params
             {},                     // updateOps
@@ -941,7 +961,7 @@ class RDFTransformDialog {
         // Consult the oracle on the RDF Preview...
         Refine.postProcess(
             RDFTransform.KEY,       // module
-            "preview-rdf",          // command
+            gstrPreviewRDF,         // command
             {},
             params,                 // params
             {},                     // updateOps
@@ -1021,7 +1041,7 @@ class RDFTransformDialog {
 
         if (bSave) { // ...save the base IRI...
             Refine.postCSRF(
-                "command/rdf-transform/save-baseIRI",
+                gstrCommandRDFTransform + gstrSaveBaseIRI,
                 {   "project" : theProject.id,
                     "baseIRI" : strIRI
                 },

@@ -249,8 +249,8 @@
                 // object merged (overwrites same named prior objects)...
                 {
                     "service_url"         : "",
-                    "service_path"        : "command/rdf-transform/suggest-term",
-                    "flyout_service_path" : "command/rdf-transform/suggest-term",
+                    "service_path"        : gstrCommandRDFTransform + gstrSuggestTerm,
+                    "flyout_service_path" : gstrCommandRDFTransform + gstrSuggestTerm,
                     "type"                : "class",
                     "suggest_new"         : $.i18n('rdft-dialog/add-it'),
                     "cache"               : false,

@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.FileExistsException;
+
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.IPredefinedVocabularyManager;
 import org.openrefine.rdf.model.vocab.IVocabularySearcher;
@@ -43,7 +45,7 @@ public class ApplicationContext {
     private String strPort;
     private String strHost;
     private String strIFace;
-    private File fileWorkingDir = null;
+    private File fileRDFTCacheDir = null;
     private IPredefinedVocabularyManager predefinedVocabularyManager = null;
     private IVocabularySearcher vocabularySearcher = null;
     private NamespaceManager nsManager = null;
@@ -56,12 +58,12 @@ public class ApplicationContext {
         return vocabularySearcher;
     }
 
-    public void init(String strHost, String strIFace, String strPort, File fileWorkingDir) throws IOException {
+    public void init(String strHost, String strIFace, String strPort, File fileRDFTCacheDir) throws IOException {
         if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("Initializing Context...");
         this.strHost =  ( strHost  == null || strHost.isEmpty()  ) ? null : strHost;
         this.strIFace = ( strIFace == null || strIFace.isEmpty() ) ? null : strIFace;
         this.strPort =  ( strPort  == null || strPort.isEmpty()  ) ? null : strPort;
-        this.fileWorkingDir = fileWorkingDir;
+        this.fileRDFTCacheDir = fileRDFTCacheDir;
         if ( Util.isDebugMode() ) {
             ApplicationContext.logger.info(
                 "Default Context: Host=" + ( this.strHost  == null ? "<undef>" : this.strHost ) + ", " +
@@ -70,14 +72,17 @@ public class ApplicationContext {
         }
 
         try {
-            this.vocabularySearcher = new VocabularySearcher(this.fileWorkingDir);
-            this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileWorkingDir);
+            this.vocabularySearcher = new VocabularySearcher(this.fileRDFTCacheDir);
+            this.predefinedVocabularyManager = new PredefinedVocabularyManager(this, this.fileRDFTCacheDir);
+            // The CURATED_VOCABS_FILE_NAME file is at:
+            //      "...(openrefine)/extensions/rdf-transform/module/MOD-INF/classes/" + CURATED_VOCABS_FILE_NAME
             InputStream inStream = this.getClass().getResourceAsStream(CURATED_VOCABS_FILE_NAME);
+            if (inStream == null) throw new FileExistsException("File not found: " + CURATED_VOCABS_FILE_NAME);
             this.nsManager = new NamespaceManager(inStream);
         }
-        catch (Exception e) {
+        catch (Exception ex) {
             ApplicationContext.logger.error("  ERROR: ABORTED - Context failed to initialize!");
-            throw e;
+            throw ex;
         }
         if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("...Context initialized.");
     }
@@ -105,7 +110,7 @@ public class ApplicationContext {
         return strIRI;
     }
 
-    public File getWorkingDirectory() {
-        return this.fileWorkingDir;
+    public File getRDFTCacheDirectory() {
+        return this.fileRDFTCacheDir;
     }
 }

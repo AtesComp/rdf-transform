@@ -362,7 +362,7 @@ class RDFTransformResourceDialog {
         var funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-vocab/adding-term') + ' ' + params.iri);
 
         Refine.postCSRF(
-            "command/rdf-transform/add-suggest-term",
+            gstrCommandRDFTransform + gstrAddSuggestTerm,
             params,
             (data) => {
                 if (data.code === "error") {

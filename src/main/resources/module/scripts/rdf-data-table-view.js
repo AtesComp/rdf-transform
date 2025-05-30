@@ -36,6 +36,7 @@
  *  RDF transform of a given element (subject, property, or object) selected in the RDF Transform
  *  editor.
  */
+
 class RDFDataTableView {
     #strTitle;
     #strBaseIRI;
@@ -620,7 +621,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         // @ts-ignore
         $.get(
             // URL:
-            "command/rdf-transform/preview-rdf-expression",
+            gstrCommandRDFTransform + gstrPreviewRDFExpression,
             // Data:
             params,
             // Success:

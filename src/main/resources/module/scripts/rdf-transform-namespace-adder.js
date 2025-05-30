@@ -187,7 +187,7 @@ class RDFTransformNamespaceAdder {
                             $.i18n('rdft-prefix/prefix-by-upload') + ' ' + strNamespace +
                             '<br />File: ' + strLocation );
 
-                    var postCmd = "command/rdf-transform/add-namespace-from-file";
+                    var postCmd = gstrCommandRDFTransform + gstrAddNamespaceFromFile;
 
                     // @ts-ignore
                     const target = $(evt.currentTarget);
@@ -239,7 +239,7 @@ class RDFTransformNamespaceAdder {
                     funcDismissBusy = DialogSystem.showBusy($.i18n('rdft-prefix/prefix-add') + ' ' + strNamespace);
                 }
 
-                var postCmd = "command/rdf-transform/add-namespace-from-URL";
+                var postCmd = gstrCommandRDFTransform + gstrAddNamespaceFromURL;
 
                 Refine.postCSRF(
                     postCmd,
@@ -292,7 +292,7 @@ class RDFTransformNamespaceAdder {
         {
             // @ts-ignore
             $.get(
-                'command/rdf-transform/suggest-namespace',
+                gstrCommandRDFTransform + gstrSuggestNamespace,
                 { "prefix": strPrefix },
                 (data) => {
                     if (data !== null && data.code === "ok") {

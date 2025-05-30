@@ -23,6 +23,7 @@ package org.openrefine.rdf.command;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -78,10 +79,8 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
         if ( strLocation.isEmpty() ) theLocType = LocationType.NONE;
 
         try {
-           theContext.
-                getVocabularySearcher().
-                    deleteVocabularyTerms(strPrefix, strProjectID);
-            if (theLocType != LocationType.NONE && theLocType != LocationType.URL) this.deleteFile(theContext.getWorkingDirectory(), strLocation);
+            theContext.getVocabularySearcher().deleteVocabularyTerms(strPrefix, strProjectID);
+            if (theLocType != LocationType.NONE && theLocType != LocationType.URL) this.deleteFile(theContext, strProjectID, strLocation);
         }
         catch (Exception ex) {
             if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.warn("doPost: Vocabulary removal problems!");
@@ -91,16 +90,33 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
         NamespaceRemoveCommand.respondJSON(response, CodeResponse.ok);
     }
 
-    private Boolean deleteFile(File fileWorkingDirectory, String strFilename) {
+    private Boolean deleteFile(ApplicationContext theContext, String strProjectID, String strFilename) {
         synchronized(strFilename) {
-            // Get the Files...
-            File fileOld = new File(fileWorkingDirectory, strFilename);
-            if ( fileOld.exists() ) {
-                if ( ! fileOld.delete() ) {
-                    NamespaceRemoveCommand.logger.error("ERROR: Could not remove ontology file!");
+            String strPathCache = theContext.getRDFTCacheDirectory().getPath();
+            try {
+                File dirCacheProject = Path.of( strPathCache + "/" + strProjectID ).toFile();
+                if ( ! dirCacheProject.exists() ) {
+                    NamespaceRemoveCommand.logger.error( "ERROR: deleteFile: File Error: Cannot find directory [{}]!", dirCacheProject.getPath() );
                     return false;
                 }
+
+                // Get the File...
+                File fileNow = new File(dirCacheProject, strFilename);
+
+                // Remove the Files...
+                if ( fileNow.exists() ) {
+                    if ( ! fileNow.delete() ) {
+                        NamespaceRemoveCommand.logger.error("ERROR: deleteFile: Could not remove ontology file [{}{}]!", strProjectID, strFilename);
+                        return false;
+                    }
+                }
             }
+            catch (Exception ex) {
+                NamespaceRemoveCommand.logger.error("ERROR: deleteFile: File Error on [{}/{}]", strProjectID, strFilename);
+                NamespaceRemoveCommand.logger.error("ERROR: deleteFile: File Error: {}", ex.getMessage());
+                return false;
+            }
+
             return true;
         }
     }
