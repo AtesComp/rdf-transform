@@ -199,7 +199,7 @@ abstract public class Node {
         //
         // Get Subject's Expression...
         //
-        String strExpLang = Util.gstrGREL; // ...default, TODO: Implement use
+        String strExpLang = Util.gstrGREL; // ...default
         String strExpCode = null;          // ...default, Node instances report "value" when null
         if ( jnodeSubject.has(Util.gstrExpression) ) {
             JsonNode jnodeExp = jnodeSubject.get(Util.gstrExpression);
@@ -208,6 +208,13 @@ abstract public class Node {
             }
             if ( jnodeExp.has(Util.gstrCode) ) {
                 strExpCode = jnodeExp.get(Util.gstrCode).asText().strip();
+                // If there is an embedded language in the code, it overrides...
+                int iColon = strExpCode.indexOf(58);
+                if (iColon >= 0) {
+                    strExpLang = strExpCode.substring(0, iColon).toLowerCase();
+                }
+                // Otherwise, embed the language in the code...
+                else strExpCode = strExpLang + ":" + strExpCode;
             }
         }
 
@@ -237,6 +244,7 @@ abstract public class Node {
     static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces,
             String strType, boolean bValueNode, boolean bConstNode, String strValue, String strPrefix, String strSource, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
+
         ResourceNode rnodeResource = null;
 
         if ( strType.equals(Util.gstrIRI) ) {
@@ -259,7 +267,9 @@ abstract public class Node {
 
         // Check Resource creation...
         if (rnodeResource == null) {
-            Node.logger.error("ERROR: Bad Node: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
+            Node.logger.error(
+                "ERROR: Bad Node: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]" +
+                "  Exp: [" + strExpCode + "]");
         }
         else {
             //
@@ -279,6 +289,7 @@ abstract public class Node {
     static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces,
             String strType, JsonNode jnodeValueType, boolean bValueNode, boolean bConstNode, String strValue, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
+
         LiteralNode lnodeLiteral = null;
 
         String strDatatypePrefix = null;

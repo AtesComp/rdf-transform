@@ -22,7 +22,6 @@
 package org.openrefine.rdf.command;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.Vocabulary;
@@ -33,8 +32,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 public class NamespacesSaveCommand extends RDFTransformCommand {
 
@@ -57,7 +54,6 @@ public class NamespacesSaveCommand extends RDFTransformCommand {
             ObjectNode theNamespaces =
                 ParsingUtilities.evaluateJsonStringToObjectNode( request.getParameter(Util.gstrNamespaces) );
 
-            Iterator< Entry < String, JsonNode > > fields = theNamespaces.fields();
             // NOTE: The Namespaces JSON object has the form:
             //  { namespaces: {
             //      somePrefixString: {
@@ -74,7 +70,7 @@ public class NamespacesSaveCommand extends RDFTransformCommand {
             //      ...
             //  }
 
-            fields.forEachRemaining(prefix -> {
+            theNamespaces.properties().forEach(prefix -> {
                 Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
                 listVocabs.add(vocab);
             });

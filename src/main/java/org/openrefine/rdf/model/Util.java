@@ -454,7 +454,7 @@ public class Util {
         String strHeader = (bTest ? "TEST: " : "ERROR: ") + "buildIRI(): ";
 
         if (strIRI == null || strIRI.isEmpty() || strIRI.isBlank() ) {
-            if ( Util.isVerbose() || Util.isDebugMode()) Util.logger.error(strHeader + "Null IRI");
+            if ( Util.isVerbose()) Util.logger.error(strHeader + "Null IRI");
             return null;
         }
 
@@ -463,7 +463,7 @@ public class Util {
             iriNew = Util.iriFactory.construct(strIRI);
         }
         catch (Exception ex) {
-            if ( Util.isVerbose() || Util.isDebugMode() ) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
+            if ( Util.isVerbose() ) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
             else Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">");
         }
 
@@ -554,11 +554,11 @@ public class Util {
     }
 
     static public boolean isVerbose() {
-        return ( Util.isVerbose(1) );
+        return ( Util.isDebugMode() || Util.isVerbose(1) );
     }
 
     static public boolean isVerbose(int iVerbose) {
-        return ( (int) Util.Preferences.get("iVerbosity") >= iVerbose );
+        return ( Util.isDebugMode() || (int) Util.Preferences.get("iVerbosity") >= iVerbose );
     }
 
     static public int getVerbose() {
@@ -636,13 +636,11 @@ public class Util {
         boolean bNotFirstEntry = false;
         Set<Map.Entry<String, Object>> entrySet = Preferences.entrySet();
         for (Map.Entry<String, Object> entry : entrySet) {
-            if (bNotFirstEntry) {
-                strPrefs += strComma;
-            }
-            strPrefs += entry.getKey() + " : " + entry.getValue().toString();
+            if (bNotFirstEntry) strPrefs += strComma;
+            strPrefs += "  " + entry.getKey() + " : " + entry.getValue().toString();
             bNotFirstEntry = true;
         }
-        strPrefs +=   " }";
+        strPrefs += "\n}";
         return strPrefs;
     }
 
@@ -865,7 +863,7 @@ public class Util {
         return Util.gstrExpression;
     }
 
-    static public Boolean recursiveDirDelete(File dirEntry) {
+    static public boolean recursiveDirDelete(File dirEntry) {
         // NOTE: On false return, some error has occurred deleteing the directory
 
         if ( ! dirEntry.exists() ) return true;

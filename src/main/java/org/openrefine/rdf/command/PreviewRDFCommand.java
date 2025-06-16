@@ -41,7 +41,6 @@ import com.google.refine.util.ParsingUtilities;
 
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-//import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 
@@ -115,7 +114,7 @@ public class PreviewRDFCommand extends Command {
                 try {
                     iSampleLimit = Integer.parseInt(strSampleLimit); // ...set to sample limit
                 }
-                catch (NumberFormatException ex) { 
+                catch (NumberFormatException ex) {
                     // ignore, use default...
                 }
             }
@@ -142,8 +141,10 @@ public class PreviewRDFCommand extends Command {
             // Get the Stream Writer if applicable...
             //
             StreamRDF theWriter = null;
+            RDFFormat theFormat = null;
             if ( bPreviewStream )  {
-                theWriter = StreamRDFWriter.getWriterStream(osOut, RDFFormat.TRIG_BLOCKS);
+                theFormat = RDFFormat.TRIG_BLOCKS;
+                theWriter = StreamRDFWriter.getWriterStream(osOut, theFormat);
                 if (theWriter == null) {
                     PreviewRDFCommand.logger.warn("WARN: Cannot construct Stream-based writer. Using pretty printer.");
                 }
@@ -165,16 +166,16 @@ public class PreviewRDFCommand extends Command {
             // If Record mode...
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Record Visitor...");
-                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter);
+                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter, theFormat);
             }
             // Otherwise, Row mode...
             else {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Row Visitor...");
-                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter);
+                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter, theFormat);
             }
 
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the RDF graph...");
-            theVisitor.buildDSGraph(theProject, theEngine);
+            theVisitor.buildDSGraph(theProject, theEngine); // ...may or may not close since the theVisitor's theWriter is flexible
 
             //
             // End writing...
@@ -182,22 +183,27 @@ public class PreviewRDFCommand extends Command {
             // If Stream Writer, end Stream Writer...
             if (theWriter != null) theWriter.finish();
             // Otherwise, write and end Pretty Writer...
-            else RDFDataMgr.write(osOut, theVisitor.getDSGraph(), RDFFormat.TRIG);
+            else {
+                theFormat = RDFFormat.TRIG_PRETTY;
+                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Writing the graph as " + theFormat.getLang().getName() + "...");
+                RDFDataMgr.write( osOut, theVisitor.getDSGraph(), theFormat ); // ...multi-graph
+                //RDFDataMgr.write(osOut, theVisitor.getDSGraph().getUnionGraph(), theFormat); // ...single graph
+                theVisitor.closeDSGraph(); // ...close since the theVisitor has no writer: theWriter == null
+            }
 
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
-            theVisitor.closeDSGraph();
 
             //
             // Send back to client...
             //
             String strStatements = osOut.toString(StandardCharsets.UTF_8);
-            if ( Util.isVerbose(4) || Util.isDebugMode() ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
+            if ( Util.isVerbose(4) ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
 
             PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );
         }
         catch (Exception ex) {
             PreviewRDFCommand.logger.error("ERROR: Constructing Preview:" + ex.getMessage(), ex);
-            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+            if ( Util.isVerbose() ) ex.printStackTrace();
             PreviewRDFCommand.respondJSON(response, CodeResponse.error);
         }
     }

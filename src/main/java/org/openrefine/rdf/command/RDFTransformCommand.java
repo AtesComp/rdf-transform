@@ -58,7 +58,7 @@ public abstract class RDFTransformCommand extends Command {
             throw new IllegalArgumentException("project string should not be null");
         }
         else {
-            if (strProject != null && !"".equals(strProject)) {
+            if ( strProject != null && ! "".equals(strProject) ) {
                 Long iID;
                 try {
                     iID = Long.parseLong(strProject);
@@ -92,13 +92,14 @@ public abstract class RDFTransformCommand extends Command {
                 strMsg = "ERROR: " + strMsg;
             }
             if (logger != null) logger.error(strMsg, except);
-            if ( Util.isVerbose() || Util.isDebugMode() ) except.printStackTrace();
+            if ( Util.isVerbose() ) except.printStackTrace();
         }
         else { // ...warning...
             if (!bFormatted) {
                 strMsg = "WARNING: " + strMsg;
             }
-            if ( logger != null && (Util.isVerbose() || Util.isDebugMode() ) ) logger.warn(strMsg, except);
+            if (logger != null) logger.warn(strMsg, except);
+            if ( Util.isVerbose(2) ) except.printStackTrace();
         }
     }
 

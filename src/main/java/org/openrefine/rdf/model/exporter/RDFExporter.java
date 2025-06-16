@@ -32,13 +32,26 @@ import org.slf4j.LoggerFactory;
 public class RDFExporter implements Exporter  {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFExporter");
 
-    protected RDFFormat theFormat;
-    protected String theExportName;
+    /**
+     * The member, theFormat, is the proposed RDFFormat used for output. It can be null.
+     * Use method getFormat() to either get the given RDFFormat or, if null, rectify to a default format.
+     */
+    private RDFFormat theFormat;
+    protected String theExportLang;
 
-    public RDFExporter(RDFFormat format, String strName) {
+    public RDFExporter(RDFFormat format, String strLang) {
         this.theFormat = format;
-        this.theExportName = strName;
-        if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Preparing exporter " + strName + "...");
+        this.theExportLang = strLang;
+        if ( Util.isDebugMode() ) RDFExporter.logger.info("DEBUG: Preparing exporter " + strLang + "...");
+    }
+
+    public RDFFormat getFormat() {
+        if (this.theFormat != null) {
+            return this.theFormat;
+        }
+        else { // ...export as TriG...
+            return RDFFormat.TRIG;
+        }
     }
 
     public String getContentType() {

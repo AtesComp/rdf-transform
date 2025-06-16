@@ -29,6 +29,9 @@
  *
  */
 
+// ----------------------------------------
+// RDF Transform Globals
+// ----------------------------------------
 // NOTE: See matching RDFTGlobals command strings.
 var gstrCommandRDFTransform     = "command/rdf-transform/"; // ...common command header
 // Command Strings
@@ -58,7 +61,7 @@ class RDFTransform {
     // RDF Transform Version Control
     static strVERSION_MAJOR = "2";
     static strVERSION_MINOR = "3";
-    static strVERSION_MICRO = "2";
+    static strVERSION_MICRO = "3";
     static strVERSION =
         RDFTransform.strVERSION_MAJOR + "." +
         RDFTransform.strVERSION_MINOR + "." +
@@ -102,7 +105,7 @@ class RDFTransform {
     // typeMappings
     static gstrTypeMappings = "typeMappings";
     // propertyMappings
-    static gstrPropertyMappistrVERSION_MAJORngs = "propertyMappings";
+    static gstrPropertyMappings = "propertyMappings";
     // objectMappings
     static gstrObjectMappings = "objectMappings";
 
@@ -859,7 +862,9 @@ class RDFTransformDialog {
         console.log(theTransform);
         */
 
-        var params = { [RDFTransform.KEY] : JSON.stringify( theTransform ) };
+        var params = {
+            [RDFTransform.KEY] : JSON.stringify( theTransform )
+        };
 
         // Update the oracle on the RDF Transform...
         Refine.postProcess(

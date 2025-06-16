@@ -30,8 +30,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 import org.openrefine.rdf.ApplicationContext;
 import org.openrefine.rdf.RDFTransform;
@@ -82,9 +80,9 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             catch (Exception ex2) {
                 // Predefined vocabularies are not defined properly...
                 //   Ignore the exception, but log it...
-                if ( Util.isVerbose() || Util.isDebugMode() ) {
+                if ( Util.isVerbose() ) {
                     PredefinedVocabularyManager.logger.warn("Loading predefined vocabularies failed: " + ex2.getMessage(), ex2);
-                    if ( Util.isVerbose(2) || Util.isDebugMode() ) ex2.printStackTrace();
+                    if ( Util.isVerbose(2) ) ex2.printStackTrace();
                 }
             }
             try {
@@ -93,9 +91,9 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             catch (Exception ex2) {
                 // Saving predefined vocabularies failed...
                 //   Ignore the exception, but log it...
-                if ( Util.isVerbose() || Util.isDebugMode() ) {
+                if ( Util.isVerbose() ) {
                     PredefinedVocabularyManager.logger.warn("Saving local Vocabulary failed: ", ex2);
-                    if ( Util.isVerbose(2) || Util.isDebugMode() ) ex2.printStackTrace();
+                    if ( Util.isVerbose(2) ) ex2.printStackTrace();
                 }
             }
         }
@@ -161,7 +159,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
                 //   Ignore the exception, but log it...
                 if ( Util.isVerbose() ) {
                     PredefinedVocabularyManager.logger.warn("Predefined vocabulary import failed: ", ex);
-                    if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
+                    if ( Util.isVerbose(2) ) ex.printStackTrace();
                 }
             }
 
@@ -180,8 +178,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         JsonNode jnodeVocabs = mapper.readTree(vocabsFile);
         if ( jnodeVocabs != null && jnodeVocabs.has(Util.gstrNamespaces) ) {
             JsonNode jnodeNamespaces = jnodeVocabs.get(Util.gstrNamespaces);
-            Iterator<Entry<String, JsonNode>> fields = jnodeNamespaces.fields();
-            fields.forEachRemaining(prefix -> {
+            jnodeNamespaces.properties().forEach(prefix -> {
                 Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
                 this.predefinedVocabularies.add(vocab);
             });
@@ -201,7 +198,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             }
             catch (Exception ex) {
                 PredefinedVocabularyManager.logger.error("ERROR: Project metadata save failed: ", ex);
-                if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+                if ( Util.isVerbose() ) ex.printStackTrace();
                 return;
             }
 

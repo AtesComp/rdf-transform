@@ -59,7 +59,7 @@ public class ApplicationContext {
     }
 
     public void init(String strHost, String strIFace, String strPort, File fileRDFTCacheDir) throws IOException {
-        if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("Initializing Context...");
+        if (Util.isVerbose(3) ) ApplicationContext.logger.info("Initializing Context...");
         this.strHost =  ( strHost  == null || strHost.isEmpty()  ) ? null : strHost;
         this.strIFace = ( strIFace == null || strIFace.isEmpty() ) ? null : strIFace;
         this.strPort =  ( strPort  == null || strPort.isEmpty()  ) ? null : strPort;
@@ -84,7 +84,7 @@ public class ApplicationContext {
             ApplicationContext.logger.error("  ERROR: ABORTED - Context failed to initialize!");
             throw ex;
         }
-        if (Util.isVerbose(3) || Util.isDebugMode() ) ApplicationContext.logger.info("...Context initialized.");
+        if (Util.isVerbose(3) ) ApplicationContext.logger.info("...Context initialized.");
     }
 
     public void setPredefinedVocabularyManager(IPredefinedVocabularyManager predefinedVocabularyManager) {

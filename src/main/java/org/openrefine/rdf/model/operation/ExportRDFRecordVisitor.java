@@ -30,7 +30,7 @@ import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
 import org.apache.jena.iri.IRI;
-//import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
 public class ExportRDFRecordVisitor extends RDFRecordVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:ExportRDFRecV");
 
-    public ExportRDFRecordVisitor(RDFTransform theTransform, StreamRDF theWriter) {
-        super(theTransform, theWriter);
+    public ExportRDFRecordVisitor(RDFTransform theTransform, StreamRDF theWriter, RDFFormat theFormat) {
+        super(theTransform, theWriter, theFormat);
         if ( Util.isDebugMode() ) ExportRDFRecordVisitor.logger.info("DEBUG: Created...");
     }
 
@@ -50,15 +50,11 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
             IRI baseIRI = this.getRDFTransform().getBaseIRI();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
-                //this.theModel.enterCriticalSection(Model.WRITE);
-                //root.createStatements(baseIRI, this.theModel, theProject, theRecord);
-                //this.theModel.leaveCriticalSection();
                 root.createStatements(baseIRI, this.theDSGraph, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
                     ExportRDFRecordVisitor.logger.info("DEBUG:   " +
                         "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
-                        //"Model Size: " + theModel.size()
                         "DatasetGraph Size: " + this.theDSGraph.size()
                     );
                 }
@@ -83,7 +79,7 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
         }
         catch (Exception ex) {
             ExportRDFRecordVisitor.logger.error("ERROR: Visit Issue: " + ex.getMessage(), ex);
-            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+            if ( Util.isVerbose() ) ex.printStackTrace();
             return true; // ...stop visitation process
         }
 

@@ -24,9 +24,7 @@ package org.openrefine.rdf;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.openrefine.rdf.model.Node;
@@ -40,8 +38,11 @@ import com.google.refine.model.Project;
 
 import org.apache.jena.iri.IRI;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -78,7 +79,7 @@ public class RDFTransform implements OverlayModel {
     // RDF Transform Version Control
     static public final String VERSION_MAJOR = "2";
     static public final String VERSION_MINOR = "3";
-    static public final String VERSION_MICRO = "2";
+    static public final String VERSION_MICRO = "3";
     static public final String VERSION =
         RDFTransform.VERSION_MAJOR + "." +
         RDFTransform.VERSION_MINOR + "." +
@@ -111,12 +112,17 @@ public class RDFTransform implements OverlayModel {
         synchronized(theProject) {
             // Get the project's existing RDFTransform, if it exists...
             RDFTransform theTransform = (RDFTransform) theProject.overlayModels.get(RDFTransform.EXTENSION);
-            if (theTransform == null) {
+            if (theTransform != null) {
+                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: getRDFTransform(): The transform exists.");
+            }
+            else {
                 // Create a new RDFTransform for the project...
                 theTransform = new RDFTransform(theProject);
 
                 theProject.overlayModels.put(RDFTransform.EXTENSION, theTransform);
                 theProject.getMetadata().updateModified();
+
+                if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: getRDFTransform(): The transform is created.");
             }
             return theTransform;
         }
@@ -132,16 +138,16 @@ public class RDFTransform implements OverlayModel {
         String[] astrValues = { null, null, null }; // 0 = Namespace, 1 = Location, 2 = Location Type
         Vocabulary.LocationType theLocType = Vocabulary.LocationType.NONE;
         Vocabulary vocab = null;
-        Boolean bOld = false;
+        boolean bOld = false;
 
         // If the prefix does not have field, then it only has a namespace value (DEPRECATED Old Format)...
-        if ( ! prefix.getValue().fields().hasNext() ) {
+        if ( prefix.getValue().properties().isEmpty() ) {
             // Upgrade to New Format...
             bOld = true;
             astrValues[0] = prefix.getValue().asText();
         }
         else {
-            prefix.getValue().fields().forEachRemaining(value -> {
+            prefix.getValue().properties().forEach(value -> {
                 String strKey = value.getKey();
                 String strVal = value.getValue().asText();
                 if      ( strKey.equals("namespace") )  astrValues[0] = strVal;
@@ -246,45 +252,39 @@ public class RDFTransform implements OverlayModel {
         return RDFTransform.reconstruct(null, jnodeRoot);
     }
 
-    static public RDFTransform reconstruct(Project theProject, JsonNode jnodeRoot) {
+    static public RDFTransform reconstruct(Project theProject, JsonNode jnodeTransform) {
         // Reset the RDF Transform preferences via the OpenRefine Preference Store
         // as it may have changed since last call...
         Util.setPreferencesByPreferenceStore();
 
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Start reconstruction...");
-        if ( Util.isDebugJSON() ) RDFTransform.logger.info("  JSON:\n" + jnodeRoot.toPrettyString());
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Start reconstruction...");
+        if ( Util.isDebugJSON() ) RDFTransform.logger.info("  JSON:\n" + jnodeTransform.toPrettyString());
 
-        if ( jnodeRoot == null || jnodeRoot.isNull() || jnodeRoot.isEmpty() ) {
-            if ( Util.isVerbose(3) || Util.isDebugMode() ) RDFTransform.logger.info("  Nothing to reconstruct!");
+        if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
+            if ( Util.isVerbose(3) ) RDFTransform.logger.info("  Nothing to reconstruct!");
             return null;
         }
 
-        RDFTransform theTransform = null;
-        if (theProject == null) {
-            theTransform = new RDFTransform();
-        }
-        else {
-            theTransform = new RDFTransform(theProject);
-        }
+        RDFTransform theTransform = new RDFTransform(theProject);
 
         //
         // JSON Header...
         //
         String strExtension = null;
-        if ( jnodeRoot.has(Util.gstrExtension) ) {
-            strExtension = jnodeRoot.get(Util.gstrExtension).asText();
+        if ( jnodeTransform.has(Util.gstrExtension) ) {
+            strExtension = jnodeTransform.get(Util.gstrExtension).asText();
             if (strExtension == null) {
                 strExtension = "";
             }
         }
         String strVersion = null;
-        if ( jnodeRoot.has(Util.gstrVersion) ) {
-            strVersion = jnodeRoot.get(Util.gstrVersion).asText();
+        if ( jnodeTransform.has(Util.gstrVersion) ) {
+            strVersion = jnodeTransform.get(Util.gstrVersion).asText();
             if (strVersion == null) {
                 strVersion = "";
             }
         }
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+        if ( Util.isVerbose(2) ) {
             RDFTransform.logger.info("  Transform Version: " + strExtension + " " + strVersion);
             if ( ! strVersion.equals(VERSION) ) {
                 RDFTransform.logger.info("    Current Version: " + EXTENSION + " " + VERSION + " will update transform on save.");
@@ -294,34 +294,34 @@ public class RDFTransform implements OverlayModel {
         //
         // Construct Base IRI from "baseIRI"...
         //
-        if ( jnodeRoot.has(Util.gstrBaseIRI) ) {
-            theTransform.setBaseIRI( jnodeRoot.get(Util.gstrBaseIRI) );
+        if ( jnodeTransform.has(Util.gstrBaseIRI) ) {
+            theTransform.setBaseIRI( jnodeTransform.get(Util.gstrBaseIRI) );
         }
         else {
-            if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Base IRI!  Set to default.");
+            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Base IRI!  Set to default.");
         }
 
         //
         // Construct theNamespaces from "namespaces"...
         //
-        if ( jnodeRoot.has(Util.gstrNamespaces) ) {
-            theTransform.setNamespaces( jnodeRoot.get(Util.gstrNamespaces) );
+        if ( jnodeTransform.has(Util.gstrNamespaces) ) {
+            theTransform.setNamespaces( jnodeTransform.get(Util.gstrNamespaces) );
         }
         else {
-            if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Namespaces!  Set to default.");
+            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Namespaces!  Set to default.");
         }
 
         //
         // Construct listRootNodes from "subjectMappings"...
         //
-        if ( jnodeRoot.has(Util.gstrSubjectMappings) ) {
-            theTransform.setRoots( jnodeRoot.get(Util.gstrSubjectMappings) );
+        if ( jnodeTransform.has(Util.gstrSubjectMappings) ) {
+            theTransform.setRoots( jnodeTransform.get(Util.gstrSubjectMappings) );
         }
         else {
-            if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.warn("  No Subjects!");
+            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Subjects!");
         }
 
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("...ending reconstruction");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("...ending reconstruction");
         return theTransform;
     }
 
@@ -346,7 +346,7 @@ public class RDFTransform implements OverlayModel {
      *      http://example.com/first_name
      */
     @JsonIgnore
-    private IRI theBaseIRI;
+    private IRI theBaseIRI = null;
 
     /*
      * Prefix Mapping to Namespace
@@ -372,7 +372,7 @@ public class RDFTransform implements OverlayModel {
      *       foaf:knows
      */
     @JsonIgnore
-    private VocabularyList theNamespaces;
+    private VocabularyList theNamespaces = null;
 
     /*
      * Root Nodes for Document
@@ -380,7 +380,8 @@ public class RDFTransform implements OverlayModel {
      *  A root node is any subject element designated in the transform.
      */
     @JsonIgnore
-    private List<ResourceNode> theRootNodes;
+    private List<ResourceNode> theRootNodes = null;
+    private JsonNode theSubjectMappingsJSON = null;
 
     /****************************************************************************************************
      ****************************************************************************************************
@@ -393,8 +394,99 @@ public class RDFTransform implements OverlayModel {
     /*
         Constructors
     */
-    public RDFTransform() {
-        if ( Util.isVerbose(3) || Util.isDebugMode() ) RDFTransform.logger.info("Created empty transform.");
+
+    /**
+     * Constructor for deserialization via Jackson
+     */
+    /*
+    @JsonCreator
+    public RDFTransform(
+        @JsonProperty(Util.gstrExtension) String strExtension,
+        @JsonProperty(Util.gstrVersion) String strVersion,
+        @JsonProperty(Util.gstrBaseIRI) IRI theBaseIRI,
+        @JsonProperty(Util.gstrNamespaces) VocabularyList theNamespaces,
+        @JsonProperty(Util.gstrSubjectMappings) List<ResourceNode> theRootNodes
+    )
+    {
+        if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: RDFTransform(): RDFTransform by Jackson.");
+        this.theBaseIRI = theBaseIRI;
+        this.theNamespaces = theNamespaces;
+        this.theRootNodes = theRootNodes;
+    }
+    */
+    @JsonCreator
+    public RDFTransform(
+        @JsonProperty(RDFTransform.KEY) JsonNode jnodeTransform )
+    {
+        if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: RDFTransform(): RDFTransform by Jackson.");
+
+        // Reset the RDF Transform preferences via the OpenRefine Preference Store
+        // as it may have changed since last call...
+        Util.setPreferencesByPreferenceStore();
+
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Start reconstruction...");
+        if ( Util.isDebugJSON() ) RDFTransform.logger.info( "  JSON:\n" + jnodeTransform.toPrettyString() );
+
+        if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
+            if ( Util.isVerbose(3) ) RDFTransform.logger.info("  Nothing to reconstruct!");
+            return;
+        }
+
+        //
+        // JSON Header...
+        //
+        String strExtension = null;
+        if ( jnodeTransform.has(Util.gstrExtension) ) {
+            strExtension = jnodeTransform.get(Util.gstrExtension).asText();
+            if (strExtension == null) {
+                strExtension = "";
+            }
+        }
+        String strVersion = null;
+        if ( jnodeTransform.has(Util.gstrVersion) ) {
+            strVersion = jnodeTransform.get(Util.gstrVersion).asText();
+            if (strVersion == null) {
+                strVersion = "";
+            }
+        }
+        if ( Util.isVerbose(2) ) {
+            RDFTransform.logger.info("  Transform Version: " + strExtension + " " + strVersion);
+            if ( ! strVersion.equals(VERSION) ) {
+                RDFTransform.logger.info("    Current Version: " + EXTENSION + " " + VERSION + " will update transform on save.");
+            }
+        }
+
+        //
+        // Construct Base IRI from "baseIRI"...
+        //
+        if ( jnodeTransform.has(Util.gstrBaseIRI) ) {
+            this.setBaseIRI( jnodeTransform.get(Util.gstrBaseIRI) );
+        }
+        else {
+            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Base IRI!  Set to default.");
+        }
+
+        //
+        // Construct theNamespaces from "namespaces"...
+        //
+        if ( jnodeTransform.has(Util.gstrNamespaces) ) {
+            this.setNamespaces( jnodeTransform.get(Util.gstrNamespaces) );
+        }
+        else {
+            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Namespaces!  Set to default.");
+        }
+
+        //
+        // Construct listRootNodes from "subjectMappings"...
+        //
+        if ( jnodeTransform.has(Util.gstrSubjectMappings) ) {
+            this.setRoots( jnodeTransform.get(Util.gstrSubjectMappings) );
+        }
+        else {
+            if ( Util.isVerbose(2) ) RDFTransform.logger.warn("  No Subjects!");
+        }
+
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("...ending reconstruction");
     }
 
     public RDFTransform(Project theProject) {
@@ -407,15 +499,20 @@ public class RDFTransform implements OverlayModel {
         String strContext = " for project";
         if (theProject == null) {
             strSpace = "  ";
-            strContext = "";
+            strContext = " default";
         }
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
-                RDFTransform.logger.info("{}Creating default transform{}...", strSpace, strContext);
+        if ( Util.isVerbose(2) ) {
+                RDFTransform.logger.info("{}Creating transform{}...", strSpace, strContext);
         }
 
         // Sanity Checks...
         if (RDFTransform.theGlobalContext == null) {
             RDFTransform.logger.error("ERROR: The Global Context is missing!");
+            return;
+        }
+
+        if (theProject == null) {
+            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: RDFTransform(): Created empty.");
             return;
         }
 
@@ -436,7 +533,7 @@ public class RDFTransform implements OverlayModel {
 
         this.theRootNodes = new ArrayList<ResourceNode>();
 
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+        if ( Util.isVerbose(2) ) {
             RDFTransform.logger.info("{}...created.", strSpace);
         }
     }
@@ -444,34 +541,36 @@ public class RDFTransform implements OverlayModel {
     /*
         Methods
     */
-    @JsonProperty(Util.gstrExtension)
+    @JsonGetter(Util.gstrExtension)
     public String getExtension() {
         // Return "String" is ok for JSON since it's a single value.
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting extension...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting extension...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
         return RDFTransform.EXTENSION;
     }
 
-    @JsonProperty(Util.gstrExtension)
+    @JsonSetter(Util.gstrExtension)
     public void setExtension(JsonNode jnodeExtension) {
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting Extension...");
         // Ignore since extension is constant...
         return;
     }
 
-    @JsonProperty(Util.gstrVersion)
+    @JsonGetter(Util.gstrVersion)
     public String getVersion() {
         // Return "String" is ok for JSON since it's a single value.
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting version...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting version...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
         return RDFTransform.VERSION;
     }
 
-    @JsonProperty(Util.gstrVersion)
+    @JsonSetter(Util.gstrVersion)
     public void setVersion(JsonNode jnodeVersion) {
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting version...");
         // Ignore since version is constant...
         return;
     }
@@ -481,10 +580,10 @@ public class RDFTransform implements OverlayModel {
         return this.theBaseIRI;
     }
 
-    @JsonProperty(Util.gstrBaseIRI)
+    @JsonGetter(Util.gstrBaseIRI)
     public String getBaseIRIAsString() {
         // Return "String" is ok for JSON since it's a single value.
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting BaseIRI...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting BaseIRI...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
@@ -501,14 +600,14 @@ public class RDFTransform implements OverlayModel {
 
     @JsonIgnore // ...see setBaseIRI(JsonNode)
     public void setBaseIRI(IRI iriBase)  {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting BaseIRI from ParsedIRI...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting BaseIRI from ParsedIRI...");
         if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI set to:" + iriBase.toString());
         this.theBaseIRI = iriBase;
     }
 
-    @JsonProperty(Util.gstrBaseIRI)
+    @JsonSetter(Util.gstrBaseIRI)
     public void setBaseIRI(JsonNode jnodeBaseIRI)  {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting BaseIRI from JSON...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting BaseIRI from JSON...");
 
         // If it is not a direct string representation, then these keys are stored:
         // { "scheme"   : null or scheme in "scheme:" from beginning of string,
@@ -582,14 +681,14 @@ public class RDFTransform implements OverlayModel {
 
     @JsonIgnore
     public VocabularyList getNamespaces() {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting namespaces...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting namespaces...");
         return this.theNamespaces;
     }
 
-    @JsonProperty(Util.gstrNamespaces)
+    @JsonGetter(Util.gstrNamespaces)
     public JsonNode getNamespacesAsJSON() {
         // Return must be "JsonNode" for JSON since it's an array!
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting namespaces as JSON...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting namespaces as JSON...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
@@ -610,9 +709,9 @@ public class RDFTransform implements OverlayModel {
         this.theNamespaces = listNamespaces;
     }
 
-    @JsonProperty(Util.gstrNamespaces)
+    @JsonSetter(Util.gstrNamespaces)
     public void setNamespaces(JsonNode jnodeNamespaces) {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting namespaces from JSON...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting namespaces from JSON...");
         if (this.theNamespaces == null) {
             this.theNamespaces = new VocabularyList();
         }
@@ -627,13 +726,10 @@ public class RDFTransform implements OverlayModel {
 
             if ( jnodeNamespaces.isObject() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Namespaces set by JSON Object...");
-                Iterator<Entry<String, JsonNode>> iterNodes = jnodeNamespaces.fields();
-                Map.Entry<String, JsonNode> prefix;
-                while ( iterNodes.hasNext() ) {
-                    prefix = (Map.Entry<String, JsonNode>) iterNodes.next();
+                jnodeNamespaces.properties().forEach(prefix -> {
                     Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
                     this.theNamespaces.add(vocab);
-                }
+                });
             }
             if ( this.theNamespaces.isEmpty() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Namespaces set by Predefined defaults...");
@@ -642,6 +738,7 @@ public class RDFTransform implements OverlayModel {
                         getPredefinedVocabularyManager().
                             getPredefinedVocabularies().clone();
             }
+            this.processRootNodes();
         }
     }
 
@@ -664,13 +761,13 @@ public class RDFTransform implements OverlayModel {
 
     @JsonIgnore
     public List<ResourceNode> getRoots() {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting root nodes: size = " + this.theRootNodes.size());
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting root nodes: size = " + this.theRootNodes.size());
         return this.theRootNodes;
     }
 
-    @JsonProperty(Util.gstrSubjectMappings)
+    @JsonGetter(Util.gstrSubjectMappings)
     public JsonNode getRootsAsJSON() {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Getting roots as JSON...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Getting roots as JSON...");
 
         // Ensure all @JsonProperty() getter methods properly handle a null context...
 
@@ -694,23 +791,23 @@ public class RDFTransform implements OverlayModel {
             return jnodeTransform;
         }
         catch (Exception ex) {
-            RDFTransform.logger.error("Error getting root nodes!", ex);
-            ex.printStackTrace();
+            RDFTransform.logger.error("ERROR: Cannot get root nodes!", ex);
+            if ( Util.isVerbose() ) ex.printStackTrace();
         }
         return NullNode.getInstance(); // ...null context
     }
 
     @JsonIgnore
     public void setRoots(List<ResourceNode> listRootNodes) {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting root nodes...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting root nodes...");
         this.theRootNodes = listRootNodes;
     }
 
-    @JsonProperty(Util.gstrSubjectMappings)
+    @JsonSetter(Util.gstrSubjectMappings)
     public void setRoots(JsonNode jnodeSubjectMappings) {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Setting root nodes from JSON...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Setting root nodes from JSON...");
         if (this.theRootNodes == null) {
-            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Root nodes initilized.");
+            if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Root nodes initialized.");
             this.theRootNodes = new ArrayList<ResourceNode>();
         }
         synchronized(this.theRootNodes) {
@@ -718,10 +815,18 @@ public class RDFTransform implements OverlayModel {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("  No Subject Mappings.");
                 return;
             }
+            this.theSubjectMappingsJSON = jnodeSubjectMappings;
+            this.processRootNodes();
+        }
+    }
+
+    @JsonIgnore
+    private void processRootNodes() {
+        if (this.theNamespaces != null && this.theSubjectMappingsJSON != null) {
             List<ResourceNode> listRootNodes = new ArrayList<ResourceNode>();
-            if ( jnodeSubjectMappings.isArray() ) {
+            if ( this.theSubjectMappingsJSON.isArray() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: Subject Mappings Array.");
-                for (JsonNode jnodeSubject : jnodeSubjectMappings) {
+                for (JsonNode jnodeSubject : this.theSubjectMappingsJSON) {
                     Node nodeRoot =
                         Node.reconstructNode(
                             RDFTransform.theReconstructor, jnodeSubject,
@@ -739,19 +844,20 @@ public class RDFTransform implements OverlayModel {
                 }
             }
             this.theRootNodes = listRootNodes;
+            this.theSubjectMappingsJSON = null;
         }
     }
 
     @Override
     @JsonIgnore
     public void onBeforeSave(Project theProject) {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Saving...");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Saving...");
     }
 
     @Override
     @JsonIgnore
     public void onAfterSave(Project theProject) {
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("...saved.");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("...saved.");
     }
 
     @Override
@@ -766,7 +872,7 @@ public class RDFTransform implements OverlayModel {
         catch (IOException ex) {
             RDFTransform.logger.error("ERROR: Unable to delete index for project " + theProject.id, ex);
         }*/
-        if ( Util.isVerbose(2) || Util.isDebugMode() ) RDFTransform.logger.info("Disposed overlay");
+        if ( Util.isVerbose(2) ) RDFTransform.logger.info("Disposed overlay");
     }
 
     /*

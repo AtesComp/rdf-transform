@@ -28,6 +28,7 @@ import com.google.refine.browsing.RecordVisitor;
 import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
@@ -36,15 +37,17 @@ import org.slf4j.LoggerFactory;
 public abstract class RDFRecordVisitor extends RDFVisitor implements RecordVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFRecordVisitor" );
 
-    public RDFRecordVisitor(RDFTransform theTransform, StreamRDF theWriter) {
-        super(theTransform, theWriter);
+    public RDFRecordVisitor(RDFTransform theTransform, StreamRDF theWriter, RDFFormat theFormat) {
+        super(theTransform, theWriter, theFormat);
     }
 
     abstract public boolean visit(Project theProject, Record theRecord);
 
     public void buildDSGraph(Project theProject, Engine theEngine) {
         FilteredRecords filteredRecords = theEngine.getFilteredRecords();
-        if ( Util.isVerbose(3) ) RDFRecordVisitor.logger.info("buildModel: visit matching filtered records");
+        if ( Util.isVerbose(3) ) RDFRecordVisitor.logger.info("buildDSGraph: visit matching filtered records");
+        // NOTE: The filteredRecords.accept() method calls this visitor's start() and end() methods.
+        //      This visitor's end() method closes the DatasetGraph.
         filteredRecords.accept(theProject, this);
     }
 }

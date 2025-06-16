@@ -45,14 +45,15 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
 
     public SaveRDFTransformCommand() {
         super();
+        if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: SaveRDFTransformCommand(): Created.");
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: Reconstructing Transform for Save...");
+        if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: doPost(): Reconstructing Transform for Save...");
         if ( ! this.hasValidCSRFToken(request) ) {
-            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No CSRF Token.");
+            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("DEBUG: doPost(): No CSRF Token.");
             SaveRDFTransformCommand.respondCSRFError(response);
             return;
         }
@@ -74,12 +75,10 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
-            RDFTransform theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
-            if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  Transform reconstructed.");
 
             // Process the "save" operations...
-            SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theTransform);
-            Process procSave = opSave.createProcess(theProject, new Properties());
+            SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theProject, jnodeTransform);
+            Process procSave = opSave.createProcess( theProject, new Properties() );
             SaveRDFTransformCommand.performProcessAndRespond(request, response, theProject, procSave);
         }
         catch (Exception ex) {

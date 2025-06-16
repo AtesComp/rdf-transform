@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFTExpCmd");
-    private final static String strParsingError = "WARNING: Parsing: No problem. Correct it.";
-    private final static String strOtherError = "WARNING: Other: Some other problem occurred while parsing.";
+    private final static String strParsingWarn = "WARNING: Parsing: No problem. Correct it.";
+    private final static String strOtherWarn = "WARNING: Other: Some other problem occurred while parsing.";
 
     private Project theProject = null;
     private String strExpression = null;
@@ -147,7 +147,7 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
 
         String[] astrAbsolutes = new String[iRows];
         Integer[] aiIndices = new Integer[iRows];
-        Boolean bGood = true;
+        boolean bGood = true;
         int iRow = 0;
         boolean bRecordMode = this.theProject.recordModel.hasRecords();
         StringBuffer strbuffTemp = new StringBuffer();
@@ -262,20 +262,20 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
             // Parsing errors will always occur, so move on...
 
             String strTypeEx = "other";
-            String strMessageEx = PreviewRDFTExpressionCommand.strOtherError;
+            String strMessageEx = PreviewRDFTExpressionCommand.strOtherWarn;
             // If exception on ParsingExpection types...
             if (ex.getClass() == Util.IRIParsingException.class ||
                 ex.getClass() == ParsingException.class) {
                 strTypeEx = "parser";
                 if (ex.getClass() == ParsingException.class) {
-                    strMessageEx = PreviewRDFTExpressionCommand.strParsingError;
+                    strMessageEx = PreviewRDFTExpressionCommand.strParsingWarn;
                 }
             }
             this.theWriter.writeStringField("type", strTypeEx);
             this.theWriter.writeStringField("message", strMessageEx);
             if ( Util.isVerbose() ) {
                 PreviewRDFTExpressionCommand.logger.warn(strMessageEx, ex);
-                if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
             }
             bGood = false; // ...no good anymore
             iRows = iRow; // ...row error occurred--make it max
@@ -305,7 +305,7 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
             }
             if ( Util.isVerbose() ) {
                 PreviewRDFTExpressionCommand.logger.warn("WARNING: Writing absolute IRIs", ex);
-                if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
             }
         }
         return bGood;
@@ -415,17 +415,17 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
             // Parsing errors will always occur, so move on...
 
             String strTypeEx = "other";
-            String strMessageEx = PreviewRDFTExpressionCommand.strOtherError;
+            String strMessageEx = PreviewRDFTExpressionCommand.strOtherWarn;
             // If exception on ParsingExpection types...
             if (ex.getClass() == ParsingException.class) {
                 strTypeEx = "parser";
-                strMessageEx = PreviewRDFTExpressionCommand.strParsingError;
+                strMessageEx = PreviewRDFTExpressionCommand.strParsingWarn;
             }
             this.theWriter.writeStringField("type", strTypeEx);
             this.theWriter.writeStringField("message", strMessageEx);
             if ( Util.isVerbose() ) {
                 PreviewRDFTExpressionCommand.logger.warn(strMessageEx, ex);
-                if ( Util.isVerbose(2) || Util.isDebugMode() ) ex.printStackTrace();
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
             }
             bGood = false; // ...no good anymore
         }

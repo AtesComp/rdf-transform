@@ -1,3 +1,15 @@
+# Change Log
+[//]: # (RDF Transform Version Control)
+
+## 2.3.3 Released
+This version is updates RDF output format processing. The preview and export processes were
+changed from using a Model to a DatasetGraph to manage statement. This allowed for the Named Graph
+use (using the BaseIRI). That change wrongly assumed all Jena languages could handle a DatasetGraph.
+A Model is inherently a single Graph manager while a DatasetGraph manages multiple Graphs. A
+language is either Graph-centric (Turle, NTriple, etc) or DatasetGraphs-centric (TriG, NQuad, etc.).
+A Graph-centric language cannot process a DatasetGraph. This release corrects Graph-centric
+languages to use a DatasetGraph's Union Graph.
+
 ## 2.3.2 Released
 This version is updates the Namespace management. The Prefix, Namespace, Location, and
 Location Type are store for each Namespace in the project. This expands on the older Prefix
@@ -65,7 +77,7 @@ This version correct the Namespace processing by Web and File Import. The Web Im
 faulty content negotiation for the non-existent XMLSchema ontology. The File Import corrects
 the client POST processing for form content including file streams. Other enhancements include
 further corrects for the "controller" initialization code, removing Binary RDF processing and
-adding RDFThrift processing to match the Jena change, an RDFTransform.DebugJSON preference to
+adding RDFThrift processing to match the Jena change, an RDFTransform.debugJSON preference to
 manage the transform template output separate from other debugging, code management, log and
 debug enhancements, and website example updates.
 

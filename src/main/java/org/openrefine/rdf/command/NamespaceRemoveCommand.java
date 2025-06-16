@@ -90,7 +90,7 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
         NamespaceRemoveCommand.respondJSON(response, CodeResponse.ok);
     }
 
-    private Boolean deleteFile(ApplicationContext theContext, String strProjectID, String strFilename) {
+    private boolean deleteFile(ApplicationContext theContext, String strProjectID, String strFilename) {
         synchronized(strFilename) {
             String strPathCache = theContext.getRDFTCacheDirectory().getPath();
             try {

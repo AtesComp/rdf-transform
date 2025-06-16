@@ -97,7 +97,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         String strFilename  = null;
         InputStream instreamFile = null;
         File dirCacheProject = null;
-        Boolean bSave = true;
+        boolean bSave = true;
         try {
 
             // ============================================================
@@ -213,7 +213,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
                     else                         theDSGraph = RDFDataMgr.loadDatasetGraph(strFilePath);
 
                     // Check Dataset Graph...
-                    Boolean bBad = false;
+                    boolean bBad = false;
                     Iterator<Node> graphNodes = theDSGraph.listGraphNodes();
                     while (graphNodes.hasNext()) {
                         Node graphName = graphNodes.next();
@@ -271,7 +271,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
      *      strFilename: the ontology file name
      *      strreaderFile: the ontology file contents
      */
-    Boolean saveFile(ApplicationContext theContext, String strProjectID, String strFilename, InputStream instreamFile) {
+    boolean saveFile(ApplicationContext theContext, String strProjectID, String strFilename, InputStream instreamFile) {
         synchronized(strFilename) {
             String strPathCache = theContext.getRDFTCacheDirectory().getPath();
             File fileNew = null;

@@ -36,6 +36,8 @@ import com.google.refine.exporters.Exporter;
 import com.google.refine.exporters.ExporterRegistry;
 import com.google.refine.expr.ExpressionUtils;
 import com.google.refine.grel.ControlFunctionRegistry;
+import com.google.refine.grel.Function;
+import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
 import com.google.refine.operations.OperationRegistry;
 
@@ -67,12 +69,16 @@ public class InitializationCommand extends Command {
     public InitializationCommand(ButterflyModule theModule) {
         super();
         this.theModule = theModule;
+
+        // Set the RDF Transform preferences via the OpenRefine Preference Store...
+        Util.setPreferencesByPreferenceStore();
+
         try {
             this.initialize();
         }
         catch (Throwable ex) { // ...try to catch all Exceptions and Errors...
             InitializationCommand.logger.error("ERROR: initialize: " + ex.getMessage(), ex);
-            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+            if ( Util.isVerbose() ) ex.printStackTrace();
         }
     }
 
@@ -86,8 +92,7 @@ public class InitializationCommand extends Command {
         InitializationCommand.logger.info("  Server Side...");
         this.registerServerSide();
 
-        InitializationCommand.logger.info("  Preferences...");
-        InitializationCommand.logger.info( Util.preferencesToString() );
+        InitializationCommand.logger.info( "  Preferences...\n" + Util.preferencesToString() );
 
         InitializationCommand.logger.info("...RDF Transform Extension initialized.");
     }
@@ -100,7 +105,9 @@ public class InitializationCommand extends Command {
         //
         // Client-side Javascript...
         //
-         String[] astrScripts = new String[] {
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerClientSide(): Add script paths...");
+
+        String[] astrScripts = new String[] {
             "scripts/rdf-transform-menubar-extensions.js",    // 1. must be first: language and menu load
             "scripts/rdf-transform-common.js",
             "scripts/rdf-transform.js",
@@ -119,39 +126,46 @@ public class InitializationCommand extends Command {
             // Add the JQuery Form plugin...
             "scripts/externals/jquery.form.min.js"
         };
+
         // Inject script files into /project page...
         ClientSideResourceManager.addPaths("project/scripts", this.theModule, astrScripts);
 
         //
         // Client-side CSS...
         //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerClientSide(): Add style paths...");
+
         String[] astrStyles = new String[] {
             "styles/flyout.css",
             "styles/rdf-transform-dialog.css",
         };
         // Inject style files into /project page...
         ClientSideResourceManager.addPaths("project/styles", this.theModule, astrStyles);
+
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerClientSide(): ...finished");
     }
 
     private void registerServerSide() {
         //
-        //  Server-side Resources...
+        // Server-side Resources...
         // ------------------------------------------------------------
 
-        /*
-         *  Server-side Context Initialization...
-         *    The One and Only RDF Transform Application Context.
-         */
+        //
+        // Server-side Context Initialization...
+        //  The One and Only RDF Transform Application Context.
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Set the extension's application context...");
         this.theContext = new ApplicationContext();
-
         RDFTransform.setGlobalContext(this.theContext);
 
-        /*
-         *  Server-side Ajax Commands...
-         *    Each call to registerCommand() calls the command item's command init() method.
-         *    Then, the "initialize" command registers with the InitializationCommand init() method.
-         *    Other commands generally DO NOT contain overridden init() methods.
-         */
+        //
+        // Server-side Ajax Commands...
+        //  Each call to the RefineServlet registerCommand() calls the given command's init() method.
+        //  Those commands generally DO NOT contain overridden init() methods.  However, this InitializationCommand
+        //  registers itself and overrides the init() method to set additional extension wide settings.
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Add the extension's commands...");
+
         class RDFTCommandItem
         {
             public String strCommand;
@@ -185,41 +199,83 @@ public class InitializationCommand extends Command {
         //   CodeResponse - Standard Response Class for Commands
         //   RDFTransformCommand - Abstract RDF Command Class
 
-        for (RDFTCommandItem citem : aCommands) {
-            if (citem.command != null) {
-                RefineServlet.registerCommand( this.theModule, citem.strCommand, citem.command);
+        for (RDFTCommandItem itemCmd : aCommands) {
+            if (itemCmd.command != null) {
+                RefineServlet.registerCommand(this.theModule, itemCmd.strCommand, itemCmd.command);
             }
         };
 
-        /*
-         *  Server-side Custom Change Class...
-         */
+        //
+        // Server-side Custom Change Class...
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Register the extension's Change class...");
+
         RefineServlet.registerClassMapping(
-            // Non-existent name--we are adding, not renaming, so this can be a dummy...
-            "org.openrefine.model.changes.DataExtensionChange",
+            // Non-existent name--we are adding, not renaming, so this is a dummy parameter...
+            "org.openrefine.model.operation.DataExtensionChange",
             // Added Change Class name...
             "org.openrefine.rdf.model.operation.RDFTransformChange"
         );
         RefineServlet.cacheClass(RDFTransformChange.class);
 
-        /*
-         *  Server-side Operations...
-         */
-        OperationRegistry.registerOperation(
-            this.theModule, RDFTGlobals.strSaveRDFTransform, SaveRDFTransformOperation.class
-        );
+        //
+        // Server-side Operations...
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Register the extension's Operation classes...");
 
-        /*
-         *  Server-side GREL Functions and Binders...
-         */
-        ControlFunctionRegistry.registerFunction( "toIRIString",        new ToIRIString() );
-        ControlFunctionRegistry.registerFunction( "toStrippedLiteral",  new ToStrippedLiteral() );
+        class RDFTOperationItem
+        {
+            public String strOperation;
+            public Class<? extends AbstractOperation> classOperation;
+            RDFTOperationItem(String strCmd, Class<? extends AbstractOperation> classOp) {
+                strOperation = strCmd;
+                classOperation = classOp;
+            }
+        };
+
+        List<RDFTOperationItem> aOperations = new ArrayList<RDFTOperationItem>();
+        // Operations
+        aOperations.add(new RDFTOperationItem( RDFTGlobals.strSaveRDFTransform, SaveRDFTransformOperation.class ));
+
+        for (RDFTOperationItem itemOp : aOperations) {
+            if (itemOp.classOperation != null) {
+                OperationRegistry.registerOperation(this.theModule, itemOp.strOperation, itemOp.classOperation);
+            }
+        };
+
+        //
+        // Server-side GREL Functions and Binder...
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Register the extension's Functions and Binder...");
+
+        class RDFTFunctionItem
+        {
+            public String strFunction;
+            public Function function;
+            RDFTFunctionItem(String strCmd, Function func) {
+                strFunction = strCmd;
+                function = func;
+            }
+        };
+
+        List<RDFTFunctionItem> aFunction = new ArrayList<RDFTFunctionItem>();
+        // Functionns
+        aFunction.add(new RDFTFunctionItem( "toIRIString",        new ToIRIString() ));
+        aFunction.add(new RDFTFunctionItem( "toStrippedLiteral",  new ToStrippedLiteral() ));
+
+        for (RDFTFunctionItem itemFunc : aFunction) {
+            if (itemFunc.function != null) {
+                ControlFunctionRegistry.registerFunction(itemFunc.strFunction, itemFunc.function);
+            }
+        };
 
         ExpressionUtils.registerBinder( new RDFTransformBinder() );
 
-        /*
-         *  Server-side Exporters...
-         */
+        //
+        // Server-side Exporters...
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Register the extension's Exporters...");
+
         class RDFTExportPrinter
         {
             public RDFFormat rdfFormat;
@@ -241,9 +297,9 @@ public class InitializationCommand extends Command {
         //aPretty.add(new RDFTExportPrinter(null,                 "NDJSONLD_PRETTY")); // NDJSONLD_PRETTY
         aPretty.add(new RDFTExportPrinter(RDFFormat.RDFJSON,        "RDFJSON"));
 
-        for (RDFTExportPrinter ptr : aPretty) {
-            if (ptr.rdfFormat != null) {
-                ExporterRegistry.registerExporter( ptr.strFormat, new RDFPrettyExporter(ptr.rdfFormat, ptr.strFormat) );
+        for (RDFTExportPrinter itemPtr : aPretty) {
+            if (itemPtr.rdfFormat != null) {
+                ExporterRegistry.registerExporter( itemPtr.strFormat, new RDFPrettyExporter(itemPtr.rdfFormat, itemPtr.strFormat) );
             }
         }
 
@@ -266,29 +322,33 @@ public class InitializationCommand extends Command {
         //aStream.add(new RDFTExportPrinter(null,                 "BinaryRDF")); // BINARY_RDF
         //aStream.add(new RDFTExportPrinter(null,                 "HDT")); // HDT
 
-        for (RDFTExportPrinter ptr : aStream) {
-            if (ptr.rdfFormat != null) {
-                ExporterRegistry.registerExporter( ptr.strFormat, new RDFStreamExporter(ptr.rdfFormat, ptr.strFormat) );
+        for (RDFTExportPrinter itemPtr : aStream) {
+            if (itemPtr.rdfFormat != null) {
+                ExporterRegistry.registerExporter( itemPtr.strFormat, new RDFStreamExporter(itemPtr.rdfFormat, itemPtr.strFormat) );
             }
         }
 
-        // //
-        // // SPECIAL PRINTERS:
-        // //
-        // List<RDFTExportPrinter> aSpecial = new ArrayList<RDFTExportPrinter>();
-        // // TODO: Are these even doable???
-        // aSpecial.add(new RDFTExportPrinter(null /* RDFA */, "RDFa"));
-        // aSpecial.add(new RDFTExportPrinter(null /* RDFFormat.SHACLC */, "SHACLC"));
+        /*================================================================================
+        //
+        // SPECIAL PRINTERS:
+        //
+        List<RDFTExportPrinter> aSpecial = new ArrayList<RDFTExportPrinter>();
+        // TODO: Are these even doable???
+        aSpecial.add(new RDFTExportPrinter(RDFFormat.RDFA, "RDFa"));
+        aSpecial.add(new RDFTExportPrinter(RDFFormat.SHACLC, "SHACLC"));
 
-        // for (RDFTExportPrinter ptr : aSpecial) {
-        //     if (ptr.rdfFormat != null) {
-        //         ExporterRegistry.registerExporter( ptr.strFormat, new RDFSpecialExporter(ptr.rdfFormat, ptr.strFormat) );
-        //     }
-        // }
+        for (RDFTExportPrinter ptr : aSpecial) {
+            if (ptr.rdfFormat != null) {
+                ExporterRegistry.registerExporter( ptr.strFormat, new RDFSpecialExporter(ptr.rdfFormat, ptr.strFormat) );
+            }
+        }
+        ================================================================================*/
 
-        /*
-         *  Server-side Overlay Models - Attach an RDFTransform object to the project...
-         */
+        //
+        // Server-side Overlay Models - Attach an RDFTransform object to the project...
+        //
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): Register the extension's Overlay Model...");
+
         Project.registerOverlayModel("RDFTransform", RDFTransform.class);
 
         // Test Exporter Registry...
@@ -297,17 +357,16 @@ public class InitializationCommand extends Command {
             InitializationCommand.logger.error("ERROR: ExporterRegistry test failed!");
         }
         else {
-            InitializationCommand.logger.error("SUCCESS: ExporterRegistry test succeeded!");
+            InitializationCommand.logger.info("SUCCESS: ExporterRegistry test succeeded!");
         }
+
+        if ( Util.isDebugMode() ) InitializationCommand.logger.info("DEBUG: registerServerSide(): ...finished");
     }
 
     @Override
     public void init(RefineServlet servlet) {
-        InitializationCommand.logger.info("Initializing...");
+        InitializationCommand.logger.info("Initializing with servlet...");
         super.init(servlet);
-
-        // Set the RDF Transform preferences via the OpenRefine Preference Store...
-        Util.setPreferencesByPreferenceStore();
 
         // From refine.ini (or defaults)...
         String strHost =  System.getProperty("refine.host");
@@ -320,14 +379,14 @@ public class InitializationCommand extends Command {
         if (strPort == null)
             strPort = "3333"; // Default
         File fileRDFTCacheDir = servlet.getCacheDir(RDFTransform.KEY);
-        
+
 
         try {
             this.theContext.init(strHost, strIFace, strPort, fileRDFTCacheDir);
         }
         catch (IOException ex) {
             InitializationCommand.logger.error("ERROR: App Context Init: " + ex.getMessage(), ex);
-            if ( Util.isVerbose() || Util.isDebugMode() ) ex.printStackTrace();
+            if ( Util.isVerbose() ) ex.printStackTrace();
         }
 
         if ( Util.isDebugMode() ) JenaSystem.DEBUG_INIT = true;

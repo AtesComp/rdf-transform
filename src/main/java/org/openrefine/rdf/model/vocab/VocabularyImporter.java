@@ -176,7 +176,7 @@ public class VocabularyImporter {
                         }
                     }
                     catch (Exception ex) {
-                        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+                        if ( Util.isVerbose(2) ) {
                             VocabularyImporter.logger.warn(
                                 "WARNING: Processing" + strMessage +
                                     "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]"
@@ -230,7 +230,7 @@ public class VocabularyImporter {
                         }
                     }
                     catch (Exception ex) {
-                        if ( Util.isVerbose(2) || Util.isDebugMode() ) {
+                        if ( Util.isVerbose(2) ) {
                             VocabularyImporter.logger.warn(
                                 "WARNING: Processing" + strMessage +
                                     "solution failed! [" + astrLoader[RDFTNode.iIRI] + "]"

@@ -170,7 +170,7 @@ public class Property {
             //
             // Get Property's Expression...
             //
-            String strExpLang = Util.gstrGREL; // ...default, TODO: Implement use
+            String strExpLang = Util.gstrGREL; // ...default
             String strExpCode = null;          // ...default, Node instances report "value" when null
             if ( jnodeProperty.has(Util.gstrExpression) ) {
                 JsonNode jnodeExp = jnodeProperty.get(Util.gstrExpression);
@@ -179,6 +179,13 @@ public class Property {
                 }
                 if ( jnodeExp.has(Util.gstrCode) ) {
                     strExpCode = jnodeExp.get(Util.gstrCode).asText().strip();
+                    // If there is an embedded language in the code, it overrides...
+                    int iColon = strExpCode.indexOf(58);
+                    if (iColon >= 0) {
+                        strExpLang = strExpCode.substring(0, iColon).toLowerCase();
+                    }
+                    // Otherwise, embed the language in the code...
+                    else strExpCode = strExpLang + ":" + strExpCode;
                 }
             }
 
@@ -189,7 +196,7 @@ public class Property {
             //      from the property information
             //  TODO: We should store it and use it like root nodes to manage IRI declarations, expressions,
             //      etc (no literals)
-            //
+
             ResourceNode rnodeResource = null;
             if ( bValueNode ) {
                 rnodeResource = new CellResourceNode(strValue, strPrefix, strExpCode, bIsIndex, eNodeType);
@@ -201,7 +208,9 @@ public class Property {
             //    // TODO: Expressions currently unsupported independently
             //}
             if (rnodeResource == null) {
-                Property.logger.error("ERROR: Bad Property: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]  Exp: [" + strExpCode + "]");
+                Property.logger.error(
+                    "ERROR: Bad Property: Prefix: [" + strPrefix + "]  Src: [" + strSource + "]  Val: [" + strValue + "]" +
+                    "  Exp: [" + strExpCode + "]");
                 continue;
             }
 
