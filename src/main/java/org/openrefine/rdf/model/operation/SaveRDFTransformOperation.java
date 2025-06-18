@@ -23,26 +23,20 @@ package org.openrefine.rdf.model.operation;
 
 import java.util.Properties;
 
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 
-import com.google.refine.ProjectManager;
 import com.google.refine.history.HistoryEntry;
 import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
-import com.google.refine.util.ParsingUtilities;
 import com.google.refine.process.Process;
-
-import org.json.JSONObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +55,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     // Class Methods
     //
 
+    /*
     /**
      * The reconstruct class method is specified by the OpenRefine API for all AbstractOperation classes.
      * @param theProject - the given OpenRefine Project instance.
@@ -68,7 +63,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
      *          history management.
      * @return SaveRDFTransformOperation cast as AbstractOperation
      * @throws Exception
-     */
+     *
     static public AbstractOperation reconstruct(Project theProject, JSONObject jobj)
             throws Exception {
         if (theProject == null) {
@@ -90,6 +85,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
         JsonNode jnodeTransform = jnodeOp.get(RDFTransform.KEY);
         return new SaveRDFTransformOperation(theProject, jnodeTransform);
     }
+    /* */
 
     //
     // Instance Variables
@@ -102,11 +98,6 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     /*
         Instance Methods
     */
-
-    //@JsonIgnore
-    public SaveRDFTransformOperation() {
-        if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Creat Save Op by No-Arg.");
-    };
 
     @JsonIgnore
     public SaveRDFTransformOperation(Project theProject, JsonNode jnodeTransform) {
@@ -122,18 +113,12 @@ public class SaveRDFTransformOperation extends AbstractOperation {
     public SaveRDFTransformOperation(
         //@JacksonInject("projectID") long iProjectID,
         @JsonProperty("op") String strOpCode,
-        @JsonProperty(RDFTransform.KEY) JsonNode jnodeTransform )
+        @JsonProperty(RDFTransform.KEY)
+        @JsonAlias( { "rdf_transform", "rdfTransform" } )
+            RDFTransform theTransform )
     {
-        if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Create Save Op by Transform JSON ({})...", strOpCode);
-
-        //if (theTransform == null) {
-        //    if ( Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("DEBUG: SaveRDFTransformOperation(): Transform is empty.");
-        //}
-        //this.theTransform = theTransform;
-
-        if ( Util.isDebugJSON() ) SaveRDFTransformOperation.logger.info( "  JSON:\n" + jnodeTransform.toPrettyString() );
-
-        this.setTransform(jnodeTransform);
+        this.theTransform = theTransform;
+        if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Created Save Op from JSON by RDF Transform ({}).", strOpCode);
     }
 
     @JsonGetter(RDFTransform.KEY)
@@ -143,13 +128,13 @@ public class SaveRDFTransformOperation extends AbstractOperation {
 
     @JsonIgnore
     public void setTransform(Project theProject, JsonNode jnodeTransform) {
+        if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Reconstructing Transform from JSON...");
         if (theProject == null) {
-            if ( Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("DEBUG: setTransform(): No Project.");
+            if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("  No Project.");
             return;
         }
-        if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Reconstructing Transform from JSON...");
         if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
-            SaveRDFTransformOperation.logger.info("  No JSON Transform.");
+            if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("  No JSON Transform.");
             return;
         }
         this.theTransform = RDFTransform.reconstruct(theProject, jnodeTransform);
@@ -157,7 +142,8 @@ public class SaveRDFTransformOperation extends AbstractOperation {
         if ( Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("DEBUG: setTransform(): ...reconstructed Transform from JSON.");
     }
 
-    @JsonSetter(RDFTransform.KEY)
+    /*
+    @JsonIgnore
     public void setTransform(JsonNode jnodeTransform) {
         if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Reconstructing Transform from JSON by Jackson...");
         if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
@@ -168,6 +154,7 @@ public class SaveRDFTransformOperation extends AbstractOperation {
 
         if ( Util.isDebugMode() ) SaveRDFTransformOperation.logger.info("DEBUG: setTransform(): ...reconstructed Transform from JSON by Jackson.");
     }
+    /* */
 
     @Override
     @JsonGetter("description")

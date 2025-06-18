@@ -54,9 +54,8 @@ public class RDFTransformChange implements Change {
     /**
      * Load a Change whenever a HistoryEntry does not have its Change in memory.<br />
      * <br />
-     *  TODO: OpenRefine's effing Change load() functions do not pass the Project
-     *      unlike just about every other function! The Project is needed to properly
-     *      reconstruct the Change's related RDFTransform.
+     *  NOTE: The reconstruction is from a complete RDFTransform String representation.
+     *      The Project is NOT needed.
      * @param theReader - a LineNumberReader instance
      * @param thePool - a Pool instance
      * @return a Change instance
@@ -79,7 +78,6 @@ public class RDFTransformChange implements Change {
                 continue;
             }
             if ( Util.isDebugMode() ) RDFTransformChange.logger.info("  Found Transform...");
-            // TODO: Change reconstruct() to use the Project when available.
             RDFTransform theTransform = RDFTransform.reconstruct(jnodeTransform);
 
             if ( strField.equals(RDFTransformChange.strNew) && ! strValue.isEmpty() ) {

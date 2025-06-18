@@ -65,23 +65,25 @@ public class SaveRDFTransformCommand extends RDFTransformCommand {
             // Get the RDF Transform...
             String strTransform = request.getParameter(RDFTransform.KEY);
             if (strTransform == null) {
-                if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No Transform JSON.");
+                SaveRDFTransformCommand.logger.error("ERROR: Missing RDF Transform ({}) parameter!", RDFTransform.KEY);
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
             JsonNode jnodeTransform = ParsingUtilities.evaluateJsonStringToObjectNode(strTransform);
             if ( jnodeTransform == null || jnodeTransform.isNull() || jnodeTransform.isEmpty() ) {
-                if ( Util.isDebugMode() ) SaveRDFTransformCommand.logger.info("  No Transform.");
+                SaveRDFTransformCommand.logger.error("ERROR: Empty RDF Transform ({}) value ({})!", RDFTransform.KEY, strTransform);
                 SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
                 return;
             }
 
             // Process the "save" operations...
+            // NOTE: The RDFTransform JSON should be complete, but use the Project anyway...
             SaveRDFTransformOperation opSave = new SaveRDFTransformOperation(theProject, jnodeTransform);
             Process procSave = opSave.createProcess( theProject, new Properties() );
             SaveRDFTransformCommand.performProcessAndRespond(request, response, theProject, procSave);
         }
         catch (Exception ex) {
+            SaveRDFTransformCommand.logger.error("ERROR: Save RDF Transform ({}) failed!", RDFTransform.KEY);
             SaveRDFTransformCommand.respondJSON(response, CodeResponse.error);
         }
     }
