@@ -33,20 +33,6 @@ var RDFTCmd = Packages.org.openrefine.rdf.command;
  *      The init() function is called by OpenRefine's Simile Butterfly Server for an extension.
  */
 function init() {
-    //
-    // Get and test Java VM for an RDF Transform compliant version
-    //
-    var strJVMVersion = Packages.java.lang.System.getProperty("java.version");
-    logger.info('Current Java VM Version: ' + strJVMVersion);
-    if (strJVMVersion < "11.0") {
-        logger.error("ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!");
-        logger.error("       Install a Java JDK from version 11 to 21.  Use it for OpenRefine by");
-        logger.error("       setting your JAVA_HOME environment variable to point to its Java");
-        logger.error("       directory OR set it as your system's default Java language.");
-        logger.error("       Ending RDF Transform load...");
-        return;
-    }
-
     /*
      * Fool Butterfly:
      *      Make the extension's Initializer do all the heavy lifting instead of the
@@ -56,7 +42,7 @@ function init() {
      *  Server-side Initialization Command...
      *    The InitializationCommand constructor calls its initialize() method...where all the magic happens.
      */
-
+    logger.info("Initializing RDF Transform...");
     new RDFTCmd.InitializationCommand(module); // ...self register
 }
 

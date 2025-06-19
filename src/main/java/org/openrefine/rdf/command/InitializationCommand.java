@@ -68,6 +68,33 @@ public class InitializationCommand extends Command {
 
     public InitializationCommand(ButterflyModule theModule) {
         super();
+
+        String strRDFTransformSuccess = "...RDF Transform successfully initialized.";
+        String strRDFTransformFailed = "...RDF Transform Extension failed to initialize!";
+
+        //
+        // Get and test Java VM for an RDF Transform compliant version...
+        //
+        String strJVMVersion = java.lang.System.getProperty("java.version");
+        float fJVMVersion = 0.0F;
+        int iPosFrstDecimal = strJVMVersion.indexOf('.');
+        int iPosLastDecimal = strJVMVersion.lastIndexOf('.');
+        if (iPosFrstDecimal == iPosLastDecimal) iPosLastDecimal = -1;
+        try {
+            if (iPosLastDecimal > 0) fJVMVersion = Float.parseFloat( strJVMVersion.substring(0, iPosLastDecimal) );
+            else                     fJVMVersion = Float.parseFloat( strJVMVersion );
+        }
+        catch (NumberFormatException ex) {}
+        InitializationCommand.logger.info("Current Java VM Version: " + strJVMVersion);
+        if (fJVMVersion < 11.0F) {
+            InitializationCommand.logger.error("ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!");
+            InitializationCommand.logger.error("       Install a Java JDK from version 11 to 21.  Use it for OpenRefine by");
+            InitializationCommand.logger.error("       setting your JAVA_HOME environment variable to point to its Java");
+            InitializationCommand.logger.error("       directory OR set it as your system's default Java language.");
+            InitializationCommand.logger.error(strRDFTransformFailed);
+            return;
+        }
+
         this.theModule = theModule;
 
         // Set the RDF Transform preferences via the OpenRefine Preference Store...
@@ -79,7 +106,11 @@ public class InitializationCommand extends Command {
         catch (Throwable ex) { // ...try to catch all Exceptions and Errors...
             InitializationCommand.logger.error("ERROR: initialize: " + ex.getMessage(), ex);
             if ( Util.isVerbose() ) ex.printStackTrace();
+            InitializationCommand.logger.error(strRDFTransformFailed);
+            return;
         }
+
+        InitializationCommand.logger.info(strRDFTransformSuccess);
     }
 
     private void initialize() {
@@ -93,8 +124,6 @@ public class InitializationCommand extends Command {
         this.registerServerSide();
 
         InitializationCommand.logger.info( "  Preferences...\n" + Util.preferencesToString() );
-
-        InitializationCommand.logger.info("...RDF Transform Extension initialized.");
     }
 
     private void registerClientSide() {
@@ -212,7 +241,7 @@ public class InitializationCommand extends Command {
 
         RefineServlet.registerClassMapping(
             // Non-existent name--we are adding, not renaming, so this is a dummy parameter...
-            "org.openrefine.model.operation.DataExtensionChange",
+            "org.openrefine.rdf.model.operation.DataExtensionChange",
             // Added Change Class name...
             "org.openrefine.rdf.model.operation.RDFTransformChange"
         );
@@ -393,7 +422,7 @@ public class InitializationCommand extends Command {
         JenaSystem.init();
         InitializationCommand.logger.info("...Apache Jena initialized.");
 
-        InitializationCommand.logger.info("...initialized.");
+        InitializationCommand.logger.info("...initialized with servlet.");
     }
 
     //
