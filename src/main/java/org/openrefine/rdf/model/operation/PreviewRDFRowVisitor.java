@@ -66,10 +66,24 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
                         "DatasetGraph Size: " + this.theDSGraph.size()
                     );
                 }
+                //
+                // Flush Statements
+                //
+                // Write and clear a discrete set of statements from the repository connection
+                // as the transformed statements use in-memory resources until flushed to disk.
+                // Otherwise, large files would use excessive memory!
+                //
+                if ( this.theDSGraph.size() > Util.getExportLimit() ) {
+                    this.flushStatements();
+                    if ( this.isNoWriter() && bLimitWarning) {
+                        this.bLimitWarning = false;
+                        PreviewRDFRowVisitor.logger.warn("WARNING:   Limit Reached: Memory may soon become exhausted!");
+                    }
+                }
             }
             this.iCount += 1;
 
-            // Flush all statements...
+            // Flush any remaining statements...
             this.flushStatements();
         }
         catch (Exception ex) {

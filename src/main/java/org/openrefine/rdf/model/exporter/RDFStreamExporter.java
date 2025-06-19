@@ -46,9 +46,9 @@ import org.apache.jena.riot.system.StreamRDFWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/*
- * Class RDFStreamExporter
- *
+/**
+ * Class RDFStreamExporter<br />
+ *<br />
  *  An exporter used to transform OpenRefine project data to RDF *at scale* meaning discreet data chunks
  *  are processed and dumped to persistent storage sequentially until complete.  Therefore, only discreet
  *  memory and processing are perform no matter how large the project data.  Additionally, the memory can

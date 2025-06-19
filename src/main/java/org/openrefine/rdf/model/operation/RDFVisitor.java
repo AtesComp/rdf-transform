@@ -35,12 +35,16 @@ import com.google.refine.browsing.Engine;
 
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFWriterRegistry;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.graph.GraphFactory;
+import org.apache.jena.sparql.util.NodeUtils;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,14 +85,19 @@ public abstract class RDFVisitor {
         this.bQuadWriter = null;
 
         // Initializing dataset graph...
-        this.theDSGraph = DatasetGraphFactory.create();
+        this.theDSGraph = DatasetGraphFactory.create(); // NOTE: Maybe createTxnMem() is better?
+        String strBaseIRI = this.theTransform.getBaseIRIAsString();
+        org.apache.jena.graph.Node nodeBaseGraph = NodeUtils.asNode( Util.getGraphIRIString(strBaseIRI) );
+        {
+            Graph graphBase = GraphFactory.createGraphMem(); // NOTE: Maybe createTxnGraph() is better?
+            this.theDSGraph.addGraph(nodeBaseGraph, graphBase);
+        }
 
         //
-        // Populate the namespaces in the repository...
+        // Populate the namespaces in the repository (DatasetGraph and UnionGraph)...
         //
 
         // Prepare Namespaces...
-        String strBaseIRI = this.theTransform.getBaseIRIAsString();
         Collection<Vocabulary> theNamespaces = this.theTransform.getNamespaces();
 
         // Check for the BaseIRI (default namespace) in the Prefixed Namespaces...
@@ -101,13 +110,16 @@ public abstract class RDFVisitor {
             }
         }
 
-        PrefixMap thePrefixes = this.theDSGraph.prefixes();
-        thePrefixes.clear();
+        PrefixMap theDSGPrefixes = this.theDSGraph.prefixes();
+        PrefixMapping theBGPrefixes = this.theDSGraph.getGraph(nodeBaseGraph).getPrefixMapping();
+        theDSGPrefixes.clear();
+        theBGPrefixes.clearNsPrefixMap();
 
         // Set Default Namespace for repository...
         if ( bUseBaseIRI && ! strBaseIRI.isEmpty() ) {
             if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Using BaseIRI " + strBaseIRI);
-            thePrefixes.add("", strBaseIRI);
+            theDSGPrefixes.add("", strBaseIRI);
+            theBGPrefixes.setNsPrefix("", strBaseIRI);
         }
         else {
             if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Not using BaseIRI");
@@ -115,7 +127,10 @@ public abstract class RDFVisitor {
 
         // Set Prefix Namespaces for repository...
         for (Vocabulary vocab : theNamespaces) {
-            thePrefixes.add( vocab.getPrefix(), vocab.getNamespace() );
+            String strPrefix = vocab.getPrefix();
+            String strNamespace = vocab.getNamespace();
+            theDSGPrefixes.add(strPrefix, strNamespace);
+            theBGPrefixes.setNsPrefix(strPrefix, strNamespace);
         }
 
         if (theWriter != null && theFormat != null) {
@@ -166,12 +181,12 @@ public abstract class RDFVisitor {
     public void start(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("Starting Visitation...");
 
-        // If we do NOT have a writer, let the calling processor control all model activity...
+        // If we do NOT have a writer, let the calling processor control all DatasetGraph activity...
         if ( this.theWriter == null ) {
             return;
         }
 
-        // Export namespace information previously populated in the model...
+        // Export namespace information previously populated in the DatasetGraph...
         try {
             Map<String, String> nsMap = this.theDSGraph.prefixes().getMapping();
             for ( Map.Entry<String, String> ns : nsMap.entrySet() ) {

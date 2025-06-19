@@ -42,16 +42,16 @@ import org.apache.jena.riot.RDFWriterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/*
- * Class RDFPrettyExporter
- *
+/**
+ * Class RDFPrettyExporter<br />
+ *<br />
  *  An exporter used to transform OpenRefine project data to RDF *in the prettiest format possible*
  *  meaning the data is condensed and formatted for readability.  This requires that the entire graph
  *  is accessible by the print process to organize repeated resources and literals and, therefore,
  *  cannot process discreet data chunks--i.e., it does not scale.  Furthermore, the entire graph must
  *  currently fit in the available memory as the graph used to dump the project data is a memory
- *  graph.
- *
+ *  graph.<br />
+ *<br />
  *  Use with relatively small graphs (compared to available memory) as the process could result in a
  *  critical failure.
  */
@@ -81,7 +81,7 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
     }
 
     private void export(Project theProject, Properties options, Engine theEngine)
-             throws IOException
+            throws IOException
     {
         RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
         try {

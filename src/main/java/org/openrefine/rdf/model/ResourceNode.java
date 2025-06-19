@@ -99,7 +99,7 @@ abstract public class ResourceNode extends Node {
     }
 
     /*
-     *  Method processResultsAsArray() for a single result to a Resource
+     *  Method processResultsAsSingle() for a single result to a Resource
      */
     protected boolean processResultsAsSingle(Object objResult) {
         String strLocalPart = Util.toSpaceStrippedString(objResult);
@@ -147,7 +147,6 @@ abstract public class ResourceNode extends Node {
         String strLocalPart = strIRI; // ...for "prefix:localPart" IRI
         if (strPrefix != null) { // ...on prefix, attempt namespace...
             strIRI = strPrefix + ":" + strLocalPart;
-            //strNamespace = this.theModel.getNsPrefixURI(strPrefix);
             strNamespace = this.theDSGraph.prefixes().get(strPrefix);
         }
         if ( Util.isDebugMode() ) {
@@ -194,9 +193,10 @@ abstract public class ResourceNode extends Node {
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
-        //this.theModel = theModel;
         this.theDSGraph = theDSGraph;
         this.theProject = theProject;
+
+        this.listNodes = null;
 
         this.theRec.setRootRow(iRowIndex);
         this.createStatementsWorker();
@@ -210,9 +210,10 @@ abstract public class ResourceNode extends Node {
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
-        //this.theModel = theModel;
         this.theDSGraph = theDSGraph;
         this.theProject = theProject;
+
+        this.listNodes = null;
 
         this.theRec.setRootRecord(theRecord);
         this.createStatementsWorker();
@@ -238,7 +239,7 @@ abstract public class ResourceNode extends Node {
             List<RDFNode> listResources = new ArrayList<RDFNode>();
             while ( this.theRec.rowNext() ) {
                 this.createRowResources(); // ...Row only
-                if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
+                if ( this.listNodes != null && this.listNodes.size() > 0 ) {
                     this.createResourceStatements();
                     listResources.addAll(this.listNodes);
                 }
@@ -254,12 +255,10 @@ abstract public class ResourceNode extends Node {
         //
         else {
             this.createResources(); // ...Record or Row
-            if ( this.listNodes == null || this.listNodes.isEmpty() ) {
-                this.listNodes = null;
-            }
-            else {
+            if ( this.listNodes != null && this.listNodes.size() > 0 ) {
                 this.createResourceStatements();
             }
+            else this.listNodes = null;
         }
     }
 
@@ -323,10 +322,9 @@ abstract public class ResourceNode extends Node {
     abstract protected void createRowResources();
 
     /*
-     *  Method createStatements() for Resource Node types
+     *  Method createResourceStatements() for Resource Node types
      *
-     *    Given a set of source resources, create the (source, rdf:type, object) triple statements
-     *    for each of the sources.
+     *    Produce all the Type and Property statements for a Resource Node.
      */
     private void createResourceStatements()
             throws RuntimeException {
@@ -378,7 +376,6 @@ abstract public class ResourceNode extends Node {
             if (strPrefix != null) { // ...prefixed...
                 strLocalPart = strType;
                 strType = strPrefix + ":" + strLocalPart; // ...CIRIE
-                //strNamespace = this.theModel.getNsPrefixURI(strPrefix);
                 strNamespace = this.theDSGraph.prefixes().get(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Type: [" + strType + "]");
@@ -411,7 +408,6 @@ abstract public class ResourceNode extends Node {
         org.apache.jena.graph.Node nodeGraph = NodeUtils.asNode( Util.getGraphIRIString( this.baseIRI.toString() ) );
         for (RDFNode theSource : this.listNodes) {
             for (RDFNode theType : listTypesForStmts) {
-                //this.theModel.add( (Resource) theSource, RDF.type, theType );
                 this.theDSGraph.add(
                     nodeGraph,
                     theSource.asNode(),
@@ -483,7 +479,6 @@ abstract public class ResourceNode extends Node {
             if (strPrefix != null) { // ...prefixed...
                 strLocalName = strProperty;
                 strProperty = strPrefix + ":" + strLocalName; // ...CIRIE
-                //strNamespace = this.theModel.getNsPrefixURI(strPrefix);
                 strNamespace = this.theDSGraph.prefixes().get(strPrefix);
             }
             if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: Prop: [" + strProperty + "]");
@@ -534,11 +529,6 @@ abstract public class ResourceNode extends Node {
                 theProperty = polPropItem.getProperty();
                 listObjects = polPropItem.getObjects();
                 for (RDFNode theObject : listObjects) {
-                    //this.theModel.add(
-                    //    (Resource) theSource,
-                    //    (org.apache.jena.rdf.model.Property) theProperty,
-                    //    theObject
-                    //);
                     this.theDSGraph.add(
                         nodeGraph,
                         theSource.asNode(),

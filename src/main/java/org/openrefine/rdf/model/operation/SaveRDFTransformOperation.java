@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -111,14 +112,15 @@ public class SaveRDFTransformOperation extends AbstractOperation {
      */
     @JsonCreator
     public SaveRDFTransformOperation(
-        //@JacksonInject("projectID") long iProjectID,
+        @JacksonInject("projectID") long iProjectID,
         @JsonProperty("op") String strOpCode,
         @JsonProperty(RDFTransform.KEY)
         @JsonAlias( { "rdf_transform", "rdfTransform" } )
             RDFTransform theTransform )
     {
         this.theTransform = theTransform;
-        if ( Util.isVerbose(3) ) SaveRDFTransformOperation.logger.info("Created Save Op from JSON by RDF Transform ({}).", strOpCode);
+        if ( Util.isVerbose(3) )
+            SaveRDFTransformOperation.logger.info("Created Save Op from JSON by RDF Transform: Project:{} Op:{}.", iProjectID, strOpCode);
     }
 
     @JsonGetter(RDFTransform.KEY)
