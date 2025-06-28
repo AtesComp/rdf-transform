@@ -91,6 +91,10 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
 
         this.listNodes = new ArrayList<RDFNode>();
         this.normalizeBNodeResource();
+
+        if ( this.listNodes.isEmpty() ) {
+            this.listNodes = null;
+        }
     }
 
     private void normalizeBNodeResource() {
@@ -122,8 +126,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
                     // Not Last...
                     strBNodeValue = strBNodeValue.replaceFirst(ConstantBlankNode.strNotLast + "$", "");
                     // On no change, break...
-                    if ( strBNodeValueBegin.equals(strBNodeValue) )
-                        break;
+                    if ( strBNodeValueBegin.equals(strBNodeValue) ) break;
                     // Otherwise, something was removed so recheck...
                 } while (true);
 
@@ -140,7 +143,7 @@ public class ConstantBlankNode extends ResourceNode implements ConstantNode {
                 }
             }
         }
-        // Otherwise, reuse as needed.
+        // Otherwise, reuse existing BNode.
 
         this.listNodes.add(bnode);
     }

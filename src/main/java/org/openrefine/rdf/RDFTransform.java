@@ -681,6 +681,8 @@ public class RDFTransform implements OverlayModel {
     @JsonIgnore
     public List<ResourceNode> getRoots() {
         if ( Util.isVerbose(3) ) RDFTransform.logger.info("Getting root nodes: size = " + this.theRootNodes.size());
+        if ( this.theRootNodes.isEmpty() )
+            RDFTransform.logger.warn("WARNING: No RDF Transform found! Select the \"RDT Transform\" extension and save.");
         return this.theRootNodes;
     }
 

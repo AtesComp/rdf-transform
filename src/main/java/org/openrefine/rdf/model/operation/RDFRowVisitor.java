@@ -28,20 +28,18 @@ import com.google.refine.browsing.RowVisitor;
 import com.google.refine.model.Project;
 import com.google.refine.model.Row;
 
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.StreamRDF;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class RDFRowVisitor extends RDFVisitor implements RowVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFRowVisitor" );
 
-    public RDFRowVisitor(RDFTransform theTransform, StreamRDF theWriter, RDFFormat theFormat) {
-        super(theTransform, theWriter, theFormat);
+    public RDFRowVisitor(RDFTransform theTransform) {
+        super(theTransform);
     }
 
     abstract public boolean visit(Project theProject, int iRowIndex, Row theRow);
+    abstract public boolean visit(Project theProject, int iRowIndex, int iSortedRowIndex, Row theRow);
 
     public void buildDSGraph(Project theProject, Engine theEngine) {
         FilteredRows filteredRows = theEngine.getAllFilteredRows();

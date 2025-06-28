@@ -23,7 +23,7 @@ package org.openrefine.rdf.model.exporter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.util.Properties;
+import java.util.Map;
 
 import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
@@ -64,7 +64,7 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
         super(format, strLang);
     }
 
-    public void export(Project theProject, Properties options, Engine theEngine, OutputStream outputStream)
+    public void export(Project theProject, Map<String, String> options, Engine theEngine, OutputStream outputStream)
             throws IOException {
         if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.theExportLang + " via OutputStream");
         this.theOutputStream = outputStream;
@@ -72,15 +72,15 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
     }
 
     @Override
-    public void export(Project theProject, Properties options, Engine theEngine, final Writer theWriter)
+    public void export(Project theProject, Map<String, String> options, Engine theEngine, final Writer someWriter)
              throws IOException
     {
         if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG: Exporting " + this.theExportLang + " via Writer");
-        this.theOutputStream = WriterOutputStream.builder().setWriter(theWriter).setCharset("UTF-8").get();
+        this.theOutputStream = WriterOutputStream.builder().setWriter(someWriter).setCharset("UTF-8").get();
         this.export(theProject, options, theEngine);
     }
 
-    private void export(Project theProject, Properties options, Engine theEngine)
+    private void export(Project theProject, Map<String, String> options, Engine theEngine)
             throws IOException
     {
         RDFTransform theTransform = RDFTransform.getRDFTransform(theProject);
@@ -91,22 +91,22 @@ public class RDFPrettyExporter extends RDFExporter implements WriterExporter {
             RDFVisitor theVisitor = null;
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Process by Record Visitor...");
-                theVisitor = new ExportRDFRecordVisitor( theTransform, null, null );
+                theVisitor = new ExportRDFRecordVisitor(theTransform);
             }
             else {
                 if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Process by Row Visitor...");
-                theVisitor = new ExportRDFRowVisitor( theTransform, null, null );
+                theVisitor = new ExportRDFRowVisitor(theTransform);
             }
 
             if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Building the graph...");
-            theVisitor.buildDSGraph(theProject, theEngine); // ...does not close since the theVisitor has no writer: theWriter == null
+            theVisitor.buildDSGraph(theProject, theEngine); // ...does not close as the theVisitor has no writer: theWriter == null
 
             if ( Util.isDebugMode() ) RDFPrettyExporter.logger.info("DEBUG:     Writing the graph as " + this.theExportLang + "...");
             if      ( RDFWriterRegistry.getWriterDatasetFactory( this.getFormat() ) != null) {
-                RDFDataMgr.write( this.theOutputStream, theVisitor.getDSGraph(), this.getFormat() ) ;
+                RDFDataMgr.write( this.theOutputStream, theVisitor.getDSGraph(), this.getFormat() ); // ...multi-graph
             }
             else if ( RDFWriterRegistry.getWriterGraphFactory( this.getFormat() ) != null) {
-                RDFDataMgr.write( this.theOutputStream, theVisitor.getDSGraph().getUnionGraph(), this.getFormat() ) ;
+                RDFDataMgr.write( this.theOutputStream, theVisitor.getDSGraph().getUnionGraph(), this.getFormat() ); // ...single graph
             }
             else throw new IOException("Dataset does not have a Dataset or Graph writer for " + this.theExportLang + "!");
 

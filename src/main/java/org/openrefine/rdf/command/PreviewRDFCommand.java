@@ -41,8 +41,7 @@ import com.google.refine.util.ParsingUtilities;
 
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.riot.RDFWriterRegistry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -50,7 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PreviewRDFCommand extends Command {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:PreviewRDFCmd");
 
     public PreviewRDFCommand() {
     }
@@ -134,30 +133,13 @@ public class PreviewRDFCommand extends Command {
             //
             // Setup output...
             //
-            ByteArrayOutputStream osOut = new ByteArrayOutputStream();
+            ByteArrayOutputStream theOutputStream = new ByteArrayOutputStream();
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ByteArrayOutputStream Setup.");
 
             //
-            // Get the Stream Writer if applicable...
-            //
-            StreamRDF theWriter = null;
-            RDFFormat theFormat = null;
-            if ( bPreviewStream )  {
-                theFormat = RDFFormat.TRIG_BLOCKS;
-                theWriter = StreamRDFWriter.getWriterStream(osOut, theFormat);
-                if (theWriter == null) {
-                    PreviewRDFCommand.logger.warn("WARN: Cannot construct Stream-based writer. Using pretty printer.");
-                }
-                else {
-                    if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Acquired writer: StreamRDFWriter.");
-                }
-            }
-
-            //
-            // Start writing...
+            // Start processing...
             //
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   Starting RDF Processing...");
-            if (theWriter != null) theWriter.start();
 
             //
             // Process sample records / rows of data for statements...
@@ -166,37 +148,41 @@ public class PreviewRDFCommand extends Command {
             // If Record mode...
             if ( theProject.recordModel.hasRecords() ) {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Record Visitor...");
-                theVisitor = new PreviewRDFRecordVisitor(theTransform, theWriter, theFormat);
+                theVisitor = new PreviewRDFRecordVisitor(theTransform);
             }
             // Otherwise, Row mode...
             else {
                 if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Process by Row Visitor...");
-                theVisitor = new PreviewRDFRowVisitor(theTransform, theWriter, theFormat);
+                theVisitor = new PreviewRDFRowVisitor(theTransform);
             }
 
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Building the RDF graph...");
             theVisitor.buildDSGraph(theProject, theEngine); // ...may or may not close since the theVisitor's theWriter is flexible
 
             //
-            // End writing...
+            // Write...
             //
-            // If Stream Writer, end Stream Writer...
-            if (theWriter != null) theWriter.finish();
-            // Otherwise, write and end Pretty Writer...
-            else {
-                theFormat = RDFFormat.TRIG_PRETTY;
-                if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Writing the graph as " + theFormat.getLang().getName() + "...");
-                RDFDataMgr.write( osOut, theVisitor.getDSGraph(), theFormat ); // ...multi-graph
-                //RDFDataMgr.write(osOut, theVisitor.getDSGraph().getUnionGraph(), theFormat); // ...single graph
-                theVisitor.closeDSGraph(); // ...close since the theVisitor has no writer: theWriter == null
+            RDFFormat theFormat = RDFFormat.TRIG_PRETTY;
+            if ( bPreviewStream ) theFormat = RDFFormat.TRIG_BLOCKS;
+            String theExportLang = theFormat.getLang().getName();
+
+            if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:     Writing the graph as " + theExportLang + "...");
+            if      ( RDFWriterRegistry.getWriterDatasetFactory( theFormat ) != null) {
+                RDFDataMgr.write( theOutputStream, theVisitor.getDSGraph(), theFormat ); // ...multi-graph
             }
+            else if ( RDFWriterRegistry.getWriterGraphFactory( theFormat ) != null) {
+                RDFDataMgr.write( theOutputStream, theVisitor.getDSGraph().getUnionGraph(), theFormat ); // ...single graph
+            }
+            else throw new IOException("Dataset does not have a Dataset or Graph writer for " + theExportLang + "!");
+
+            theVisitor.closeDSGraph(); // ...close since the theVisitor has no writer: theWriter == null
 
             if ( Util.isDebugMode() ) PreviewRDFCommand.logger.info("DEBUG:   ...Ended RDF Processing.");
 
             //
             // Send back to client...
             //
-            String strStatements = osOut.toString(StandardCharsets.UTF_8);
+            String strStatements = theOutputStream.toString(StandardCharsets.UTF_8);
             if ( Util.isVerbose(4) ) PreviewRDFCommand.logger.info("Preview Statements:\n" + strStatements);
 
             PreviewRDFCommand.respondJSON( response, new CodeResponse(strStatements) );

@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
-    private final static Logger logger = LoggerFactory.getLogger("RDFT:PrevRDFTExpCmd");
+    private final static Logger logger = LoggerFactory.getLogger("RDFT:PreviewRDFTExpCmd");
     private final static String strParsingWarn = "WARNING: Parsing: No problem. Correct it.";
     private final static String strOtherWarn = "WARNING: Other: Some other problem occurred while parsing.";
 

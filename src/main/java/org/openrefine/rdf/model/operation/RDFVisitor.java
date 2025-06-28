@@ -20,10 +20,8 @@
 
 package org.openrefine.rdf.model.operation;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import com.google.refine.model.Project;
 
@@ -33,19 +31,14 @@ import org.openrefine.rdf.model.vocab.Vocabulary;
 
 import com.google.refine.browsing.Engine;
 
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFWriterRegistry;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.Node;
 import org.apache.jena.riot.system.PrefixMap;
-import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.util.NodeUtils;
-import org.apache.jena.util.iterator.ExtendedIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +53,7 @@ import org.slf4j.LoggerFactory;
  *      via an RDFDataMgr write() method on either the DatasetGraph or its Graph.
  *   </li>
  *   <li>start() - Called by the FilteredRows or FilteredRecords accept() method in this.buildDSGraph(Project, Engine) </li>
- *   <li>flushStatements() - Called </li>
+ *   <li>flushStatements() - Called by the visit() method in </li>
  *   <li>end() - Called by the FilteredRows or FilteredRecords accept() method in this.buildDSGraph(Project, Engine)</li>
  * </ul>
  */
@@ -68,21 +61,15 @@ public abstract class RDFVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:RDFVisitor");
 
     private final RDFTransform theTransform;
-    private final StreamRDF theWriter;
-    private Boolean bQuadWriter;
     protected final DatasetGraph theDSGraph;
     protected boolean bLimitWarning = true;
 
     /**
-     *
+     * RDFVisitor ctor
      * @param theTransform - The RDF Transform to visit.
-     * @param theWriter - The StreamRDF writer for output. It is null for pretty languages.
-     * @param theFormat - The RDFFormat used by theWriter for output. It is null for pretty languages.
      */
-    public RDFVisitor(RDFTransform theTransform, StreamRDF theWriter, RDFFormat theFormat) {
+    public RDFVisitor(RDFTransform theTransform) {
         this.theTransform = theTransform;
-        this.theWriter = theWriter;
-        this.bQuadWriter = null;
 
         // Initializing dataset graph...
         this.theDSGraph = DatasetGraphFactory.create(); // NOTE: Maybe createTxnMem() is better?
@@ -94,7 +81,7 @@ public abstract class RDFVisitor {
         }
 
         //
-        // Populate the namespaces in the repository (DatasetGraph and UnionGraph)...
+        // Populate the namespaces in the repository (DatasetGraph and Base Graph)...
         //
 
         // Prepare Namespaces...
@@ -132,31 +119,6 @@ public abstract class RDFVisitor {
             theDSGPrefixes.add(strPrefix, strNamespace);
             theBGPrefixes.setNsPrefix(strPrefix, strNamespace);
         }
-
-        if (theWriter != null && theFormat != null) {
-            if      ( RDFWriterRegistry.getWriterDatasetFactory(theFormat) != null) {
-                this.bQuadWriter = true;
-            }
-            else if ( RDFWriterRegistry.getWriterGraphFactory(theFormat) != null) {
-                this.bQuadWriter = false;
-            }
-            else {
-                IOException exIO = new IOException("Dataset does not have a Dataset or Graph writer for " + theFormat.getLang().getName() + "!");
-                RDFVisitor.logger.error("ERROR: Determining Quad/Triple Type: " + exIO.getMessage(), exIO);
-                if ( Util.isVerbose() ) exIO.printStackTrace();
-                throw new RuntimeException(exIO.getMessage(), exIO);
-            }
-        }
-        else if (theWriter == null && theFormat == null) {
-            this.bQuadWriter = null; // ...unused
-        }
-        else {
-            IOException exIO = new IOException("The writer and format MUST BOTH be set or null!");
-            RDFVisitor.logger.error("ERROR: Determining Quad/Triple Type: " + exIO.getMessage(), exIO);
-            if ( Util.isVerbose() ) exIO.printStackTrace();
-            throw new RuntimeException(exIO.getMessage(), exIO);
-        }
-
     }
 
     public RDFTransform getRDFTransform() {
@@ -167,9 +129,9 @@ public abstract class RDFVisitor {
         return this.theDSGraph;
     }
 
-    public boolean isNoWriter() {
-        return (this.theWriter == null);
-    }
+    // NOTE: Oddly enough, there is no abstract "visit()" method here as the visitor parameters depend on
+    //      the derived class: "Row" or "Record" visitor.  See the RDFRowVisitor and RDFRecordVisitor classes.
+    //abstract public boolean visit(Project theProject, ...);
 
     abstract public void buildDSGraph(Project theProject, Engine theEngine);
 
@@ -180,27 +142,6 @@ public abstract class RDFVisitor {
      */
     public void start(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("Starting Visitation...");
-
-        // If we do NOT have a writer, let the calling processor control all DatasetGraph activity...
-        if ( this.theWriter == null ) {
-            return;
-        }
-
-        // Export namespace information previously populated in the DatasetGraph...
-        try {
-            Map<String, String> nsMap = this.theDSGraph.prefixes().getMapping();
-            for ( Map.Entry<String, String> ns : nsMap.entrySet() ) {
-                String strPrefix = ns.getKey();
-                String strNamespace = ns.getValue();
-                this.theWriter.prefix(strPrefix, strNamespace);
-                if ( Util.isDebugMode() ) RDFVisitor.logger.info("DEBUG: Prefix: " + strPrefix + "  " + strNamespace);
-            }
-        }
-        catch (Exception ex) {
-            RDFVisitor.logger.error("ERROR: Exporting Prefixes: " + ex.getMessage(), ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
-            throw new RuntimeException(ex.getMessage(), ex);
-        }
     }
 
     /**
@@ -210,58 +151,19 @@ public abstract class RDFVisitor {
      */
     public void end(Project theProject) {
         if ( Util.isVerbose(3) ) RDFVisitor.logger.info("...Ending Visitation");
-
-        // If we do NOT have a writer, let the calling processor control all DatasetGraph activity...
-        if ( this.theWriter == null ) {
-            return;
-        }
-
-        // Close the dataset graph automatically...
-        try {
-            this.theDSGraph.close();
-        }
-        catch (Exception ex) {
-            RDFVisitor.logger.error("ERROR: Closing DatasetGraph: " + ex.getMessage(), ex);
-            if ( Util.isVerbose() ) ex.printStackTrace();
-            throw new RuntimeException(ex.getMessage(), ex);
-        }
     }
 
-    protected void flushStatements() {
-        if ( this.theWriter == null ) {
-            return;
+    private void clearGraphStatements() {
+        Iterator<Node> iterGraphNodes = this.theDSGraph.listGraphNodes();
+        while ( iterGraphNodes.hasNext() ) {
+            Node nodeGraph = iterGraphNodes.next();
+            if ( nodeGraph.isNodeGraph() && ! nodeGraph.getGraph().isEmpty() )
+                this.theDSGraph.deleteAny(nodeGraph, Node.ANY, Node.ANY, Node.ANY);
         }
-
-        //
-        // Export statements...
-        //
-
-        // If theWriter is a Quad writer...
-        if (this.bQuadWriter) {
-            Iterator<Quad> stmtIter = this.theDSGraph.find();
-            try {
-                while ( stmtIter.hasNext() ) {
-                    this.theWriter.quad( stmtIter.next() );
-                }
-            }
-            finally {}
-        }
-        // Otherwise, theWriter is a Triple writer...
-        else {
-            ExtendedIterator<Triple> stmtIter = this.theDSGraph.getUnionGraph().find();
-            try {
-                while ( stmtIter.hasNext() ) {
-                    this.theWriter.triple( stmtIter.next() );
-                }
-            }
-            finally {
-                stmtIter.close();
-            }
-        }
-
     }
 
     public void closeDSGraph() {
+        this.clearGraphStatements();
         this.theDSGraph.close();
     }
 }

@@ -312,14 +312,35 @@ class RDFExporterMenuBar
             return;
         }
 
-        Refine.wrapCSRF( (token) => {
-            let form = RDFExporterMenuBar.#prepareExportRDFForm(format, ext, token);
+        const winHtml =
+            "<!DOCTYPE html>\n" +
+            "<html>\n" +
+            "  <head>\n" +
+            "    <title>OpenRefine RDF Transform Export</title>\n" +
+            "  </head>\n" +
+            "  <body>\n" +
+            "    <h1>Transforming data to RDF format " + format + "...</h1>\n" +
+            "    <p>If there is a lot of data, it could take a while to assemble it. Please be patient.</p>"
+            "  </body>\n" +
+            "</html>\n";
+        const winUrl = URL.createObjectURL( new Blob( [winHtml], { type: "text/html" } ) );
+        const winName = "OpenRefine RDF Transform Export " + format;
+        const iLeft = window.screenX + 100;
+        const iTop = window.screenY + 100;
+        const winFeatures = "popup,left=" + iLeft + ",top=" + iTop + ",width=600,height=300";
 
+        Refine.wrapCSRF(
+          (token) => {
+            let form = RDFExporterMenuBar.#prepareExportRDFForm(format, ext, token);
             document.body.appendChild(form);
-            window.open("Export " + format, "gridworks-export");
             form.submit();
             document.body.removeChild(form);
-        });
+
+            const win = window.open(winUrl, winName, winFeatures);
+            if (win) win.focus();
+          }
+        );
+
     }
 
     static #prepareExportRDFForm(format, ext, token) {

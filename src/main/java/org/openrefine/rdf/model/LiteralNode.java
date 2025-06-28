@@ -65,6 +65,7 @@ abstract public class LiteralNode extends Node {
      */
     @Override
     protected List<RDFNode> createObjects(ResourceNode nodeProperty) {
+            // ...no exception...
         if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createObjects...");
 
         this.setObjectParameters(nodeProperty);
@@ -80,6 +81,7 @@ abstract public class LiteralNode extends Node {
             // ...set to Row Mode and process on current row as set by rowNext()...
             this.theRec.setMode(nodeProperty, true);
         }
+
         //
         // Row Mode...
         //
@@ -88,12 +90,14 @@ abstract public class LiteralNode extends Node {
             this.theRec.setMode(nodeProperty);
         }
 
-        this.createStatementsWorker();
+        this.createStatementsWorker(); // ...accumulates objects in this.listNodes
+        List<RDFNode> listObjectNodes = this.listNodes;
+        this.listNodes = null;
         this.theRec.clear();
 
         // Return the collected resources from the statement processing as Objects
         // to the given Property...
-        return this.listNodes;
+        return listObjectNodes;
     }
 
     /*
@@ -105,7 +109,8 @@ abstract public class LiteralNode extends Node {
      *    ( source, predicate, object ) triples and need to be compatible with resources.
      */
     private void createStatementsWorker() {
-        if (Util.isDebugMode()) logger.info("DEBUG: createStatementsWorker...");
+            // ...no exception...
+        if ( Util.isDebugMode() ) logger.info("DEBUG: createStatementsWorker...");
 
         //
         // Transition from Record to Row processing...
@@ -114,14 +119,16 @@ abstract public class LiteralNode extends Node {
             List<RDFNode> listLiteralsAll = new ArrayList<RDFNode>();
             while ( this.theRec.rowNext() ) {
                 this.createRowLiterals(); // ...Row only
-                if ( ! ( this.listNodes == null || this.listNodes.isEmpty() ) ) {
-                    listLiteralsAll.addAll(this.listNodes);
+                if ( this.listNodes == null || this.listNodes.isEmpty() ) this.listNodes = null;
+                else {
+                    // ...there are no "literal" statements to create
+                    listLiteralsAll.addAll(this.listNodes); // ...accumulate for object use
                 }
             }
             if ( listLiteralsAll.isEmpty() ) {
                 listLiteralsAll = null;
             }
-            this.listNodes = listLiteralsAll;
+            this.listNodes = listLiteralsAll; // ...store for object use if needed
         }
 
         //
@@ -129,9 +136,8 @@ abstract public class LiteralNode extends Node {
         //
         else {
             this.createLiterals(); // ...Record or Row
-            if ( this.listNodes == null || this.listNodes.isEmpty() ) {
-                this.listNodes = null;
-            }
+            if ( this.listNodes == null || this.listNodes.isEmpty() ) this.listNodes = null;
+            // ...there are no "literal" statements to create
         }
     }
 
@@ -178,18 +184,17 @@ abstract public class LiteralNode extends Node {
     protected void createRecordLiterals() {
         if (Util.isDebugMode()) LiteralNode.logger.info("DEBUG: createRecordLiterals...");
 
-        List<RDFNode> listLiterals = new ArrayList<RDFNode>();
+        List<RDFNode> listLiteralsAll = new ArrayList<RDFNode>();
         while ( this.theRec.rowNext() ) {
             this.createRowLiterals();
             if ( this.listNodes != null ) {
-                listLiterals.addAll(this.listNodes);
+                listLiteralsAll.addAll(this.listNodes); // ...accumulate for object use
             }
         }
-        if ( listLiterals.isEmpty() ) {
-            listLiterals = null;
+        if ( listLiteralsAll.isEmpty() ) {
+            listLiteralsAll = null;
         }
-
-        this.listNodes = listLiterals;
+        this.listNodes = listLiteralsAll; // ...store for object use if needed
     }
 
     abstract protected void createRowLiterals();

@@ -30,8 +30,6 @@ import com.google.refine.model.Project;
 import com.google.refine.model.Record;
 
 import org.apache.jena.iri.IRI;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.StreamRDF;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +37,8 @@ import org.slf4j.LoggerFactory;
 public class ExportRDFRecordVisitor extends RDFRecordVisitor {
     private final static Logger logger = LoggerFactory.getLogger("RDFT:ExportRDFRecV");
 
-    public ExportRDFRecordVisitor(RDFTransform theTransform, StreamRDF theWriter, RDFFormat theFormat) {
-        super(theTransform, theWriter, theFormat);
+    public ExportRDFRecordVisitor(RDFTransform theTransform) {
+        super(theTransform);
         if ( Util.isDebugMode() ) ExportRDFRecordVisitor.logger.info("DEBUG: Created...");
     }
 
@@ -53,29 +51,15 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
                 root.createStatements(baseIRI, this.theDSGraph, theProject, theRecord);
 
                 if ( Util.isDebugMode() ) {
-                    ExportRDFRecordVisitor.logger.info("DEBUG:   " +
-                        "Root: " + root.getNodeName() + "(" + root.getNodeType() + ")  " +
-                        "DatasetGraph Size: " + this.theDSGraph.size()
+                    ExportRDFRecordVisitor.logger.info("DEBUG:   Root\n" +
+                        "  Name: " + root.getNodeName() + "\n" +
+                        "  Type: " + root.getNodeType() + "\n" +
+                        "  Graph Count: " + this.theDSGraph.size() + "\n" +
+                        "  Stmt  Count: " + this.theDSGraph.getUnionGraph().size()
                     );
                 }
-                //
-                // Flush Statements
-                //
-                // Write and clear a discrete set of statements from the repository connection
-                // as the transformed statements use in-memory resources until flushed to disk.
-                // Otherwise, large files would use excessive memory!
-                //
-                if ( this.theDSGraph.size() > Util.getExportLimit() ) {
-                    this.flushStatements();
-                    if ( this.isNoWriter() && bLimitWarning) {
-                        this.bLimitWarning = false;
-                        ExportRDFRecordVisitor.logger.warn("WARNING:   Limit Reached: Memory may soon become exhausted!");
-                    }
-                }
+                // WARNING: this.theDSGraph.getUnionGraph().size() > Util.getExportLimit()
             }
-
-            // Flush any remaining statements...
-            this.flushStatements();
         }
         catch (Exception ex) {
             ExportRDFRecordVisitor.logger.error("ERROR: Visit Issue: " + ex.getMessage(), ex);
@@ -84,5 +68,9 @@ public class ExportRDFRecordVisitor extends RDFRecordVisitor {
         }
 
         return false;
+    }
+
+    public boolean visit(Project theProject, int iSortedStartRowIndex, Record theRecord) {
+        return this.visit(theProject, theRecord);
     }
 }

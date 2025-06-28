@@ -86,13 +86,9 @@ abstract public class ResourceNode extends Node {
     protected void processResultsAsArray(String strPrefix, Object results) {
         List<Object> listResult = Arrays.asList(results);
         for (Object objResult : listResult) {
-            if ( objResult == null || objResult.toString().isEmpty() ) {
-                continue;
-            }
+            if ( objResult == null || objResult.toString().isEmpty() ) continue;
             if (strPrefix == null) {
-                if ( processResultsAsSingle(objResult) ) {
-                    continue;
-                }
+                if ( processResultsAsSingle(objResult) ) continue;
             }
             this.normalizeResource(strPrefix, objResult);
         }
@@ -200,6 +196,7 @@ abstract public class ResourceNode extends Node {
 
         this.theRec.setRootRow(iRowIndex);
         this.createStatementsWorker();
+        this.listNodes = null;
         this.theRec.clear();
     }
 
@@ -217,6 +214,7 @@ abstract public class ResourceNode extends Node {
 
         this.theRec.setRootRecord(theRecord);
         this.createStatementsWorker();
+        this.listNodes = null;
         this.theRec.clear();
     }
 
@@ -230,24 +228,25 @@ abstract public class ResourceNode extends Node {
      */
     private void createStatementsWorker()
             throws RuntimeException {
-        if (Util.isDebugMode()) logger.info("DEBUG: createStatementsWorker...");
+        if ( Util.isDebugMode() ) logger.info("DEBUG: createStatementsWorker...");
 
         //
         // Transition from Record to Row processing...
         //
         if ( this.theRec.isRecordPerRow() ) {
-            List<RDFNode> listResources = new ArrayList<RDFNode>();
+            List<RDFNode> listResourcesAll = new ArrayList<RDFNode>();
             while ( this.theRec.rowNext() ) {
                 this.createRowResources(); // ...Row only
-                if ( this.listNodes != null && this.listNodes.size() > 0 ) {
+                if ( this.listNodes == null || this.listNodes.isEmpty() ) this.listNodes = null;
+                else {
                     this.createResourceStatements();
-                    listResources.addAll(this.listNodes);
+                    listResourcesAll.addAll(this.listNodes); // ...accumulate for object use
                 }
             }
-            if ( listResources.isEmpty() ) {
-                listResources = null;
+            if ( listResourcesAll.isEmpty() ) {
+                listResourcesAll = null;
             }
-            this.listNodes = listResources;
+            this.listNodes = listResourcesAll; // ...store for object use if needed
         }
 
         //
@@ -255,10 +254,8 @@ abstract public class ResourceNode extends Node {
         //
         else {
             this.createResources(); // ...Record or Row
-            if ( this.listNodes != null && this.listNodes.size() > 0 ) {
-                this.createResourceStatements();
-            }
-            else this.listNodes = null;
+            if ( this.listNodes == null || this.listNodes.isEmpty() ) this.listNodes = null;
+            else this.createResourceStatements();
         }
     }
 
@@ -305,18 +302,17 @@ abstract public class ResourceNode extends Node {
     protected void createRecordResources() {
         if (Util.isDebugMode()) ResourceNode.logger.info("DEBUG: createRecordResources...");
 
-        List<RDFNode> listResources = new ArrayList<RDFNode>();
+        List<RDFNode> listResourcesAll = new ArrayList<RDFNode>();
         while ( this.theRec.rowNext() ) {
             this.createRowResources();
             if ( this.listNodes != null ) {
-                listResources.addAll(this.listNodes);
+                listResourcesAll.addAll(this.listNodes); // ...accumulate for object use
             }
         }
-        if ( listResources.isEmpty() ) {
-            listResources = null;
+        if ( listResourcesAll.isEmpty() ) {
+            listResourcesAll = null;
         }
-
-        this.listNodes = listResources;
+        this.listNodes = listResourcesAll; // ...store for object use if needed
     }
 
     abstract protected void createRowResources();
@@ -574,12 +570,14 @@ abstract public class ResourceNode extends Node {
             this.theRec.setMode(nodeProperty);
         }
 
-        this.createStatementsWorker();
+        this.createStatementsWorker(); // ...accumulates objects in this.listNodes
+        List<RDFNode> listObjectNodes = this.listNodes;
+        this.listNodes = null;
         this.theRec.clear();
 
         // Return the collected resources from the statement processing as Objects
         // to the given Property...
-        return this.listNodes;
+        return listObjectNodes;
     }
 
     abstract protected void writeNode(JsonGenerator writer, boolean isRoot)
