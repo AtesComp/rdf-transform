@@ -3,12 +3,14 @@
 
 ## 2.3.3 Released
 This version is updates RDF output format processing. The preview and export processes were
-changed from using a Model to a DatasetGraph to manage statement. This allowed for the Named Graph
+changed from using a Model to a DatasetGraph to manage statement. This allows for Named Graph
 use (using the BaseIRI). That change wrongly assumed all Jena languages could handle a DatasetGraph.
 A Model is inherently a single Graph manager while a DatasetGraph manages multiple Graphs. A
 language is either Graph-centric (Turle, NTriple, etc) or DatasetGraphs-centric (TriG, NQuad, etc.).
 A Graph-centric language cannot process a DatasetGraph. This release corrects Graph-centric
 languages to use a DatasetGraph's Union Graph.
+This release also corrects reconstruction issues during application and extension loading. RDF
+Transform now uses Jackson explicitly for Operation reconstruction.
 
 ## 2.3.2 Released
 This version is updates the Namespace management. The Prefix, Namespace, Location, and
