@@ -674,124 +674,121 @@ class RDFTransformDialog {
 
     #functionalizeDialog() {
         // Hook up the Transform and Preview tabs...
-        this.#elements.rdftTabs
-            .tabs(
-                { activate :
-                    (evt, ui) => {
-                        // If Preview tab activation...
-                        if (this.#elements.rdftTabs.tabs('option', 'active') === 1) {
-                        //if ( ui.newPanel.is("#rdf-transform-tab-preview") ) {
-                            // Process any outstanding preview updates...
-                            this.#processPreviewTab();
-                        }
+        this.#elements.rdftTabs.tabs(
+            { activate :
+                (evt, ui) => {
+                    // If Preview tab activation...
+                    if (this.#elements.rdftTabs.tabs('option', 'active') === 1) {
+                    //if ( ui.newPanel.is("#rdf-transform-tab-preview") ) {
+                        // Process any outstanding preview updates...
+                        this.#processPreviewTab();
                     }
                 }
-            );
+            }
+        );
 
         // Hook up the BaseIRI Editor...
-        this.#elements.rdftEditBaseIRI
-            .on("click", (evt) => {
-                    evt.preventDefault();
-                    // @ts-ignore
-                    this.#editBaseIRI( $(evt.target) );
-                }
-            );
+        this.#elements.rdftEditBaseIRI.on("click",
+            (evt) => {
+                evt.preventDefault();
+                // @ts-ignore
+                this.#editBaseIRI( $(evt.target) );
+            }
+        );
 
         // Hook up the Add Prefix button...
-        this.#elements.buttonAddPrefix
-            .on("click",
-                (evt) => {
-                    evt.preventDefault();
-                    this.#namespacesManager.addNamespace(false, false, false);
-                }
-            );
+        this.#elements.buttonAddPrefix.on("click",
+            (evt) => {
+                evt.preventDefault();
+                this.#namespacesManager.addNamespace(false, false, false);
+            }
+        );
 
         // Hook up the Manage Prefix button...
-        this.#elements.buttonManagePrefixes
-            .on("click",
-                (evt) => {
-                    evt.preventDefault();
-                    this.#namespacesManager.showManageWidget();
-                }
-            );
+        this.#elements.buttonManagePrefixes.on("click",
+            (evt) => {
+                evt.preventDefault();
+                this.#namespacesManager.showManageWidget();
+            }
+        );
 
         // Hook up the Add New Root Node button...
-        this.#elements.buttonAddRootNode
-            .on("click", (evt) => {
-                    evt.preventDefault();
-                    var nodeRoot = this.#createRootNode();
-                    var nodeUI = this.#createNewNodeIU(nodeRoot, null); // ...adds to #nodeUIs
-                    this.#theTransform.subjectMappings.push(nodeRoot);
-                    nodeUI.processView(this.#tableNodes);
-                }
-            );
-
-        // Hook up the Import RDF Template button...
-        this.#elements.buttonImpTemplate
-            .on("click", (evt) => {
-                    evt.preventDefault();
-                    this.#doImport();
-                }
-            );
+        this.#elements.buttonAddRootNode.on("click",
+            (evt) => {
+                evt.preventDefault();
+                var nodeRoot = this.#createRootNode();
+                var nodeUI = this.#createNewNodeIU(nodeRoot, null); // ...adds to #nodeUIs
+                this.#theTransform.subjectMappings.push(nodeRoot);
+                nodeUI.processView(this.#tableNodes);
+            }
+        );
 
         // Hook up the Export RDF Template button...
-        this.#elements.buttonExpTemplate
-            .on("click", (evt) => {
-                    evt.preventDefault();
-                    this.#doExport();
-                }
-            );
+        this.#elements.buttonExpTemplate.on("click",
+            (evt) => {
+                evt.preventDefault();
+                this.#doExport();
+            }
+        );
+
+        // Hook up the Import RDF Template button...
+        this.#elements.buttonImpTemplate.on("click",
+            async (evt) => {
+                evt.preventDefault();
+                await this.#doImport();
+            }
+        );
 
         // Hook up the Save RDFTransform button...
-        this.#elements.buttonSaveTransform
-            .on("click", (evt) => {
-                    evt.preventDefault();
-                    this.#doSave();
-                }
-            );
+        this.#elements.buttonSaveTransform.on("click",
+            (evt) => {
+                evt.preventDefault();
+                this.#doSave();
+            }
+        );
 
         // Hook up the Sample Limit Textbox...
-        this.#elements.rdftSampleLimit
-            .on("keypress", (evt) => {
-                    if (evt.which == 13) {
-                        this.#elements.rdftSampleLimit.focusout();
-                    }
+        this.#elements.rdftSampleLimit.on("keypress",
+            (evt) => {
+                if (evt.which == 13) {
+                    this.#elements.rdftSampleLimit.focusout();
                 }
-            );
-        this.#elements.rdftSampleLimit
-            .on("focusout", (evt) => {
-                    // @ts-ignore
-                    this.#editSampleLimit( $(evt.target) );
-                }
-            );
+            }
+        );
+        this.#elements.rdftSampleLimit.on("focusout",
+            (evt) => {
+                // @ts-ignore
+                this.#editSampleLimit( $(evt.target) );
+            }
+        );
 
         // Hook up the Preview Stream / Pretty Radio buttons...
-        this.#elements.rdftPreviewStream
-            .on("click", (evt) => {
-                    // @ts-ignore
-                    this.#editPreviewStream( $(evt.target) );
-                }
-            );
-        this.#elements.rdftPreviewPretty
-            .on("click", (evt) => {
-                    // @ts-ignore
-                    this.#editPreviewStream( $(evt.target) );
-                }
-            );
+        this.#elements.rdftPreviewStream.on("click",
+            (evt) => {
+                // @ts-ignore
+                this.#editPreviewStream( $(evt.target) );
+            }
+        );
+        this.#elements.rdftPreviewPretty.on("click",
+            (evt) => {
+                // @ts-ignore
+                this.#editPreviewStream( $(evt.target) );
+            }
+        );
 
         // Hook up the OK Button...
-        this.#elements.buttonOK
-            .on("click", () => {
-                    this.#doSave();
-                    // @ts-ignore
-                    $(document).off("keydown", this.#doKeypress);
-                    DialogSystem.dismissUntil(this.#level - 1);
-                }
-            );
+        this.#elements.buttonOK.on("click",
+            () => {
+                this.#doSave();
+                // @ts-ignore
+                $(document).off("keydown", this.#doKeypress);
+                DialogSystem.dismissUntil(this.#level - 1);
+            }
+        );
 
         // Hook up the Cancel Button...
-        this.#elements.buttonCancel
-            .on("click", () => {
+        this.#elements.buttonCancel.on("click",
+            () => {
                 // @ts-ignore
                 $(document).off("keydown", this.#doKeypress);
                 DialogSystem.dismissUntil(this.#level - 1);
@@ -801,33 +798,42 @@ class RDFTransformDialog {
         // Hook up resize...
         this.#iLastDiff = 0;
         this.#iResize = 0;
-        this.#dlgMain
-            .on("resize",
-                (evt, ui) => {
-                    clearTimeout(this.#iResize);
-                    this.#iResize = setTimeout(
-                        () => {
-                            let iDiff = ui.size.height - this.#iFrameInit;
-                            if (iDiff < 0) {
-                                iDiff = 0;
-                            }
-                            if (iDiff != this.#iLastDiff) {
-                                this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight + iDiff);
-                                this.#elements.rdftPreviewData.height(this.#iBasePreviewDataHeight + iDiff);
-                                this.#elements.rdftTabTransform.height(this.#iBaseTransformTabHeight + iDiff);
-                                this.#elements.rdftTabPreview.height(this.#iBasePreviewTabHeight + iDiff);
-                                this.#iLastDiff = iDiff;
-                            }
-                        },
-                        100 // ...do it 1/10 second after no more resizing,
-                            //    otherwise, keep resetting timeout...
-                    );
-                }
-            );
+        this.#dlgMain.on("resize",
+            (evt, ui) => {
+                clearTimeout(this.#iResize);
+                this.#iResize = setTimeout(
+                    () => {
+                        let iDiff = ui.size.height - this.#iFrameInit;
+                        if (iDiff < 0) iDiff = 0;
+                        if (iDiff != this.#iLastDiff) {
+                            this.#elements.rdftTransformData.height(this.#iBaseTransformDataHeight + iDiff);
+                            this.#elements.rdftPreviewData.height(this.#iBasePreviewDataHeight + iDiff);
+                            this.#elements.rdftTabTransform.height(this.#iBaseTransformTabHeight + iDiff);
+                            this.#elements.rdftTabPreview.height(this.#iBasePreviewTabHeight + iDiff);
+                            this.#iLastDiff = iDiff;
+                        }
+                    },
+                    100 // ...do it 1/10 second after no more resizing,
+                        //    otherwise, keep resetting timeout...
+                );
+            }
+        );
 
-        // Prevent OpenRefine from processing ESC and closing
+        // Prevent OpenRefine from processing ESC and closing...
         // @ts-ignore
         $(document).on("keydown", this.#doKeypress);
+    }
+
+    #fetchTransformInput(file) {
+        return new Promise(
+            (resolve, reject) => {
+                if (file === null) resolve(null);
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            }
+        );
     }
 
     #doKeypress(evt) {
@@ -841,13 +847,40 @@ class RDFTransformDialog {
     async #doImport() {
         this.#doSave(); // ...for undo
 
+        this.waitOnData();
+
         var theTransform = null;
-        theTransform = await RDFImportTemplate.importTemplate();
+        if ('showOpenFilePicker' in window && typeof window.showOpenFilePicker === 'function') {
+            theTransform = await RDFImportTemplate.importTemplate();
+        }
+        // Otherwise, get file by input element...
+        else {
+            var file = null;
+            try {
+                this.#elements.inputImpTemplate.empty();
+                // Hook up the Import RDF Template input...
+                const promise = new Promise(
+                    (resolve, reject) => {
+                        this.#elements.inputImpTemplate.on('cancel', () => { reject("Cancelled"); } );
+                        this.#elements.inputImpTemplate.on('change',
+                            (evt) => {
+                                file = evt.target.files[0];
+                                resolve()
+                            }
+                        );
+                    }
+                );
+                this.#elements.inputImpTemplate.trigger('click');
+                await promise;
+                if (file) theTransform = await this.#fetchTransformInput(file);
+            }
+            catch (error) { theTransform = null; }
+        }
+
         if ( theTransform === null ) {
+            this.#processTransformTab();
             return;
         }
-        //DialogSystem.dismissUntil(this.#level - 1); // ...kill this dialog
-        this.waitOnData();
         this.#initTransform(theTransform);
     }
 
@@ -1010,13 +1043,13 @@ class RDFTransformDialog {
         MenuSystem.showMenu(menu, () => {});
         MenuSystem.positionMenuLeftRight(menu, target);
 
-        var elements = DOM.bind(menu);
-        elements.rdftNewBaseIRIValue.val(this.#theTransform.baseIRI).focus().select();
+        var elemMenu = DOM.bind(menu);
+        elemMenu.rdftNewBaseIRIValue.val(this.#theTransform.baseIRI).focus().select();
 
-        elements.buttonApply
+        elemMenu.buttonApply
         .on("click",
             async () => {
-                var strIRI = elements.rdftNewBaseIRIValue.val();
+                var strIRI = elemMenu.rdftNewBaseIRIValue.val();
 
                 if ( ! await RDFTransformCommon.validateNamespace(strIRI) ) {
                     return;
@@ -1035,7 +1068,7 @@ class RDFTransformDialog {
             }
         );
 
-        elements.buttonCancel
+        elemMenu.buttonCancel
         .on("click", () => { MenuSystem.dismissAll(); } );
     }
 

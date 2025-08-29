@@ -33,16 +33,7 @@ class RDFExportTemplate
             .replace(/[^\p{L}\p{N}_]/gu, '_') // ...convert non-char to "_"
             .replace(/\p{White_Space}+/gu, '-'); // ...convert sp to '-'
 
-        //var waitOnSaveFile =
-        //    async () => {
-        //        await RDFTransformCommon.saveFile(
-        //            strTemplate, strFilename, "json",
-        //            "application/json",
-        //            "RDF Transform (.json)"
-        //        );
-        //    };
         try {
-            //waitOnSaveFile();
             RDFTransformCommon.saveFile(
                 strTemplate, strFilename, "json",
                 "application/json",

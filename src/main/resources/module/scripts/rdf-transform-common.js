@@ -349,30 +349,40 @@ class RDFTransformCommon {
      *      strDesc: the description displayed for the file extension
      */
     static async saveFile(strTemplate, strFilename, strExt, strType, strDesc) {
-        const blobPart = [];
-        blobPart[0] = strTemplate;
         // Create the blob object...
-        var theBlob =
-            new Blob( blobPart, { "type" : strType } );
+        const theBlob = new Blob( [strTemplate], { type : strType } );
 
-        // Get the File Handler...
-        const fileHandle =
-            // @ts-ignore
-            await window.showSaveFilePicker(
-                {   "excludeAcceptAllOption" : true,
-                    "suggestedName" : strFilename,
-                    "types" :
-                    [ { "description" : strDesc,
-                        "accept" : { [strType] : [ "." + strExt ] } } ]
-                }
-            );
+        if ('showSaveFilePicker' in window && typeof window.showSaveFilePicker === 'function') {
+            // Get the File Handler...
+            const fileHandle =
+                // @ts-ignore
+                await window.showSaveFilePicker(
+                    {   "excludeAcceptAllOption" : true,
+                        "suggestedName" : strFilename,
+                        "types" :
+                        [ { "description" : strDesc,
+                            "accept" : { [strType] : [ "." + strExt ] } } ]
+                    }
+                );
 
-        // Get the File Stream...
-        const fileStream = await fileHandle.createWritable();
+            // Get the File Stream...
+            const fileStream = await fileHandle.createWritable();
 
-        // Write the file...
-        await fileStream.write(theBlob);
-        await fileStream.close();
+            // Write the file...
+            await fileStream.write(theBlob);
+            await fileStream.close();
+        }
+        else { // ...support browsers not implementing window.showSaveFilePicker()...
+            const elemDownload = document.createElement("a");
+            const urlDownload = URL.createObjectURL(theBlob);
+            elemDownload.download = strFilename + "." + strExt;
+            elemDownload.href = urlDownload;
+            elemDownload.style.display = 'none';
+            document.body.appendChild(elemDownload);
+            elemDownload.click();
+            window.URL.revokeObjectURL(urlDownload);
+            elemDownload.remove();
+        }
     }
 
     /*
@@ -388,6 +398,8 @@ class RDFTransformCommon {
      *          JSON format
      */
     static async readFile(strExt, strType, strDesc) {
+        var strTemplate = null;
+
         // Get the File Handler...
         const [ fileHandle ] =
             // @ts-ignore
@@ -402,7 +414,7 @@ class RDFTransformCommon {
 
         // Get the File data...
         const file = await fileHandle.getFile();
-        const strTemplate = await file.text();
+        strTemplate = await file.text();
 
         return strTemplate;
     }

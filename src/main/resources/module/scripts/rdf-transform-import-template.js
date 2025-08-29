@@ -27,16 +27,7 @@ class RDFImportTemplate
         //      save the prior template since we are importing over the current one.
         /** @type {string} */
         var strTemplate = null;
-        //var waitOnOpenFile =
-        //    async () => {
-        //        await RDFTransformCommon.openFile(
-        //            "json",
-        //            "application/json",
-        //            "RDF Transform (.json)"
-        //        );
-        //    };
         try {
-            //strTemplate = await waitOnOpenFile();
             strTemplate =
                 await RDFTransformCommon.readFile(
                     "json",
