@@ -61,7 +61,7 @@ class RDFTransform {
     // RDF Transform Version Control
     static strVERSION_MAJOR = "2";
     static strVERSION_MINOR = "3";
-    static strVERSION_MICRO = "3";
+    static strVERSION_MICRO = "4";
     static strVERSION =
         RDFTransform.strVERSION_MAJOR + "." +
         RDFTransform.strVERSION_MINOR + "." +
@@ -824,18 +824,6 @@ class RDFTransformDialog {
         $(document).on("keydown", this.#doKeypress);
     }
 
-    #fetchTransformInput(file) {
-        return new Promise(
-            (resolve, reject) => {
-                if (file === null) resolve(null);
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsText(file);
-            }
-        );
-    }
-
     #doKeypress(evt) {
         // Catch "ESC" key...
         if (evt.key == "Escape") {
@@ -849,34 +837,7 @@ class RDFTransformDialog {
 
         this.waitOnData();
 
-        var theTransform = null;
-        if ('showOpenFilePicker' in window && typeof window.showOpenFilePicker === 'function') {
-            theTransform = await RDFImportTemplate.importTemplate();
-        }
-        // Otherwise, get file by input element...
-        else {
-            var file = null;
-            try {
-                this.#elements.inputImpTemplate.empty();
-                // Hook up the Import RDF Template input...
-                const promise = new Promise(
-                    (resolve, reject) => {
-                        this.#elements.inputImpTemplate.on('cancel', () => { reject("Cancelled"); } );
-                        this.#elements.inputImpTemplate.on('change',
-                            (evt) => {
-                                file = evt.target.files[0];
-                                resolve()
-                            }
-                        );
-                    }
-                );
-                this.#elements.inputImpTemplate.trigger('click');
-                await promise;
-                if (file) theTransform = await this.#fetchTransformInput(file);
-            }
-            catch (error) { theTransform = null; }
-        }
-
+        var theTransform = await RDFImportTemplate.importTemplate(this.#elements.inputImpTemplate);
         if ( theTransform === null ) {
             this.#processTransformTab();
             return;
@@ -1044,7 +1005,7 @@ class RDFTransformDialog {
         MenuSystem.positionMenuLeftRight(menu, target);
 
         var elemMenu = DOM.bind(menu);
-        elemMenu.rdftNewBaseIRIValue.val(this.#theTransform.baseIRI).focus().select();
+        elemMenu.rdftNewBaseIRIValue.val(this.#theTransform.baseIRI).trigger("focus").trigger("select");
 
         elemMenu.buttonApply
         .on("click",

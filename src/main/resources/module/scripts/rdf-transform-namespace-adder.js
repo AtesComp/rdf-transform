@@ -281,7 +281,7 @@ class RDFTransformNamespaceAdder {
         this.#elements.prefix
         // @ts-ignore
         .change( (evt) => { this.#suggestNamespace( $(evt.currentTarget).val() ); } )
-        .focus();
+        .trigger("focus");
 
         this.#elements.namespace
         .change( () => { this.#bNamespaceByLookup = false; } );

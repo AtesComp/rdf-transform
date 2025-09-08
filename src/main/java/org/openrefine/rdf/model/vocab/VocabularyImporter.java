@@ -112,7 +112,7 @@ public class VocabularyImporter {
         }
         catch (Exception ex) {
             this.m_theDSGraph = null;
-            throw new VocabularyImportException("Importing vocabulary: " + this.m_strNamespace, ex);
+            throw new VocabularyImportException("WARNING: Importing vocabulary " + this.m_strNamespace, ex);
         }
     }
 
@@ -155,7 +155,7 @@ public class VocabularyImporter {
         }
         catch (Exception ex) {
             VocabularyImporter.logger.error( "ERROR: Query " + ex.getMessage() );
-            throw new VocabularyImportException("Query " + strMessage + ex.getMessage(), ex);
+            throw new VocabularyImportException("WARNING: Query " + strMessage + ex.getMessage(), ex);
         }
         try {
             QueryExecution qexec = QueryExecutionFactory.create(query, this.m_theDSGraph);
@@ -209,7 +209,7 @@ public class VocabularyImporter {
         }
         catch (Exception ex) {
             VocabularyImporter.logger.error( "ERROR: Query " + ex.getMessage() );
-            throw new VocabularyImportException("Query " + strMessage + ex.getMessage(), ex);
+            throw new VocabularyImportException("WARNING: Query " + strMessage + ex.getMessage(), ex);
         }
         try {
             QueryExecution qexec = QueryExecutionFactory.create(query, this.m_theDSGraph);

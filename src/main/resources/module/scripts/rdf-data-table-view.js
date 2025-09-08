@@ -530,8 +530,8 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
         this._elmts.expressionPreviewTextarea
             .val(this.expression)
             .keyup( () => { this._scheduleUpdate(); } )
-            .select()
-            .focus();
+            .trigger("focus")
+            .trigger("select");
 
         //this._tabContentWidth = this._elmts.expressionPreviewPreviewContainer.width() + "px";
 

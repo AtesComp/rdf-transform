@@ -21,23 +21,68 @@
 
 class RDFImportTemplate
 {
-    static async importTemplate() {
+    static async importTemplate(elemInputImpTemplate) {
         // NOTE: No Server-Side processing required.  The current RDF Template
         //      always resides on the Client-Side.  Prior processing should
         //      save the prior template since we are importing over the current one.
+
+        var theTransform = null;
         /** @type {string} */
         var strTemplate = null;
-        try {
-            strTemplate =
-                await RDFTransformCommon.readFile(
-                    "json",
-                    "application/json",
-                    "RDF Transform (.json)"
-                );
+
+        if ('showOpenFilePicker' in window && typeof window.showOpenFilePicker === 'function') {
+            try {
+                strTemplate =
+                    await RDFTransformCommon.readFile(
+                        "json",
+                        "application/json",
+                        "RDF Transform (.json)"
+                    );
+            }
+            catch (evt) { return null; }
         }
-        catch (evt) {
-            return null;
+        // Otherwise, get file by input element...
+        else {
+            try {
+                var file = null;
+                elemInputImpTemplate.empty();
+                // 1. Hook up Import RDF Template input file event handlers...
+                const promise = this.#fetchTransformFile(elemInputImpTemplate);
+                // 2. Trigger the file selection UI...
+                elemInputImpTemplate.trigger('click');
+                file = await promise; // ...and wait for the user to finish
+                // 3. Load the selected RDF Template input file...
+                if (file) strTemplate = await this.#fetchTransformInput(file);
+            }
+            catch (error) { return null; }
         }
-        return JSON.parse(strTemplate);
+
+        theTransform = JSON.parse(strTemplate);
+        return theTransform;
     }
+
+    static #fetchTransformFile(elemInputImpTemplate) {
+        return new Promise(
+            (resolve, reject) => {
+                // Set file input event handlers...
+                elemInputImpTemplate.on('cancel', () => { reject("Cancelled"); } );
+                elemInputImpTemplate.on('change', (evt) => { resolve( evt.target.files[0] ); } );
+            }
+        );
+    }
+
+    static #fetchTransformInput(file) {
+        return new Promise(
+            (resolve, reject) => {
+                if (file === null) resolve(null);
+                const reader = new FileReader();
+                // Set up FileReader event handlers...
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = () => reject("Cancelled");
+                // Process file...
+                reader.readAsText(file);
+            }
+        );
+    }
+
 }

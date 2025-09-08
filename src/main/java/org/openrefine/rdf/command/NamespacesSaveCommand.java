@@ -70,10 +70,12 @@ public class NamespacesSaveCommand extends RDFTransformCommand {
             //      ...
             //  }
 
-            theNamespaces.properties().forEach(prefix -> {
-                Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
-                listVocabs.add(vocab);
-            });
+            theNamespaces.properties().forEach(
+                entryPrefix -> {
+                    Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(entryPrefix);
+                    if (vocab != null) listVocabs.add(vocab);
+                }
+            );
             this.getRDFTransform(request).setNamespaces(listVocabs);
 
             // ...and the namespaces' vocabulary searcher...

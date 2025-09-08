@@ -37,25 +37,29 @@ class RDFTransformNamespacesManager {
     async init() {
         this.#dialog.waitOnNamespaces();
 
+        // Get the default namespaces...
+        var objDefaultNamespaces = null;
+        try {
+            var data = null;
+            data = await this.#getDefaults();
+            if (data !== null && "namespaces" in data) objDefaultNamespaces = data.namespaces;
+        }
+        catch (evt) {
+            // ...ignore error, no default namespaces...
+        }
+
         // Get existing namespaces...
         var theNamespaces = this.#dialog.getNamespaces();
 
         if ( ! theNamespaces ) {
             // Get default namespaces...
-            var data = null;
             this.#theNamespaces = {} // ...empty object, no namespaces
-            try {
-                data = await this.#getDefaults();
-            }
-            catch (evt) {
-                // ...ignore error, no namespaces...
-            }
             var bError = false;
-            if (data !== null && "namespaces" in data) {
+            if (objDefaultNamespaces !== null) {
                 // Clone default namespaces...
-                this.#theNamespaces = JSON.parse( JSON.stringify( data.namespaces ) ); // ...new defaults namespaces
+                this.#theNamespaces = JSON.parse( JSON.stringify(objDefaultNamespaces) ); // ...new defaults namespaces
             }
-            else { // (data === null || data.code === "error")
+            else { // (objDefaultNamespaces === null)
                 bError = true;
             }
             // We might have namespace errors...
@@ -66,7 +70,31 @@ class RDFTransformNamespacesManager {
         }
         else {
             // Clone existing namespaces...
-            this.#theNamespaces = JSON.parse( JSON.stringify( theNamespaces ) );
+            var theNamespacesJSON = JSON.parse( JSON.stringify( theNamespaces ) );
+
+            // Check Namespaces for version update...
+            Object.keys(theNamespacesJSON).forEach(
+                strPrefix => {
+                    // If a Namespace object is a NEW version...
+                    if ( typeof theNamespacesJSON[strPrefix] === 'object' && "namespace" in theNamespacesJSON[strPrefix] ) return;
+
+                    // Otherwise, update the OLD version...
+                    var strNamespace = theNamespacesJSON[strPrefix];
+                    var strLocation = "";
+                    var strLocType = "NONE";
+                    if (objDefaultNamespaces !== null && strPrefix in objDefaultNamespaces) {
+                        strNamespace = objDefaultNamespaces[strPrefix].namespace;
+                        strLocation = objDefaultNamespaces[strPrefix].location;
+                        strLocType = objDefaultNamespaces[strPrefix].loctype;
+                    }
+                    theNamespacesJSON[strPrefix] = {
+                        "namespace": strNamespace,
+                        "location": strLocation,
+                        "loctype": strLocType
+                    };
+                }
+            );
+            this.#theNamespaces = theNamespacesJSON;
         }
         this.#saveNamespaces();
         this.#renderNamespaces();
@@ -181,7 +209,8 @@ class RDFTransformNamespacesManager {
 
     getNamespaceOfPrefix(strPrefixFind) {
         if (strPrefixFind in this.#theNamespaces) {
-            return this.#theNamespaces[strPrefixFind];
+            if (typeof this.#theNamespaces[strPrefixFind] === "string") return this.#theNamespaces[strPrefixFind];
+            else return this.#theNamespaces[strPrefixFind].namespace;
         }
         return null;
     }

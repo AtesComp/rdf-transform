@@ -1,6 +1,19 @@
 # Change Log
 [//]: # (RDF Transform Version Control)
 
+## 2.3.4 Released
+This version is updates RDF Template import and export processing. The prior extension used
+showOpenFilePicker() exclusively which is not used by some browsers due to topical developer
+differences on undefined, esoteric, local file access security issues. This release provides for
+alternative, classical file processing.
+This release also finished conversion to the new Prefixed Namespace format for processing ontologies
+from URL, file, and "none" sources--the old system had no stored designation from which it loaded
+an ontology so would erroniously default to URL on reload even when "none" where avaiable. This
+resulted is slow startups. A file Prefixed Namespace loads its ontology from locally store files.
+A "none" Prefixed Namespace does not attempt to load an ontology. The namespace processing attempts
+a "best effort" to convert an old namespace format to the new format.
+This release also updates some deprecated jQuery calls.
+
 ## 2.3.3 Released
 This version is updates RDF output format processing. The preview and export processes were
 changed from using a Model to a DatasetGraph to manage statement. This allows for Named Graph

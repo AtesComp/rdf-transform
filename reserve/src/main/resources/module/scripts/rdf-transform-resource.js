@@ -195,8 +195,8 @@ class Reserve_RDFTransformResourceResolveDialog {
         var elements = DOM.bind(menu);
         elements.rdftNewResourceIRI
         .val(defaultVal)
-        .focus()
-        .select();
+        .trigger("focus")
+        .trigger("select");
 
         elements.buttonCancel
         .on("click", () => { MenuSystem.dismissAll(); } );

@@ -78,7 +78,7 @@ public class RDFTransform implements OverlayModel {
     // RDF Transform Version Control
     static public final String VERSION_MAJOR = "2";
     static public final String VERSION_MINOR = "3";
-    static public final String VERSION_MICRO = "3";
+    static public final String VERSION_MICRO = "4";
     static public final String VERSION =
         RDFTransform.VERSION_MAJOR + "." +
         RDFTransform.VERSION_MINOR + "." +
@@ -139,36 +139,38 @@ public class RDFTransform implements OverlayModel {
         return RDFTransform.reconstruct(theProject, jnodeTransform);
     }
 
-    static public Vocabulary getVocabFromPrefixNode(Entry<String, JsonNode> prefix) {
-        String strPrefix = prefix.getKey();
+    static public Vocabulary getVocabFromPrefixNode(Entry<String, JsonNode> entryPrefix) {
+        String strPrefix = entryPrefix.getKey();
         String[] astrValues = { null, null, null }; // 0 = Namespace, 1 = Location, 2 = Location Type
         Vocabulary.LocationType theLocType = Vocabulary.LocationType.NONE;
         Vocabulary vocab = null;
-        boolean bOld = false;
+        JsonNode nodePrefix = entryPrefix.getValue();
 
-        // If the prefix does not have field, then it only has a namespace value (DEPRECATED Old Format)...
-        if ( prefix.getValue().properties().isEmpty() ) {
+        // If the prefix value is a simple JSON Node, it only has a namespace value (DEPRECATED Old Format)...
+        if ( nodePrefix.isValueNode() ) {
             // Upgrade to New Format...
-            bOld = true;
-            astrValues[0] = prefix.getValue().asText();
+            astrValues[0] = nodePrefix.asText();
+            vocab = new Vocabulary( strPrefix, astrValues[0] );
         }
+        // Otherwise, process the prefix...
         else {
-            prefix.getValue().properties().forEach(value -> {
-                String strKey = value.getKey();
-                String strVal = value.getValue().asText();
-                if      ( strKey.equals("namespace") )  astrValues[0] = strVal;
-                else if ( strKey.equals("location") )   astrValues[1] = strVal;
-                else if ( strKey.equals("loctype") )    astrValues[2] = strVal;
-            });
+            nodePrefix.properties().forEach(
+                entryPrefixVal -> {
+                    String strKey = entryPrefixVal.getKey();
+                    String strVal = entryPrefixVal.getValue().asText();
+                    if      ( strKey.equals("namespace") )  astrValues[0] = strVal;
+                    else if ( strKey.equals("location") )   astrValues[1] = strVal;
+                    else if ( strKey.equals("loctype") )    astrValues[2] = strVal;
+                }
+            );
             if ( astrValues[2] != null && ! astrValues[2].isEmpty() ) theLocType = Vocabulary.fromLocTypeString( astrValues[2] ) ;
+
+            if (astrValues[1] == null)
+                vocab = new Vocabulary( strPrefix, astrValues[0], "", theLocType );
+            else
+                vocab = new Vocabulary( strPrefix, astrValues[0], astrValues[1], theLocType );
         }
 
-        if (bOld)
-            vocab = new Vocabulary( strPrefix, astrValues[0] );
-        else if (astrValues[1] == null)
-            vocab = new Vocabulary( strPrefix, astrValues[0], "", theLocType );
-        else
-            vocab = new Vocabulary( strPrefix, astrValues[0], astrValues[1], theLocType );
         return vocab;
     }
 
@@ -645,10 +647,12 @@ public class RDFTransform implements OverlayModel {
 
             if ( jnodeNamespaces.isObject() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: setNamespaces(): Namespaces set by JSON Object...");
-                jnodeNamespaces.properties().forEach(prefix -> {
-                    Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
-                    this.theNamespaces.add(vocab);
-                });
+                jnodeNamespaces.properties().forEach(
+                    entryPrefix -> {
+                        Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(entryPrefix);
+                        if (vocab != null) this.theNamespaces.add(vocab);
+                    }
+                );
             }
             if ( this.theNamespaces.isEmpty() ) {
                 if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: setNamespaces(): Namespaces set by Predefined defaults...");

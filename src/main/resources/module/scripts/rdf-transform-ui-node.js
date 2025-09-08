@@ -599,7 +599,7 @@ class RDFTransformUINode {
                     // @ts-ignore
                     $(divContainer)
                         .width(1)
-                        .width(divContainer.context.scrollWidth);
+                        .width(divContainer.scrollWidth);
                     // @ts-ignore
                     $(menuContainer)
                         .width(1)

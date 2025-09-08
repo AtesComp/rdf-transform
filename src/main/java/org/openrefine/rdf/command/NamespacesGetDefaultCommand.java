@@ -73,9 +73,7 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
         if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("DEBUG: Existing namespaces: size=" + listVocabs.size());
         if ( listVocabs == null || listVocabs.isEmpty() ) {
             listVocabs =
-                RDFTransform.getGlobalContext().
-                    getPredefinedVocabularyManager().
-                        getPredefinedVocabularies().clone();
+                RDFTransform.getGlobalContext().getPredefinedVocabularyManager().getPredefinedVocabularies().clone();
             if ( Util.isDebugMode() ) NamespacesGetDefaultCommand.logger.info("DEBUG: Predefined namespaces: size=" + listVocabs.size());
         }
 
@@ -94,10 +92,10 @@ public class NamespacesGetDefaultCommand extends RDFTransformCommand {
         for (Vocabulary vocab : listVocabs) {
             if ( Util.isDebugMode() )
                 NamespacesGetDefaultCommand.logger.info(
-                    "  Prefix: " + vocab.getPrefix() +
-                    "  Namespace: " + vocab.getNamespace() +
-                    "  Location: " + vocab.getLocation() +
-                    "  LocType: " + vocab.getLocationType().toString()
+                    " Prefix[" + vocab.getPrefix() + "]" +
+                    " Namespace[" + vocab.getNamespace() + "]" +
+                    " Location[" + vocab.getLocation() + "]" +
+                    " LocType[" + vocab.getLocationType().toString() + "]"
                 );
             Exception except = null;
             boolean bError = false; // ...not fetchable

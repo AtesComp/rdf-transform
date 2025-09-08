@@ -349,7 +349,7 @@ class RDFTransformResourceDialog {
 
             }
         );
-        elements.rdftNewResourceIRI.focus();
+        elements.rdftNewResourceIRI.trigger("focus");
     }
 
     #handlerAddSuggestTerm(evt, strType, params) {

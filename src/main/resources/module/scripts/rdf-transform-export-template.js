@@ -28,10 +28,10 @@ class RDFExportTemplate
         const strTemplate = JSON.stringify( theTransform );
         const strFilename =
             theProject.metadata.name
-            .replace(/^\p{White_Space}+/u, '') // ...trim from beginning
-            .replace(/\p{White_Space}+$/u, '') // ...trim from end
-            .replace(/[^\p{L}\p{N}_]/gu, '_') // ...convert non-char to "_"
-            .replace(/\p{White_Space}+/gu, '-'); // ...convert sp to '-'
+            .replace(/^\p{White_Space}+/u, '')      // ...trim white space from start
+            .replace(/\p{White_Space}+$/u, '')      // ...trim white space from end
+            .replace(/[^\p{L}\p{N}_]/gu, '_')       // ...convert non-char to "_"
+            .replace(/\p{White_Space}+/gu, '-');    // ...convert remaining white space to '-'
 
         try {
             RDFTransformCommon.saveFile(

@@ -63,28 +63,26 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         this.context = context;
         this.workingDir = workingDir;
 
-        if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Attempting vocabulary reconstruct...");
         try {
-            this.reconstructVocabulariesFromFile();
-            if ( predefinedVocabularies.isEmpty() ) {
-                throw new FileNotFoundException("Predefined Vocabularies list is empty!");
+            if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Loading predefined vocabularies...");
+            this.addPredefinedVocabularies();
+        }
+        catch (Exception ex) {
+            // Predefined vocabularies are not defined properly...
+            if ( Util.isVerbose() ) {
+                PredefinedVocabularyManager.logger.warn("Loading predefined vocabularies failed: " + ex.getMessage(), ex);
+                if ( Util.isVerbose(2) ) ex.printStackTrace();
             }
         }
+        if ( this.predefinedVocabularies.isEmpty() ) {
+            throw new FileNotFoundException("Predefined Vocabularies list is empty!");
+        }
+
+        if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("Attempting vocabularies reconstruct...");
+        try {
+            this.reconstructVocabulariesFromFile();
+        }
         catch (FileNotFoundException ex1) {
-            // Existing vocabularies are not found.
-            // Try adding predefined vocabularies...
-            if ( Util.isDebugMode() ) PredefinedVocabularyManager.logger.info("...missing local, adding remote...");
-            try {
-                this.addPredefinedVocabularies();
-            }
-            catch (Exception ex2) {
-                // Predefined vocabularies are not defined properly...
-                //   Ignore the exception, but log it...
-                if ( Util.isVerbose() ) {
-                    PredefinedVocabularyManager.logger.warn("Loading predefined vocabularies failed: " + ex2.getMessage(), ex2);
-                    if ( Util.isVerbose(2) ) ex2.printStackTrace();
-                }
-            }
             try {
                 this.save();
             }
@@ -92,7 +90,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
                 // Saving predefined vocabularies failed...
                 //   Ignore the exception, but log it...
                 if ( Util.isVerbose() ) {
-                    PredefinedVocabularyManager.logger.warn("Saving local Vocabulary failed: ", ex2);
+                    PredefinedVocabularyManager.logger.warn("Saving local Vocabularies failed: ", ex2);
                     if ( Util.isVerbose(2) ) ex2.printStackTrace();
                 }
             }
@@ -108,9 +106,9 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
      * Private methods
      */
     private void reconstructVocabulariesFromFile() throws IOException {
-        File vocabulariesFile =  new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
-        if (vocabulariesFile.exists() && vocabulariesFile.length() != 0) {
-            this.load();
+        File vocabsFile =  new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
+        if (vocabsFile.exists() && vocabsFile.length() != 0) {
+            this.load(vocabsFile);
         }
         else {
             throw new FileNotFoundException("File " + SAVED_VOCABS_FILE_NAME + " is missing or empty!");
@@ -126,7 +124,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         String strLine;
         String strPrefix = null;
         String strNamespace = null;
-        String strLocation = "";
+        String strLocation = null;
 
         //  Read ontology file lines...
         //      There should be at least 2 entries per line but ideally 3:
@@ -145,6 +143,7 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
             // Organize entries...
             strPrefix    = astrTokens[0];
             strNamespace = astrTokens[1];
+            strLocation  = null;
             if (astrTokens.length > 2) strLocation = astrTokens[2];
 
             // Import and Index the ontology...
@@ -172,16 +171,28 @@ public class PredefinedVocabularyManager implements IPredefinedVocabularyManager
         return this.getClass().getResourceAsStream(PREDEFINED_VOCABS_FILE_NAME);
     }
 
-    protected void load() throws IOException {
-        File vocabsFile = new File(this.workingDir, SAVED_VOCABS_FILE_NAME);
+    protected void load(File vocabsFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jnodeVocabs = mapper.readTree(vocabsFile);
         if ( jnodeVocabs != null && jnodeVocabs.has(Util.gstrNamespaces) ) {
             JsonNode jnodeNamespaces = jnodeVocabs.get(Util.gstrNamespaces);
-            jnodeNamespaces.properties().forEach(prefix -> {
-                Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(prefix);
-                this.predefinedVocabularies.add(vocab);
-            });
+            jnodeNamespaces.properties().forEach(
+                entryPrefix -> {
+                    if ( this.predefinedVocabularies.containsPrefix( entryPrefix.getKey() ) ) {
+                        // If the loading prefix version is OLD, don't add it--use the NEW predefined version...
+                        if ( entryPrefix.getValue().isValueNode() ) {
+                            PredefinedVocabularyManager.logger.info("  Using existing predefined vocabulary (newer).");
+                            return;
+                        }
+                        // Otherwise, remove predefined vocabulary to replace it with the loaded version...
+                        PredefinedVocabularyManager.logger.info("  Replacing predefined vocabulary...");
+                        this.predefinedVocabularies.removeByPrefix( entryPrefix.getKey() );
+                    }
+                    Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(entryPrefix);
+                    this.predefinedVocabularies.add(vocab);
+                    PredefinedVocabularyManager.logger.info("  Vocabulary loaded.");
+                }
+            );
         }
     }
 

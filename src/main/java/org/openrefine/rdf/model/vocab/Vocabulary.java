@@ -22,6 +22,8 @@ package org.openrefine.rdf.model.vocab;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.core.JsonGenerator;
+
+import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
@@ -67,15 +69,23 @@ public class Vocabulary {
     {
         this.strPrefix = strPrefix;
         this.strNamespace = strNamespace;
-        this.strLocation = strNamespace;
-        this.loctype = LocationType.URL;
-        if ( strPrefix.equals("xsd") ) {
-            this.strLocation = "";
-            this.loctype = LocationType.NONE;
+        this.strLocation = "";
+        this.loctype = LocationType.NONE;
+
+        IPredefinedVocabularyManager predefinedVocabularyManager = RDFTransform.getGlobalContext().getPredefinedVocabularyManager();
+        if (predefinedVocabularyManager != null) {
+            VocabularyList listDefaultVocabs = predefinedVocabularyManager.getPredefinedVocabularies().clone();
+            if ( listDefaultVocabs.containsPrefix(strPrefix) ) {
+                Vocabulary vocabFound = listDefaultVocabs.findByPrefix(strPrefix);
+                this.strNamespace = vocabFound.getNamespace();
+                this.strLocation = vocabFound.getLocation();
+                this.loctype = vocabFound.getLocationType();
+            }
         }
+
         if ( Util.isDebugMode() ) {
             Vocabulary.logger.info(
-                "DEBUG: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                "DEBUG: (PN) Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, loctype.toString()
             );
         }
@@ -89,7 +99,7 @@ public class Vocabulary {
         this.loctype = loctype;
         if ( Util.isDebugMode() ) {
             Vocabulary.logger.info(
-                "DEBUG: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                "DEBUG: (PNLT) Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, loctype.toString()
             );
         }
