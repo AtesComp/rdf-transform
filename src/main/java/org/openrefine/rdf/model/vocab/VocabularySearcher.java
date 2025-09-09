@@ -580,14 +580,14 @@ public class VocabularySearcher implements IVocabularySearcher {
     private Set<String> getNamespacesOfProjectID(String strProjectID)
             throws IOException {
         // Query for Project ID...
-        Set<String> namespaces = new HashSet<String>();
+        Set<String> setNamespaces = new HashSet<String>();
         Query query = new TermQuery(new Term(Util.gstrProject, strProjectID));
         TopDocs docs =  searcher.search( query, this.getMaxDoc() );
         for (ScoreDoc sdoc : docs.scoreDocs) {
             Document doc = this.searcher.storedFields().document(sdoc.doc);
-            namespaces.add( doc.get(Util.gstrPrefix) );
+            setNamespaces.add( doc.get(Util.gstrPrefix) );
         }
-        return namespaces;
+        return setNamespaces;
     }
 
     private void deleteNamespacesOfProjectID(String strProjectID, Set<String> toDelete)

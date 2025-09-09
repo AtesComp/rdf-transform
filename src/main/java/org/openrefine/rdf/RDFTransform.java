@@ -679,6 +679,7 @@ public class RDFTransform implements OverlayModel {
 
     @JsonIgnore
     public boolean removeNamespace(String strPrefix) {
+        if ( Util.isDebugMode() ) RDFTransform.logger.info("DEBUG: removeNamespace(): by prefix[" + strPrefix + "]");
         return this.theNamespaces.removeByPrefix(strPrefix);
     }
 

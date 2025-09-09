@@ -52,12 +52,7 @@ class RDFTransformVocabManager {
         .on("click",
             (evt) => {
                 evt.preventDefault();
-                this.#namespacesManager.addNamespace(
-                    false, false,
-                    () => {
-                        this.#renderBody();
-                    }
-                );
+                this.#namespacesManager.addNamespace( false, false, () => { this.#renderBody(); } );
             }
         );
 

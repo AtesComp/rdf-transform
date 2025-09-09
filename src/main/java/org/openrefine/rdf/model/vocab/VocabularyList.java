@@ -25,14 +25,24 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.openrefine.rdf.model.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class VocabularyList extends ArrayList<Vocabulary> {
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:VocabularyList");
+
     @Override
     public boolean add(Vocabulary vocab) {
         synchronized(this) {
+            String strPrefixComp = vocab.getPrefix();
+            if ( Util.isDebugMode() ) VocabularyList.logger.info("DEBUG: add(): vocab [{}]...", strPrefixComp);
             if ( ! this.containsPrefix( vocab.getPrefix() ) ) {
+                if ( Util.isDebugMode() ) VocabularyList.logger.info("DEBUG: add(): adding vocab.");
                 return super.add(vocab);
             }
-            return true; // already exists
+            if ( Util.isDebugMode() ) VocabularyList.logger.info("DEBUG: add(): vocab exists!");
+            return false; // already exists
         }
     }
 
@@ -40,9 +50,9 @@ public class VocabularyList extends ArrayList<Vocabulary> {
         Iterator<Vocabulary> iterVocab = this.iterator();
         while ( iterVocab.hasNext() ) {
             Vocabulary vocab = iterVocab.next();
-            if (vocab.getPrefix().equals(strPrefix)) {
-                return vocab;
-            }
+            String strPrefixComp = vocab.getPrefix();
+            //if ( Util.isDebugMode() ) VocabularyList.logger.info("DEBUG: findByPrefix(): Compare given [{}] to vocab [{}]...", strPrefix, strPrefixComp);
+            if (strPrefixComp.equals(strPrefix)) return vocab;
         }
         return null;
     }
@@ -63,8 +73,10 @@ public class VocabularyList extends ArrayList<Vocabulary> {
         synchronized(this) {
             Vocabulary vocab = this.findByPrefix(strPrefix);
             if (vocab != null) {
+                if ( Util.isDebugMode() ) VocabularyList.logger.info("DEBUG: removeByPrefix(): vocab found, attempting remove...");
                 return this.remove(vocab);
             }
+            if ( Util.isDebugMode() ) VocabularyList.logger.info("DEBUG: removeByPrefix(): vocab NOT found!");
             return false;
         }
     }

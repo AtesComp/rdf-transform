@@ -47,7 +47,7 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.info("Removing prefix...");
+        if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.info("DEBUG: doPost(): Removing prefix...");
         if ( ! this.hasValidCSRFToken(request) ) {
             NamespaceRemoveCommand.respondCSRFError(response);
             return;
@@ -60,13 +60,13 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
         String strLocType   = request.getParameter(Util.gstrLocType).strip();
         if ( Util.isDebugMode() ) {
             NamespaceRemoveCommand.logger.info(
-                "DEBUG: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                "DEBUG: doPost(): Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, strLocType
             );
         }
 
         if ( ! this.getRDFTransform(request).removeNamespace(strPrefix) ) {
-            if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.warn("doPost: failed!");
+            if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.warn("DEBUG: doPost(): failed!");
             NamespaceRemoveCommand.respondJSON(response, CodeResponse.error);
             return;
         }
@@ -80,13 +80,13 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
 
         try {
             theContext.getVocabularySearcher().deleteVocabularyTerms(strPrefix, strProjectID);
-            if (theLocType != LocationType.NONE && theLocType != LocationType.URL) this.deleteFile(theContext, strProjectID, strLocation);
+            if (theLocType == LocationType.FILE) this.deleteFile(theContext, strProjectID, strLocation);
         }
         catch (Exception ex) {
-            if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.warn("doPost: Vocabulary removal problems!");
+            if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.warn("DEBUG: doPost(): Vocabulary removal problems!");
         }
 
-        if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.info("doPost: Vocabulary removed.");
+        if ( Util.isDebugMode() ) NamespaceRemoveCommand.logger.info("DEBUG: doPost(): Vocabulary removed.");
         NamespaceRemoveCommand.respondJSON(response, CodeResponse.ok);
     }
 
@@ -96,7 +96,7 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
             try {
                 File dirCacheProject = Path.of( strPathCache + "/" + strProjectID ).toFile();
                 if ( ! dirCacheProject.exists() ) {
-                    NamespaceRemoveCommand.logger.error( "ERROR: deleteFile: File Error: Cannot find directory [{}]!", dirCacheProject.getPath() );
+                    NamespaceRemoveCommand.logger.error( "ERROR: deleteFile(): File Error: Cannot find directory [{}]!", dirCacheProject.getPath() );
                     return false;
                 }
 
@@ -106,14 +106,14 @@ public class NamespaceRemoveCommand extends RDFTransformCommand {
                 // Remove the Files...
                 if ( fileNow.exists() ) {
                     if ( ! fileNow.delete() ) {
-                        NamespaceRemoveCommand.logger.error("ERROR: deleteFile: Could not remove ontology file [{}{}]!", strProjectID, strFilename);
+                        NamespaceRemoveCommand.logger.error("ERROR: deleteFile(): Could not remove ontology file [{}{}]!", strProjectID, strFilename);
                         return false;
                     }
                 }
             }
             catch (Exception ex) {
-                NamespaceRemoveCommand.logger.error("ERROR: deleteFile: File Error on [{}/{}]", strProjectID, strFilename);
-                NamespaceRemoveCommand.logger.error("ERROR: deleteFile: File Error: {}", ex.getMessage());
+                NamespaceRemoveCommand.logger.error("ERROR: deleteFile(): File Error on [{}/{}]", strProjectID, strFilename);
+                NamespaceRemoveCommand.logger.error("ERROR: deleteFile(): File Error: {}", ex.getMessage());
                 return false;
             }
 

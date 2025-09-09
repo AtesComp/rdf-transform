@@ -192,9 +192,7 @@ class RDFTransformNamespacesManager {
                 this.#saveNamespaces();
                 this.#renderNamespaces();
 
-                if (onDoneAdd) {
-                    onDoneAdd(strPrefix);
-                }
+                if (onDoneAdd) onDoneAdd(strPrefix);
                 this.#dialog.updatePreview();
             }
         );

@@ -26,6 +26,9 @@ import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.refine.util.ParsingUtilities;
 
 import javax.servlet.ServletException;
@@ -34,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class NamespacesSaveCommand extends RDFTransformCommand {
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:NamespaceSaveCmd");
 
     public NamespacesSaveCommand() {
         super();
@@ -73,9 +77,13 @@ public class NamespacesSaveCommand extends RDFTransformCommand {
             theNamespaces.properties().forEach(
                 entryPrefix -> {
                     Vocabulary vocab = RDFTransform.getVocabFromPrefixNode(entryPrefix);
-                    if (vocab != null) listVocabs.add(vocab);
+                    if (vocab != null) {
+                        if ( Util.isDebugMode() ) NamespacesSaveCommand.logger.info( "DEBUG: Adding vocab [{}]...", vocab.getPrefix() );
+                        listVocabs.add(vocab);
+                    }
                 }
             );
+            if ( Util.isDebugMode() ) NamespacesSaveCommand.logger.info("DEBUG: Setting namespaces...");
             this.getRDFTransform(request).setNamespaces(listVocabs);
 
             // ...and the namespaces' vocabulary searcher...

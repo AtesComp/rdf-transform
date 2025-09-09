@@ -75,7 +75,7 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: Starting ontology import...");
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost(): Starting ontology import...");
         if ( ! this.hasValidCSRFToken(request) ) {
             NamespaceAddFromFileCommand.respondCSRFError(response);
             return;
@@ -101,19 +101,19 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
         try {
 
             // ============================================================
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Getting DiskFileItemFactory...");
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Getting DiskFileItemFactory...");
             FileItemFactory factory = new DiskFileItemFactory();
 
             // Create a new file upload handler...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Getting ServletFileUpload...");
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Getting ServletFileUpload...");
             ServletFileUpload upload = new ServletFileUpload(factory);
 
             // Parse the request into a file item list...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Parsing request into this ontology's related file items...");
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Parsing request into this ontology's related file items...");
             List<FileItem> items = upload.parseRequest(request);
 
             // Parse the file into an input stream...
-            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Parsing the ontology's file items into action elements...");
+            if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Parsing the ontology's file items into action elements...");
             for (FileItem item : items) {
                 if      ( item.getFieldName().equals(Util.gstrProject) )   strProjectID = item.getString();
                 else if ( item.getFieldName().equals(Util.gstrPrefix) )    strPrefix    = item.getString();
@@ -134,19 +134,19 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             // Then, strFilename holds the uploading filename and "instreamFile" contains the uploaded file...
             if (instreamFile != null) {
                 bSave = true;
-                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: Uploading file:[{}/{}]", strProjectID, strFilename);
+                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost(): Uploading file:[{}/{}]", strProjectID, strFilename);
             }
             // Otherwise, when refreshing, the "uploaded_file" field is missing and the strLocation holds the
             // internally stored filename in the cache directory...
             else {
                 bSave = false;
                 strFilename = strLocation;
-                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: Refreshing from file:[{}/{}]", strProjectID, strFilename);
+                if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost(): Refreshing from file:[{}/{}]", strProjectID, strFilename);
             }
 
             if ( Util.isDebugMode() ) {
                 NamespaceAddFromFileCommand.logger.info(
-                    "DEBUG: doPost: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}] File:[{}] isFile:[{}]",
+                    "DEBUG: doPost(): Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}] File:[{}] isFile:[{}]",
                     strPrefix, strNamespace, strLocation, strLocType, strFilename, (instreamFile != null)
                 );
             }
@@ -177,32 +177,32 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
 
                 if ( Util.isDebugMode() ) {
                     NamespaceAddFromFileCommand.logger.info(
-                        "DEBUG: doPost: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}] isFile:[{}]",
+                        "DEBUG: doPost(): Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}] isFile:[{}]",
                         strPrefix, strNamespace, strLocation, strLocType, bSave
                     );
                 }
 
                 try {
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Getting project's RDF Transform...");
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Getting project's RDF Transform...");
                     RDFTransform theTransform = this.getRDFTransformFromProject(strProjectID);
 
                     // Remove the namespace...
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Removing Namespace " + strPrefix);
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Removing Namespace " + strPrefix);
                     theTransform.removeNamespace(strPrefix);
 
                     // Remove related vocabulary...
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Removing relate vocabulary...");
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Removing relate vocabulary...");
                     theContext.getVocabularySearcher().deleteVocabularyTerms(strPrefix, strProjectID);
 
                     // Prepare Dataset Graph for related vocabulary...
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Loading dataset graph with ontology file...");
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Loading dataset graph with ontology file...");
                     DatasetGraph theDSGraph = DatasetGraphFactory.createTxnMem();
                     String strFilePath = theContext.getRDFTCacheDirectory().getPath() + "/" + strProjectID + "/" + strLocation;
 
                     // Check for existing ontology file...
                     File fileIn = new File(dirCacheProject, strFilename);
                     if ( fileIn.exists() ) {
-                        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: Loading from file:[{}/{}]", strProjectID, strFilename);
+                        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost(): Loading from file:[{}/{}]", strProjectID, strFilename);
                     }
                     else {
                         throw new IOException("ERROR: Cannot load ontology from non-existent file [" + strProjectID + "/" + strFilename + "]!");
@@ -227,14 +227,14 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
                         throw new IOException("ERROR: Dataset graph is empty!");
                     }
 
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Dataset graph loaded.");
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Dataset graph loaded.");
 
                     // (Re)Add related vocabulary...
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Importing vocabulary from dataset graph...");
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Importing vocabulary from dataset graph...");
                     theContext.getVocabularySearcher().importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theDSGraph, strProjectID);
 
                     // (Re)Add the namespace...
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost:   Adding Namespace " + strPrefix);
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost():   Adding Namespace " + strPrefix);
                     if (theTransform != null) theTransform.addNamespace(strPrefix, strNamespace, strLocation, this.theLocType);
                 }
                 catch (VocabularyImportException ex) {
@@ -257,9 +257,10 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
             return;
         }
 
+        // Otherwise, all good...
         NamespaceAddFromFileCommand.respondJSON(response, CodeResponse.ok);
 
-        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost: ...Ended ontology import.");
+        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: doPost(): ...Ended ontology import.");
     }
 
     /*
@@ -283,10 +284,10 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
                     dirCacheProject = Files.createDirectories(pathCacheProject).toFile();
                     // If the path still doesn't exist...
                     if ( ! dirCacheProject.exists() ) {
-                        NamespaceAddFromFileCommand.logger.error( "ERROR: saveFile: File Error: Cannot find/create directory [{}]!", dirCacheProject.getPath() );
+                        NamespaceAddFromFileCommand.logger.error( "ERROR: File Error: Cannot find/create directory [{}]!", dirCacheProject.getPath() );
                         return false;
                     }
-                    else if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info( "DEBUG: saveFile: Directory exists:[{}]", dirCacheProject.getPath() );
+                    else if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info( "DEBUG: saveFile(): Directory exists:[{}]", dirCacheProject.getPath() );
                 }
 
                 // Get the Files...
@@ -295,31 +296,31 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
 
                 // Process the Files...
                 if ( fileNew.createNewFile() ) {
-                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: saveFile: File created:[{}/{}]", strProjectID, strFilename);
+                    if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: saveFile(): File created:[{}/{}]", strProjectID, strFilename);
                 }
                 else { // fileNew exists...
                     if ( fileOld.exists() ) {
                         if ( ! fileOld.delete() ) {
-                            NamespaceAddFromFileCommand.logger.error("ERROR: saveFile: Could not remove OLD archived ontology file [{}{}]!", strProjectID, strFilename);
+                            NamespaceAddFromFileCommand.logger.error("ERROR: Could not remove OLD archived ontology file [{}{}]!", strProjectID, strFilename);
                             return false;
                         }
                     }
                     if ( ! fileNew.renameTo(fileOld) ) {
-                        NamespaceAddFromFileCommand.logger.error("ERROR: saveFile: Could not archive ontology file [{}{}]!", strProjectID, strFilename);
+                        NamespaceAddFromFileCommand.logger.error("ERROR: Could not archive ontology file [{}{}]!", strProjectID, strFilename);
                         return false;
                     }
                     if ( fileNew.createNewFile() ) {
-                        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("saveFile: File overwrite:[{}/{}]", strProjectID, strFilename);
+                        if ( Util.isDebugMode() ) NamespaceAddFromFileCommand.logger.info("DEBUG: saveFile(): File overwrite:[{}/{}]", strProjectID, strFilename);
                     }
                     else {
-                        NamespaceAddFromFileCommand.logger.error("ERROR: saveFile: File could not be overwritten:[{}/{}]", strProjectID, strFilename);
+                        NamespaceAddFromFileCommand.logger.error("ERROR: File could not be overwritten:[{}/{}]", strProjectID, strFilename);
                         return false;
                     }
                 }
             }
             catch (Exception ex) {
-                NamespaceAddFromFileCommand.logger.error("ERROR: saveFile: File Error on [{}/{}]", strProjectID, strFilename);
-                NamespaceAddFromFileCommand.logger.error( "ERROR: saveFile: File Error: {}", ex.getMessage() );
+                NamespaceAddFromFileCommand.logger.error("ERROR: File Error on [{}/{}]", strProjectID, strFilename);
+                NamespaceAddFromFileCommand.logger.error( "ERROR: File Error: {}", ex.getMessage() );
                 return false;
             }
 
@@ -330,17 +331,17 @@ public class NamespaceAddFromFileCommand extends RDFTransformCommand {
                 instreamFile.close();
                 writer.close();
 
-                NamespaceAddFromFileCommand.logger.info("INFO: saveFile: Successfully wrote File:[{}/{}]", strProjectID, strFilename);
+                NamespaceAddFromFileCommand.logger.info("INFO: Successfully wrote File:[{}/{}]", strProjectID, strFilename);
             }
             catch (Exception ex) {
-                NamespaceAddFromFileCommand.logger.error("ERROR: saveFile: File Write Error on [{}/{}]", strProjectID, strFilename);
+                NamespaceAddFromFileCommand.logger.error("ERROR: File Write Error on [{}/{}]", strProjectID, strFilename);
                 return false;
             }
 
             // Clean up archive...
             if ( fileOld.exists() ) {
                 if ( ! fileOld.delete() ) {
-                    NamespaceAddFromFileCommand.logger.error("ERROR: saveFile: Could not remove archived ontology file [{}/{}]!", strProjectID, strFilename);
+                    NamespaceAddFromFileCommand.logger.error("ERROR: Could not remove archived ontology file [{}/{}]!", strProjectID, strFilename);
                     return false;
                 }
             }

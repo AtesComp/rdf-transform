@@ -116,11 +116,11 @@ class RDFTransformNamespaceAdder {
             var strPrefix = this.#elements.prefix.val();
             var strNamespace = this.#elements.namespace.val();
             var strLocation = this.#elements.url_location.val();
+            var strLocType = "NONE";
             var strType =
                 this.#elements.vocab_import_table
                 .find('input[name="vocab_fetch_method"]:checked')
                 .val();
-            var strLocType = "NONE";
 
             //
             // Test the user supplied prefix and namespace...

@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NamespaceAddFromURLCommand extends RDFTransformCommand {
-    static private final Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddCmd");
+    static private final Logger logger = LoggerFactory.getLogger("RDFT:NamespaceAddFromURLCmd");
 
     public NamespaceAddFromURLCommand() {
         super();
@@ -46,7 +46,7 @@ public class NamespaceAddFromURLCommand extends RDFTransformCommand {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: Starting ontology import...");
+        if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost(): Starting ontology import...");
         if ( ! this.hasValidCSRFToken(request) ) {
             NamespaceAddFromURLCommand.respondCSRFError(response);
             return;
@@ -62,7 +62,7 @@ public class NamespaceAddFromURLCommand extends RDFTransformCommand {
         String strLocType   = request.getParameter(Util.gstrLocType).strip();
         if ( Util.isDebugMode() ) {
             NamespaceAddFromURLCommand.logger.info(
-                "DEBUG: Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                "DEBUG: doPost(): Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, strLocType
             );
         }
@@ -72,50 +72,53 @@ public class NamespaceAddFromURLCommand extends RDFTransformCommand {
         if (strLocation == null) strLocation = "";
         if ( strLocation.isEmpty() ) theLocType = LocationType.NONE;
 
-        if (theLocType == LocationType.URL) {
-            Exception except = null;
-            boolean bError = false; // ...not fetchable
-            boolean bFormatted = false;
-            try {
-                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Getting project's RDF Transform...");
-                RDFTransform theTransform = this.getRDFTransform(request);
+        Exception except = null;
+        boolean bError = false; // ...not fetchable
+        boolean bFormatted = false;
+        try {
+            if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost():   Getting project's RDF Transform...");
+            RDFTransform theTransform = this.getRDFTransform(request);
 
-                // Remove the namespace...
-                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Removing Namespace " + strPrefix);
-                theTransform.removeNamespace(strPrefix);
+            // Remove the namespace...
+            if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost():   Removing Namespace [{}]", strPrefix);
+            theTransform.removeNamespace(strPrefix);
 
-                // Remove related vocabulary...
-                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Removing relate vocabulary...");
-                theContext.getVocabularySearcher().deleteVocabularyTerms(strPrefix, strProjectID);
+            // Remove related vocabulary...
+            if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost():   Removing relate vocabulary...");
+            theContext.getVocabularySearcher().deleteVocabularyTerms(strPrefix, strProjectID);
 
+            // For URL location types ONLY...
+            if (theLocType == LocationType.URL) {
                 // (Re)Add related vocabulary...
-                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Importing vocabulary from URL...");
+                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost():   Importing vocabulary from URL...");
                 theContext.getVocabularySearcher().importAndIndexVocabulary(strPrefix, strNamespace, strLocation, theLocType, strProjectID);
-
-                // (Re)Add the namespace...
-                if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG:   Adding Namespace " + strPrefix);
-                theTransform.addNamespace(strPrefix, strNamespace, strLocation, theLocType);
-            }
-            catch (VocabularyImportException ex) {
-                bFormatted = true;
-                except = ex;
-            }
-            catch (Exception ex) {
-                bError = true;
-                except = ex;
             }
 
-            // Some problem occurred....
-            if (except != null) {
-                this.processException(except, bError, bFormatted, logger);
+            // (Re)Add the namespace...
+            if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost():   Adding Namespace [{}]", strPrefix);
+            theTransform.addNamespace(strPrefix, strNamespace, strLocation, theLocType);
+        }
+        catch (VocabularyImportException ex) {
+            bFormatted = true;
+            except = ex;
+        }
+        catch (Exception ex) {
+            bError = true;
+            except = ex;
+        }
 
-                NamespaceAddFromURLCommand.respondJSON(response, CodeResponse.error);
-                return;
-            }
+        // Some problem occurred....
+        if (except != null) {
+            this.processException(except, bError, bFormatted, logger);
+            NamespaceAddFromURLCommand.respondJSON(response, CodeResponse.error);
+            return;
         }
 
         // Otherwise, all good...
-
         NamespaceAddFromURLCommand.respondJSON(response, CodeResponse.ok);
+
+        if (theLocType == LocationType.URL) {
+            if ( Util.isDebugMode() ) NamespaceAddFromURLCommand.logger.info("DEBUG: doPost(): ...Ended ontology import.");
+        }
     }
 }

@@ -85,7 +85,7 @@ public class Vocabulary {
 
         if ( Util.isDebugMode() ) {
             Vocabulary.logger.info(
-                "DEBUG: (PN) Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                "DEBUG: Vocabulary(PN): Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, loctype.toString()
             );
         }
@@ -99,7 +99,7 @@ public class Vocabulary {
         this.loctype = loctype;
         if ( Util.isDebugMode() ) {
             Vocabulary.logger.info(
-                "DEBUG: (PNLT) Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
+                "DEBUG: Vocabulary(PNLT): Prefix:[{}] Namespace:[{}] Location:[{}] LocType:[{}]",
                 strPrefix, strNamespace, strLocation, loctype.toString()
             );
         }
