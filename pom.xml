@@ -36,7 +36,7 @@
     <groupId>org.openrefine</groupId>
     <artifactId>rdf-transform</artifactId>
     <version>2.3.4</version><!-- RDF Transform Version Control -->
-    <!--packaging>jar</packaging--><!--We don't need no stink'n JAR file-->
+    <!-- <packaging>jar</packaging> --><!-- We don't need no stink'n JAR file -->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -59,7 +59,7 @@
         <slf4j.version>2.0.17</slf4j.version><!-- matches 3.10-SNAPSHOT -->
 
         <jena.version>4.10.0</jena.version><!-- 3.10-SNAPSHOT -->
-        <velocity.version>2.4.1</velocity.version><!-- matches 3.10-SNAPSHOT : to exclude older dependancies than butterfly's-->
+        <velocity.version>2.4.1</velocity.version><!-- matches 3.10-SNAPSHOT : to exclude older dependencies than Simile Butterfly's -->
         <httpclient5.version>5.4.3</httpclient5.version><!-- matches 3.10-SNAPSHOT -->
         <commons-fileupload.version>1.5</commons-fileupload.version><!-- matches 3.10-SNAPSHOT -->
         <commons-io.version>2.19.0</commons-io.version><!-- matches 3.10-SNAPSHOT -->
@@ -67,7 +67,7 @@
         <!--
              RDF Transform Dependent
         -->
-        <lucene.version>9.12.1</lucene.version><!-- 9.12.x for Java 11+, 10.x.x for Java 21+ : See https://lucene.apache.org/core/systemreqs.html-->
+        <lucene.version>9.12.1</lucene.version><!-- 9.12.x for Java 11+, 10.x.x for Java 21+ : See https://lucene.apache.org/core/systemreqs.html -->
 
     </properties>
 
@@ -84,7 +84,8 @@
             <id>user-repository</id>
             <url>file://${settings.localRepository}/</url>
         </repository>
-        <!--<repository>
+        <!--
+        <repository>
             <id>snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
             <releases>
@@ -93,11 +94,14 @@
             <snapshots>
               <enabled>true</enabled>
             </snapshots>
-        </repository>-->
-        <!--repository>
+        </repository>
+        -->
+        <!--
+        <repository>
             <id>jenkins-repo</id>
             <url>https://repo.jenkins-ci.org/releases/</url>
-        </repository-->
+        </repository>
+        -->
     </repositories>
 
     <dependencies>
@@ -232,7 +236,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>${commons-fileupload.version}</version>
-            <!--scope>provided</scope-->
+            <!-- <scope>provided</scope> -->
             <exclusions>
                 <exclusion>
                     <groupId>commons-io</groupId>
@@ -318,7 +322,7 @@
             </exclusions>
         </dependency>
 
-        <!-- test dependencies
+        <!-- Test Dependencies
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -331,7 +335,7 @@
             <version>5.0.8.RELEASE</version>
             <scope>test</scope>
         </dependency>
-        <!- https://mvnrepository.com/artifact/org.springframework/spring-web ->
+        <!- - https://mvnrepository.com/artifact/org.springframework/spring-web - ->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
@@ -387,13 +391,13 @@
                     <executions>
                         <execution>
                             <id>default-jar</id>
-                            <phase/><!--We don't need no stink'n JAR file-->
+                            <phase/><!-- We don't need no stink'n JAR file -->
                         </execution>
                     </executions>
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <!--version>${maven-assembly-plugin.version}</version-->
+                    <!-- <version>${maven-assembly-plugin.version}</version> -->
                     <configuration>
                         <appendAssemblyId>false</appendAssemblyId>
                         <descriptors>

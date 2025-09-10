@@ -34,9 +34,9 @@ var RDFTCmd = Packages.org.openrefine.rdf.command;
  */
 function init() {
     /*
-     * Fool Butterfly:
-     *      Make the extension's Initializer do all the heavy lifting instead of the
-     *      limited server side JavaScript processor for this "controller.js".
+     * Minimize Butterfly:
+     *      Make the extension's Java Initializer do all the heavy lifting instead of the
+     *      server-side JavaScript processor for this "controller.js".
      *      NOTE TO SELF: Doh, I should have seen this a long, long, LONG time ago.
      *
      *  Server-side Initialization Command...
@@ -91,11 +91,17 @@ function process(path, request, response) {
     ********************************************************************************/
 }
 
-/***********************************************************************************
+/*
+ * Send Function for external command requests.
+ *
+ *      The send() function is called by the Process function to send requests to
+ *      OpenRefine's Simile Butterfly Server's sendTextFromTemplate() method.
+ */
 function send(request, response, template, context) {
+    /********************************************************************************
     var encoding = "UTF-8";
     var html = "text/html";
 
     butterfly.sendTextFromTemplate(request, response, context, template, encoding, html);
+    ********************************************************************************/
 }
-************************************************************************************/
