@@ -115,6 +115,8 @@ public class SuggestTermCommand extends RDFTransformCommand {
         // NOTE: The Vocabulary List is a local store that only contains
         //      a Prefix and a Namespace.  We will calculate other components.
         List<SearchResultItem> result = new ArrayList<SearchResultItem>();
+        if ( strQueryPrefix.isBlank() ) return result;
+
         String strNotImported = "From local curated namespaces--not imported.";
         VocabularyList theVocabList = theTransform.getNamespaces();
 
@@ -126,33 +128,33 @@ public class SuggestTermCommand extends RDFTransformCommand {
             if (strQueryPrefix.length() > iIndex) { // ...if there is more...
                 strLocalPart = strQueryPrefix.substring(iIndex);
             }
-            for ( Vocabulary vocab : theVocabList ) {
-                // Do the prefixes match?
-                if ( vocab.getPrefix().equals(strPrefix) ) {
-                    String strVocabNamespace = vocab.getNamespace();
-                    String strIRI = strVocabNamespace + strLocalPart;
-                    result.
-                        add(
-                            new SearchResultItem(
-                                strIRI,
-                                strIRI,
-                                strNotImported,
-                                strPrefix,
-                                strVocabNamespace,
-                                strLocalPart
-                            )
-                        );
-                }
+            // If the Prefix is in the Vocabulary List...
+            Vocabulary vocab = theVocabList.findByPrefix(strPrefix);
+            if ( vocab != null ) {
+                String strVocabNamespace = vocab.getNamespace();
+                String strIRI = strVocabNamespace + strLocalPart;
+                result.
+                    add(
+                        new SearchResultItem(
+                            strIRI,
+                            strIRI,
+                            strNotImported,
+                            strPrefix,
+                            strVocabNamespace,
+                            strLocalPart
+                        )
+                    );
             }
         }
         else { // The Query does not have a defined Prefix, so try both Prefix and Namespace...
             for ( Vocabulary vocab : theVocabList ) {
                 String strVocabNamespace = vocab.getNamespace();
                 String strVocabPrefix = vocab.getPrefix();
+                String strVocabLocalPart = "";
 
                 // Does the Prefix contain the Query?
-                if ( strQueryPrefix.length() <= strVocabPrefix.length() &&
-                     strVocabPrefix.startsWith(strQueryPrefix) )
+                if (strQueryPrefix.length() <= strVocabPrefix.length() &&
+                    strVocabPrefix.startsWith(strQueryPrefix) )
                 {
                     result.
                         add(
@@ -162,12 +164,14 @@ public class SuggestTermCommand extends RDFTransformCommand {
                                 strNotImported,
                                 strVocabPrefix,
                                 strVocabNamespace,
-                                ""
+                                strVocabLocalPart
                             )
                         );
                 }
+
                 // Does the Namespace contain the Query?
-                if ( strVocabNamespace.startsWith(strQueryPrefix) ) {
+                if (strQueryPrefix.length() <= strVocabNamespace.length() &&
+                    strVocabNamespace.startsWith(strQueryPrefix) ) {
                     result.
                         add(
                             new SearchResultItem(
@@ -176,13 +180,12 @@ public class SuggestTermCommand extends RDFTransformCommand {
                                 strNotImported,
                                 strVocabPrefix,
                                 strVocabNamespace,
-                                ""
+                                strVocabLocalPart
                             )
                         );
                 }
                 // Does the Query contain the Namespace?
-                else if ( strQueryPrefix.startsWith(strVocabNamespace) ) {
-                    String strVocabLocalPart = "";
+                else if ( ! strVocabNamespace.isEmpty() && strQueryPrefix.startsWith(strVocabNamespace) ) {
                     if ( strQueryPrefix.length() > strVocabNamespace.length() ) {
                         strVocabLocalPart = strQueryPrefix.substring( strVocabNamespace.length() );
                     }
@@ -192,7 +195,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
                                 strQueryPrefix,
                                 strQueryPrefix,
                                 strNotImported,
-                                vocab.getPrefix(),
+                                strVocabPrefix,
                                 strVocabNamespace,
                                 strVocabLocalPart
                             )

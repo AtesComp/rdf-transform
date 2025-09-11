@@ -78,8 +78,8 @@ public class VocabularySearcher implements IVocabularySearcher {
     // ("type": (class OR property) ) AND "project": strProjectID AND "prefix": prefix
     static private final BooleanQuery TYPE_QUERY =
             new BooleanQuery.Builder().
-                add( new TermQuery( new Term(Util.gstrType, CLASS_TYPE) ), Occur.SHOULD ).
-                add( new TermQuery( new Term(Util.gstrType, PROPERTY_TYPE) ), Occur.SHOULD ).
+                add( new TermQuery( new Term(Util.gstrType, VocabularySearcher.CLASS_TYPE) ), Occur.SHOULD ).
+                add( new TermQuery( new Term(Util.gstrType, VocabularySearcher.PROPERTY_TYPE) ), Occur.SHOULD ).
                 build();
 
     // Since the Project ID is always a number, it is safe to use "g" as the global marker placeholder...
@@ -207,21 +207,21 @@ public class VocabularySearcher implements IVocabularySearcher {
     @Override
     public List<SearchResultItem> searchClasses(String strQueryVal, String strProjectID)
             throws IOException {
-        Query query = this.prepareQuery(strQueryVal, CLASS_TYPE, strProjectID);
-        return this.searchDocs(query);
+        Query query = this.prepareQuery(strQueryVal, VocabularySearcher.CLASS_TYPE, strProjectID);
+        return this.searchDocs(query, strProjectID);
     }
 
     @Override
     public List<SearchResultItem> searchProperties(String strQueryVal, String strProjectID)
             throws IOException {
-        Query query = this.prepareQuery(strQueryVal, PROPERTY_TYPE, strProjectID);
-        return this.searchDocs(query);
+        Query query = this.prepareQuery(strQueryVal, VocabularySearcher.PROPERTY_TYPE, strProjectID);
+        return this.searchDocs(query, strProjectID);
     }
 
-    private List<SearchResultItem> searchDocs(Query query)
+    private List<SearchResultItem> searchDocs(Query query, String strProjectID)
             throws IOException {
         TopDocs docs = this.searcher.search(query, getMaxDoc());
-        return this.prepareSearchResults(docs);
+        return this.prepareSearchResults(docs, strProjectID);
     }
 
     @Override
@@ -232,10 +232,17 @@ public class VocabularySearcher implements IVocabularySearcher {
     }
 
     @Override
-    public void deleteVocabularySetTerms(Set<Vocabulary> toRemove, String strProjectID)
+    public void deleteTerm(RDFTNode node, String strNodeType, String strProjectID)
             throws IOException {
-        for (Vocabulary v : toRemove) {
-            this.deleteTerms(v.getPrefix(), strProjectID);
+        this.deleteRDFTNode(node, strNodeType, strProjectID);
+        this.update();
+    }
+
+    @Override
+    public void deleteVocabularySetTerms(Set<Vocabulary> setVocab, String strProjectID)
+            throws IOException {
+        for (Vocabulary vocab : setVocab) {
+            this.deleteTerms(vocab.getPrefix(), strProjectID);
         }
         this.update();
     }
@@ -295,7 +302,7 @@ public class VocabularySearcher implements IVocabularySearcher {
 
         BooleanQuery termsQuery =
             new BooleanQuery.Builder().
-                add(TYPE_QUERY, Occur.MUST).
+                add(TYPE_QUERY, Occur.SHOULD).
                 add(new TermQuery(new Term(Util.gstrProject, strProjectID)), Occur.MUST).
                 add(new TermQuery(new Term(Util.gstrPrefix, strPrefix)), Occur.MUST).
                 build();
@@ -305,13 +312,69 @@ public class VocabularySearcher implements IVocabularySearcher {
 
     private void indexTerms(String strProjectID, List<RDFTClass> classes, List<RDFTProperty> properties)
             throws IOException {
-        for (RDFTClass c : classes) {
-            this.indexRDFTNode(c, CLASS_TYPE, strProjectID);
+        for (RDFTClass klass : classes) {
+            this.indexRDFTNode(klass, VocabularySearcher.CLASS_TYPE, strProjectID);
         }
-        for (RDFTProperty p : properties) {
-            this.indexRDFTNode(p, PROPERTY_TYPE, strProjectID);
+        for (RDFTProperty prop : properties) {
+            this.indexRDFTNode(prop, VocabularySearcher.PROPERTY_TYPE, strProjectID);
         }
         this.update();
+    }
+
+    private void deleteRDFTNode(RDFTNode node, String strNodeType, String strProjectID)
+            throws IOException {
+         if ( strProjectID == null || strProjectID.isEmpty() ) {
+            throw new RuntimeException("Project ID is missing!");
+        }
+
+        // From RDFTNode...
+        //
+        //  IRI         str   required
+        //  Label       str   copy of IRI if not given
+        //  Description null
+        //  Prefix      null
+        //  Namespace   null  generated from IRI if not given
+        //  LocalPart   null  generated from IRI if not given
+
+        String strIRI = node.getIRI();
+        if (strIRI == null) {
+            if ( Util.isVerbose(2) ||  Util.isDebugMode() ) {
+                VocabularySearcher.logger.warn("WARNING: Indexing IRI cannot be null! Skipping...");
+            }
+            return;
+        }
+
+        String strLabel = node.getLabel();
+        if (strLabel == null)     strLabel = "";
+
+        String strDesc = node.getDescription();
+        if (strDesc == null)      strDesc = "";
+
+        String strPrefix = node.getPrefix();
+        if (strPrefix == null)    strPrefix = "";
+
+        String strNamespace = node.getNamespace();
+        if (strNamespace == null) strNamespace = "";
+
+        String strLocalPart = node.getLocalPart();
+        if (strLocalPart == null) strLocalPart = "";
+
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("Indexing: ");
+
+        BooleanQuery termsQuery =
+            new BooleanQuery.Builder().
+                add(TYPE_QUERY, Occur.SHOULD).
+                add(new TermQuery(new Term(Util.gstrProject,     strProjectID)), Occur.SHOULD).
+                add(new TermQuery(new Term(Util.gstrIRI,         strIRI)),       Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrLabel,       strLabel)),     Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrDescription, strDesc)),      Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrPrefix,      strPrefix)),    Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrNamespace,   strNamespace)), Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrLocalPart,   strLocalPart)), Occur.MUST).
+                add(new TermQuery(new Term(Util.gstrType,        strNodeType)),  Occur.MUST).
+                build();
+
+        this.writer.deleteDocuments(termsQuery);
     }
 
     private void indexRDFTNode(RDFTNode node, String strNodeType, String strProjectID)
@@ -361,7 +424,7 @@ public class VocabularySearcher implements IVocabularySearcher {
         //  StringField is indexed but not analyzed
         //  StoredField is not indexed
 
-        doc.add( new StoredField( Util.gstrIRI,         node.getIRI() ) );
+        doc.add( new StoredField( Util.gstrIRI,         strIRI ) );
         doc.add( new TextField(   Util.gstrLabel,       strLabel,      Field.Store.YES) );
         doc.add( new TextField(   Util.gstrDescription, strDesc,       Field.Store.YES) );
         doc.add( new StringField( Util.gstrPrefix,      strPrefix,     Field.Store.YES) );
@@ -372,15 +435,16 @@ public class VocabularySearcher implements IVocabularySearcher {
         // From Project ID...
         doc.add( new StringField( Util.gstrProject,     strProjectID,  Field.Store.NO ) );
 
+        this.deleteRDFTNode(node, strNodeType, strProjectID);
         this.writer.addDocument(doc);
     }
 
-    private Query prepareQuery(String strQueryVal, String strType, String strProjectID)
+    private Query prepareQuery(String strQueryVal, String strNodeType, String strProjectID)
             throws IOException {
         BooleanQuery.Builder qbuilderResult =
             new BooleanQuery.Builder().
                 add(new TermQuery(new Term(Util.gstrProject, strProjectID)), Occur.MUST).
-                add(new TermQuery(new Term(Util.gstrType, strType)), Occur.MUST);
+                add(new TermQuery(new Term(Util.gstrType, strNodeType)), Occur.MUST);
 
         if (strQueryVal != null && strQueryVal.strip().length() > 0) {
             StandardAnalyzer analyzer = new StandardAnalyzer();
@@ -519,20 +583,39 @@ public class VocabularySearcher implements IVocabularySearcher {
         return qbuilderResult.build();
     }
 
-    private List<SearchResultItem> prepareSearchResults(TopDocs docs)
+    private List<SearchResultItem> prepareSearchResults(TopDocs docs, String strProjectID)
             throws IOException {
         List<SearchResultItem> results = new ArrayList<SearchResultItem>();
         for (ScoreDoc sdoc : docs.scoreDocs) {
             Document doc = this.searcher.storedFields().document(sdoc.doc);
-            String strIRI       = doc.get(Util.gstrIRI);
-            String strLabel     = doc.get(Util.gstrLabel);
-            String strDesc      = doc.get(Util.gstrDescription);
-            String strPrefix    = doc.get(Util.gstrPrefix);
-            String strNamespace = doc.get(Util.gstrNamespace);
-            String strLocalPart = doc.get(Util.gstrLocalPart);
 
-            SearchResultItem item = new SearchResultItem(strIRI, strLabel, strDesc, strPrefix, strNamespace, strLocalPart);
-            results.add(item);
+            String [] astrLoader = new String[6];
+            astrLoader[RDFTNode.iIRI]       = doc.get(Util.gstrIRI);
+            astrLoader[RDFTNode.iLabel]     = doc.get(Util.gstrLabel);
+            astrLoader[RDFTNode.iDesc]      = doc.get(Util.gstrDescription);
+            astrLoader[RDFTNode.iPrefix]    = doc.get(Util.gstrPrefix);
+            astrLoader[RDFTNode.iNamespace] = doc.get(Util.gstrNamespace);
+            astrLoader[RDFTNode.iLocalPart] = doc.get(Util.gstrLocalPart);
+
+            // Clean up erronious documents...
+            if (astrLoader[RDFTNode.iIRI].startsWith("[object Object]") ) {
+                RDFTNode node = new RDFTNode(astrLoader);
+                this.deleteRDFTNode(node, VocabularySearcher.CLASS_TYPE, strProjectID);
+                this.deleteRDFTNode(node, VocabularySearcher.PROPERTY_TYPE, strProjectID);
+
+                continue;
+            }
+            results.
+                add(
+                    new SearchResultItem(
+                        astrLoader[RDFTNode.iIRI],
+                        astrLoader[RDFTNode.iLabel],
+                        astrLoader[RDFTNode.iDesc],
+                        astrLoader[RDFTNode.iPrefix],
+                        astrLoader[RDFTNode.iNamespace],
+                        astrLoader[RDFTNode.iLocalPart]
+                    )
+                );
         }
 
         return results;
@@ -590,23 +673,23 @@ public class VocabularySearcher implements IVocabularySearcher {
         return setNamespaces;
     }
 
-    private void deleteNamespacesOfProjectID(String strProjectID, Set<String> toDelete)
+    private void deleteNamespacesOfProjectID(String strProjectID, Set<String> setDelete)
             throws IOException {
         if ( strProjectID == null || strProjectID.isEmpty() ) {
             throw new RuntimeException("Project ID is missing!");
         }
 
         BooleanQuery.Builder qbuilderNamespaces = new BooleanQuery.Builder();
-        for (String strPrefix : toDelete) {
+        for (String strPrefix : setDelete) {
             qbuilderNamespaces.
                 add( new TermQuery( new Term(Util.gstrPrefix, strPrefix) ), Occur.SHOULD );
         }
 
         BooleanQuery queryDelete =
             new BooleanQuery.Builder().
-                add(TYPE_QUERY, Occur.MUST).
+                add(TYPE_QUERY, Occur.SHOULD).
                 add( new TermQuery( new Term(Util.gstrProject, strProjectID) ), Occur.MUST ).
-                add(qbuilderNamespaces.build(), Occur.MUST).
+                add(qbuilderNamespaces.build(), Occur.SHOULD).
                 build();
 
         this.writer.deleteDocuments(queryDelete);

@@ -210,7 +210,7 @@ class RDFTransformResourceDialog {
                                 RDFTransformCommon.getFullIRIFromQName(
                                     strIRI,
                                     this.#dialog.getBaseIRI(),
-                                    this.#dialog.getNamespacesManager().getNamespaces()
+                                    strNamespace
                                 );
                             strLabel = strIRI;
                         }
@@ -220,7 +220,7 @@ class RDFTransformResourceDialog {
                             strNamespace = this.#dialog.getBaseIRI();
                             strLocalPart = strIRI.substring(1);
                             strLabel = strIRI;
-                            strIRI = strNamespace + strLocalPart;
+                            if (strNamespace != null) strIRI = strNamespace + strLocalPart;
                         }
                         // or Is it an non-prefixed IRI?
                         else if ( iPrefixedIRI === 0 ) {
@@ -245,7 +245,7 @@ class RDFTransformResourceDialog {
                 var obj = null;
 
                 // If there are valid parts decribed from the given IRI...
-                if (strLocalPart) { // ...not null or ""
+                if (strLocalPart != null) { // ...not null or ""
                     // Is there an existing prefix matching the given prefix?
                     if ( strPrefix === "" || this.#dialog.getNamespacesManager().hasPrefix(strPrefix) ) {
                         // ...yes (BaseIRI or already managed namespace), add resource...
@@ -300,7 +300,7 @@ class RDFTransformResourceDialog {
                     }
                 }
                 // Otherwise, if there is a good IRI...
-                else if (strIRI && strIRI !== ":") {
+                else if (strIRI != null && strIRI !== ":") {
                     // If it has a Base IRI prefix...
                     if (strIRI[0] === ':' && strIRI.length > 1) {
                         obj = {};

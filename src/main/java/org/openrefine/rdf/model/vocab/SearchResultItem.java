@@ -27,12 +27,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import org.openrefine.rdf.model.Util;
 
 public class SearchResultItem {
-    private String strIRI;
-    private String strLabel;
-    private String strDesc;
-    private String strPrefix;
-    private String strNamespace;
-    private String strLocalPart;
+    private String strIRI = null;
+    private String strLabel = null;
+    private String strDesc = null;
+    private String strPrefix = null;
+    private String strNamespace = null;
+    private String strLocalPart = null;
 
     public SearchResultItem(
                 String strIRI, String strLabel, String strDesc,
@@ -99,8 +99,9 @@ public class SearchResultItem {
         //      the Local Part
         // for searchTerm display purposes.
         String strDescription =
-            this.strIRI +
-            ((this.strDesc != null) ?
+            ((this.strIRI != null) ?
+                ("<em>IRI</em>: " + this.strIRI) : "") +
+            ((this.strLabel != null) ?
                 ("<br/>" + "<em>Label</em>: " + this.strLabel) : "") +
             ((this.strDesc != null) ?
                 ("<br/>" + "<em>Description</em>: " + this.strDesc) : "") +

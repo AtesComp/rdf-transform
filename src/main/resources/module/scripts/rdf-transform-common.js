@@ -451,16 +451,17 @@ class RDFTransformCommon {
         return strQName.substring(iIndex + 1);
     }
 
-    static getFullIRIFromQName(strPrefixedQName, strBaseIRI, theNamespaces) {
+    static getFullIRIFromQName(strPrefixedQName, strBaseIRI, strNamespace) {
         var objIRIParts = this.#deAssembleQName(strPrefixedQName);
         if ( objIRIParts.prefix === null ) { // ...as Existing Full IRI...
             return objIRIParts.localPart;
         }
-        if (objIRIParts.prefix in theNamespaces) { // ...as Known Namespace Full IRI...
-            return theNamespaces[objIRIParts.prefix] + objIRIParts.localPart;
-        }
         if ( objIRIParts.prefix === "" ) { // ...as BaseIRI appended Full IRI...
-            return strBaseIRI + objIRIParts.localPart;
+            if (strBaseIRI != null) return strBaseIRI + objIRIParts.localPart;
+            return ":" + objIRIParts.localPart;
+        }
+        if (strNamespace != null) { // ...as Known Namespace Full IRI...
+            return strNamespace + objIRIParts.localPart;
         }
         // ...as Unknown Namespace treated as Full IRI...
         return objIRIParts.prefix + ":" + objIRIParts.localPart;

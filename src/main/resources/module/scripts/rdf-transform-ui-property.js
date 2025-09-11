@@ -240,7 +240,7 @@ class RDFTransformUIProperty {
                     (evt) => {
                         this.#editProperty(
                             this.#getPropertyName(this.#property),
-                            evt.currentTarget // ...for popup memu position
+                            evt.currentTarget // ...for popup menu position
                         );
                     }
                 );
