@@ -38,46 +38,56 @@
       The intended RDF we want to export should look something like the following (for the first line):
       <pre>
 <code>
-@prefix rdf:   &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
-@prefix rdfs:  &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
-@prefix owl:   &lt;http://www.w3.org/2002/07/owl#&gt; .
-@prefix xsd:   &lt;http://www.w3.org/2001/XMLSchema#&gt; .
-@prefix choc:  &lt;http://foc/choc/&gt; .
-@prefix ref:   &lt;http://foc/choc/Reference/&gt; .
-@prefix ingred: &lt;http://foc/choc/Ingredient/&gt; .
-@prefix wiki:  &lt;https://en.wikipedia.org/wiki/&gt; .
+@prefix ingred: &lt;foc:choc:Ingredient#&gt; .
+@prefix owl: &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix wiki: &lt;https://en.wikipedia.org/wiki/&gt; .
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix ref: &lt;foc:choc:Reference#&gt; .
+@prefix choc: &lt;foc:choc#&gt; .
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+@prefix info: &lt;foc:choc:Info#&gt; .
+@prefix vcard: &lt;http://www.w3.org/2006/vcard/ns#&gt; .
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
 
-choc:0
-  a  choc:Entry;
-  choc:reference  ref:2454"  ;
-  choc:companyName  "5150"  ;
-  choc:companyLocation  "U.S.A."  ;
-  choc:reviewDate  "2019"^^xsd:date  ;
-  choc:beanOriginCountry  "Tanzania"  ;
-  choc:beanOriginBarName  "Kokoa Kamili, batch 1"  ;
-  choc:contentCocoa  "76"^^xsd:double  ;
-  choc:ingredients  [
-    a  rdf:Bag  ;
-    rdf:1  ingred:CocoaButter  ;
-    rdf:2  ingred:Sugar  ;
-    rdf:3  ingred:Beans
-  ]  ;
-  choc:characteristics  "rich cocoa", "fatty", "bready"  ;
-  choc:rating "3.25"^^xsd:double  .
+&lt;foc:choc&gt; {
+    info:0  vcard:organization-name  "5150"@en ;
+            choc:ingredients         _:b4942 ;
+            vcard:country-name       "U.S.A."@en ;
+            choc:characteristics     _:b4719 ;
+            choc:beanOrigin          "Madagascar"@en ;
+            choc:beanSpecifics       "Bejofo Estate, batch 1"@en ;
+            choc:rating              "3.75"^^xsd:double ;
+            choc:reference           ref:2454 ;
+            choc:reviewDate          "2019-01-01"^^xsd:date ;
+            choc:percent             "76"^^xsd:double .
 
-ref:2454  a  choc:Reference  ;
+    choc:5150  rdf:type  vcard:Organization .
 
-ingred:Beans
-  rdfs:seeAlso  wiki:Cocoa_bean ;
-  rdfs:label    "Beans" .
+    ref:2454  rdf:type  choc:Reference .
 
-ingred:CocoaButter
-  rdfs:seeAlso  wiki:Cocoa_butter ;
-  rdfs:label    "Cocoa Butter" .
+    _:b4942  rdf:li   ingred:Cocoa_Butter ;
+            rdf:li    ingred:Sugar ;
+            rdf:li    ingred:Beans ;
+            rdf:type  rdf:Bag .
 
-ingred:Sugar
-  rdfs:seeAlso  wiki:Sugar ;
-  rdfs:label    "Sugar" .
+    _:b4719  rdf:li   "full body" ;
+            rdf:li    "blackberry" ;
+            rdf:li    "cocoa" ;
+            rdf:type  rdf:Bag .
+
+    ingred:Beans  rdfs:seeAlso  wiki:Cocoa_bean ;
+            rdfs:label    "Beans" ;
+            rdf:type      choc:Ingredient .
+
+    ingred:Cocoa_Butter
+            rdfs:seeAlso  wiki:Cocoa_butter ;
+            rdfs:label    "Cocoa Butter" ;
+            rdf:type      choc:Ingredient .
+
+    ingred:Sugar  rdfs:seeAlso  wiki:Sugar ;
+            rdfs:label    "Sugar" ;
+            rdf:type      choc:Ingredient .
 </code>
       </pre>
     </p>
@@ -89,18 +99,24 @@ ingred:Sugar
     <ol type="1">
       <li>Base IRI
         <div>
-          Set the base IRI at the top of the dialog to "http://cocoa/info/" or any other IRI that
-          suits your, uh, taste.
+          Set the Base IRI at the top of the dialog to "http://cocoa/info/" or any other IRI that
+          suits your, uh, taste. The Base IRI serves as the default graph / context (i.e., quad value)
+          for a quad-based export file (such as TriG and N-Quads).
         </div>
       </li>
       <li>Namespaces
+        <p>
+          <img src="images/example/rdf_namespaces.png" alt="RDF Transform Manage Namespaces Example" border="1" style="float:left; margin-right:10px;" />
+          <img src="images/example/rdf_add_prefix.png" alt="RDF Transform Add Prefix Example" border="1" />
+        </p>
         <div>
           Namespaces can be managed by the <em>[+ Add]</em> and <em>[* Manage]</em> buttons on the
           <em>Available Namespaces:</em> line.  Add the following prefixed namespaces:<br />
           <ol>
-            <li>Prefix "choc" with namespace "http://cocoa/"</li>
-            <li>Prefix "ref" with namespace "http://foc/choc/Reference/"</li>
-            <li>Prefix "ingred" with namespace "http://foc/choc/Ingredient/"</li>
+            <li>Prefix "choc" with namespace "foc:choc"</li>
+            <li>Prefix "ref" with namespace "foc:choc:Reference#"</li>
+            <li>Prefix "info" with namespace "foc:choc:Info#"</li>
+            <li>Prefix "ingred" with namespace "foc:choc:Ingredient#"</li>
             <li>Prefix "wiki" with namespace "https://en.wikipedia.org/wiki/"</li>
           </ol>
           You can remove any unused namespaces with the <em>[* Manage]</em> button.
@@ -108,29 +124,61 @@ ingred:Sugar
       </li>
       <li>Transform
         <div>
-          In the <em>Transform</em> tab window, create the transform by modifying exsting nodes and
-          properties and adding new new nodes, types, and properties by using <em>Add type...</em>,
-          <em>Add property...</em>, and <em>Add object...</em> commands as needed. Use the
-          <em>[Add Root Node]</em> button to manage additional root nodes as needed. Root nodes may
-          be IRIs copied from inner objects to manage substructures for specific purposes.  Constant
-          IRIs and blank nodes are applied project-wide (not restricted to a row or record).
+          <p>
+            In the <em>Transform</em> tab window, create the transform by modifying exsting nodes and
+            properties and adding new new nodes, types, and properties by using <em>Add type...</em>,
+            <em>Add property...</em>, and <em>Add object...</em> commands as needed. Use the
+            <em>[Add Root Node]</em> button to manage additional root nodes as needed. Root nodes may
+            be IRIs copied from inner objects to manage substructures for specific purposes.  Constant
+            IRIs and blank nodes are applied project-wide (not restricted to a row or record).
+          </p>
+          <p>
+            Alternatively, You may start from scratch by deleting all the root nodes with the (X)
+            buttons. 
+          </p>
+          <p>
+            <b>NOTE</b>: When importing a template, the template is added as new root node(s) to the
+            existing template. Ensure any extranious root nodes are removed.
+          </p>
         </div>
         <ol type="1">
           <li>Create
             <div>
-              For example, create a new type <em>Reference</em> with the "choc" prefixed namespace on
-              the <em>REF</em> object node.
+              <p>
+                Create any needed node or property to expand your results.
+              </p>
+              <p>
+                For example, create a new type <em>Reference</em> using the "choc" prefixed namespace on
+                the <em>REF</em> object node.
+              </p>
+              <p>
+                This should create a type for the node. When using prefixed namespaces, the type has a
+                full IRI and Condensed IRI Expression (CIRIE). They are displayed when selecting the
+                type after creation. For example:
+                <img src="images/example/rdf_CIRIE.png" alt="RDF Transform Full IRI and CIRIE Example" border="1" />
+              </p>
             </div>
           </li>
           <li>Edit
             <div>
-              Edit any existing node or property as needed to adjust or refine your results.
+              <p>
+                Edit any existing node or property as needed to adjust or refine your results.
+              </p>
+              <p>
+                For example, edit the property <em>Review Date</em> changing it to use the "choc" prefixed namespace and
+                the property name <em>reviewDate</em> (i.e., choc:reviewDate). You should use the <em>Add it</em> button
+                to add the term to the Lucene lookup database, so that any additional usage can help selection.
+                For example:
+                <img src="images/example/rdf_property.png" alt="RDF Transform Property Selection Example" border="1" />
+              </p>
             </div>
           </li>
           <li>Delete
             <div>
-              Delete any node or property as needed. Deleteing an entity also deletes any
-              related subentities.
+              <p>
+                Delete (X) any node or property as needed. Deleteing an entity also deletes any
+                related subentities.
+              </p>
             </div>
           </li>
         </ol>
@@ -146,7 +194,9 @@ ingred:Sugar
         </div>
       <li>
         <div>
-          Use the "Preview" tab to check your results for correctness.
+          After managing the RDF Transform template, use the "Preview" tab to periodically check your results for correctness.
+          <img src="images/example/rdf_preview_1.png" alt="RDF Template Preview Data Example 1" border="1" />
+          <img src="images/example/rdf_preview_2.png" alt="RDF Template Preview Data Example 2" border="1" />
         </div>
       </li>
       <li>
@@ -166,24 +216,128 @@ ingred:Sugar
             </li>
             <li>
               From the Blank Node, use property "rdf:li" to point to 7 new nodes created by breaking down the
-              string into components to use some name (from the above ingredient reference) to create the
-              "ingred:someName" IRI.<br />
-              <b>Hint</b>: You will need to test the number (toNumber) againts an index (> 0, > 1, ..., > 6) for a node,
-              then compare the short strings to get a name string. This value will be used to create the IRI.
-              GREL smartSplit() is your friend.
+              string into components to use some name (from the above ingredient reference) to create an
+              "ingred:SomeName" IRI.<br />
+              <b>Hint</b>: You will need to create an array of strings from the data and test its given size
+              againts the index (> 0, > 1, ..., > 6) for each of the 7 nodes you will create. Then compare the
+              indexed string against its known values to transform it to a full name string value. Use that
+              value to create the IRI. Use null for any failed cases to suppress the value.
+              GREL with(), smartSplit(), and toIRIString() are your friends.
+              <details>
+                <summary>Show the code</summary>
+                <p>
+                  This solution uses toIRIString() on the final string to normalize to an IRI.
+                  Change the index values for each entry. For the first (0) index,
+                </p>
+                <pre>
+if(
+  isNonBlank(value),
+  with(
+    smartSplit( toString(value), '-'),
+    aList,
+    if(
+      toNumber( aList[0] ) > <b>0</b>, <b>&lt;-- size &gt; index</b>
+      toIRIString(
+        with(
+          trim( smartSplit( aList[1] )[<b>0</b>] ), <b>&lt;-- index</b>
+          cIng,
+          if( cIng=='B', 'Beans',
+           if( cIng=='S', 'Sugar',
+             if( cIng=='S*', 'Non-sugar Sweetener',
+               if( cIng=='C', 'Cocoa Butter',
+                 if( cIng=='V', 'Vanilla',
+                   if( cIng=='L', 'Lecithin',
+                     if( cIng=='Sa', 'Salt',
+                       null ) ) ) ) ) ) )
+        )
+      ),
+      null
+    )
+  ),
+  null
+)
+                </pre>
+              </details>
             </li>
             <li>
               Type these new nodes as "choc:Ingredient"
             </li>
             <li>
-              Create a label (rdfs:label) for each ingredient using the same GREL expression for the node IRI
-              (or nearly the same if your want to be different)
+              Create a label (rdfs:label) for each ingredient using a similar GREL expression for the node IRI.
+              <details>
+                <summary>Show the code</summary>
+                <p>
+                  This solution has removed the toIRIString() from the previous solution so that the same string
+                  can be used for IRI and label.
+                  Change the index values for each entry. For the first (0) index,
+                </p>
+                <pre>
+if(
+  isNonBlank(value),
+  with(
+    smartSplit( toString(value), '-'),
+    aList,
+    if(
+      toNumber( aList[0] ) > <b>0</b>, <b>&lt;-- size &gt; index</b>
+      with(
+        trim( smartSplit( aList[1] )[<b>0</b>] ), <b>&lt;-- index</b>
+        cIng,
+        if( cIng=='B', 'Beans',
+          if( cIng=='S', 'Sugar',
+            if( cIng=='S*', 'Non-sugar Sweetener',
+              if( cIng=='C', 'Cocoa Butter',
+                if( cIng=='V', 'Vanilla',
+                  if( cIng=='L', 'Lecithin',
+                    if( cIng=='Sa', 'Salt',
+                      null ) ) ) ) ) ) )
+      ),
+      null
+    )
+  ),
+  null
+)
+                </pre>
+              </details>
             </li>
             <li>
-              Create a reference (rdfs:seeAlso) to actual Internet resources for each ingredient (see
-              Wikidata, DBpedia, or any other favored location) using nearly same GREL expression for
+              Create a reference (rdfs:seeAlso) to the Wikipedia URLs for each ingredient (see Wikidata,
+              DBpedia, or any other favored location as well) using nearly a similar GREL expression for
               the node IRI.  Example result: "wiki:Cocoa_bean" for "B" where "wiki" is the prefix for
               namespace "https://en.wikipedia.org/wiki/"
+              <details>
+                <summary>Show the code</summary>
+                <p>
+                  This solution uses the trailing URL string from the "https://en.wikipedia.org/wiki/"
+                  reference such as "https://en.wikipedia.org/wiki/Cocoa_bean".
+                  Change the index values for each entry. For the first (0) index,
+                </p>
+                <pre>
+if(
+  isNonBlank(value),
+  with(
+    smartSplit( toString(value), '-'),
+    aList,
+    if(
+      toNumber( aList[0] ) > <b>0</b>, <b>&lt;-- size &gt; index</b>
+      with(
+        trim( smartSplit( aList[1] )[<b>0</b>] ), <b>&lt;-- index</b>
+        cIng,
+        if( cIng=='B', 'Cocoa_bean',
+          if( cIng=='S', 'Sugar',
+            if( cIng=='S*', 'Sugar_substitute',
+              if( cIng=='C', 'Cocoa_butter',
+                if( cIng=='V', 'Vanilla',
+                  if( cIng=='L', 'Lecithin',
+                    if( cIng=='Sa', 'Salt',
+                      null ) ) ) ) ) ) )
+      ),
+      null
+    )
+  ),
+  null
+)
+                </pre>
+              </details>
             </li>
           </ol>
         </div>
@@ -194,7 +348,39 @@ ingred:Sugar
           Characteristics" string into individual characteristics strings. There are
           at most 5 characteristics mostly separated by a comma. There are a few that
           alternatively use the string " and " to separate 2 characteristics.<br />
-          <b>Hint</b>: GREL with() to help convert " and " and smartSplit() is your friend.
+          <b>Hint</b>: GREL with() and smartSplit() are your friends.
+          <details>
+            <summary>Show the code</summary>
+            <p>
+              This solution uses the trailing URL string from the "https://en.wikipedia.org/wiki/"
+              reference such as "https://en.wikipedia.org/wiki/Cocoa_bean".
+              Change the index values for each entry. For the first (0) index,
+            </p>
+            <pre>
+with(
+  if(
+    isNonBlank(value),
+    smartSplit( toString(value), " and " ),
+    null
+  ),
+  aAnd,
+  if(
+    isNotNull(aAnd),
+    strip(
+      with(
+        smartSplit(
+          if( length(aAnd) == 2, aAnd[0] + ", " + aAnd[1], aAnd[0] ),
+          ','
+        ),
+        aList,
+        if( length(aList) > <b>0</b>, aList[<b>0</b>], '') <b>&lt;-- size &gt; index, index</b>
+      )
+    ),
+    astr
+  )
+)
+            </pre>
+          </details>
         </div>
       </li>
     </ol>
@@ -215,9 +401,15 @@ ingred:Sugar
   <li class="step step4">
     You can export RDF data in many different RDF formats from the <em>Export</em> menu:
     <p><img src="images/example/rdf_export.png" alt="Export RDF Menu Item Example" border="1" /></p>
+    <p><b>NOTE</b>: Due to the data processing model, the Stream exports do not perform any different
+       than Pretty exports. The previous process produced too many duplicative triples. Therefore, the
+       Stream process now loads the entire data model into a memory DatasetGraph just like the Pretty
+       process. Stream results are a bit more compact than the Pretty counterparts.</p>
+    <p><b>WARNING</b>: Since the entire model in loaded into memory before output, memory limitation may
+       affect your process.</p>
     <p>Stream output types are exports that work on discreet blocks or lines of output. They are
        readable but may duplicate triple information during output. Their best feature is that they
-       scale well for the output processing of large datasets</p>
+       scale well for the output processing of large datasets.</p>
     <p>Pretty output types are exports that optimize an entire graph to minimize duplicative triples.
        They look good, but they don't scale well.  As such, use these with caution for large datasets.</p>
     <ol>
