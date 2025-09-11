@@ -42,6 +42,8 @@ RDF Transform uses processes and libraries provided by OpenRefine. Therefore, RD
 ## Documentation
 See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more information.
 
+Once installed, the RDF Transform extension contains an internal website containing related documentation and a tutorial. Use its "See the docs." link in the RDF Transform dialog.
+
 ![](website/images/rdf-transform_annotated.png)
 
 ## Download
