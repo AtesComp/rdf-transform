@@ -121,6 +121,9 @@ public class VocabularyImporter {
     {
         // Set RDFS Class and Property load conditions...
         String[] astrLoader = new String[6];
+        astrLoader[RDFTNode.iIRI] = null;
+        astrLoader[RDFTNode.iLabel] = null;
+        astrLoader[RDFTNode.iDesc] = null;
         astrLoader[RDFTNode.iPrefix] = this.m_strPrefix;
         astrLoader[RDFTNode.iNamespace] = this.m_strNamespace;
         astrLoader[RDFTNode.iLocalPart] = "";   // ...empty string, not null, since we purposely

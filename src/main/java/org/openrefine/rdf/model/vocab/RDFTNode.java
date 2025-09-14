@@ -66,34 +66,34 @@ public class RDFTNode {
     }
 
     public void load(String[] astrLoader) {
-        this.strIRI         = astrLoader[iIRI];
-        this.strLabel       = astrLoader[iLabel];
-        this.strDescription = astrLoader[iDesc];
-        this.strPrefix      = astrLoader[iPrefix];
-        this.strNamespace   = astrLoader[iNamespace];
-        this.strLocalPart   = astrLoader[iLocalPart];
-        if ( this.strLabel.isEmpty() ) {
+        this.strIRI         = astrLoader[RDFTNode.iIRI];
+        this.strLabel       = astrLoader[RDFTNode.iLabel];
+        this.strDescription = astrLoader[RDFTNode.iDesc];
+        this.strPrefix      = astrLoader[RDFTNode.iPrefix];
+        this.strNamespace   = astrLoader[RDFTNode.iNamespace];
+        this.strLocalPart   = astrLoader[RDFTNode.iLocalPart];
+        if ( this.strLabel == null || this.strLabel.isEmpty() ) {
             this.strLabel = this.strIRI;
         }
-        if ( this.strLocalPart.isEmpty() ) {
+        if ( this.strLocalPart == null || this.strLocalPart.isEmpty() ) {
             this.extractLocalPart();
         }
-        if ( this.strNamespace.isEmpty() ) {
+        if ( this.strNamespace == null || this.strNamespace.isEmpty() ) {
             // ...when LocalPart was not empty, but Namespace is...
             //
             //  Otherwise, if still empty after extractLocalPart(),
             //      then the IRI must be empty or
             //           the split was at the 0 index
             //           and there is nothing to do!
-            if ( ! this.strLocalPart.isEmpty() ) {
+            if ( this.strLocalPart != null && ! this.strLocalPart.isEmpty() ) {
                 this.splitNamespaceAndLocalPart(false);
             }
         }
     }
 
     private void extractLocalPart() {
-        if ( ! this.strIRI.isEmpty() ) {
-            if ( ! this.strNamespace.isEmpty() ) {
+        if ( this.strIRI != null && ! this.strIRI.isEmpty() ) {
+            if ( this.strNamespace != null && ! this.strNamespace.isEmpty() ) {
                 int iIndex = this.strNamespace.length();
                 if ( this.strIRI.substring(0, iIndex).equals(this.strNamespace) ) {
                     this.strLocalPart = strIRI.substring(iIndex);
@@ -130,7 +130,7 @@ public class RDFTNode {
         // The last step should never fail as every legal (full) IRI contains at least one
         // ':' character to separate the scheme from the rest of the IRI. The
         // implementation should check this upon object creation.
-        if ( ! this.strIRI.isEmpty() ) {
+        if ( this.strIRI != null && ! this.strIRI.isEmpty() ) {
             int iIndex = this.strIRI.indexOf('#');
             if (iIndex == -1) {
                 iIndex = this.strIRI.lastIndexOf('/');

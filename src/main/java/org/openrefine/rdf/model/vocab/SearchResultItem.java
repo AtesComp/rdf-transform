@@ -45,6 +45,10 @@ public class SearchResultItem {
         this.strLocalPart = strLocalPart;
     }
 
+    public boolean isSameIRI(SearchResultItem item) {
+        return this.strIRI.equals( item.getIRI() );
+    }
+
     public String getIRI() {
         return this.strIRI;
     }

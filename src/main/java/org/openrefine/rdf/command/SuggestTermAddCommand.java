@@ -63,7 +63,10 @@ public class SuggestTermAddCommand extends RDFTransformCommand {
         astrLoader[RDFTNode.iNamespace] = request.getParameter("namespace");
         astrLoader[RDFTNode.iLocalPart] = request.getParameter("localPart");
         String strLongDescription       = request.getParameter("description");
-        if (strLongDescription != null) astrLoader[RDFTNode.iDesc] = strLongDescription;
+        if (
+            strLongDescription != null &&
+            strLongDescription.length() > astrLoader[RDFTNode.iDesc].length()
+        ) astrLoader[RDFTNode.iDesc] = strLongDescription;
 
         RDFTNode node = new RDFTNode(astrLoader);
 

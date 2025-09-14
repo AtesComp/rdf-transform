@@ -30,9 +30,8 @@ import org.apache.jena.sparql.core.DatasetGraph;
 
 public interface IVocabularySearcher {
 
-    /*
-     * Import the vocabulary from URL using namespace and assign the prefix to it...
-     *   This vocabulary is not limited to a specific project--it's a Global vocabulary.
+    /**
+     * Import a Global vocabulary from URL using namespace and assign the prefix to it.
      * @param strPrefix
      * @param strNamespace
      * @param strFetchURL
@@ -42,9 +41,8 @@ public interface IVocabularySearcher {
     public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType)
                     throws VocabularyImportException, IOException;
 
-    /*
-     * Import the vocabulary from URL using namespace and assign the prefix to it...
-     *   This vocabulary is to be used (searched) only with a project (strProjectID).
+    /**
+     * Import a Project vocabulary from URL using namespace and assign the prefix to it.
      * @param strPrefix
      * @param strNamespace
      * @param strFetch
@@ -56,9 +54,8 @@ public interface IVocabularySearcher {
     public void importAndIndexVocabulary(String strPrefix, String strNamespace, String strLocation, Vocabulary.LocationType theLocType,
                                             String strProjectID)
                     throws VocabularyImportException, IOException;
-    /*
-     * Import the vocabulary from a repository using namespace and assign the prefix to it...
-     *   This vocabulary is to be used (searched) only with a project (strProjectID).
+    /**
+     * Import a Project vocabulary from a Dataset Graph (generally, from a file) using namespace and assign the prefix to it.
      * @param strPrefix
      * @param strNamespace
      * @param strFetch

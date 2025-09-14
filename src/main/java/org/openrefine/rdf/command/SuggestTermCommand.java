@@ -91,9 +91,7 @@ public class SuggestTermCommand extends RDFTransformCommand {
         if (listSearchResults == null) {
             listSearchResults = listLocalResults;
         }
-        else {
-            listSearchResults.addAll(listLocalResults);
-        }
+        else this.mergeLists(listSearchResults, listLocalResults);
 
         // Write the results...
         theWriter.writeFieldName("result");
@@ -204,5 +202,21 @@ public class SuggestTermCommand extends RDFTransformCommand {
             }
         }
         return result;
+    }
+
+    /**
+     * Add items in the Merge list to the Master list when missing.
+     * @param listMaster
+     * @param listMerge
+     */
+    private void mergeLists(List<SearchResultItem> listMaster, List<SearchResultItem> listMerge) {
+        for (SearchResultItem itemMerge : listMerge) {
+            boolean bMissing = true;
+            for (SearchResultItem itemMaster : listMaster) {
+                if ( itemMaster.isSameIRI(itemMerge) ) bMissing = false;
+                break;
+            }
+            if (bMissing) listMaster.add(itemMerge);
+        }
     }
 }

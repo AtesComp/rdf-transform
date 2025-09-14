@@ -866,7 +866,7 @@ public class Util {
     static public boolean recursiveDirDelete(File dirEntry) {
         // NOTE: On false return, some error has occurred deleteing the directory
 
-        if ( ! dirEntry.exists() ) return true;
+        if ( ! dirEntry.exists() ) return true; // ...directory does not exist
         if ( ! dirEntry.isDirectory() ) {
             if ( ! dirEntry.delete() ) return false;
             if ( dirEntry.exists() ) return false;
@@ -876,7 +876,7 @@ public class Util {
         // Otherwise, dirEntry should be a directory...
 
         String[] astrEntries = dirEntry.list();
-        if (astrEntries == null) return true; // ...directory does not exist
+        if (astrEntries == null) return true; // ...no entries exist
         for (String strEntry : astrEntries) {
             File fileEntry = new File(dirEntry.getPath(), strEntry);
             // If entry is a directory...
