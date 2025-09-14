@@ -51,6 +51,8 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 
 <!-- RDF Transform Version Control -->
 ### Releases
+The current release is [v2.3.5](https://github.com/AtesComp/rdf-transform/releases/tag/v2.3.5)
+
 See the [Releases section on the wiki Home page](https://github.com/AtesComp/rdf-transform/wiki#releases) for more information.
 
 ## Install

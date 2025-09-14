@@ -1,6 +1,16 @@
 # Change Log
 [//]: # (RDF Transform Version Control)
 
+## 2.3.5 Released
+This version is updates the Lucene store and corrects IRI selection searching. The prior extension
+duplicated existing managed IRIs when reloading and with unmanaged IRIs. The new Lucene store also
+changes field settings for improved store searches. Adding IRIs (Add it) to the Lucene store stops
+if the IRI already exists. The Lucene licensing info is updated to version 9.12.2.
+WARNING: The extension's Lucene store is replaced with a new document structure for IRIs.
+Namespace additions are fixed for namespaced with no URL or file import.
+For developers, the VSCode IDE tasks are updated.
+This version updates the Flavors of Cacoa (FOC) example in the internal website.
+
 ## 2.3.4 Released
 This version is updates RDF Template import and export processing. The prior extension used
 showOpenFilePicker() exclusively which is not used by some browsers due to topical developer
@@ -9,7 +19,7 @@ alternative, classical file processing.
 This release also finished conversion to the new Prefixed Namespace format for processing ontologies
 from URL, file, and "none" sources--the old system had no stored designation from which it loaded
 an ontology so would erroniously default to URL on reload even when "none" where avaiable. This
-resulted is slow startups. A file Prefixed Namespace loads its ontology from locally store files.
+resulted is slow startups. A file Prefixed Namespace loads its ontology from locally stored files.
 A "none" Prefixed Namespace does not attempt to load an ontology. The namespace processing attempts
 a "best effort" to convert an old namespace format to the new format.
 This release also updates some deprecated jQuery calls.
