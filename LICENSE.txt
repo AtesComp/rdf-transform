@@ -29,6 +29,6 @@ Apache Jena (jena)
   Apache License
   http://www.apache.org/licenses/LICENSE-2.0.html
 
-Lucene 8.9.0
+Lucene 9.12.2
   Apache License
   http://www.apache.org/licenses/LICENSE-2.0.html
