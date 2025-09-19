@@ -72,8 +72,9 @@ class RDFTransform {
     static gstrValueSourceRow = "row_index";            // ...the Value Source for Rows
     static gstrValueSourceRec = "record_id";            // ...the Value Source for Records
     static gstrValueSourceIndex;                        // ...the Value Source to use: Row or Record
-    static gstrDefaultExpLang = "grel";                 // ...the default (and only) Expression Language
-    static gstrDefaultExpCode;                          // ...the default Expression for the current (and only) language, GREL
+    static gstrExpLangGREL = "grel";                    // ...the GREL Expression Language
+    static gstrExpLangDefault;                          // ...the default Expression Language
+    static gstrExpCodeDefault;                          // ...the default Expression for the current language
     static gstrExpressionIndexRow = "row.index";        // ...the Index Expression for Rows
     static gstrExpressionIndexRec = "row.record.index"; // ...the Index Expression for Records
     static gstrExpressionIndex;                         // ...the Index Expression to use: Row or Record
@@ -117,7 +118,7 @@ class RDFTransform {
             source : null
         } ,
         expression : {
-            language : RDFTransform.gstrDefaultExpLang ,
+            language : RDFTransform.gstrExpLangGREL ,
             code : null
         } ,
         propertyMappings : [] ,
@@ -147,11 +148,12 @@ class RDFTransform {
         //       dialog is displayed).  They may change between sessions, such as the index
         //       method changing from row to record or record to row.
 
-        // The Default Expression setting is reset each time the dialog is opened since we
+        // The Default Expression settings are reset each time the dialog is opened since we
         // don't know if this is the first time, project changed, or system values changed...
-        RDFTransform.gstrDefaultExpCode =
+        RDFTransform.gstrExpLangDefault = RDFTransform.gstrExpLangGREL;
+        RDFTransform.gstrExpCodeDefault =
             theProject
-            .scripting[RDFTransform.gstrDefaultExpLang]
+            .scripting[RDFTransform.gstrExpLangDefault]
             .defaultExpression;
 
         // The Row / Record Expression Index setting must be reset each time the dialog is

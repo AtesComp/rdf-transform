@@ -395,7 +395,7 @@ class RDFTransformUINodeConfig {
                             // Otherwise...
                             else {
                                 // ...change the expression to the default for this type...
-                                this.#rdf_cell_expr = RDFTransform.gstrDefaultExpCode;
+                                this.#rdf_cell_expr = RDFTransform.gstrExpCodeDefault;
                             }
                             // ...change the expression displayed to the current expression...
                             this.#elements.rdf_cell_expr
@@ -468,7 +468,7 @@ class RDFTransformUINodeConfig {
                         // Otherwise...
                         else {
                             // ...change the expression to the default for this type...
-                            this.#rdf_cell_expr = RDFTransform.gstrDefaultExpCode;
+                            this.#rdf_cell_expr = RDFTransform.gstrExpCodeDefault;
                         }
                         // ...change the expression displayed to the current expression...
                         this.#elements.rdf_cell_expr
@@ -637,10 +637,18 @@ class RDFTransformUINodeConfig {
 
         // Set cell expression...
         // TODO: Future code language.  It's all "grel" currently.
-        var strExpCode = RDFTransform.gstrDefaultExpCode; // ...default expression
-        if (RDFTransform.gstrExpression in this.#node && "code" in this.#node.expression ) {
+        var strExpCode = null;
+        if (RDFTransform.gstrExpression in this.#node && RDFTransform.gstrCode in this.#node.expression ) {
             strExpCode = this.#node.expression.code;
+            var strExpLang = RDFTransform.gstrExpLangGREL;
+            if (RDFTransform.gstrLanguage in this.#node.expression) strExpLang = this.#node.expression.language;
+            var strExpLangPrefix = strExpLang + ":";
+            if ( strExpCode && strExpCode.startsWith(strExpLangPrefix) ) strExpCode = strExpCode.substring(strExpLangPrefix.length);
         }
+        if (strExpCode === null || strExpCode.length === 0 ) {
+            strExpCode = RDFTransform.gstrExpCodeDefault; // ...use default expression code
+        }
+
         this.#rdf_cell_expr_orig = strExpCode;
         this.#rdf_cell_expr = strExpCode;
         this.#elements.rdf_cell_expr.empty().text( RDFTransformCommon.shortenExpression(strExpCode) );
@@ -1068,11 +1076,12 @@ class RDFTransformUINodeConfig {
                     alert( $.i18n('rdft-dialog/alert-enter-exp') );
                     return null;
                 }
-                //  We don't need "value" expressions as they are common.
+                //  We don't need "value" expressions as they are the common default.
                 //  Store all others...
                 if ( strExpCode !== RDFTransform.gstrCodeValue ) {
                     theNode.expression = {};
-                    theNode.expression.language = RDFTransform.gstrDefaultExpLang;
+                    // TODO: Future code language.  Extract selected expression language and store
+                    theNode.expression.language = RDFTransform.gstrExpLangDefault;
                     theNode.expression.code = strExpCode;
                 }
             }

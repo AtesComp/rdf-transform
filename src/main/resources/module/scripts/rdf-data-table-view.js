@@ -169,11 +169,12 @@ class RDFExpressionPreviewDialog {
         // Load OpenRefine's Expression Preview Dialog for modification...
         var dlgExpPreview = DOM.loadHTML("core", "scripts/dialogs/expression-preview-dialog.html");
 
-        // ...and set it for the current default expression language...
+        // ...and set all the expression languages...
+        // TODO: Allow for more code languages.
         var languageOptions = [];
-        var info = theProject.scripting[RDFTransform.gstrDefaultExpLang];
+        var info = theProject.scripting[RDFTransform.gstrExpLangGREL];
         languageOptions.push(
-            '<option value="' + RDFTransform.gstrDefaultExpLang + '">' +
+            '<option value="' + RDFTransform.gstrExpLangGREL + '">' +
             info.name +
             '</option>'
         );
@@ -508,7 +509,7 @@ ExpressionPreviewDialog_WidgetCopy.prototype.constructor = ExpressionPreviewDial
 
         this.expression = strExpression;
         if (strExpression === null || strExpression.length === 0 ) {
-            this.expression = RDFTransform.gstrDefaultExpCode; // ...use default expression
+            this.expression = RDFTransform.gstrExpCodeDefault; // ...use default expression
         }
 
         this.#bIsResource = bIsResource;
