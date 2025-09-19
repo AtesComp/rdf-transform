@@ -51,7 +51,6 @@ import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -271,14 +270,18 @@ public class VocabularySearcher implements IVocabularySearcher {
     @Override
     public List<SearchResultItem> searchClasses(String strQueryVal, String strProjectID)
             throws IOException {
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG: Search classes for: " + strQueryVal);
         Query query = this.prepareQuery(strQueryVal, VocabularySearcher.s_strClassType, strProjectID);
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info( "DEBUG: Class Query: " + query.toString() );
         return this.searchDocs(query);
     }
 
     @Override
     public List<SearchResultItem> searchProperties(String strQueryVal, String strProjectID)
             throws IOException {
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG: Search properties for: " + strQueryVal);
         Query query = this.prepareQuery(strQueryVal, VocabularySearcher.s_strPropertyType, strProjectID);
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info( "DEBUG: Property Query: " + query.toString() );
         return this.searchDocs(query);
     }
 
@@ -686,11 +689,23 @@ public class VocabularySearcher implements IVocabularySearcher {
     private Query prepareQuery(String strQueryVal, String strNodeType, String strProjectID)
             throws IOException {
         BooleanQuery.Builder qbuilderTerms = new BooleanQuery.Builder();
+        BooleanQuery.Builder qbuilderFields = null;
 
         if (strQueryVal != null && strQueryVal.strip().length() > 0) {
             int iColon = strQueryVal.indexOf(":");
-            TokenStream stream;
-            CharTermAttribute termAttrib;
+
+            // NOTE:
+            //      Label:      TextField
+            //      Desc:       TextField
+            //      Prefix:     StringField
+            //      LocalPart:  TextField
+
+            BooleanQuery.Builder qbuilderLabel     = null;
+            BooleanQuery.Builder qbuilderDesc      = null;
+            BooleanQuery.Builder qbuilderPrefix    = null;
+            BooleanQuery.Builder qbuilderLocalPart = null;
+
+            Occur occurPrefix = Occur.SHOULD;
 
             if (iColon == -1) { // ...just a term...
                 // The Query: search for term in "label", "description", "prefix", and "localPart"
@@ -704,114 +719,86 @@ public class VocabularySearcher implements IVocabularySearcher {
                 //
                 // "iri" and "namespace" are excluded
 
-                //
-                // Add "label" terms...
-                //
-                stream = this.analyzer.tokenStream(Util.gstrLabel, new StringReader(strQueryVal));
-                stream.reset();
-                // Get the TermAttribute from the TokenStream...
-                termAttrib = (CharTermAttribute) stream.addAttribute(CharTermAttribute.class);
-                // For each token, do a wildcard search on each term (via CharTermAttribute)...
-                BooleanQuery.Builder qbuilderLabel = new BooleanQuery.Builder();
-                while ( stream.incrementToken() ) {
-                    qbuilderLabel.
-                        add(new WildcardQuery(new Term(Util.gstrLabel, termAttrib.toString() + "*")), Occur.SHOULD);
-                }
-                stream.close();
-                stream.end();
-
-                //
-                // Add "description" terms...
-                //
-                stream = this.analyzer.tokenStream(Util.gstrDescription, new StringReader(strQueryVal));
-                stream.reset();
-                // Get the TermAttribute from the TokenStream...
-                termAttrib = (CharTermAttribute) stream.addAttribute(CharTermAttribute.class);
-                // For each token, do a wildcard search on each term (via CharTermAttribute)...
-                BooleanQuery.Builder qbuilderDesc = new BooleanQuery.Builder();
-                while ( stream.incrementToken() ) {
-                    qbuilderDesc.
-                        add(new WildcardQuery(new Term(Util.gstrDescription, termAttrib.toString() + "*")), Occur.SHOULD);
-                }
-                stream.close();
-                stream.end();
-
-                //
-                // Add "prefix" term...
-                //
-                BooleanQuery.Builder qbuilderPrefix = new BooleanQuery.Builder();
-                qbuilderPrefix.
-                    add(new WildcardQuery(new Term(Util.gstrPrefix, strQueryVal + "*")), Occur.SHOULD);
-
-                //
-                // Add "localPart" terms...
-                //
-                stream = this.analyzer.tokenStream(Util.gstrLocalPart, new StringReader(strQueryVal));
-                stream.reset();
-                // Get the TermAttribute from the TokenStream...
-                termAttrib = (CharTermAttribute) stream.addAttribute(CharTermAttribute.class);
-                // For each token, do a wildcard search on each term (via CharTermAttribute)...
-                BooleanQuery.Builder qbuilderLocalPart = new BooleanQuery.Builder();
-                while ( stream.incrementToken() ) {
-                    qbuilderLocalPart.
-                        add(new WildcardQuery(new Term(Util.gstrLocalPart, termAttrib.toString() + "*")), Occur.SHOULD);
-                }
-                stream.close();
-                stream.end();
-
-                qbuilderTerms.
-                    add(qbuilderLabel.build(),     Occur.MUST).
-                    add(qbuilderDesc.build(),      Occur.MUST).
-                    add(qbuilderPrefix.build(),    Occur.MUST).
-                    add(qbuilderLocalPart.build(), Occur.MUST);
+                if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Search Label, Desc, Prefix, LocalPart term: " + strQueryVal + "*");
+                qbuilderLabel     = prepareTermWildcardQuery(Util.gstrLabel,       strQueryVal);
+                qbuilderDesc      = prepareTermWildcardQuery(Util.gstrDescription, strQueryVal);
+                qbuilderPrefix    = prepareTermWildcardQuery(Util.gstrPrefix,      strQueryVal);
+                qbuilderLocalPart = prepareTermWildcardQuery(Util.gstrLocalPart,   strQueryVal);
             }
             else { // ..."prefix:localPart"...
                 // The Query: search for prefix as "prefix" and localPart in "localPart"
                 // -----------------------------------
-                // "prefix" : strPrefix AND            \ These two are below
-                // ( localPart : OR 0..n termAttrib* ) /
-                // "type" : strNodeType AND            \ These two are at the end
-                // "project" : strProjectID AND        /
+                // "prefix" : strPrefix AND                  \
+                // ( "label" : OR 0..n termAttrib* OR        | These four are below
+                //   "description" : OR 0..n termAttrib* OR  |
+                //   localPart : OR 0..n termAttrib* )       /
+                // "type" : strNodeType AND                  \ These two are at the end
+                // "project" : strProjectID AND              /
 
-                String strPrefix    = strQueryVal.substring(0, iColon);
-                String strLocalPart = "";
-                if (iColon < strQueryVal.length() - 1) strLocalPart = strQueryVal.substring(iColon + 1);
+                // Add required "prefix" term...
+                occurPrefix = Occur.MUST;
+                String strQueryPrefix    = strQueryVal.substring(0, iColon);
+                if ( ! strQueryPrefix.isEmpty() ) {
+                    qbuilderPrefix = new BooleanQuery.Builder();
+                    if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Search Prefix term: " + strQueryPrefix);
+                    qbuilderPrefix.
+                        add(new TermQuery(new Term(Util.gstrPrefix, strQueryPrefix)), Occur.MUST);
+                }
 
-                //
-                // Add "prefix" term...
-                //
-                qbuilderTerms.
-                    add(new TermQuery(new Term(Util.gstrPrefix, strPrefix)), Occur.MUST);
-
-                //
-                // Add "localPart" terms...
-                //
-                if ( ! strLocalPart.isEmpty() ) {
-                    stream = this.analyzer.tokenStream(Util.gstrLocalPart, new StringReader(strLocalPart));
-                    stream.reset();
-                    // Get the TermAttribute from the TokenStream...
-                    termAttrib = (CharTermAttribute) stream.addAttribute(CharTermAttribute.class);
-                    // For each token, do a wildcard search on each term (via CharTermAttribute)...
-                    BooleanQuery.Builder qbuilderLocalPart = new BooleanQuery.Builder();
-                    while ( stream.incrementToken() ) {
-                        // NOTE: On the stream increment, the associated termAttrib is updated...
-                        qbuilderLocalPart.
-                            add(new WildcardQuery(new Term(Util.gstrLocalPart, termAttrib.toString() + "*")), Occur.SHOULD);
-                    }
-                    stream.end();
-                    stream.close();
-
-                    qbuilderTerms.
-                        add(qbuilderLocalPart.build(), Occur.MUST);
+                // Add "label", "description", and "localPart" terms...
+                iColon++;
+                String strQueryLocalPart = strQueryVal.substring(iColon);
+                if ( ! strQueryLocalPart.isEmpty() ) {
+                    if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Search Label, Desc, LocalPart term: " + strQueryLocalPart + "*");
+                    qbuilderLabel     = prepareTermWildcardQuery(Util.gstrLabel,       strQueryLocalPart);
+                    qbuilderDesc      = prepareTermWildcardQuery(Util.gstrDescription, strQueryLocalPart);
+                    qbuilderLocalPart = prepareTermWildcardQuery(Util.gstrLocalPart,   strQueryLocalPart);
                 }
             }
+
+            if (qbuilderLabel != null || qbuilderDesc != null || qbuilderPrefix != null || qbuilderLocalPart != null) {
+                qbuilderFields = new BooleanQuery.Builder();
+                if (qbuilderLabel != null)     qbuilderFields.add(qbuilderLabel.build(),     Occur.SHOULD);
+                if (qbuilderDesc != null)      qbuilderFields.add(qbuilderDesc.build(),      Occur.SHOULD);
+                if (qbuilderPrefix != null)    qbuilderFields.add(qbuilderPrefix.build(),    occurPrefix);
+                if (qbuilderLocalPart != null) qbuilderFields.add(qbuilderLocalPart.build(), Occur.SHOULD);
+            }
         }
+
+        if (qbuilderFields != null) qbuilderTerms.add(qbuilderFields.build(), Occur.MUST);
 
         qbuilderTerms.
             add(new TermQuery(new Term(Util.gstrType,    strNodeType)),  Occur.MUST).
             add(new TermQuery(new Term(Util.gstrProject, strProjectID)), Occur.MUST);
 
         return qbuilderTerms.build();
+    }
+
+    private BooleanQuery.Builder prepareTermWildcardQuery(String strTerm, String strQueryVal)
+            throws IOException {
+        if ( strQueryVal.isEmpty() ) return null;
+        BooleanQuery.Builder qbuilder = new BooleanQuery.Builder();
+
+        //
+        // Add terms...
+        //
+        try ( TokenStream stream = this.analyzer.tokenStream( strTerm, new StringReader(strQueryVal) ) ) {
+            // Get the TermAttribute from the TokenStream...
+            CharTermAttribute termAttrib = (CharTermAttribute) stream.addAttribute(CharTermAttribute.class);
+
+            stream.reset();
+            // For each token, do a wildcard search on each term (via CharTermAttribute)...
+            while ( stream.incrementToken() ) {
+                String strTermVal = termAttrib.toString() + "*";
+                if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:     Search term: " + strTermVal);
+                qbuilder.
+                    add(new WildcardQuery( new Term(strTerm, strTermVal) ), Occur.SHOULD);
+            }
+            stream.close();
+            stream.end();
+        }
+
+        return qbuilder;
     }
 
     private List<SearchResultItem> prepareSearchResults(TopDocs docs)
