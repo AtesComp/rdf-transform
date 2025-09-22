@@ -1,8 +1,15 @@
 # Change Log
 [//]: # (RDF Transform Version Control)
 
+## 2.3.6 Released
+This version updates the Lucene query process for IRI selection searches. The new query process
+optimizes the search and produces a more informative result set. The update also cleans the
+expression language identifier ("grel:", etc.) from the expression code when presenting stored
+template expressions. It also prepares the expression system for future expression language
+implementations (GREL is currently the only supported language).
+
 ## 2.3.5 Released
-This version is updates the Lucene store and corrects IRI selection searching. The prior extension
+This version updates the Lucene store and corrects IRI selection searching. The prior extension
 duplicated existing managed IRIs when reloading and with unmanaged IRIs. The new Lucene store also
 changes field settings for improved store searches. Adding IRIs (Add it) to the Lucene store stops
 if the IRI already exists. The Lucene licensing info is updated to version 9.12.2.
@@ -12,7 +19,7 @@ For developers, the VSCode IDE tasks are updated.
 This version updates the Flavors of Cacoa (FOC) example in the internal website.
 
 ## 2.3.4 Released
-This version is updates RDF Template import and export processing. The prior extension used
+This version updates RDF Template import and export processing. The prior extension used
 showOpenFilePicker() exclusively which is not used by some browsers due to topical developer
 differences on undefined, esoteric, local file access security issues. This release provides for
 alternative, classical file processing.
@@ -25,7 +32,7 @@ a "best effort" to convert an old namespace format to the new format.
 This release also updates some deprecated jQuery calls.
 
 ## 2.3.3 Released
-This version is updates RDF output format processing. The preview and export processes were
+This version updates RDF output format processing. The preview and export processes were
 changed from using a Model to a DatasetGraph to manage statement. This allows for Named Graph
 use (using the BaseIRI). That change wrongly assumed all Jena languages could handle a DatasetGraph.
 A Model is inherently a single Graph manager while a DatasetGraph manages multiple Graphs. A
@@ -41,7 +48,7 @@ processing for large datasets. To mitigate, divide the originating dataset into 
 and/or increase the Java engine's memory parameters.
 
 ## 2.3.2 Released
-This version is updates the Namespace management. The Prefix, Namespace, Location, and
+This version updates the Namespace management. The Prefix, Namespace, Location, and
 Location Type are store for each Namespace in the project. This expands on the older Prefix
 and Namespace storage. It allows the Namespace management to recall from where it loaded the
 Namespace. For URLs, they may differ from the Namespace IRI. For Files, the uploaded file is

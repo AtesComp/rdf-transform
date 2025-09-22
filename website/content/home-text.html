@@ -22,13 +22,13 @@
   <h2>Getting started...</h2>
   <ol>
     <li class="item1">Download the RDF Transform extension</li>
-	  <li class="item2">Stop OpenRefine</li>
+	  <li class="item2">Stop OpenRefine if running</li>
     <li class="item3">If not present, add an "extensions" subdirectory to your OpenRefine workspace</li>
     <li class="item4">Extract the downloaded zip file to the "extensions" subdirectory</li>
-	  <li class="item5">Restart OpenRefine</li>
+	  <li class="item5">Start OpenRefine</li>
   </ol>
   Visit the <a href="#installationDoc">installation guide</a> for more detailed instructions.
-  For tutorials-like material see the <a href="#showcases">Showcases</a> section.
+  For tutorials, see the <a href="#showcases">Showcases</a> section.
   For detailed and technical documentation, see the <a href="#docs">Docs</a> section.
 </div>
 
@@ -36,8 +36,15 @@
   <!-- RDF Transform Version Control -->
   <h2>News</h2>
   <dl>
+    <dt>2.3.6 Released</dt>
+    <dd>This version updates the Lucene query process for IRI selection searches. The new query process
+      optimizes the search and produces a more informative result set. The update also cleans the
+      expression language identifier ("grel:", etc.) from the expression code when presenting stored
+      template expressions. It also prepares the expression system for future expression language
+      implementations (GREL is currently the only supported language).
+    </dd>
     <dt>2.3.5 Released</dt>
-    <dd>This version is updates the Lucene store and corrects IRI selection searching. The prior extension
+    <dd>This version updates the Lucene store and corrects IRI selection searching. The prior extension
       duplicated existing managed IRIs when reloading and with unmanaged IRIs. The new Lucene store also
       changes field settings for improved store searches. Adding IRIs (Add it) to the Lucene store stops
       if the IRI already exists. The Lucene licensing info is updated to version 9.12.2.
@@ -49,7 +56,7 @@
   </dl>
   <dl>
     <dt>2.3.4 Released</dt>
-    <dd>This version is updates RDF Template import and export processing. The prior extension used
+    <dd>This version updates RDF Template import and export processing. The prior extension used
       showOpenFilePicker() exclusively which is not used by some browsers due to topical developer
       differences on undefined, esoteric, local file access security issues. This release provides for
       alternative, classical file processing.
@@ -64,7 +71,7 @@
   </dl>
   <dl>
     <dt>2.3.3 Released</dt>
-    <dd>This version is updates RDF output format processing. The preview and export processes were
+    <dd>This version updates RDF output format processing. The preview and export processes were
       changed from using a Model to a DatasetGraph to manage statement. This allows for Named Graph
       use (using the BaseIRI). That change wrongly assumed all Jena languages could handle a DatasetGraph.
       A Model is inherently a single Graph manager while a DatasetGraph manages multiple Graphs. A
@@ -82,7 +89,7 @@
   </dl>
   <dl>
     <dt>2.3.2 Released</dt>
-    <dd>This version is updates the Namespace management. The Prefix, Namespace, Location, and
+    <dd>This version updates the Namespace management. The Prefix, Namespace, Location, and
       Location Type are store for each Namespace in the project. This expands on the older Prefix
       and Namespace storage. It allows the Namespace management to recall from where it loaded the
       Namespace. For URLs, they may differ from the Namespace IRI. For Files, the uploaded file is
