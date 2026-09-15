@@ -22,8 +22,10 @@ package org.openrefine.rdf.command;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.Runtime.Version;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -75,18 +77,11 @@ public class InitializationCommand extends Command {
         //
         // Get and test Java VM for an RDF Transform compliant version...
         //
-        String strJVMVersion = java.lang.System.getProperty("java.version");
-        float fJVMVersion = 0.0F;
-        int iPosFrstDecimal = strJVMVersion.indexOf('.');
-        int iPosLastDecimal = strJVMVersion.lastIndexOf('.');
-        if (iPosFrstDecimal == iPosLastDecimal) iPosLastDecimal = -1;
-        try {
-            if (iPosLastDecimal > 0) fJVMVersion = Float.parseFloat( strJVMVersion.substring(0, iPosLastDecimal) );
-            else                     fJVMVersion = Float.parseFloat( strJVMVersion );
-        }
-        catch (NumberFormatException ex) {}
-        InitializationCommand.logger.info("Current Java VM Version: " + strJVMVersion);
-        if (fJVMVersion < 11.0F) {
+	Version version = Runtime.version();
+
+	InitializationCommand.logger.info("Current Java VM Version: "
+		+ version.version().stream().map(String::valueOf).collect(Collectors.joining(".")));
+        if (version.feature() < 11.0F) {
             InitializationCommand.logger.error("ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!");
             InitializationCommand.logger.error("       Install a Java JDK from version 11 to 21.  Use it for OpenRefine by");
             InitializationCommand.logger.error("       setting your JAVA_HOME environment variable to point to its Java");
