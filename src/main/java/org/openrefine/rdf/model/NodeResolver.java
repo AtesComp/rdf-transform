@@ -76,7 +76,8 @@ public class NodeResolver extends TypeIdResolverBase  {
                 return CellResourceNode.getNODETYPE();
             }
         }
-        return ( (Node) instance ).getNodeType();
+        if (instance != null) return ( (Node) instance ).getNodeType();
+        return null;
     }
 
     @Override

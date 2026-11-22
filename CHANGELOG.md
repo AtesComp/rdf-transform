@@ -1,6 +1,11 @@
 # Change Log
 [//]: # (RDF Transform Version Control)
 
+## 2.3.7 Released
+This version updates the Java Runtime version check during the extension initialization. It also
+updates the Maven package version requirements for security issues and align with the curent
+OpenRefine snapshot package versions. Additionally, several possible null issues are fixed.
+
 ## 2.3.6 Released
 This version updates the Lucene query process for IRI selection searches. The new query process
 optimizes the search and produces a more informative result set. The update also cleans the

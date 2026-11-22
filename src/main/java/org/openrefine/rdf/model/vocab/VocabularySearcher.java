@@ -377,8 +377,8 @@ public class VocabularySearcher implements IVocabularySearcher {
                 add(VocabularySearcher.s_queryType, Occur.MUST). // ...either "class" or "property"
                 build();
         docs = this.searcher.search( queryDocs, this.getMaxDoc(0) );
-        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("  DEBUG: Cleaning Old Docs Val: " + docs.totalHits.value);
-        if (docs.totalHits.value == 0) bCleanObject = false;
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("  DEBUG: Cleaning Old Docs Val: " + docs.totalHits.value());
+        if (docs.totalHits.value() == 0) bCleanObject = false;
 
         if (bCleanObject) {
             for (ScoreDoc sdoc : docs.scoreDocs) {
@@ -467,12 +467,12 @@ public class VocabularySearcher implements IVocabularySearcher {
         BooleanQuery queryTerms = qbuilderTerms.build();
 
         TopDocs docsCheck = this.searcher.search( queryTerms, this.getMaxDoc(2) );
-        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Found: " + docsCheck.totalHits.value);
-        if (docsCheck.totalHits.value > 0) {
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Found: " + docsCheck.totalHits.value());
+        if (docsCheck.totalHits.value() > 0) {
             if ( Util.isDebugMode() ) {
                 VocabularySearcher.logger.info(
                     "DEBUG:   [" +
-                        strIRI + "] (found " + docsCheck.totalHits.value + ")");
+                        strIRI + "] (found " + docsCheck.totalHits.value() + ")");
             }
             return true;
         }
@@ -595,15 +595,15 @@ public class VocabularySearcher implements IVocabularySearcher {
                 "      Project: " + strProjectID);
         }
         TopDocs docsDelete = this.searcher.search( queryTerms, this.getMaxDoc(2) );
-        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Found: " + docsDelete.totalHits.value);
-        if (docsDelete.totalHits.value > 0) {
+        if ( Util.isDebugMode() ) VocabularySearcher.logger.info("DEBUG:   Found: " + docsDelete.totalHits.value());
+        if (docsDelete.totalHits.value() > 0) {
             if ( Util.isDebugMode() ) {
                 VocabularySearcher.logger.info(
                     "DEBUG:   [" +
                         strPrefix + ", " +
                         strNamespace + ", " +
                         strLocalPart + " = " +
-                        strIRI + "] (found " + docsDelete.totalHits.value + ")");
+                        strIRI + "] (found " + docsDelete.totalHits.value() + ")");
             }
             this.writer.deleteDocuments(queryTerms);
             return true;

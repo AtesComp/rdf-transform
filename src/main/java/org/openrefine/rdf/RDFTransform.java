@@ -281,13 +281,15 @@ public class RDFTransform implements OverlayModel {
         String strExtension = null;
         if ( jnodeTransform.has(Util.gstrExtension) ) {
             strExtension = jnodeTransform.get(Util.gstrExtension).asText();
-            if (strExtension == null) strExtension = "";
         }
+        if (strExtension == null) strExtension = "";
+
         String strVersion = null;
         if ( jnodeTransform.has(Util.gstrVersion) ) {
             strVersion = jnodeTransform.get(Util.gstrVersion).asText();
-            if (strVersion == null) strVersion = "";
         }
+        if (strVersion == null) strVersion = "";
+
         if ( Util.isVerbose(2) ) {
             RDFTransform.logger.info("  Version: " + strExtension + " " + strVersion);
             if ( ! strVersion.equals(VERSION) ) {

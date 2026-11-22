@@ -74,20 +74,33 @@ public class InitializationCommand extends Command {
         String strRDFTransformSuccess = "...RDF Transform successfully initialized.";
         String strRDFTransformFailed = "...RDF Transform Extension failed to initialize!";
 
+
         //
         // Get and test Java VM for an RDF Transform compliant version...
         //
-	Version version = Runtime.version();
+        Version version = Runtime.version();
+        int iJVMFeatureVersion = version.feature();
+        String strJVMVersion = version.version().stream().map(String::valueOf).collect( Collectors.joining(".") );
 
-	InitializationCommand.logger.info("Current Java VM Version: "
-		+ version.version().stream().map(String::valueOf).collect(Collectors.joining(".")));
-        if (version.feature() < 11.0F) {
-            InitializationCommand.logger.error("ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!");
-            InitializationCommand.logger.error("       Install a Java JDK from version 11 to 21.  Use it for OpenRefine by");
-            InitializationCommand.logger.error("       setting your JAVA_HOME environment variable to point to its Java");
-            InitializationCommand.logger.error("       directory OR set it as your system's default Java language.");
-            InitializationCommand.logger.error(strRDFTransformFailed);
-            return;
+        InitializationCommand.logger.info("Current Java VM Version: " + strJVMVersion);
+        if (iJVMFeatureVersion < 21) {
+            String strJVMVersionMsgBody =
+                    "       Install a Java JDK from version 21 to 26.  Use it for OpenRefine by\n" +
+                    "       setting your JAVA_HOME environment variable to point to its Java\n" +
+                    "       directory OR set it as your system's default Java language.";
+            if (iJVMFeatureVersion < 11) {
+                String strJVMVersionMsg =
+                    "ERROR: Java VM Version must be at least 11.0 to load and run RDF Transform!\n" +
+                    strJVMVersionMsgBody + "\n" +
+                    strRDFTransformFailed;
+                InitializationCommand.logger.error(strJVMVersionMsg);
+                return; // ...stop initialization
+            }
+            String strJVMVersionMsg =
+                "WARNING: Java VM Version should be at least 21.0 to load and run RDF Transform!\n" +
+                strJVMVersionMsgBody;
+            InitializationCommand.logger.warn(strJVMVersionMsg);
+            // ...continue initialization...
         }
 
         this.theModule = theModule;

@@ -51,9 +51,9 @@ See the [Install page Prerequisites on the wiki](https://github.com/AtesComp/rdf
 
 <!-- RDF Transform Version Control -->
 ### Releases
-Download the current [RDF Transform v2.3.6](https://github.com/AtesComp/rdf-transform/releases/download/v2.3.6/rdf-transform-2.3.6.zip) release.
+Download the current [RDF Transform v2.3.7](https://github.com/AtesComp/rdf-transform/releases/download/v2.3.7/rdf-transform-2.3.7.zip) release.
 
-See the current [v2.3.6](https://github.com/AtesComp/rdf-transform/releases/tag/v2.3.6) release information.
+See the current [v2.3.7](https://github.com/AtesComp/rdf-transform/releases/tag/v2.3.7) release information.
 
 See the [Releases section on the wiki Home page](https://github.com/AtesComp/rdf-transform/wiki#releases) for more information.
 
@@ -83,9 +83,9 @@ See the [wiki](https://github.com/AtesComp/rdf-transform/wiki) for more informat
 See the [Install page on the wiki](https://github.com/AtesComp/rdf-transform/wiki/Install) for related information.
 
 #### Linux
-RDF Transform has been tested against OpenRefine 3.5.2 and above on a modern Debian-based OS (Ubuntu derivative) using Chrome. In general, use the latest OpenRefine release with the latest RDF Transform extension release.
+RDF Transform has been tested against OpenRefine 3.10.0 and above on a modern Debian-based OS (Ubuntu derivative) using Chrome. In general, use the latest OpenRefine release with the latest RDF Transform extension release.
 
-RDF Transform requires Java 11 to 21. Use the Linux distributions preferred package manager to ensure--at a minimum--that a Java 11 JRE version is installed.
+RDF Transform requires Java 21 to 26. Use the Linux distributions preferred package manager to ensure--at a minimum--that a Java 21 JRE version is installed.
 * Check your java version with `java -version`
 * Use a java version manager, such as `update-java-alternatives` to ensure a working default Java version is used.
 
@@ -96,17 +96,17 @@ Test runs on MS Windows 10 have indicated the JVM opertate slightly different th
 1. The version of Simile Butterfly that processes the limited server-side JavaScript engine can fail on unused declarative statements such as "importPackage()". If the package is not found, Windows systems may silently fail to run any following statements whereas Linux systems will continue. To mitigate against server-side JavaScript issues, all possible server-side JavaScript code has been migrated to Java.
 2. The JVM relies on OS specific services to process network connections. It may process web-based content negotiation differently on a particular OS. On Windows, if the URL does not produce the expected response, negotiation and the related response processing may lock the process for an unreasonably long time whereas Linux may fail safe and quickly. To mitigate against web content negotiation issues, a Faulty Content Negotiation processor is used identify known fault intolerant processing.  As faults become known, they are added to the processor.
 
-The Windows versions of OpenRefine are bundled with a Java 11 JRE. Since RDF Transform requires Java 11 to 21, no upgrade is required.
+The Windows versions of OpenRefine are bundled with a Java 21 JRE. Since RDF Transform requires Java 21 to 26, no upgrade is required.
 
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
 
 #### Mac
-The MacOS versions of OpenRefine are bundled with a Java 11 JRE. Since RDF Transform requires Java 11 to 21, no upgrade is required.
+The MacOS versions of OpenRefine are bundled with a Java 21 JRE. Since RDF Transform requires Java 21 to 26, no upgrade is required.
 
 See [Java, JDKs, and JREs](#java-jdks-and-jres) below.
 
 #### Java, JDKs, and JREs
-Java versions up to Java 21 JDK / JRE can be used.
+Java versions up to Java 26 JDK / JRE can be used.
 
 * NOTE: So called "official" Java installs later than 8 do not have a separate JRE install. Therefore, in general, install the JDK. Your OS's packaging system may have a separate, general JRE install. For "JRE only" installs, a custom JRE can be created with the `jlink` command. See the wiki Install section [Java JDKs, JREs, and JVMs! Oh, My!](https://github.com/AtesComp/rdf-transform/wiki/Install#java-jdks-jres-and-jvms-oh-my) for more.
 

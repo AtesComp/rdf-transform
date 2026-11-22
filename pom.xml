@@ -35,20 +35,21 @@
 
     <groupId>org.openrefine</groupId>
     <artifactId>rdf-transform</artifactId>
-    <version>2.3.6</version><!-- RDF Transform Version Control -->
+    <version>2.3.7</version><!-- RDF Transform Version Control -->
     <!-- <packaging>jar</packaging> --><!-- We don't need no stink'n JAR file -->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!-- Java Versions: restricted to OpenRefine versions -->
+        <java.minversion>21</java.minversion>
+        <java.version>21</java.version>
+        <java.maxversion>26</java.maxversion>
         <!-- Maven Build -->
-        <java.minversion>11</java.minversion>
-        <java.version>11</java.version>
-        <java.maxversion>21</java.maxversion>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
+        <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
         <allowIncompleteProjects>true</allowIncompleteProjects>
 
         <!--
@@ -56,18 +57,18 @@
         -->
         <openrefine.version>3.10-SNAPSHOT</openrefine.version>
         <butterfly.version>1.2.6</butterfly.version><!-- matches 3.10-SNAPSHOT -->
-        <slf4j.version>2.0.17</slf4j.version><!-- matches 3.10-SNAPSHOT -->
+        <slf4j.version>2.0.20</slf4j.version><!-- matches 3.10-SNAPSHOT -->
 
-        <jena.version>4.10.0</jena.version><!-- 3.10-SNAPSHOT -->
+        <jena.version>6.2.0</jena.version><!-- 3.10-SNAPSHOT -->
         <velocity.version>2.4.1</velocity.version><!-- matches 3.10-SNAPSHOT : to exclude older dependencies than Simile Butterfly's -->
-        <httpclient5.version>5.4.3</httpclient5.version><!-- matches 3.10-SNAPSHOT -->
-        <commons-fileupload.version>1.5</commons-fileupload.version><!-- matches 3.10-SNAPSHOT -->
-        <commons-io.version>2.19.0</commons-io.version><!-- matches 3.10-SNAPSHOT -->
+        <httpclient5.version>5.6.5</httpclient5.version><!-- matches 3.10-SNAPSHOT -->
+        <commons-fileupload.version>1.6.0</commons-fileupload.version><!-- matches 3.10-SNAPSHOT -->
+        <commons-io.version>2.22.0</commons-io.version><!-- matches 3.10-SNAPSHOT -->
 
         <!--
              RDF Transform Dependent
         -->
-        <lucene.version>9.12.1</lucene.version><!-- 9.12.x for Java 11+, 10.x.x for Java 21+ : See https://lucene.apache.org/core/systemreqs.html -->
+        <lucene.version>10.6.0</lucene.version><!-- 9.12.x for Java 11+, 10.x.x for Java 21+ : See https://lucene.apache.org/core/systemreqs.html -->
 
     </properties>
 
@@ -383,6 +384,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>-Xlint:deprecation</arg>
+                        </compilerArgs>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

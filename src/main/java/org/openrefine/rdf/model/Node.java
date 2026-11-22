@@ -168,13 +168,13 @@ abstract public class Node {
             eNodeType = Util.NodeType.RECORD;
             bValueNode = true;
         }
-        else if ( strSource.equals(Util.gstrColumn) && jnodeValueSrc.has(Util.gstrColumnName) ) {
+        else if ( strSource.equals(Util.gstrColumn) && jnodeValueSrc != null && jnodeValueSrc.has(Util.gstrColumnName) ) {
             // A Column Name based node...
             strValue = jnodeValueSrc.get(Util.gstrColumnName).asText();
             eNodeType = Util.NodeType.COLUMN;
             bValueNode = true;
         }
-        else if ( strSource.equals(Util.gstrConstant) && jnodeValueSrc.has(Util.gstrConstant)) {
+        else if ( strSource.equals(Util.gstrConstant) && jnodeValueSrc != null && jnodeValueSrc.has(Util.gstrConstant)) {
             // A Constant based node...
             strValue = jnodeValueSrc.get(Util.gstrConstant).asText();
             eNodeType = Util.NodeType.CONSTANT;
