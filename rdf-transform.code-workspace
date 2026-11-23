@@ -9,6 +9,7 @@
 		"java.dependency.packagePresentation": "hierarchical",
 		"java.project.sourcePaths": [
 			"src/main/java"
-		]
+		],
+		"java.server.launchMode": "Standard"
 	}
 }

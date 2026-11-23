@@ -226,6 +226,7 @@ abstract public class LiteralNode extends Node {
             }
             RDFDatatype theDatatype = TypeMapper.getInstance().getSafeTypeByName(strDatatype);
             try {
+                // TODO: Implement replacement Jena 5.0+ NodeFactory method createLiteralDT()
                 literal = new LiteralImpl( NodeFactory.createLiteral(strResult, theDatatype), null );
             }
             catch (DatatypeFormatException ex) {
@@ -234,11 +235,13 @@ abstract public class LiteralNode extends Node {
         }
         // Else, if there is a language...
         else if (this.strLanguage != null) {
+            // TODO: Implement replacement Jena 5.0+ NodeFactory method createLiteralDT()
             literal = new LiteralImpl( NodeFactory.createLiteral(strResult, this.strLanguage), null );
         }
         // Otherwise...
         else {
             // ...don't decorate the value...
+            // TODO: Implement replacement Jena 5.0+ NodeFactory method createLiteralDT()
             literal = new LiteralImpl( NodeFactory.createLiteral(strResult), null );
         }
 
