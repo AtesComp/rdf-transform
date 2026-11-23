@@ -30,13 +30,14 @@ import com.google.refine.model.Row;
 import com.google.refine.preference.PreferenceStore;
 import com.google.refine.ProjectManager;
 
-import org.apache.jena.iri.IRI;
-import org.apache.jena.iri.IRIFactory;
-import org.apache.jena.iri.IRIException;
-import org.apache.jena.irix.SetupJenaIRI;
+import org.apache.jena.irix.IRIs;
+import org.apache.jena.irix.IRIx;
+import org.apache.jena.irix.IRIException;
 
 import java.io.File;
 //import java.nio.charset.StandardCharsets;
+
+import java.net.URI;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,8 +62,6 @@ public class Util {
         CONSTANT,
         EXPRESSION
     }
-
-    static public final IRIFactory iriFactory = SetupJenaIRI.iriCheckerFactory();
 
     static public final String WHITESPACE = "\uC2A0\\p{C}\\p{Z}";
     //static public final String WHITESPACE = "\\p{Cc}\\p{Co}\\p{Cn}\\p{Z}";
@@ -244,7 +243,7 @@ public class Util {
         }
     }
 
-    static public String resolveIRI(IRI baseIRI, String strIRI) throws IRIParsingException {
+    static public String resolveIRI(IRIx baseIRI, String strIRI) throws IRIParsingException {
         String strResolveIRI = "resolveIRI: ";
         String strError = "ERROR: " + strResolveIRI;
         String strErrMsg = null;
@@ -258,14 +257,14 @@ public class Util {
         }
 
         // Create Absolute IRI without Base IRI...
-        try {
-            IRI absoluteIRI = Util.iriFactory.construct(strIRI);
+        if ( IRIs.check(strIRI) ) {
+            IRIx absoluteIRI = IRIs.reference(strIRI);
             if ( absoluteIRI.isAbsolute() ) {
                 strAbsoluteIRI = absoluteIRI.toString();
             }
         }
-        catch (IRIException ex) {
-            strErrMsg = ex.getMessage();
+        else {
+            strErrMsg = "Invalid IRI";
             // ...continue in case we can resolve as a Relative IRI...
         }
 
@@ -273,7 +272,7 @@ public class Util {
         if (strAbsoluteIRI == null && baseIRI != null) {
             // Create Absolute IRI with Relative IRI using Base IRI...
             try {
-                strAbsoluteIRI = baseIRI.construct(strIRI).toString();
+                strAbsoluteIRI = baseIRI.resolve(strIRI).str();
             }
             catch (IRIException ex) {
                 strErrMsg = ex.getMessage();
@@ -285,7 +284,7 @@ public class Util {
             {
                 try {
                     if ( ! strIRI.startsWith("/") ) {
-                        strAbsoluteIRI = baseIRI.construct("/" + strIRI).toString();
+                        strAbsoluteIRI = baseIRI.resolve("/" + strIRI).str();
                     }
                 }
                 catch (Exception ex) {
@@ -393,13 +392,14 @@ public class Util {
         //    iIndex + 1 = the length of strQuery to the ':' inclusive
         //    Is there anything after...
         if (strIRI.length() > iIndex + 1) {
-            IRI tempIRI = Util.buildIRI(strIRI, true);
+            IRIx tempIRI = Util.buildIRI(strIRI, true);
             if (tempIRI == null) { // ...a BAD IRI?...
                 return -2;
             }
             // ...it parsed as an IRI...
             // If a scheme is present, but a host is not present...
-            if (tempIRI.getScheme() != null && tempIRI.getRawHost() == null) {
+            String strTempIRI = tempIRI.str();
+            if (IRIs.scheme(strTempIRI) != null && URI.create(strTempIRI).getHost() == null) {
                 // There is no authority component:
                 //    i.e., there was no "schema://...", just "schema:...", so
                 //    the authority parsing that contains the host parsing was not
@@ -423,7 +423,7 @@ public class Util {
         return ( Util.findPrefixIndex(strIRI) >= 0 );
     }
 
-    static public String getDataType(IRI baseIRI, String strDatatypePrefix, String strDataTypeValue) {
+    static public String getDataType(IRIx baseIRI, String strDatatypePrefix, String strDataTypeValue) {
         if (strDataTypeValue == null) {
             return strDataTypeValue;
         }
@@ -446,11 +446,11 @@ public class Util {
         return strResolvedDatatype;
     }
 
-    static public IRI buildIRI(String strIRI) {
+    static public IRIx buildIRI(String strIRI) {
         return Util.buildIRI(strIRI, false);
     }
 
-    static public IRI buildIRI(String strIRI, boolean bTest) {
+    static public IRIx buildIRI(String strIRI, boolean bTest) {
         String strHeader = (bTest ? "TEST: " : "ERROR: ") + "buildIRI(): ";
 
         if (strIRI == null || strIRI.isEmpty() || strIRI.isBlank() ) {
@@ -458,9 +458,11 @@ public class Util {
             return null;
         }
 
-        IRI iriNew = null;
+        IRIx iriNew = null;
         try {
-            iriNew = Util.iriFactory.construct(strIRI);
+            if ( IRIs.check(strIRI) ) {
+                iriNew = IRIs.reference(strIRI);
+            }
         }
         catch (Exception ex) {
             if ( Util.isVerbose() ) Util.logger.error(strHeader + "Malformed IRI <" + strIRI + ">", ex);
@@ -473,7 +475,7 @@ public class Util {
     static public String getGraphIRIString(String strIRI) {
         String strEmpty = "";
 
-        IRI iriGraph = Util.buildIRI(strIRI, false);
+        IRIx iriGraph = Util.buildIRI(strIRI, false);
         if (iriGraph == null || iriGraph.isRelative() ) return strEmpty;
 
         String strGraphIRI = strIRI;

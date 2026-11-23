@@ -30,7 +30,7 @@ import com.google.refine.commands.Command;
 
 import org.openrefine.rdf.model.Util;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class ValidateIRICommand extends Command {
         try {
             String strIRI = request.getParameter("iri").strip();
 
-            IRI theIRI = Util.buildIRI(strIRI, true);
+            IRIx theIRI = Util.buildIRI(strIRI, true);
             if (theIRI == null) {
                 if ( Util.isDebugMode() ) ValidateIRICommand.logger.error("DEBUG: Validating IRI: Failure [" + strIRI + "]");
                 ValidateIRICommand.respondJSON(response, CodeResponse.error);

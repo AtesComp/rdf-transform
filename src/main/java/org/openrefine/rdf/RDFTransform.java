@@ -36,7 +36,7 @@ import com.google.refine.util.ParsingUtilities;
 import com.google.refine.model.OverlayModel;
 import com.google.refine.model.Project;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -352,7 +352,7 @@ public class RDFTransform implements OverlayModel {
      *      http://example.com/first_name
      */
     @JsonIgnore
-    private IRI theBaseIRI = null;
+    private IRIx theBaseIRI = null;
 
     /*
      * Prefix Mapping to Namespace
@@ -499,7 +499,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore // ...see getBaseIRIAsString()
-    public IRI getBaseIRI() {
+    public IRIx getBaseIRI() {
         return this.theBaseIRI;
     }
 
@@ -522,7 +522,7 @@ public class RDFTransform implements OverlayModel {
     }
 
     @JsonIgnore // ...see setBaseIRI(JsonNode)
-    public void setBaseIRI(IRI iriBase)  {
+    public void setBaseIRI(IRIx iriBase)  {
         if ( Util.isVerbose(3) ) RDFTransform.logger.info("Setting Base IRI from Parsed IRI...");
         if (Util.isDebugMode()) RDFTransform.logger.info("DEBUG: BaseIRI set to:" + iriBase.toString());
         this.theBaseIRI = iriBase;
@@ -544,7 +544,7 @@ public class RDFTransform implements OverlayModel {
         //   "opaque"   : false if there is no "//", just :string
         // }
 
-        IRI iriBase = null;
+        IRIx iriBase = null;
         String strBaseIRI = null;
         if ( jnodeBaseIRI == null || jnodeBaseIRI.isNull() ) {
             // Get Default BaseIRI...

@@ -29,7 +29,7 @@ import org.openrefine.rdf.model.Util;
 import com.google.refine.model.Project;
 import com.google.refine.model.Row;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class PreviewRDFRowVisitor extends RDFRowVisitor {
         }
         try {
             if ( Util.isDebugMode() ) PreviewRDFRowVisitor.logger.info("DEBUG: Visiting Row: " + iRowIndex + " on count: " +  this.iCount);
-            IRI baseIRI = this.getRDFTransform().getBaseIRI();
+            IRIx baseIRI = this.getRDFTransform().getBaseIRI();
             List<ResourceNode> listRoots = this.getRDFTransform().getRoots();
             for ( ResourceNode root : listRoots ) {
                 root.createStatements(baseIRI, this.theDSGraph, theProject, iRowIndex );

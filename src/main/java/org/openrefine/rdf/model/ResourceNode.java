@@ -21,6 +21,8 @@
 
 package org.openrefine.rdf.model;
 
+import java.net.URI;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +39,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerationException;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIs;
+import org.apache.jena.irix.IRIx;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.impl.PropertyImpl;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
@@ -105,12 +108,14 @@ abstract public class ResourceNode extends Node {
         String strEmbeddedPrefix = null;
 
         try {
-            IRI tempIRI = Util.buildIRI(strLocalPart);
+            IRIx tempIRI = Util.buildIRI(strLocalPart);
             if (tempIRI != null) {
                 // ...it parsed as an IRI...
                 // If a scheme is present, but a host is not present...
-                strEmbeddedPrefix = tempIRI.getScheme();
-                if (strEmbeddedPrefix != null && tempIRI.getRawHost() == null) {
+
+                String strTempIRI = tempIRI.str();
+                strEmbeddedPrefix = IRIs.scheme(strTempIRI);
+                if (strEmbeddedPrefix != null && URI.create(strTempIRI).getHost() == null) {
                     // There is no authority component:
                     //    i.e., there was no "schema://...", just "schema:...", so
                     //    the authority parsing that contains the host parsing was not
@@ -185,7 +190,7 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatements() for Root Resource Node types on OpenRefine Rows
      */
-    public void createStatements(IRI baseIRI, DatasetGraph theDSGraph, Project theProject, int iRowIndex)
+    public void createStatements(IRIx baseIRI, DatasetGraph theDSGraph, Project theProject, int iRowIndex)
             throws RuntimeException
     {
         this.baseIRI = baseIRI;
@@ -203,7 +208,7 @@ abstract public class ResourceNode extends Node {
     /*
      *  Method createStatements() for Root Resource Node types on OpenRefine Records
      */
-    public void createStatements(IRI baseIRI, DatasetGraph theDSGraph, Project theProject, Record theRecord)
+    public void createStatements(IRIx baseIRI, DatasetGraph theDSGraph, Project theProject, Record theRecord)
             throws RuntimeException
     {
         this.baseIRI = baseIRI;

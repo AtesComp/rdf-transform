@@ -37,7 +37,7 @@ import com.google.refine.expr.ParsingException;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,7 +56,7 @@ public class PreviewRDFTExpressionCommand extends PreviewExpressionCommand {
     private JsonNode theRowIndices = null;
     private String strPrefix = ""; // No Prefix, Base IRI == ":", all others are "ccc:"
     private String strColumnName = null;
-    private IRI baseIRI = null;
+    private IRIx baseIRI = null;
 
     private JsonGenerator theWriter = null;
 

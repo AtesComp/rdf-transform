@@ -32,7 +32,7 @@ import org.openrefine.rdf.RDFTransform;
 
 import com.google.refine.model.Project;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 public class SaveBaseIRICommand extends RDFTransformCommand {
 
@@ -50,7 +50,7 @@ public class SaveBaseIRICommand extends RDFTransformCommand {
         try {
             Project theProject = this.getProject(request);
             String strIRI = request.getParameter("baseIRI");
-            IRI baseIRI = Util.buildIRI(strIRI);
+            IRIx baseIRI = Util.buildIRI(strIRI);
             if (baseIRI == null) {
                 SaveBaseIRICommand.respondJSON(response, CodeResponse.error);
                 return;

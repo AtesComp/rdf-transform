@@ -29,7 +29,7 @@ import com.google.refine.grel.Function;
 
 import org.openrefine.rdf.model.Util;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 /*
  * Class ToIRIString: Convert string to qualify as an RDF IRI component
@@ -71,7 +71,7 @@ public class ToIRIString implements Function {
         int iTry = 0;
         do {
             // Test if it's an acceptable IRI now (absolute or relative)...
-            IRI theIRI = Util.buildIRI(strConvert, true);
+            IRIx theIRI = Util.buildIRI(strConvert, true);
             if (theIRI == null) {
                 if (iTry > 6) {
                     strConvert = null; // ...cannot convert to IRI

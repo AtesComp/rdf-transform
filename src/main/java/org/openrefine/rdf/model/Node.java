@@ -30,7 +30,7 @@ import org.openrefine.rdf.RDFTransform;
 import org.openrefine.rdf.model.utils.RecordModel;
 import org.openrefine.rdf.model.vocab.VocabularyList;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 //import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.core.DatasetGraph;
@@ -73,7 +73,7 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             RDFTransform.Reconstructor theNodeReconstructor,
-                            JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces) {
+                            JsonNode jnodeSubject, final IRIx baseIRI, VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, theNamespaces);
@@ -81,13 +81,13 @@ abstract public class Node {
 
     static public Node reconstructNode(
                             Property.PropertyReconstructor thePropReconstructor,
-                            JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces) {
+                            JsonNode jnodeSubject, final IRIx baseIRI, VocabularyList theNamespaces) {
         Objects.requireNonNull(thePropReconstructor);
 
         return Node.reconstructNode(jnodeSubject, baseIRI, theNamespaces);
     }
 
-    static private Node reconstructNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces) {
+    static private Node reconstructNode(JsonNode jnodeSubject, final IRIx baseIRI, VocabularyList theNamespaces) {
         Node nodeElement = null;
         if (jnodeSubject == null) {
             Node.logger.warn("WARNING: Missing Subject for Node");
@@ -241,7 +241,7 @@ abstract public class Node {
         return nodeElement;
     }
 
-    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces,
+    static private ResourceNode reconstructResourceNode(JsonNode jnodeSubject, final IRIx baseIRI, VocabularyList theNamespaces,
             String strType, boolean bValueNode, boolean bConstNode, String strValue, String strPrefix, String strSource, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
 
@@ -286,7 +286,7 @@ abstract public class Node {
         return rnodeResource;
     }
 
-    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final IRI baseIRI, VocabularyList theNamespaces,
+    static private LiteralNode reconstructLiteralNode(JsonNode jnodeSubject, final IRIx baseIRI, VocabularyList theNamespaces,
             String strType, JsonNode jnodeValueType, boolean bValueNode, boolean bConstNode, String strValue, String strExpCode,
             boolean bIsIndex, Util.NodeType eNodeType) {
 
@@ -318,7 +318,7 @@ abstract public class Node {
                         strDatatypeValue = jnodeDatatypeConstant.asText();
 
                         // Validate the full IRI (Namespace + Datatype)...
-                        IRI iriNamespace = baseIRI; // ...default
+                        IRIx iriNamespace = baseIRI; // ...default
                         if ( theNamespaces.containsPrefix(strDatatypePrefix) ) {
                             String strDatatypeNamespace = theNamespaces.findByPrefix(strDatatypePrefix).getNamespace();
                             if (strDatatypeNamespace != null) {
@@ -358,7 +358,7 @@ abstract public class Node {
     }
 
     @JsonIgnore
-    protected IRI baseIRI = null;
+    protected IRIx baseIRI = null;
 
     @JsonIgnore
     //protected Model theModel = null;

@@ -27,7 +27,7 @@ import java.util.Objects;
 import org.openrefine.rdf.model.vocab.Vocabulary;
 import org.openrefine.rdf.model.vocab.VocabularyList;
 
-import org.apache.jena.iri.IRI;
+import org.apache.jena.irix.IRIx;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -54,7 +54,7 @@ public class RDFType {
      */
     static public void reconstructTypes(
                             Node.NodeReconstructor theNodeReconstructor,
-                            ResourceNode rnodeParent, JsonNode jnodeParent, final IRI baseIRI,
+                            ResourceNode rnodeParent, JsonNode jnodeParent, final IRIx baseIRI,
                             VocabularyList theNamespaces) {
         Objects.requireNonNull(theNodeReconstructor);
 
@@ -62,7 +62,7 @@ public class RDFType {
     }
 
     static private void reconstructTypes(
-                            ResourceNode rnodeParent, JsonNode jnodeParent, final IRI baseIRI,
+                            ResourceNode rnodeParent, JsonNode jnodeParent, final IRIx baseIRI,
                             VocabularyList theNamespaces) {
         if ( ! jnodeParent.has(Util.gstrTypeMappings) ) {
             return;
