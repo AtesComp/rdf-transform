@@ -71,14 +71,14 @@ class RDFTransform {
     //      by a setDefaults() modification.
     static gstrValueSourceRow = "row_index";            // ...the Value Source for Rows
     static gstrValueSourceRec = "record_id";            // ...the Value Source for Records
-    static gstrValueSourceIndex;                        // ...the Value Source to use: Row or Record
+    static gstrValueSourceIndex = "";                   // ...the Value Source to use: Row or Record
     static gstrExpLangGREL = "grel";                    // ...the GREL Expression Language
-    static gstrExpLangDefault;                          // ...the default Expression Language
-    static gstrExpCodeDefault;                          // ...the default Expression for the current language
+    static gstrExpLangDefault = "";                     // ...the default Expression Language
+    static gstrExpCodeDefault = "";                     // ...the default Expression for the current language
     static gstrExpressionIndexRow = "row.index";        // ...the Index Expression for Rows
     static gstrExpressionIndexRec = "row.record.index"; // ...the Index Expression for Records
-    static gstrExpressionIndex;                         // ...the Index Expression to use: Row or Record
-    static gstrIndexTitle;                              // ...the column title for the index: "Row" or "Record"
+    static gstrExpressionIndex = "";                    // ...the Index Expression to use: Row or Record
+    static gstrIndexTitle = "";                         // ...the column title for the index: "Row" or "Record"
     static gbRowBased = true;                           // ...the type of indexing used: Row (true) or Record (false)
 
     // subjectMappings
