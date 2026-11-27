@@ -1,9 +1,14 @@
 # Change Log
 [//]: # (RDF Transform Version Control)
 
+## 2.3.8 Released
+This version adds the Apache Jena version check during the extension initialization. This
+is an alignment with OpenRefine version 3.10.2+. The Jena version must be 6+ to comply with
+library method changes from version 4.
+
 ## 2.3.7 Released
 This version updates the Java Runtime version check during the extension initialization. It also
-updates the Maven package version requirements for security issues and align with the curent
+updates the Maven package version requirements for security issues and align with the current
 OpenRefine snapshot package versions. Additionally, several possible null issues are fixed.
 
 ## 2.3.6 Released

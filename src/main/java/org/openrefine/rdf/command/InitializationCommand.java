@@ -54,6 +54,8 @@ import org.openrefine.rdf.model.expr.functions.ToStrippedLiteral;
 import org.openrefine.rdf.model.Util;
 import org.openrefine.rdf.model.operation.RDFTransformChange;
 import org.openrefine.rdf.model.operation.SaveRDFTransformOperation;
+
+import org.apache.jena.Jena;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sys.JenaSystem;
 
@@ -101,6 +103,20 @@ public class InitializationCommand extends Command {
                 strJVMVersionMsgBody;
             InitializationCommand.logger.warn(strJVMVersionMsg);
             // ...continue initialization...
+        }
+
+        InitializationCommand.logger.info("Current Apache Jena Version: " + Jena.VERSION);
+        Version versionJena = Version.parse(Jena.VERSION);
+        int iJenaMajor = versionJena.feature();
+        //int iJenaMinor = versionJena.interim();
+        //int iJenaPatch = versionJena.update();
+        if (iJenaMajor < 6) {
+            String strJenaVersionMsg =
+                "ERROR: Apache Jena Version must be at least 6.0 to load and run RDF Transform!\n" +
+                "       Upgrade OpenRefine to version 3.10.2 or later.\n" +
+                strRDFTransformFailed;
+            InitializationCommand.logger.error(strJenaVersionMsg);
+            return; // ...stop initialization
         }
 
         this.theModule = theModule;
